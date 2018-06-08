@@ -1,37 +1,38 @@
 {
-		"name": "dav-npm",
-		"version": "0.0.1",
-		"description": "This is the npm package for the dav API",
-		"main": "dist/index.js",
-		"types": "dist/index.d.ts",
-		"scripts": {
-				"test": "echo \"Error: no test specified\" && exit 1",
-				"prepublishOnly": "npm run build",
-				"compile": "npm run clean && tsc -p .",
-				"watch": "tsc -w -p .",
-				"clean": "rm -rf dist",
-				"build": "tsc"
-		},
-		"repository": {
-				"type": "git",
-				"url": "git+ssh://git@github.com/Dav2070/dav-npm.git"
-		},
-		"author": "Dav",
-		"license": "MIT",
-		"devDependencies": {
-				"@types/node": "^8.0.0",
-				"typescript": "^2.6.1"
-		},
-		"bugs": {
-				"url": "https://github.com/Dav2070/dav-npm/issues"
-		},
-		"homepage": "https://github.com/Dav2070/dav-npm",
-		"files": [
-				"dist/index.js",
-				"dist/index.d.ts",
-				"dist/lib"
-		],
-		"dependencies": {
-				"localforage": "^1.7.1"
-		}
+	"name": "dav-npm",
+	"version": "0.0.1",
+	"description": "This is the npm package for the dav API",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepublishOnly": "npm run build",
+		"compile": "npm run clean && tsc -p .",
+		"watch": "tsc -w -p .",
+		"clean": "rm -rf dist",
+		"build": "tsc"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/Dav2070/dav-npm.git"
+	},
+	"author": "Dav",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^8.0.0",
+		"typescript": "^2.6.1"
+	},
+	"bugs": {
+		"url": "https://github.com/Dav2070/dav-npm/issues"
+	},
+	"homepage": "https://github.com/Dav2070/dav-npm",
+	"files": [
+		"dist/index.js",
+		"dist/index.d.ts",
+		"dist/lib"
+	],
+	"dependencies": {
+		"axios": "^0.18.0",
+		"localforage": "^1.7.1"
+	}
 }
