@@ -10,7 +10,8 @@
 		"compile": "npm run clean && tsc -p .",
 		"watch": "tsc -w -p .",
 		"clean": "rm -rf dist",
-		"build": "tsc"
+		"build": "tsc",
+		"prepare": "tsc"
 	},
 	"repository": {
 		"type": "git",
