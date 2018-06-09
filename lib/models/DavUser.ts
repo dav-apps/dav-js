@@ -41,7 +41,7 @@ export class DavUser{
 		this.JWT = userObject["jwt"];
 	}
 
-	async Login(jwt: string){
+	async Login(jwt: string): Promise<boolean>{
 		// Try to log in with the jwt
 		var userObject = await ApiManager.DownloadUserInformation(jwt);
 
@@ -52,6 +52,8 @@ export class DavUser{
 			this.IsLoggedIn = false;
 			localforage.removeItem("user");
 		}
+
+		return this.IsLoggedIn;
 	}
 }
 
