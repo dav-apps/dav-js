@@ -1,6 +1,7 @@
 var localforage = require('localforage');
 import * as ApiManager from '../providers/ApiManager';
 import * as DataManager from '../providers/DataManager';
+import * as Dav from "../Dav";
 
 export class DavUser{
 	public Email: string;
@@ -50,7 +51,7 @@ export class DavUser{
 			DataManager.SetUser(userObject);
 		}else{
 			this.IsLoggedIn = false;
-			localforage.removeItem("user");
+			localforage.removeItem(Dav.userKey);
 		}
 
 		return this.IsLoggedIn;
