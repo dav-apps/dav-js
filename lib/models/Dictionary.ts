@@ -6,17 +6,19 @@ interface IDictionary {
    values(): string[];
 }
 
-class Dictionary implements IDictionary {
+export class Dictionary implements IDictionary {
 
    _keys: string[] = [];
    _values: string[] = [];
 
-   constructor(init: { key: string; value: string; }[]) {
-		for (var x = 0; x < init.length; x++) {
-			this[init[x].key] = init[x].value;
-			this._keys.push(init[x].key);
-			this._values.push(init[x].value);
-		}
+   constructor(init?: { key: string; value: string; }[]) {
+      if(init){
+         for (var x = 0; x < init.length; x++) {
+            this[init[x].key] = init[x].value;
+            this._keys.push(init[x].key);
+            this._values.push(init[x].value);
+         }
+      }
    }
 
    add(key: string, value: string) {

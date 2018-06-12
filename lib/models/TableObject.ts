@@ -1,9 +1,11 @@
+import { Dictionary } from './Dictionary';
+
 export class TableObject{
    public TableId: number;
    public Uuid: string = generateUUID();
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
    public IsFile: boolean = false;
-   public Properties: Array<Dictionary> = [];
+   public Properties: Dictionary = new Dictionary();
    public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 
    constructor(){}

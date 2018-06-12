@@ -2,6 +2,8 @@ import * as localforage from "localforage";
 import * as Dav from '../Dav';
 var bowser = require('bowser');
 import { TableObject, TableObjectUploadStatus } from '../models/TableObject';
+import { Observable } from 'rxjs';
+import * as ApiManager from './ApiManager';
 
 function Init(){
    if(bowser.firefox){
@@ -20,20 +22,37 @@ export async function GetUser(){
    return await localforage.getItem(Dav.userKey);
 }
 
-export async function GetAllTableObjects(): Promise<Array<TableObject>>{
-   Init();
-   return <Array<TableObject>>JSON.parse(await localforage.getItem(Dav.tableObjectsKey).toString());
+async function GetAllTableObjectsArray(): Promise<Array<TableObject>>{
+	Init();
+	var tableObjects = await localforage.getItem<TableObject[]>(Dav.tableObjectsKey);
+
+	if(tableObjects){
+		return tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.Deleted);
+	}
+	return [];
 }
 
-export async function GetTableObjectsOfTable(tableId: number){
-   var allTableObjects: Array<TableObject> = await GetAllTableObjects();
-   var tableObjects: Array<TableObject> = [];
-   allTableObjects.forEach(tableObject => {
-      if(tableObject.TableId == tableId){
-         tableObjects.push(tableObject);
-      }
-   });
-   return tableObjects;
+export function GetAllTableObjects(): Observable<TableObject>{
+	Init();
+	return new Observable<TableObject>((observer: any) => {
+		localforage.getItem(Dav.tableObjectsKey, (error, tableObjects: TableObject[]) => {
+			if(!error){
+				if(tableObjects){
+					tableObjects.forEach(tableObject => {
+						if(tableObject.UploadStatus != TableObjectUploadStatus.Deleted){
+							observer.next(tableObject);
+						}
+					});
+				}
+			}
+
+			// Sync
+			ApiManager.DownloadTableObjects()
+				.forEach((tableObject: TableObject) => {
+					observer.next(tableObject);
+				});
+		});
+	});
 }
 
 export async function SetTableObjects(tableObjects: Array<TableObject>){
@@ -41,33 +60,56 @@ export async function SetTableObjects(tableObjects: Array<TableObject>){
    await localforage.setItem(Dav.tableObjectsKey, tableObjects);
 }
 
-export async function CreateTableObject(tableObject: TableObject){
-	// Get all table Objects
-	// Check if the table object is already in the list
-	// If the table object is new, add it to the list
-	// Save the new list
-	var tableObjects = await GetAllTableObjects();
-	var savedTableObject: TableObject = tableObjects.find(obj => obj.Uuid === tableObject.Uuid);
+export async function SaveTableObject(tableObject: TableObject){
+	var tableObjects = await GetAllTableObjectsArray();
+	var savedTableObject = tableObjects.find(obj => obj.Uuid === tableObject.Uuid);
 	if(savedTableObject){
-			// The table object already exists, set it to updated
-			savedTableObject = tableObject;
-			savedTableObject.UploadStatus = TableObjectUploadStatus.Updated;
+		// The table object already exists, set it to updated
+		savedTableObject.Properties = tableObject.Properties;
+		savedTableObject.UploadStatus = TableObjectUploadStatus.Updated;
 	}else{
-			// The table object is new, set it to new
-			tableObject.UploadStatus = TableObjectUploadStatus.New;
-			tableObjects.push(tableObject);
+		// The table object is new, set it to new
+		tableObject.UploadStatus = TableObjectUploadStatus.New;
+		tableObjects.push(tableObject);
 	}
+	// Save the new list
 	await SetTableObjects(tableObjects);
+}
+
+export async function GetTableObject(uuid: string): Promise<TableObject>{
+	var tableObjects = await GetAllTableObjectsArray();
+	return tableObjects.find(obj => obj.Uuid === uuid);
 }
 
 export async function DeleteTableObject(tableObject: TableObject){
 	// Get all table objects
 	// Find the tableObject in the list and set it to deleted
 	// Save the new list
-	var tableObjects = await GetAllTableObjects();
+	var tableObjects = await GetAllTableObjectsArray();
 	var savedTableObject: TableObject = tableObjects.find(obj => obj.Uuid == tableObject.Uuid);
 	if(savedTableObject){
 		savedTableObject.UploadStatus = TableObjectUploadStatus.Deleted;
 		await SetTableObjects(tableObjects);
 	}
+}
+
+async function PushSync(){
+   // Get all table objects
+   var tableObjects: Array<TableObject> = await GetAllTableObjectsArray();
+   tableObjects.reverse().forEach(tableObject => {
+      switch (tableObject.UploadStatus) {
+         case TableObjectUploadStatus.New:
+            // Upload the table object
+            ApiManager.CreateTableObject(tableObject);
+            break;
+         case TableObjectUploadStatus.Updated:
+            // Update the table object
+            ApiManager.UpdateTableObject(tableObject);
+            break;
+            case TableObjectUploadStatus.Deleted:
+            // Delete the table object
+            ApiManager.DeleteTableObject(tableObject);
+            break;
+      }
+   });
 }
