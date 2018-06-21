@@ -1,7 +1,8 @@
 var localforage = require('localforage');
-import * as ApiManager from '../providers/ApiManager';
+import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as DataManager from '../providers/DataManager';
 import * as Dav from "../Dav";
+import { TableObject } from './TableObject';
 
 export class DavUser{
 	public Email: string;
@@ -16,7 +17,7 @@ export class DavUser{
 
 	constructor(callback?: Function){
 		try{
-			DataManager.GetUser().then((userObject) => {
+			DatabaseOperations.GetUser().then((userObject) => {
 				if(userObject){
 					this.SetUser(userObject);
 				}
@@ -40,21 +41,27 @@ export class DavUser{
 		this.Avatar = userObject["avatar"];
 		this.AvatarEtag = userObject["avatarEtag"];
 		this.JWT = userObject["jwt"];
+		Dav.globals.jwt = this.JWT;
 	}
 
 	async Login(jwt: string): Promise<boolean>{
 		// Try to log in with the jwt
-		var userObject = await ApiManager.DownloadUserInformation(jwt);
+		var userObject = await DataManager.DownloadUserInformation(jwt);
 
 		if(userObject){
 			this.SetUser(userObject);
-			DataManager.SetUser(userObject);
+			DatabaseOperations.SetUser(userObject);
 		}else{
 			this.IsLoggedIn = false;
 			localforage.removeItem(Dav.userKey);
 		}
 
 		return this.IsLoggedIn;
+	}
+
+	Logout(){
+		// Delete the user key from the local storage
+		DatabaseOperations.RemoveUser();
 	}
 }
 

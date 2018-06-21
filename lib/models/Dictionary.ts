@@ -55,3 +55,25 @@ export class Dictionary implements IDictionary {
       return this;
    }
 }
+
+export function ConvertDictionaryToObject(dictionary: Dictionary): object{
+   var obj = {};
+
+   var i = 0;
+   dictionary.keys().forEach(key => {
+      obj[key] = dictionary[key];
+      i++;
+   });
+
+   return obj;
+}
+
+export function ConvertObjectToDictionary(obj: object): Dictionary{
+   var dictionary = new Dictionary();
+
+   for(var key in obj){
+      dictionary[key] = obj[key];
+   }
+
+   return dictionary;
+}
