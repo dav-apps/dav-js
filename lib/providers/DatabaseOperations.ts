@@ -1,8 +1,7 @@
 import * as localforage from "localforage";
 var bowser = require('bowser');
 import * as Dav from '../Dav';
-import { TableObject, TableObjectUploadStatus, generateUUID } from '../models/TableObject';
-import { ConvertObjectToDictionary } from '../models/Dictionary';
+import { TableObject, TableObjectUploadStatus, generateUUID, ConvertObjectToMap, ConvertMapToObject } from '../models/TableObject';
 
 function InitLocalforage(){
    if(bowser.firefox){
@@ -32,7 +31,21 @@ export async function RemoveUser(){
 async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	InitLocalforage();
 	try{
-		await localforage.setItem(Dav.tableObjectsKey, tableObjects);
+		// Convert the table objects into objects
+		var objects: object[] = [];
+		tableObjects.forEach(tableObject => {
+			objects.push({
+				TableId: tableObject.TableId,
+				IsFile: tableObject.IsFile,
+				Uuid: tableObject.Uuid,
+				Visibility: tableObject.Visibility,
+				UploadStatus: tableObject.UploadStatus,
+				Etag: tableObject.Etag,
+				Properties: ConvertMapToObject(tableObject.Properties)
+			});
+		});
+
+		await localforage.setItem(Dav.tableObjectsKey, objects);
 	}catch(error){
 		console.log(error);
 	}
@@ -43,6 +56,8 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 
 	try{
 		var objArray = await localforage.getItem(Dav.tableObjectsKey) as object[];
+		if(!objArray) return [];
+
 		var tableObjectsArray: TableObject[] = [];
 
 		objArray.forEach(obj => {
@@ -53,8 +68,10 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 			tableObject.Etag = obj["Etag"];
 			tableObject.Visibility = obj["Visibility"];
 			tableObject.Uuid = obj["Uuid"];
-			tableObject.Properties = obj["Properties"];
-
+			if(obj["Properties"]){
+				tableObject.Properties = ConvertObjectToMap(obj["Properties"])
+			}
+			
 			tableObjectsArray.push(tableObject);
 		});
 
@@ -68,17 +85,27 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 export async function CreateTableObject(tableObject: TableObject): Promise<string>{
 	var tableObjects = await GetTableObjectsArray();
 	var uuid = tableObject.Uuid;
-
+	
 	// Check if the uuid already exists
 	while(tableObjects.findIndex(obj => obj.Uuid == uuid) !== -1){
 		uuid = generateUUID();
 	}
-
+	
 	tableObject.Uuid = uuid;
 	tableObjects.push(tableObject);
 	SetTableObjectsArray(tableObjects);
-
+	
 	return uuid;
+}
+
+export async function CreateTableObjects(tableObjects: TableObject[]){
+	var savedTableObjects = await GetTableObjectsArray();
+
+	tableObjects.forEach(tableObject => {
+		savedTableObjects.push(tableObject);
+	});
+
+	SetTableObjectsArray(savedTableObjects);
 }
 
 export async function GetTableObject(uuid: string): Promise<TableObject>{
@@ -92,16 +119,12 @@ export async function GetTableObject(uuid: string): Promise<TableObject>{
 	}
 }
 
-export async function GetAllTableObjects(deleted: boolean): Promise<TableObject[]>{
+export async function GetAllTableObjects(tableId: number = -1, deleted: boolean): Promise<TableObject[]>{
 	var tableObjects = await GetTableObjectsArray();
 
 	if(tableObjects){
-		var sortedTableObjects = tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.Deleted || deleted)
-									.map((tableObject: TableObject, index: number, tableObjects: TableObject[]) => {
-										tableObject.Properties = ConvertObjectToDictionary(tableObject.Properties);
-										return tableObject;
-									});
-		
+		var sortedTableObjects = tableObjects.filter(obj => (obj.UploadStatus != TableObjectUploadStatus.Deleted || deleted) && 
+																				(obj.TableId == tableId) || tableId == -1);
 		return sortedTableObjects;
 	}
 

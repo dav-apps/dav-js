@@ -1,6 +1,4 @@
-import { Dictionary } from './Dictionary';
 import * as DataManager from '../providers/DataManager';
-import * as Dav from '../Dav';
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 
 export class TableObject{
@@ -8,7 +6,7 @@ export class TableObject{
    public Uuid: string = generateUUID();
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
    public IsFile: boolean = false;
-   public Properties: Dictionary = new Dictionary();
+	public Properties: Map<string, string> = new Map();
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
 
@@ -25,9 +23,9 @@ export class TableObject{
 	}
 
 	SetPropertyValue(name: string, value: string){
-		if(this.Properties[name] == value) return;
+		if(this.Properties.get(name) == value) return;
 
-		this.Properties[name] = value;
+		this.Properties.set(name, value);
 		this.Save();
 	}
 
@@ -35,8 +33,8 @@ export class TableObject{
 		var propertiesChanged = false;
 
 		properties.forEach(property => {
-			if(this.Properties[property.name] != property.value){
-				this.Properties[property.name] = property.value;
+			if(this.Properties.get(property.name) != property.value){
+				this.Properties.set(property.name, property.value);
 				propertiesChanged = true;
 			}
 		});
@@ -47,29 +45,30 @@ export class TableObject{
 	}
 
 	GetPropertyValue(name: string): string{
-		return this.Properties[name];
+		return this.Properties.get(name);
 	}
 
 	RemoveProperty(name: string){
-		if(!this.Properties[name]){
-			this.Properties.remove(name);
+		if(!this.Properties.get(name)){
+			this.Properties.delete(name);
 			this.Save();
 		}
 	}
 
    Delete(){
-		DatabaseOperations.DeleteTableObject(this.Uuid);
+		this.UploadStatus = TableObjectUploadStatus.Deleted;
+		this.Save();
 	}
 	
-	private Save(){
-		if(DatabaseOperations.TableObjectExists(this.Uuid)){
+	private async Save(){
+		if(await DatabaseOperations.TableObjectExists(this.Uuid)){
 			if(this.UploadStatus == TableObjectUploadStatus.UpToDate){
 				this.UploadStatus = TableObjectUploadStatus.Updated;
 			}
-			DatabaseOperations.UpdateTableObject(this);
+			await DatabaseOperations.UpdateTableObject(this);
 		}else{
 			this.UploadStatus = TableObjectUploadStatus.New;
-			DatabaseOperations.CreateTableObject(this).then(uuid => this.Uuid = uuid);
+			await DatabaseOperations.CreateTableObject(this).then(uuid => this.Uuid = uuid);
 		}
 
 		DataManager.SyncPush();
@@ -118,6 +117,26 @@ export function ConvertVisibilityToInt(visibility: TableObjectVisibility): numbe
 	}
 
 	return visibilityInt;
+}
+
+export function ConvertMapToObject(map: Map<string, string>): object{
+	var obj = {};
+
+	for(let [key, value] of map){
+		obj[key] = value;
+	}
+
+	return obj;
+}
+
+export function ConvertObjectToMap(obj: object): Map<string, string>{
+	var map: Map<string, string> = new Map();
+
+	Object.keys(obj).forEach(key => {
+		map.set(key, obj[key]);
+	});
+
+	return map;
 }
 
 // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

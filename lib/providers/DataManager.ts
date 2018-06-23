@@ -1,59 +1,79 @@
-import * as localforage from "localforage";
 import * as Dav from '../Dav';
 var axios = require('axios');
-import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility } from '../models/TableObject';
-import { ConvertObjectToDictionary, ConvertDictionaryToObject } from '../models/Dictionary';
+import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, ConvertMapToObject } from '../models/TableObject';
 import * as DatabaseOperations from './DatabaseOperations';
 
 var syncing = false;
 var syncAgain = true;
+var syncPull = false;
 
 //#region Data methods
 export async function Sync(){
-	if(syncing) return;
+	if(syncing || syncPull) return;
 	if(!Dav.globals.jwt) return;
 
 	syncing = true;
+	syncPull = true;
 
-	Dav.globals.tableIds.forEach(tableId => {
-		axios.get(Dav.globals.apiBaseUrl + "apps/table/" + tableId, {
-				headers: {'Authorization': Dav.globals.jwt}
-			})
-			.then((response) => {
-				// Check if the table object is saved locally
-				response.data.table_objects.forEach(async obj => {
-					// Does the table object already exist?
-					var tableObject = await DatabaseOperations.GetTableObject(obj["uuid"]);
-					var getTableObject = false;
+	for(let tableId of Dav.globals.tableIds){
+		var removedTableObjectUuids: string[] = [];
+		for(let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)){
+			removedTableObjectUuids.push(tableObject.Uuid);
+		}
 
+		var response = await axios.get(Dav.globals.apiBaseUrl + "apps/table/" + tableId, {
+			headers: {'Authorization': Dav.globals.jwt}
+		});
+		
+		var newTableObjects: TableObject[] = [];
+
+		for(let obj of response.data.table_objects){
+			var removeUuidIndex = removedTableObjectUuids.findIndex(uuid => uuid === obj.uuid);
+			if(removeUuidIndex !== -1){
+				removedTableObjectUuids.splice(removeUuidIndex, 1);
+			}
+
+			// Does the table object already exist?
+			var tableObject = await DatabaseOperations.GetTableObject(obj["uuid"]);
+			var getTableObject = false;
+
+			if(tableObject){
+				// Has the etag changed?
+				if(tableObject.Etag != obj.etag){
+					// the etag has changed, download the table object and save it in the database
+					getTableObject = true;
+				}
+			}else{
+				// Save the new table object
+				getTableObject = true;
+			}
+
+			if(getTableObject){
+				// Download the table object
+				var newTableObject = await GetTableObjectFromServer(obj.uuid);
+
+				if(newTableObject){
+					newTableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
+				
 					if(tableObject){
-						// Has the etag changed?
-						if(tableObject.Etag !== obj.etag){
-							// the etag has changed, download the table object and save it in the database
-							getTableObject = true;
-						}
+						await DatabaseOperations.UpdateTableObject(newTableObject);
 					}else{
-						// Save the new table object
-						getTableObject = true;
+						newTableObjects.push(newTableObject);
 					}
+				}
+			}
+		}
+		
+		if(newTableObjects.length > 0){
+			DatabaseOperations.CreateTableObjects(newTableObjects);
+			Dav.globals.callbacks.UpdateAllOfTable(tableId);
+		}
 
-					if(getTableObject){
-						// Download the table object
-						var newTableObject = await GetTableObjectFromServer(obj.uuid);
-						newTableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-						
-						if(tableObject){
-							DatabaseOperations.UpdateTableObject(newTableObject);
-						}else{
-							DatabaseOperations.CreateTableObject(newTableObject);
-						}
-					}
-				});
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	});
+		// Delete the tableObjects that are not on the server
+		for(let uuid of removedTableObjectUuids){
+			await DatabaseOperations.DeleteTableObjectImmediately(uuid);
+		}
+	}
 
 	syncing = false;
 	SyncPush();
@@ -71,7 +91,7 @@ export async function SyncPush(){
 	syncing = true;
 	
 	// Get all table objects
-	var tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(true);
+	var tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true);
 	tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate && 
 								obj.UploadStatus != TableObjectUploadStatus.NoUpload).reverse().forEach(async tableObject => {
 
@@ -82,6 +102,7 @@ export async function SyncPush(){
 
 				if(result[okKey]){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
+					tableObject.Etag = result[messageKey].etag;
 					DatabaseOperations.UpdateTableObject(tableObject);
 				}else if(result[messageKey]){
 					// Check error codes
@@ -102,6 +123,7 @@ export async function SyncPush(){
 
 				if(result[okKey]){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
+					tableObject.Etag = result[messageKey].etag;
 					DatabaseOperations.UpdateTableObject(tableObject);
 				}else if(result[messageKey]){
 					// Check error codes
@@ -127,7 +149,7 @@ export async function SyncPush(){
 
 					if(messageString.includes("2805")){		// Resource does not exist: TableObject
 						DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
-					}else if(result[messageKey].includes("1102")){		// Action not allowed
+					}else if(messageString.includes("1102")){		// Action not allowed
 						DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 					}else{
 						console.log(result[messageKey])
@@ -192,7 +214,7 @@ async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
 		tableObject.Etag = response.data.etag;
 		tableObject.Uuid = response.data.uuid;
 		tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
-		tableObject.Properties = ConvertObjectToDictionary(response.data.properties);
+		tableObject.Properties = ConvertObjectToMap(response.data.properties);
 
 		return tableObject;
 	}catch(error){
@@ -210,13 +232,14 @@ export async function CreateTableObjectOnServer(tableObject: TableObject): Promi
 			url: Dav.globals.apiBaseUrl + "apps/object",
 			params: {
 				table_id: tableObject.TableId,
-				app_id: Dav.globals.appId
+				app_id: Dav.globals.appId,
+				uuid: tableObject.Uuid
 			},
 			headers: {
 				'Authorization': Dav.globals.jwt,
 				'Content-Type': 'application/json'
 			},
-			data: JSON.stringify(ConvertDictionaryToObject(tableObject.Properties))
+			data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
 		});
 
 		return {ok: true, message: response.data};
@@ -236,7 +259,7 @@ export async function UpdateTableObjectOnServer(tableObject: TableObject): Promi
 				'Authorization': Dav.globals.jwt,
 				'Content-Type': 'application/json'
 			},
-			data: JSON.stringify(ConvertDictionaryToObject(tableObject.Properties))
+			data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
 		});
 
 		return {ok: true, message: response.data};

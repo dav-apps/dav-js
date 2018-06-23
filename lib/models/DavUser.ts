@@ -20,6 +20,7 @@ export class DavUser{
 			DatabaseOperations.GetUser().then((userObject) => {
 				if(userObject){
 					this.SetUser(userObject);
+					DataManager.Sync();
 				}
 	
 				if(callback){

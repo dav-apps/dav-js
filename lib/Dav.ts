@@ -9,7 +9,7 @@ class Globals{
 	constructor(public production: boolean,
 					public appId: number, 
                public tableIds: number[],
-               public callback: object){
+               public callbacks: object){
 
       if(production){
          this.apiBaseUrl = "https://dav-backend.herokuapp.com/v1/";
