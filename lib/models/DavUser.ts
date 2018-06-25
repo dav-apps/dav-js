@@ -2,7 +2,6 @@ var localforage = require('localforage');
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as DataManager from '../providers/DataManager';
 import * as Dav from "../Dav";
-import { TableObject } from './TableObject';
 
 export class DavUser{
 	public Email: string;
@@ -72,6 +71,6 @@ export enum DavPlan{
 }
 
 export function ShowLoginPage(apiKey: string, callbackUrl: string){
-	window.location.href = "http://localhost:3000/login_implicit?api_key=" + 
+	window.location.href = Dav.globals.websiteUrl + "login_implicit?api_key=" + 
 									apiKey + "&redirect_url=" + encodeURIComponent(callbackUrl);
 }

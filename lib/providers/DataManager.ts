@@ -65,7 +65,7 @@ export async function Sync(){
 		}
 		
 		if(newTableObjects.length > 0){
-			DatabaseOperations.CreateTableObjects(newTableObjects);
+			await DatabaseOperations.CreateTableObjects(newTableObjects);
 			Dav.globals.callbacks.UpdateAllOfTable(tableId);
 		}
 
