@@ -98,14 +98,21 @@ export async function CreateTableObject(tableObject: TableObject): Promise<strin
 	return uuid;
 }
 
-export async function CreateTableObjects(tableObjects: TableObject[]){
+export async function CreateTableObjects(tableObjects: TableObject[]): Promise<string[]>{
 	var savedTableObjects = await GetTableObjectsArray();
+	var uuids: string[] = [];
 
 	tableObjects.forEach(tableObject => {
+		while(savedTableObjects.findIndex(obj => obj.Uuid == tableObject.Uuid) !== -1){
+			tableObject.Uuid = generateUUID();
+		}
+		uuids.push(tableObject.Uuid);
+		
 		savedTableObjects.push(tableObject);
 	});
 
 	SetTableObjectsArray(savedTableObjects);
+	return uuids;
 }
 
 export async function GetTableObject(uuid: string): Promise<TableObject>{
@@ -124,7 +131,7 @@ export async function GetAllTableObjects(tableId: number = -1, deleted: boolean)
 
 	if(tableObjects){
 		var sortedTableObjects = tableObjects.filter(obj => (obj.UploadStatus != TableObjectUploadStatus.Deleted || deleted) && 
-																				(obj.TableId == tableId) || tableId == -1);
+																				(obj.TableId == tableId || tableId == -1));
 		return sortedTableObjects;
 	}
 
