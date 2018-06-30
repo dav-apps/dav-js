@@ -3,7 +3,7 @@ import 'mocha';
 import * as Dav from '../../lib/Dav';
 import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { TableObject, TableObjectVisibility, TableObjectUploadStatus } from '../../lib/models/TableObject';
+import { TableObject, TableObjectVisibility, TableObjectUploadStatus, ConvertIntToVisibility, ConvertMapToObject, ConvertObjectToMap } from '../../lib/models/TableObject';
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);
@@ -211,5 +211,48 @@ describe("DeleteImmediately function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNull(tableObjectFromDatabase);
+   });
+});
+
+describe("ConvertMapToObject function", () => {
+   it("should convert a map to an object", () => {
+      // Arrange
+      var firstKey = "test1";
+      var secondKey = "test2";
+      var firstValue = "blabla";
+      var secondValue = "testtest";
+
+      var map = new Map([
+         [firstKey, firstValue],
+         [secondKey, secondValue]
+      ]);
+
+      // Act
+      var obj = ConvertMapToObject(map);
+
+      // Assert
+      assert.equal(firstValue, obj[firstKey]);
+      assert.equal(secondValue, obj[secondKey]);
+   });
+});
+
+describe("ConvertObjectToMap function", () => {
+   it("should convert an object to a map", () => {
+      // Arrange
+      var firstKey = "test1";
+      var secondKey = "test2";
+      var firstValue = "blabla";
+      var secondValue = "testtest";
+
+      var obj = {};
+      obj[firstKey] = firstValue;
+      obj[secondKey] = secondValue;
+
+      // Act
+      var map = ConvertObjectToMap(obj);
+
+      // Assert
+      assert.equal(firstValue, map.get(firstKey));
+      assert.equal(secondValue, map.get(secondKey));
    });
 });
