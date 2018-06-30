@@ -3,7 +3,7 @@ import * as Dav from '../../lib/Dav';
 import * as localforage from "localforage";
 import { assert } from 'chai';
 import 'mocha';
-import { TableObject, TableObjectUploadStatus, generateUUID, TableObjectVisibility } from '../../lib/models/TableObject';
+import { TableObject, TableObjectUploadStatus, generateUUID } from '../../lib/models/TableObject';
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);

@@ -76,14 +76,15 @@ export async function Sync(){
 	}
 
 	syncing = false;
-	SyncPush();
+	syncPull = false;
+	await SyncPush();
 }
 
 export async function SyncPush(){
 	const okKey = "ok";
 	const messageKey = "message";
 
-	if(!(await DatabaseOperations.GetUser())) return;
+	if(!Dav.globals.jwt) return;
 	if(syncing){
 		syncAgain = true;
 		return;
@@ -92,9 +93,10 @@ export async function SyncPush(){
 	
 	// Get all table objects
 	var tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true);
-	tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate && 
-								obj.UploadStatus != TableObjectUploadStatus.NoUpload).reverse().forEach(async tableObject => {
-
+	var sortedTableObjects = tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate && 
+													obj.UploadStatus != TableObjectUploadStatus.NoUpload).reverse();
+	
+	for(let tableObject of sortedTableObjects){
 		switch (tableObject.UploadStatus) {
 			case TableObjectUploadStatus.New:
 				// Upload the table object
@@ -103,17 +105,17 @@ export async function SyncPush(){
 				if(result[okKey]){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
 					tableObject.Etag = result[messageKey].etag;
-					DatabaseOperations.UpdateTableObject(tableObject);
+					await DatabaseOperations.UpdateTableObject(tableObject);
 				}else if(result[messageKey]){
 					// Check error codes
-					var messageString = JSON.stringify(result[messageKey])
+					var messageString = JSON.stringify(result[messageKey]);
 
 					if(messageString.includes("2704")){		// Field already taken: uuid
 						// Set the upload status to UpToDate
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-						DatabaseOperations.UpdateTableObject(tableObject);
+						await DatabaseOperations.UpdateTableObject(tableObject);
 					}else{
-						console.log(result[messageKey])
+						console.log(result[messageKey]);
 					}
 				}
 				break;
@@ -124,16 +126,16 @@ export async function SyncPush(){
 				if(result[okKey]){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
 					tableObject.Etag = result[messageKey].etag;
-					DatabaseOperations.UpdateTableObject(tableObject);
+					await DatabaseOperations.UpdateTableObject(tableObject);
 				}else if(result[messageKey]){
 					// Check error codes
-					var messageString = JSON.stringify(result[messageKey])
+					var messageString = JSON.stringify(result[messageKey]);
 
 					if(messageString.includes("2805")){		// Resource does not exist: TableObject
 						// Delete the table object locally
-						DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 					}else{
-						console.log(result[messageKey])
+						console.log(result[messageKey]);
 					}
 				}
 				break;
@@ -142,22 +144,22 @@ export async function SyncPush(){
 
 				if(result[okKey]){
 					// Delete the table object
-					DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+					await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 				}else if(result[messageKey]){
 					// Check error codes
-					var messageString = JSON.stringify(result[messageKey])
+					var messageString = JSON.stringify(result[messageKey]);
 
 					if(messageString.includes("2805")){		// Resource does not exist: TableObject
-						DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 					}else if(messageString.includes("1102")){		// Action not allowed
-						DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 					}else{
-						console.log(result[messageKey])
+						console.log(result[messageKey]);
 					}
 				}
 				break;
 		}
-	});
+	}
 
 	syncing = false;
 
@@ -223,7 +225,7 @@ async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
 	}
 }
 
-export async function CreateTableObjectOnServer(tableObject: TableObject): Promise<object>{		// Return {ok: boolean, message: string}
+async function CreateTableObjectOnServer(tableObject: TableObject): Promise<object>{		// Return {ok: boolean, message: string}
 	if(!Dav.globals.jwt) return {ok: false, message: null};
 
 	try{
@@ -248,7 +250,7 @@ export async function CreateTableObjectOnServer(tableObject: TableObject): Promi
 	}
 }
 
-export async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<object>{
+async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<object>{
 	if(!Dav.globals.jwt) return {ok: false, message: null};
 
 	try{
@@ -268,16 +270,14 @@ export async function UpdateTableObjectOnServer(tableObject: TableObject): Promi
 	}
 }
 
-export async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<object>{
+async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<object>{
 	if(!Dav.globals.jwt) return {ok: false, message: null};
 
 	try{
 		var response = await axios({
 			method: 'delete',
 			url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
-			headers: {
-				'Authorization': Dav.globals.jwt
-			}
+			headers: { 'Authorization': Dav.globals.jwt }
 		});
 
 		return {ok: true, message: response.data};
