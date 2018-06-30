@@ -12,24 +12,24 @@ export class TableObject{
 
 	constructor(){}
 	
-	SetVisibility(visibility: TableObjectVisibility){
+	async SetVisibility(visibility: TableObjectVisibility): Promise<void>{
 		this.Visibility = visibility;
-		this.Save();
+		await this.Save();
 	}
 
-	SetUploadStatus(uploadStatus: TableObjectUploadStatus){
+	async SetUploadStatus(uploadStatus: TableObjectUploadStatus): Promise<void>{
 		this.UploadStatus = uploadStatus;
-		this.Save();
+		await this.Save();
 	}
 
-	SetPropertyValue(name: string, value: string){
+	async SetPropertyValue(name: string, value: string): Promise<void>{
 		if(this.Properties.get(name) == value) return;
 
 		this.Properties.set(name, value);
-		this.Save();
+		await this.Save();
 	}
 
-	SetPropertyValues(properties: { name: string, value: string }[]){
+	async SetPropertyValues(properties: { name: string, value: string }[]): Promise<void>{
 		var propertiesChanged = false;
 
 		properties.forEach(property => {
@@ -40,24 +40,29 @@ export class TableObject{
 		});
 
 		if(propertiesChanged){
-			this.Save();
+			await this.Save();
 		}
 	}
 
 	GetPropertyValue(name: string): string{
-		return this.Properties.get(name);
+		var value = this.Properties.get(name);
+		return value ? value : null;
 	}
 
-	RemoveProperty(name: string){
-		if(!this.Properties.get(name)){
+	async RemoveProperty(name: string): Promise<void>{
+		if(this.Properties.get(name)){
 			this.Properties.delete(name);
-			this.Save();
+			await this.Save();
 		}
 	}
 
-   Delete(){
+   async Delete(): Promise<void>{
 		this.UploadStatus = TableObjectUploadStatus.Deleted;
-		this.Save();
+		await this.Save();
+	}
+
+	async DeleteImmediately(): Promise<void>{
+		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
 	}
 	
 	private async Save(){
