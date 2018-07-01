@@ -44,6 +44,19 @@ export class DavUser{
 		Dav.globals.jwt = this.JWT;
 	}
 
+	private ClearUser(){
+		this.IsLoggedIn = false;
+		this.Email = "";
+		this.Username = "";
+		this.TotalStorage = 0;
+		this.UsedStorage = 0;
+		this.Plan = 0;
+		this.Avatar = "";
+		this.AvatarEtag = "";
+		this.JWT = "";
+		Dav.globals.JWT = "";
+	}
+
 	async Login(jwt: string): Promise<boolean>{
 		// Try to log in with the jwt
 		var userObject = await DataManager.DownloadUserInformation(jwt);
@@ -62,6 +75,7 @@ export class DavUser{
 	Logout(){
 		// Delete the user key from the local storage
 		DatabaseOperations.RemoveUser();
+		this.ClearUser();
 	}
 }
 
