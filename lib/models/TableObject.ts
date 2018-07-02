@@ -1,5 +1,6 @@
 import * as DataManager from '../providers/DataManager';
 import * as DatabaseOperations from '../providers/DatabaseOperations';
+import * as Dav from '../Dav';
 
 export class TableObject{
    public TableId: number;
@@ -57,8 +58,13 @@ export class TableObject{
 	}
 
    async Delete(): Promise<void>{
-		this.UploadStatus = TableObjectUploadStatus.Deleted;
-		await this.Save();
+		if(Dav.globals.jwt){
+			// If the user is logged in
+			this.UploadStatus = TableObjectUploadStatus.Deleted;
+			await this.Save();
+		}else{
+			await this.DeleteImmediately();
+		}
 	}
 
 	async DeleteImmediately(): Promise<void>{
@@ -76,7 +82,7 @@ export class TableObject{
 			await DatabaseOperations.CreateTableObject(this).then(uuid => this.Uuid = uuid);
 		}
 
-		DataManager.SyncPush();
+		await DataManager.SyncPush();
 	}
 }
 
@@ -107,21 +113,6 @@ export function ConvertIntToVisibility(visibilityInt: number): TableObjectVisibi
 	}
 
 	return visibility;
-}
-
-export function ConvertVisibilityToInt(visibility: TableObjectVisibility): number{
-	var visibilityInt = 0;
-
-	switch (visibility) {
-		case TableObjectVisibility.Protected:
-			visibilityInt = 1;
-			break;
-		case TableObjectVisibility.Public:
-			visibilityInt = 2;
-			break;
-	}
-
-	return visibilityInt;
 }
 
 export function ConvertMapToObject(map: Map<string, string>): object{

@@ -49,7 +49,6 @@ describe("Sync function", () => {
 
       // Assert
       var tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true);
-
       assert.equal(2, tableObjects.length);
       assert.equal(testDataTableId, tableObjects[0].TableId);
       assert.equal(testDataTableId, tableObjects[1].TableId);

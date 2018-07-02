@@ -32,6 +32,9 @@ describe("Login function", () => {
          assert.equal(user.JWT, userFromDatabase["jwt"]);
          assert.equal(user.JWT, davClassLibraryTestUserXTestUserJwt);
       });
+
+      // Tidy up
+      clearDatabase();
    });
 
    it("should not log the user in with invalid JWT", () => {
@@ -44,6 +47,9 @@ describe("Login function", () => {
          var userFromDatabase = await DatabaseOperations.GetUser();
          assert.isNull(userFromDatabase);
          assert.isFalse(user.IsLoggedIn);
+
+         // Tidy up
+         clearDatabase();
       });
    });
 });
@@ -68,7 +74,10 @@ describe("Logout function", () => {
          assert.isEmpty(user.Avatar);
          assert.isEmpty(user.AvatarEtag);
          assert.isEmpty(user.JWT);
-         assert.isEmpty(Dav.globals.JWT);
+         assert.isEmpty(Dav.globals.jwt);
+
+         // Tidy up
+         clearDatabase();
       });
    });
 });

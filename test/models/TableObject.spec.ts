@@ -177,8 +177,15 @@ describe("RemoveProperty function", () => {
 });
 
 describe("Delete function", () => {
-   it("should set the UploadStatus of the table object to Deleted", async () => {
+   it("should set the UploadStatus of the table object to Deleted when the user is logged in", async () => {
       // Arrange
+      Dav.Initialize(false, 1, [1], {
+         UpdateAll: () => {},
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {}
+      });
+      Dav.globals.jwt = "asdasd";
+
       var tableObject = new TableObject();
       tableObject.TableId = 34;
       await DatabaseOperations.CreateTableObject(tableObject);
@@ -196,11 +203,33 @@ describe("Delete function", () => {
       // Tidy up
       clearDatabase();
    });
+
+   it("should delete the table object immediately when the user is not logged in", async () => {
+      // Arrange
+      Dav.globals.jwt = null;
+
+      var tableObject = new TableObject();
+      tableObject.TableId = 23;
+      await DatabaseOperations.CreateTableObject(tableObject);
+
+      // Act
+      await tableObject.Delete();
+
+      // Assert
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      assert.isNull(tableObjectFromDatabase);
+   });
 });
 
 describe("DeleteImmediately function", () => {
    it("should delete the table object immediately", async () => {
       // Arrange
+      Dav.Initialize(false, 1, [1], {
+         UpdateAll: () => {},
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {}
+      });
+
       var tableObject = new TableObject();
       tableObject.TableId = 12;
       await DatabaseOperations.CreateTableObject(tableObject);

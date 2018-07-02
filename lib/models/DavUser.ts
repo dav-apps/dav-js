@@ -54,7 +54,7 @@ export class DavUser{
 		this.Avatar = "";
 		this.AvatarEtag = "";
 		this.JWT = "";
-		Dav.globals.JWT = "";
+		Dav.globals.jwt = "";
 	}
 
 	async Login(jwt: string): Promise<boolean>{

@@ -9,10 +9,9 @@ var syncPull = false;
 
 //#region Data methods
 export async function Sync(){
-	if(syncing || syncPull) return;
+	if(syncPull) return;
 	if(!Dav.globals.jwt) return;
 
-	syncing = true;
 	syncPull = true;
 
 	for(let tableId of Dav.globals.tableIds){
@@ -71,11 +70,18 @@ export async function Sync(){
 
 		// Delete the tableObjects that are not on the server
 		for(let uuid of removedTableObjectUuids){
+			var tableObject = await DatabaseOperations.GetTableObject(uuid);
+
+			if(tableObject.UploadStatus == TableObjectUploadStatus.New || 
+				tableObject.UploadStatus == TableObjectUploadStatus.NoUpload ||
+				tableObject.UploadStatus == TableObjectUploadStatus.Deleted){
+				continue;
+			}
+
 			await DatabaseOperations.DeleteTableObjectImmediately(uuid);
 		}
 	}
 
-	syncing = false;
 	syncPull = false;
 	await SyncPush();
 }

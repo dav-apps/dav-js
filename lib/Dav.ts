@@ -1,6 +1,5 @@
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
-export var globals;
 
 class Globals{
    public apiBaseUrl: string = "http://localhost:3111/v1/";
@@ -10,7 +9,7 @@ class Globals{
 	constructor(public production: boolean,
 					public appId: number, 
                public tableIds: number[],
-               public callbacks: object){
+               public callbacks: { UpdateAll: Function, UpdateAllOfTable: Function, UpdateTableObject: Function }){
 
       if(production){
          this.apiBaseUrl = "https://dav-backend.herokuapp.com/v1/";
@@ -18,6 +17,8 @@ class Globals{
       }
    }
 }
+
+export var globals = new Globals(false, -1, [], {UpdateAll: () => {}, UpdateAllOfTable: () => {}, UpdateTableObject: () => {}});
 
 export function Initialize(production: boolean, 
                            appId: number, 
