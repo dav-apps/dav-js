@@ -38,9 +38,9 @@ describe("Sync function", () => {
    it("should download all table objects from the server", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -66,9 +66,9 @@ describe("Sync function", () => {
    it("should remove the table objects that are not on the server", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -102,9 +102,9 @@ describe("Sync function", () => {
    it("should update only the table objects with a new etag", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -133,9 +133,9 @@ describe("SyncPush function", () => {
    it("should upload created table objects", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -168,9 +168,9 @@ describe("SyncPush function", () => {
    it("should upload updated table objects", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -204,9 +204,9 @@ describe("SyncPush function", () => {
    it("should upload deleted table objects", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -241,9 +241,9 @@ describe("SyncPush function", () => {
    it("should delete updated table objects that do not exist on the server", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 
@@ -265,9 +265,9 @@ describe("SyncPush function", () => {
    it("should delete deleted table objects that do not exist on the server", async () => {
       // Arrange
       Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
 

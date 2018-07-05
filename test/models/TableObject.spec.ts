@@ -180,9 +180,9 @@ describe("Delete function", () => {
    it("should set the UploadStatus of the table object to Deleted when the user is logged in", async () => {
       // Arrange
       Dav.Initialize(false, 1, [1], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
       Dav.globals.jwt = "asdasd";
 
@@ -225,9 +225,9 @@ describe("DeleteImmediately function", () => {
    it("should delete the table object immediately", async () => {
       // Arrange
       Dav.Initialize(false, 1, [1], {
-         UpdateAll: () => {},
          UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {}
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {}
       });
 
       var tableObject = new TableObject();

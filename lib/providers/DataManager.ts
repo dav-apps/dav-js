@@ -56,6 +56,7 @@ export async function Sync(){
 				
 					if(tableObject){
 						await DatabaseOperations.UpdateTableObject(newTableObject);
+						Dav.globals.callbacks.UpdateTableObject(newTableObject);
 					}else{
 						newTableObjects.push(newTableObject);
 					}
@@ -79,6 +80,7 @@ export async function Sync(){
 			}
 
 			await DatabaseOperations.DeleteTableObjectImmediately(uuid);
+			Dav.globals.callbacks.DeleteTableObject(tableObject);
 		}
 	}
 
