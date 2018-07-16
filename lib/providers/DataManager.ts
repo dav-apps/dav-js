@@ -2,6 +2,7 @@ import * as Dav from '../Dav';
 var axios = require('axios');
 import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, ConvertMapToObject } from '../models/TableObject';
 import * as DatabaseOperations from './DatabaseOperations';
+import * as platform from 'platform';
 
 var syncing = false;
 var syncAgain = true;
@@ -291,6 +292,37 @@ async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<obje
 		return {ok: true, message: response.data};
 	}catch(error){
 		return {ok: false, message: error.response.data};
+	}
+}
+
+export async function Log(apiKey: string, name: string){
+	if(/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
+
+	var properties = {
+		browser_name: platform.name,
+		browser_version: platform.version,
+		os_name: platform.os.family,
+		os_version: platform.os.version
+	}
+
+	try{
+		// Make request to backend
+		await axios({
+			method: 'post',
+			url: Dav.globals.apiBaseUrl + "analytics/event",
+			params: {
+				api_key: apiKey,
+				name: name,
+				app_id: Dav.globals.appId,
+				save_country: true
+			},
+			headers: {
+				"Content-Type": "application/json"
+			},
+			data: JSON.stringify(properties)
+		});
+	}catch(error){
+		console.log(error)
 	}
 }
 //#endregion

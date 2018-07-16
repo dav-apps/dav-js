@@ -8,7 +8,7 @@ class Globals{
    public websiteUrl: string = "http://localhost:3000/";
 	public jwt: string = null;
 
-	constructor(public production: boolean,
+   constructor(public production: boolean,
 					public appId: number, 
                public tableIds: number[],
                public callbacks: { UpdateAllOfTable: Function, UpdateTableObject: Function, DeleteTableObject: Function }){
