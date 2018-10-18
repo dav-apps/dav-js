@@ -177,6 +177,28 @@ export async function SyncPush(){
 		await SyncPush();
 	}
 }
+
+// Call this when the app receives a websocket notification of a created or updated table object
+export async function UpdateLocalTableObject(uuid: string){
+	// Get the table object from the server and update it locally
+	var tableObject = await GetTableObjectFromServer(uuid);
+	
+	if(tableObject){
+		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
+		await DatabaseOperations.UpdateTableObject(tableObject);
+		Dav.globals.callbacks.UpdateTableObject(tableObject);
+	}
+}
+
+// Call this when the app receives a websocket notification of a deleted table object
+export async function DeleteLocalTableObject(uuid: string){
+	// Remove the table object locally
+	var tableObject = await DatabaseOperations.GetTableObject(uuid);
+	if(tableObject){
+		tableObject.DeleteImmediately();
+		Dav.globals.callbacks.DeleteTableObject(tableObject)
+	}
+}
 //#endregion
 
 //#region Api methods

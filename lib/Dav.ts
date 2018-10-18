@@ -1,4 +1,5 @@
 import { TableObject } from "./models/TableObject";
+import * as DataManager from "./providers/DataManager";
 
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
@@ -36,7 +37,16 @@ export function Initialize(production: boolean,
       worker.postMessage(appId);
 
       worker.onmessage = function(e){
-         
+         var uuid = e.data.uuid
+         var change = e.data.change
+
+         if(uuid != null && change != null){
+            if(change == 0 || change == 1){
+               DataManager.UpdateLocalTableObject(uuid);
+            }else if(change == 2){
+               DataManager.DeleteLocalTableObject(uuid);
+            }
+         }
       }
    }
 }
