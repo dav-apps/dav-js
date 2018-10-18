@@ -29,4 +29,14 @@ export function Initialize(production: boolean,
                            tableIds: number[], 
                            callbacks: { UpdateAllOfTable: Function, UpdateTableObject: Function, DeleteTableObject: Function }){
    globals = new Globals(production, appId, tableIds, callbacks);
+
+   // Start the web worker and update the UI when the worker receives a message
+   if(Worker){
+      var worker = new Worker('dav/worker.js');
+      worker.postMessage(appId);
+
+      worker.onmessage = function(e){
+         
+      }
+   }
 }
