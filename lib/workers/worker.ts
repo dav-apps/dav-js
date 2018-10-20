@@ -1,13 +1,15 @@
 var appId = -1;
+var jwt = "";
 
 onmessage = function(e){
-	appId = e.data
+	appId = e.data.appId;
+	jwt = e.data.jwt;
    subscribe();
 }
 
 function subscribe(){
 	var channelName = "TableObjectUpdateChannel";
-	var webSocket = new WebSocket("ws://localhost:3111/v1/cable?app_id=" + appId + "&jwt=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdkBkYXYtYXBwcy50ZWNoIiwidXNlcm5hbWUiOiJEYXYiLCJ1c2VyX2lkIjoxLCJkZXZfaWQiOjEsImV4cCI6Mzc1Mzk3MTAzMTN9.5PJstak7mR5IFhJLLahdRgGxkeQWARkEATLOeeiCnO0");
+	var webSocket = new WebSocket("ws://localhost:3111/v1/cable?app_id=" + appId + "&jwt=" + jwt);
 
 	webSocket.onopen = function (e) {
 		var json = JSON.stringify({

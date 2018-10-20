@@ -93,7 +93,7 @@ export async function CreateTableObject(tableObject: TableObject): Promise<strin
 	
 	tableObject.Uuid = uuid;
 	tableObjects.push(tableObject);
-	SetTableObjectsArray(tableObjects);
+	await SetTableObjectsArray(tableObjects);
 	
 	return uuid;
 }
@@ -111,7 +111,7 @@ export async function CreateTableObjects(tableObjects: TableObject[]): Promise<s
 		savedTableObjects.push(tableObject);
 	});
 
-	SetTableObjectsArray(savedTableObjects);
+	await SetTableObjectsArray(savedTableObjects);
 	return uuids;
 }
 
@@ -149,7 +149,7 @@ export async function UpdateTableObject(tableObject: TableObject){
 
 	if(index !== -1){
 		tableObjects[index] = tableObject;
-		SetTableObjectsArray(tableObjects);
+		await SetTableObjectsArray(tableObjects);
 	}
 }
 
@@ -159,7 +159,7 @@ export async function DeleteTableObject(uuid: string){
 
 	if(index !== -1){
 		tableObjects[index].UploadStatus = TableObjectUploadStatus.Deleted;
-		SetTableObjectsArray(tableObjects);
+		await SetTableObjectsArray(tableObjects);
 	}
 }
 
@@ -169,7 +169,7 @@ export async function DeleteTableObjectImmediately(uuid: string){
 
 	if(index !== -1){
 		tableObjects.splice(index, 1);
-		SetTableObjectsArray(tableObjects);
+		await SetTableObjectsArray(tableObjects);
 	}
 }
 //#endregion

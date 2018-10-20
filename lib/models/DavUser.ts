@@ -42,6 +42,8 @@ export class DavUser{
 		this.AvatarEtag = userObject["avatarEtag"];
 		this.JWT = userObject["jwt"];
 		Dav.globals.jwt = this.JWT;
+
+		Dav.startWebWorker();
 	}
 
 	private ClearUser(){
