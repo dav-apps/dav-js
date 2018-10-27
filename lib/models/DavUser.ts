@@ -44,6 +44,7 @@ export class DavUser{
 		Dav.globals.jwt = this.JWT;
 
 		Dav.startWebWorker();
+		Dav.startPushNotificationSubscription();
 	}
 
 	private ClearUser(){

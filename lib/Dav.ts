@@ -6,7 +6,7 @@ export const tableObjectsKey = "tableObjects";
 
 class Globals{
    public apiBaseUrl: string = "http://localhost:3111/v1/";
-   public websiteUrl: string = "http://localhost:3000/";
+	public websiteUrl: string = "http://localhost:3000/";
 	public jwt: string = null;
 
    constructor(public production: boolean,
@@ -32,13 +32,15 @@ export function Initialize(production: boolean,
    globals = new Globals(production, appId, tableIds, callbacks);
 }
 
-export function startWebWorker(){
+export function startWebWorker(channelName = "TableObjectUpdateChannel"){
    // Start the web worker and update the UI when the worker receives a message
    if(Worker){
-      var worker = new Worker('dav/worker.js');
+      var worker = new Worker('worker.js');
       worker.postMessage({
          appId: globals.appId,
-         jwt: globals.jwt
+         jwt: globals.jwt,
+         channelName,
+         baseUrl: globals.apiBaseUrl
       });
 
       worker.onmessage = function(e){
@@ -53,5 +55,31 @@ export function startWebWorker(){
             }
          }
       }
+   }
+}
+
+export function startPushNotificationSubscription(){
+	if('serviceWorker' in navigator){
+      navigator.serviceWorker.ready.then((registration) => {
+			navigator.serviceWorker.addEventListener('message', function (event) {
+				if(!event.data) return
+
+				var title = event.data.title;
+				var message = event.data.message;
+
+				if(title && message){
+					registration.showNotification(title, {
+						body: message
+					})
+				}
+			});
+
+			navigator.serviceWorker.controller.postMessage({
+				init: true,
+				baseUrl: globals.apiBaseUrl,
+				appId: globals.appId,
+				jwt: globals.jwt
+			});
+      });
    }
 }
