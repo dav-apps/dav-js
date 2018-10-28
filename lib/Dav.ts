@@ -59,7 +59,7 @@ export function startWebWorker(channelName = "TableObjectUpdateChannel"){
 }
 
 export function startPushNotificationSubscription(){
-	if('serviceWorker' in navigator){
+	if('serviceWorker' in navigator && globals.production){
       navigator.serviceWorker.ready.then((registration) => {
 			navigator.serviceWorker.addEventListener('message', function (event) {
 				if(!event.data) return

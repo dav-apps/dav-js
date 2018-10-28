@@ -20,6 +20,9 @@ export class DavUser{
 				if(userObject){
 					this.SetUser(userObject);
 					DataManager.Sync();
+
+					Dav.startWebWorker();
+					Dav.startPushNotificationSubscription();
 				}
 	
 				if(callback){
@@ -42,9 +45,6 @@ export class DavUser{
 		this.AvatarEtag = userObject["avatarEtag"];
 		this.JWT = userObject["jwt"];
 		Dav.globals.jwt = this.JWT;
-
-		Dav.startWebWorker();
-		Dav.startPushNotificationSubscription();
 	}
 
 	private ClearUser(){

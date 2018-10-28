@@ -5,6 +5,7 @@ self.addEventListener('message', event => {
    if(event.data.init){
       angularClient = event.source;
 
+      /*
       var baseUrl = event.data.baseUrl.replace("http", "ws").replace("https", "ws");
       var appId = event.data.appId;
       var jwt = event.data.jwt;
@@ -35,5 +36,10 @@ self.addEventListener('message', event => {
             }
          }
       }
+      */
    }
+});
+
+self.addEventListener('push', event => {
+
 });
