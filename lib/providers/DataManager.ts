@@ -199,6 +199,67 @@ export async function DeleteLocalTableObject(uuid: string){
 		Dav.globals.callbacks.DeleteTableObject(tableObject)
 	}
 }
+
+export async function SubscribePushNotifications(webPushPublicKey: string) : Promise<Boolean>{
+	if('serviceWorker' in navigator && Dav.globals.production){
+		// Check if the user is logged in
+		if(!Dav.globals.jwt) return false;
+
+		// Check if the user is already subscribed
+		let oldSubscription = await DatabaseOperations.GetSubscription();
+		if(oldSubscription){
+			switch (oldSubscription.status) {
+				case DatabaseOperations.SubscriptionStatus.New:
+					await UpdateSubscriptionOnServer();
+					return true;
+				case DatabaseOperations.SubscriptionStatus.Deleted:
+					// Set the subscription to upToDate
+					oldSubscription.status = DatabaseOperations.SubscriptionStatus.UpToDate;
+					await DatabaseOperations.SetSubscription(oldSubscription);
+					return true;
+				default:
+					return true;
+			}
+		}
+
+		let registration = await navigator.serviceWorker.getRegistration();
+		let subscription = await registration.pushManager.subscribe({
+			userVisibleOnly: true,
+			applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
+		});
+
+		let subscriptionJson = subscription.toJSON();
+		let endpoint = subscription.endpoint;
+		let p256dh = subscriptionJson.keys["p256dh"];
+		let auth = subscriptionJson.keys["auth"];
+
+		// Save the subscription in the database
+		await DatabaseOperations.SetSubscription({
+			uuid: generateUUID(),
+			endpoint,
+			p256dh,
+			auth,
+			status: DatabaseOperations.SubscriptionStatus.New
+		});
+		await UpdateSubscriptionOnServer();
+		return true;
+	}else{
+		return false;
+	}
+}
+
+export async function UnsubscribePushNotifications(){
+	if(!Dav.globals.jwt) return;
+
+	// Get the uuid from the database
+	let subscription = await DatabaseOperations.GetSubscription();
+	if(!subscription) return;
+
+	// Change the status to Deleted and save it in the database
+	subscription.status = DatabaseOperations.SubscriptionStatus.Deleted;
+	await DatabaseOperations.SetSubscription(subscription);
+	await UpdateSubscriptionOnServer();
+}
 //#endregion
 
 //#region Api methods
@@ -317,98 +378,6 @@ async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<obje
 	}
 }
 
-export async function Log(apiKey: string, name: string){
-	if(/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
-
-	var properties = {
-		browser_name: platform.name,
-		browser_version: platform.version,
-		os_name: platform.os.family,
-		os_version: platform.os.version
-	}
-
-	try{
-		// Make request to backend
-		await axios({
-			method: 'post',
-			url: Dav.globals.apiBaseUrl + "analytics/event",
-			params: {
-				api_key: apiKey,
-				name: name,
-				app_id: Dav.globals.appId,
-				save_country: true
-			},
-			headers: {
-				"Content-Type": "application/json"
-			},
-			data: JSON.stringify(properties)
-		});
-	}catch(error){
-		console.log(error)
-	}
-}
-
-export async function SubscribePushNotifications(webPushPublicKey: string) : Promise<Boolean>{
-	if('serviceWorker' in navigator && Dav.globals.production){
-		// Check if the user is logged in
-		if(!Dav.globals.jwt) return false;
-
-		// Check if the user is already subscribed
-		let oldSubscription = await DatabaseOperations.GetSubscription();
-		if(oldSubscription){
-			switch (oldSubscription.status) {
-				case DatabaseOperations.SubscriptionStatus.New:
-					await UpdateSubscriptionOnServer();
-					return true;
-				case DatabaseOperations.SubscriptionStatus.Deleted:
-					// Set the subscription to upToDate
-					oldSubscription.status = DatabaseOperations.SubscriptionStatus.UpToDate;
-					await DatabaseOperations.SetSubscription(oldSubscription);
-					return true;
-				default:
-					return true;
-			}
-		}
-
-		let registration = await navigator.serviceWorker.getRegistration();
-		let subscription = await registration.pushManager.subscribe({
-			userVisibleOnly: true,
-			applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
-		});
-
-		let subscriptionJson = subscription.toJSON();
-		let endpoint = subscription.endpoint;
-		let p256dh = subscriptionJson.keys["p256dh"];
-		let auth = subscriptionJson.keys["auth"];
-
-		// Save the subscription in the database
-		await DatabaseOperations.SetSubscription({
-			uuid: generateUUID(),
-			endpoint,
-			p256dh,
-			auth,
-			status: DatabaseOperations.SubscriptionStatus.New
-		});
-		await UpdateSubscriptionOnServer();
-		return true;
-	}else{
-		return false;
-	}
-}
-
-export async function UnsubscribePushNotifications(){
-	if(!Dav.globals.jwt) return;
-
-	// Get the uuid from the database
-	let subscription = await DatabaseOperations.GetSubscription();
-	if(!subscription) return;
-
-	// Change the status to Deleted and save it in the database
-	subscription.status = DatabaseOperations.SubscriptionStatus.Deleted;
-	await DatabaseOperations.SetSubscription(subscription);
-	await UpdateSubscriptionOnServer();
-}
-
 export async function UpdateSubscriptionOnServer(){
 	// Get the subscription and update it on the server
 	let subscription = await DatabaseOperations.GetSubscription();
@@ -459,6 +428,37 @@ export async function UpdateSubscriptionOnServer(){
 				}
 				return false;
 			}
+	}
+}
+
+export async function Log(apiKey: string, name: string){
+	if(/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
+
+	var properties = {
+		browser_name: platform.name,
+		browser_version: platform.version,
+		os_name: platform.os.family,
+		os_version: platform.os.version
+	}
+
+	try{
+		// Make request to backend
+		await axios({
+			method: 'post',
+			url: Dav.globals.apiBaseUrl + "analytics/event",
+			params: {
+				api_key: apiKey,
+				name: name,
+				app_id: Dav.globals.appId,
+				save_country: true
+			},
+			headers: {
+				"Content-Type": "application/json"
+			},
+			data: JSON.stringify(properties)
+		});
+	}catch(error){
+		console.log(error)
 	}
 }
 //#endregion

@@ -13,7 +13,12 @@ class Globals{
    constructor(public production: boolean,
 					public appId: number, 
                public tableIds: number[],
-               public callbacks: { UpdateAllOfTable: Function, UpdateTableObject: Function, DeleteTableObject: Function }){
+               public callbacks: { 
+                  UpdateAllOfTable: Function, 
+                  UpdateTableObject: Function, 
+                  DeleteTableObject: Function,
+                  ReceiveNotification: Function
+               }){
 
       if(production){
          this.apiBaseUrl = "https://dav-backend.herokuapp.com/v1/";
@@ -24,12 +29,19 @@ class Globals{
 
 export var globals = new Globals(false, -1, [], {UpdateAllOfTable: (tableId: number) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject) => {}, 
-                                                DeleteTableObject: (tableObject: TableObject) => {}});
+                                                DeleteTableObject: (tableObject: TableObject) => {},
+                                                ReceiveNotification: (notification: object) => {}
+                                             });
 
 export function Initialize(production: boolean, 
                            appId: number, 
                            tableIds: number[], 
-                           callbacks: { UpdateAllOfTable: Function, UpdateTableObject: Function, DeleteTableObject: Function }){
+                           callbacks: { 
+                              UpdateAllOfTable: Function, 
+                              UpdateTableObject: Function, 
+                              DeleteTableObject: Function,
+                              ReceiveNotification: Function
+                           }){
    globals = new Globals(production, appId, tableIds, callbacks);
 }
 
@@ -62,9 +74,11 @@ export function startWebWorker(channelName = "TableObjectUpdateChannel"){
 export function startPushNotificationSubscription(){
 	if('serviceWorker' in navigator && globals.production){
       navigator.serviceWorker.ready.then((registration) => {
-         navigator.serviceWorker.addEventListener('push', function(event) {
-            console.log("New Push notification!");
-         });
+			navigator.serviceWorker.onmessage = (event) => {
+				if(event.data.type == "PUSH"){
+					globals.callbacks.ReceiveNotification(event.data.data);
+				}
+			}
       });
-   }
+	}
 }

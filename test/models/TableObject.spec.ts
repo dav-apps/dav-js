@@ -182,7 +182,8 @@ describe("Delete function", () => {
       Dav.Initialize(false, 1, [1], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {}
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
       });
       Dav.globals.jwt = "asdasd";
 
@@ -227,7 +228,8 @@ describe("DeleteImmediately function", () => {
       Dav.Initialize(false, 1, [1], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {}
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
       });
 
       var tableObject = new TableObject();

@@ -12,7 +12,8 @@ describe("Initialize function", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {}
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
       }
 
       // Act
@@ -33,7 +34,8 @@ describe("Globals", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {}
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
       }
 
       // Act
@@ -80,6 +82,9 @@ describe("Globals", () => {
          DeleteTableObject: (tableObject: TableObject) => {
             deleteTableObjectCalled = true;
             deletedTableObjectUuid = tableObject.Uuid;
+         },
+         ReceiveNotification: (notification: object) => {
+            
          }
       }
 
