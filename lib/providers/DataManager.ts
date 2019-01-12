@@ -1,6 +1,6 @@
 import * as Dav from '../Dav';
 var axios = require('axios');
-import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, ConvertMapToObject } from '../models/TableObject';
+import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, ConvertMapToObject, generateUUID } from '../models/TableObject';
 import * as DatabaseOperations from './DatabaseOperations';
 import * as platform from 'platform';
 
@@ -346,5 +346,136 @@ export async function Log(apiKey: string, name: string){
 	}catch(error){
 		console.log(error)
 	}
+}
+
+export async function SubscribePushNotifications(webPushPublicKey: string) : Promise<Boolean>{
+	if('serviceWorker' in navigator && Dav.globals.production){
+		// Check if the user is logged in
+		if(!Dav.globals.jwt) return false;
+
+		// Check if the user is already subscribed
+		let oldSubscription = await DatabaseOperations.GetSubscription();
+		if(oldSubscription){
+			switch (oldSubscription.status) {
+				case DatabaseOperations.SubscriptionStatus.New:
+					await UpdateSubscriptionOnServer();
+					return true;
+				case DatabaseOperations.SubscriptionStatus.Deleted:
+					// Set the subscription to upToDate
+					oldSubscription.status = DatabaseOperations.SubscriptionStatus.UpToDate;
+					await DatabaseOperations.SetSubscription(oldSubscription);
+					return true;
+				default:
+					return true;
+			}
+		}
+
+		let registration = await navigator.serviceWorker.getRegistration();
+		let subscription = await registration.pushManager.subscribe({
+			userVisibleOnly: true,
+			applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
+		});
+
+		let subscriptionJson = subscription.toJSON();
+		let endpoint = subscription.endpoint;
+		let p256dh = subscriptionJson.keys["p256dh"];
+		let auth = subscriptionJson.keys["auth"];
+
+		// Save the subscription in the database
+		await DatabaseOperations.SetSubscription({
+			uuid: generateUUID(),
+			endpoint,
+			p256dh,
+			auth,
+			status: DatabaseOperations.SubscriptionStatus.New
+		});
+		await UpdateSubscriptionOnServer();
+		return true;
+	}else{
+		return false;
+	}
+}
+
+export async function UnsubscribePushNotifications(){
+	if(!Dav.globals.jwt) return;
+
+	// Get the uuid from the database
+	let subscription = await DatabaseOperations.GetSubscription();
+	if(!subscription) return;
+
+	// Change the status to Deleted and save it in the database
+	subscription.status = DatabaseOperations.SubscriptionStatus.Deleted;
+	await DatabaseOperations.SetSubscription(subscription);
+	await UpdateSubscriptionOnServer();
+}
+
+export async function UpdateSubscriptionOnServer(){
+	// Get the subscription and update it on the server
+	let subscription = await DatabaseOperations.GetSubscription();
+	if(!subscription) return;
+
+	switch (subscription.status) {
+		case DatabaseOperations.SubscriptionStatus.New:
+			// Create the subscription on the server
+			try{
+				await axios({
+					method: 'post',
+					url: Dav.globals.apiBaseUrl + "apps/subscription?uuid=" + subscription.uuid,
+					headers: { 
+						'Authorization': Dav.globals.jwt,
+						'Content-Type': "application/json"
+					},
+					data: {
+						endpoint: subscription.endpoint,
+						p256dh: subscription.p256dh,
+						auth: subscription.auth
+					}
+				});
+
+				// Save the uuid of the subscription in database
+				subscription.status = DatabaseOperations.SubscriptionStatus.UpToDate;
+				await DatabaseOperations.SetSubscription(subscription);
+				return true;
+			}catch(error){
+				console.log(error.response.data)
+				return false;
+			}
+		case DatabaseOperations.SubscriptionStatus.Deleted:
+			// Delete the subscription on the server
+			try{
+				await axios({
+					method: 'delete',
+					url: Dav.globals.apiBaseUrl + "apps/subscription/" + subscription.uuid,
+					headers: { 'Authorization': Dav.globals.jwt }
+				});
+
+				// Remove the uuid from the database
+				await DatabaseOperations.RemoveSubscription();
+				return true;
+			}catch(error){
+				if(error.response.data.errors[0][0] == "2813"){		// Resource does not exist: WebPushSubscription
+					// Delete the subscription locally
+					await DatabaseOperations.RemoveSubscription();
+				}
+				return false;
+			}
+	}
+}
+//#endregion
+
+//#region Helper methods
+function urlBase64ToUint8Array(base64String) {
+   const padding = '='.repeat((4 - base64String.length % 4) % 4);
+   const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+   const rawData = window.atob(base64);
+   const outputArray = new Uint8Array(rawData.length);
+
+   for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+   }
+   return outputArray;
 }
 //#endregion

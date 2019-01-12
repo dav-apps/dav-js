@@ -23,6 +23,7 @@ export class DavUser{
 
 					Dav.startWebWorker();
 					Dav.startPushNotificationSubscription();
+					DataManager.UpdateSubscriptionOnServer();
 				}
 	
 				if(callback){
