@@ -16,14 +16,46 @@ export function SetUser(user: object){
    localforage.setItem(Dav.userKey, user);
 }
 
-export async function GetUser(){
+export async function GetUser() : Promise<object>{
    InitLocalforage();
-   return await localforage.getItem(Dav.userKey);
+   return await localforage.getItem(Dav.userKey) as object;
 }
 
 export async function RemoveUser(){
 	InitLocalforage();
 	localforage.removeItem(Dav.userKey);
+}
+//#endregion
+
+//#region Subscription methods
+export async function SetSubscription(subscription: {uuid: string, endpoint: string, p256dh: string, auth: string, status: SubscriptionStatus}){
+	InitLocalforage();
+	localforage.setItem(Dav.subscriptionKey, {
+		uuid: subscription.uuid,
+		endpoint: subscription.endpoint,
+		p256dh: subscription.p256dh,
+		auth: subscription.auth,
+		status: subscription.status
+	});
+}
+
+export async function GetSubscription() : Promise<{uuid: string, endpoint: string, p256dh: string, auth: string, status: SubscriptionStatus}>{
+	InitLocalforage();
+	return await localforage.getItem(Dav.subscriptionKey) as {uuid: string, endpoint: string, p256dh: string, auth: string, status: SubscriptionStatus};
+}
+
+export async function RemoveSubscription(){
+	InitLocalforage();
+	localforage.removeItem(Dav.subscriptionKey);
+}
+
+export enum SubscriptionStatus {
+	// The subscription was created on the server and works
+	UpToDate = 0,
+	// The subscription was created, but it's still not saved on the server
+	New = 1,
+	// The subscription in on the server, but it was deleted locally and has to be deleted on the server
+	Deleted = 2
 }
 //#endregion
 
