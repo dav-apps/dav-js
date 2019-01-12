@@ -3,6 +3,7 @@ import * as DataManager from "./providers/DataManager";
 
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
+export const subscriptionKey = "subscription";
 
 class Globals{
    public apiBaseUrl: string = "http://localhost:3111/v1/";
@@ -61,25 +62,9 @@ export function startWebWorker(channelName = "TableObjectUpdateChannel"){
 export function startPushNotificationSubscription(){
 	if('serviceWorker' in navigator && globals.production){
       navigator.serviceWorker.ready.then((registration) => {
-			navigator.serviceWorker.addEventListener('message', function (event) {
-				if(!event.data) return
-
-				var title = event.data.title;
-				var message = event.data.message;
-
-				if(title && message){
-					registration.showNotification(title, {
-						body: message
-					})
-				}
-			});
-
-			navigator.serviceWorker.controller.postMessage({
-				init: true,
-				baseUrl: globals.apiBaseUrl,
-				appId: globals.appId,
-				jwt: globals.jwt
-			});
+         navigator.serviceWorker.addEventListener('push', function(event) {
+            console.log("New Push notification!");
+         });
       });
    }
 }
