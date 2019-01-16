@@ -3,6 +3,7 @@ import * as DataManager from "./providers/DataManager";
 
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
+export const notificationsKey = "notifications";
 export const subscriptionKey = "subscription";
 
 class Globals{

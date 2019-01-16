@@ -23,7 +23,9 @@ export class DavUser{
 
 					Dav.startWebWorker();
 					Dav.startPushNotificationSubscription();
+
 					DataManager.UpdateSubscriptionOnServer();
+					DataManager.SyncNotifications();
 				}
 	
 				if(callback){
@@ -68,6 +70,7 @@ export class DavUser{
 		if(userObject){
 			this.SetUser(userObject);
 			DatabaseOperations.SetUser(userObject);
+			DataManager.SyncNotifications();
 		}else{
 			this.IsLoggedIn = false;
 			localforage.removeItem(Dav.userKey);
@@ -79,7 +82,9 @@ export class DavUser{
 	Logout(){
 		// Delete the user key from the local storage
 		DatabaseOperations.RemoveUser();
+		DataManager.UnsubscribePushNotifications();
 		this.ClearUser();
+		// TODO Delete the notifications
 	}
 }
 

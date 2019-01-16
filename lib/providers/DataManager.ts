@@ -1,19 +1,21 @@
 import * as Dav from '../Dav';
 var axios = require('axios');
 import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, ConvertMapToObject, generateUUID } from '../models/TableObject';
+import { Notification } from '../models/Notification';
 import * as DatabaseOperations from './DatabaseOperations';
 import * as platform from 'platform';
 
-var syncing = false;
+var isSyncing = false;
 var syncAgain = true;
-var syncPull = false;
+
+var isSyncingNotifications = false;
+var syncNotificationsAgain = false;
 
 //#region Data methods
 export async function Sync(){
-	if(syncPull) return;
+	if(isSyncing) return;
 	if(!Dav.globals.jwt) return;
-
-	syncPull = true;
+	isSyncing = true;
 
 	for(let tableId of Dav.globals.tableIds){
 		var removedTableObjectUuids: string[] = [];
@@ -85,7 +87,7 @@ export async function Sync(){
 		}
 	}
 
-	syncPull = false;
+	isSyncing = false;
 	await SyncPush();
 }
 
@@ -94,11 +96,11 @@ export async function SyncPush(){
 	const messageKey = "message";
 
 	if(!Dav.globals.jwt) return;
-	if(syncing){
+	if(isSyncing){
 		syncAgain = true;
 		return;
 	}
-	syncing = true;
+	isSyncing = true;
 	
 	// Get all table objects
 	var tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true);
@@ -170,7 +172,7 @@ export async function SyncPush(){
 		}
 	}
 
-	syncing = false;
+	isSyncing = false;
 
 	if(syncAgain){
 		syncAgain = false;
@@ -209,12 +211,12 @@ export async function SubscribePushNotifications(webPushPublicKey: string) : Pro
 		let oldSubscription = await DatabaseOperations.GetSubscription();
 		if(oldSubscription){
 			switch (oldSubscription.status) {
-				case DatabaseOperations.SubscriptionStatus.New:
+				case UploadStatus.New:
 					await UpdateSubscriptionOnServer();
 					return true;
-				case DatabaseOperations.SubscriptionStatus.Deleted:
+				case UploadStatus.Deleted:
 					// Set the subscription to upToDate
-					oldSubscription.status = DatabaseOperations.SubscriptionStatus.UpToDate;
+					oldSubscription.status = UploadStatus.UpToDate;
 					await DatabaseOperations.SetSubscription(oldSubscription);
 					return true;
 				default:
@@ -239,7 +241,7 @@ export async function SubscribePushNotifications(webPushPublicKey: string) : Pro
 			endpoint,
 			p256dh,
 			auth,
-			status: DatabaseOperations.SubscriptionStatus.New
+			status: UploadStatus.New
 		});
 		await UpdateSubscriptionOnServer();
 		return true;
@@ -256,9 +258,159 @@ export async function UnsubscribePushNotifications(){
 	if(!subscription) return;
 
 	// Change the status to Deleted and save it in the database
-	subscription.status = DatabaseOperations.SubscriptionStatus.Deleted;
+	subscription.status = UploadStatus.Deleted;
 	await DatabaseOperations.SetSubscription(subscription);
 	await UpdateSubscriptionOnServer();
+}
+
+export function CreateNotification(time: number, interval: number, properties: object) : string{
+	// Save the new notification in the database
+	let notification = new Notification(time, interval, properties, null, UploadStatus.New);
+	notification.Save().then(() => {
+		// Update the notifications on the server
+		SyncPushNotifications();
+	});
+
+	return notification.Uuid;
+}
+
+export async function DeleteNotification(uuid: string){
+	// Set the upload status of the notification to Deleted
+	let notification = await DatabaseOperations.GetNotification(uuid);
+	notification.Status = UploadStatus.Deleted;
+	await notification.Save();
+
+	SyncPushNotifications();
+}
+
+export async function SyncNotifications(){
+	if(isSyncingNotifications) return;
+	if(!Dav.globals.jwt) return;
+	isSyncingNotifications = true;
+
+	// Get all notifications from the database
+	let removedNotifications = await DatabaseOperations.GetNotificationsArray();
+
+	// Get all notifications from the database
+	let responseData: Array<{id: number,
+									app_id: number,
+									user_id: number,
+									time: number,
+									interval: number,
+									uuid: string,
+									properties: object }>;
+	try{
+		let response = await axios({
+			method: 'get',
+			url: Dav.globals.apiBaseUrl + "apps/notifications" + "?app_id=" + Dav.globals.appId,
+			headers: { "Authorization": Dav.globals.jwt }
+		});
+		responseData = response.data["notifications"];
+	}catch(error){
+		console.log(error);
+		return;
+	}
+
+	for(let notification of responseData){
+		let uuid = notification.uuid;
+		let time = notification.time;
+		let interval = notification.interval;
+		let properties = notification.properties;
+
+		let n = await DatabaseOperations.GetNotification(uuid);
+
+		if(!n){
+			// Create a new notification
+			n = new Notification(time, interval, properties, uuid);
+			await n.Save();
+		}else{
+			// Update the old notification
+			n.Time = time;
+			n.Interval = interval;
+			n.Properties = properties;
+			n.Status = UploadStatus.UpToDate;
+			await n.Save();
+
+			// Remove the notification from the removedNotifications array
+			let index = removedNotifications.findIndex(n => n.Uuid == uuid);
+			if(index !== -1){
+				removedNotifications.splice(index, 1);
+			}
+		}
+	}
+
+	// Delete the notifications in removedNotifications
+	for(let notification of removedNotifications){
+		if(notification.Status == UploadStatus.UpToDate){
+			await DatabaseOperations.RemoveNotification(notification.Uuid);
+		}
+	}
+
+	isSyncingNotifications = false;
+	await SyncPushNotifications();
+}
+
+export async function SyncPushNotifications(){
+	if(!Dav.globals.jwt) return;
+	if(isSyncingNotifications){
+		syncNotificationsAgain = true;
+		return;
+	}
+	isSyncingNotifications = true;
+
+	// Go through each notification and post or delete to the server if necessary
+	let notifications = await DatabaseOperations.GetNotificationsArray();
+
+	for (let notification of notifications) {
+		switch (notification.Status) {
+			case UploadStatus.New:
+				// Create the notification on the server
+				try{
+					await axios({
+						method: 'post',
+						url: Dav.globals.apiBaseUrl + "apps/notification"
+									+ "?app_id=" + Dav.globals.appId
+									+ "&time=" + notification.Time
+									+ "&interval=" + notification.Interval,
+						headers: {
+							'Authorization': Dav.globals.jwt,
+							'Content-Type': 'application/json'
+						},
+						data: notification.Properties
+					});
+
+					notification.Status = UploadStatus.UpToDate;
+					await notification.Save();
+				}catch(error){
+					console.log(error.response.data);
+				}
+				break;
+			case UploadStatus.Deleted:
+				// Delete the notification on the server
+				try{
+					await axios({
+						method: 'delete',
+						url: Dav.globals.apiBaseUrl + "apps/notification/" + notification.Uuid,
+						headers: { 'Authorization': Dav.globals.jwt }
+					});
+
+					// Remove the notification from the database
+					await DatabaseOperations.RemoveNotification(notification.Uuid);
+				}catch(error){
+					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
+						// Delete the subscription locally
+						await DatabaseOperations.RemoveSubscription();
+					}
+				}
+				break;
+		}
+	}
+
+	isSyncingNotifications = false;
+	if(syncNotificationsAgain){
+		syncNotificationsAgain = false;
+		await SyncPushNotifications();
+	}
 }
 //#endregion
 
@@ -384,7 +536,7 @@ export async function UpdateSubscriptionOnServer(){
 	if(!subscription) return;
 
 	switch (subscription.status) {
-		case DatabaseOperations.SubscriptionStatus.New:
+		case UploadStatus.New:
 			// Create the subscription on the server
 			try{
 				await axios({
@@ -402,14 +554,14 @@ export async function UpdateSubscriptionOnServer(){
 				});
 
 				// Save the uuid of the subscription in database
-				subscription.status = DatabaseOperations.SubscriptionStatus.UpToDate;
+				subscription.status = UploadStatus.UpToDate;
 				await DatabaseOperations.SetSubscription(subscription);
 				return true;
 			}catch(error){
 				console.log(error.response.data)
 				return false;
 			}
-		case DatabaseOperations.SubscriptionStatus.Deleted:
+		case UploadStatus.Deleted:
 			// Delete the subscription on the server
 			try{
 				await axios({
@@ -462,6 +614,15 @@ export async function Log(apiKey: string, name: string){
 	}
 }
 //#endregion
+
+export enum UploadStatus {
+	// The object was created on the server
+	UpToDate = 0,
+	// The object was created, but it's still not saved on the server
+	New = 1,
+	// The object in on the server, but it was deleted locally and has to be deleted on the server
+	Deleted = 2
+}
 
 //#region Helper methods
 function urlBase64ToUint8Array(base64String) {
