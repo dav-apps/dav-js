@@ -2,6 +2,8 @@ import * as localforage from "localforage";
 var bowser = require('bowser');
 import * as Dav from '../Dav';
 import { TableObject, TableObjectUploadStatus, generateUUID, ConvertObjectToMap, ConvertMapToObject } from '../models/TableObject';
+import { Notification } from '../models/Notification';
+import { UploadStatus } from './DataManager';
 
 function InitLocalforage(){
    if(bowser.firefox){
@@ -11,9 +13,9 @@ function InitLocalforage(){
 }
 
 //#region User methods
-export function SetUser(user: object){
+export async function SetUser(user: object){
    InitLocalforage();
-   localforage.setItem(Dav.userKey, user);
+   await localforage.setItem(Dav.userKey, user);
 }
 
 export async function GetUser() : Promise<object>{
@@ -23,14 +25,86 @@ export async function GetUser() : Promise<object>{
 
 export async function RemoveUser(){
 	InitLocalforage();
-	localforage.removeItem(Dav.userKey);
+	await localforage.removeItem(Dav.userKey);
+}
+//#endregion
+
+//#region Notification methods
+export async function SetNotificationsArray(notifications: Array<Notification>){
+	InitLocalforage();
+
+	// Convert the notifications to objects
+	let notificationObjects: Array<{uuid: string, time: number, interval: number, properties: object, status: number}> = [];
+	for(let notification of notifications){
+		notificationObjects.push({
+			uuid: notification.Uuid,
+			time: notification.Time, 
+			interval: notification.Interval,
+			properties: notification.Properties,
+			status: notification.Status
+		});
+	}
+
+	await localforage.setItem(Dav.notificationsKey, notificationObjects);
+}
+
+export async function GetNotificationsArray() : Promise<Array<Notification>>{
+	InitLocalforage();
+	let notificationObjects = await localforage.getItem(Dav.notificationsKey) as Array<{uuid: string, time: number, interval: number, properties: object, status: number}>;
+	if(!notificationObjects) return [];
+
+	// Convert the objects to Notifications
+	let notifications: Array<Notification> = [];
+	for(let obj of notificationObjects){
+		notifications.push(new Notification(obj.time, obj.interval, obj.properties, obj.uuid, obj.status));
+	}
+
+	return notifications;
+}
+
+export async function GetNotification(uuid: string) : Promise<Notification>{
+	let notifications = await GetNotificationsArray();
+
+	let index = notifications.findIndex(n => n.Uuid == uuid);
+	if(index !== -1){
+		return notifications[index];
+	}else{
+		return null;
+	}
+}
+
+export async function SaveNotification(notification: Notification){
+	let notifications = await GetNotificationsArray();
+
+	// Check if the notification already exists
+	let index = notifications.findIndex(n => n.Uuid == notification.Uuid);
+	if(index !== -1){
+		// Replace the old notification
+		notifications[index] = notification;
+	}else{
+		// Add the new notification
+		notifications.push(notification);
+	}
+	
+	await SetNotificationsArray(notifications);
+}
+
+export async function RemoveNotification(uuid: string){
+	let notifications = await GetNotificationsArray();
+
+	let index = notifications.findIndex(n => n.Uuid == uuid);
+	if(index !== -1){
+		// Remove the notification
+		notifications.splice(index, 1);
+		await SetNotificationsArray(notifications);
+	}
 }
 //#endregion
 
 //#region Subscription methods
-export async function SetSubscription(subscription: {uuid: string, endpoint: string, p256dh: string, auth: string, status: SubscriptionStatus}){
+export async function SetSubscription(subscription: {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus}){
 	InitLocalforage();
-	localforage.setItem(Dav.subscriptionKey, {
+	await localforage.setItem(Dav.subscriptionKey, {
 		uuid: subscription.uuid,
 		endpoint: subscription.endpoint,
 		p256dh: subscription.p256dh,
@@ -39,23 +113,14 @@ export async function SetSubscription(subscription: {uuid: string, endpoint: str
 	});
 }
 
-export async function GetSubscription() : Promise<{uuid: string, endpoint: string, p256dh: string, auth: string, status: SubscriptionStatus}>{
+export async function GetSubscription() : Promise<{uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus}>{
 	InitLocalforage();
-	return await localforage.getItem(Dav.subscriptionKey) as {uuid: string, endpoint: string, p256dh: string, auth: string, status: SubscriptionStatus};
+	return await localforage.getItem(Dav.subscriptionKey) as {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus};
 }
 
 export async function RemoveSubscription(){
 	InitLocalforage();
-	localforage.removeItem(Dav.subscriptionKey);
-}
-
-export enum SubscriptionStatus {
-	// The subscription was created on the server and works
-	UpToDate = 0,
-	// The subscription was created, but it's still not saved on the server
-	New = 1,
-	// The subscription in on the server, but it was deleted locally and has to be deleted on the server
-	Deleted = 2
+	await localforage.removeItem(Dav.subscriptionKey);
 }
 //#endregion
 
