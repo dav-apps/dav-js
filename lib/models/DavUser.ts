@@ -34,6 +34,10 @@ export class DavUser{
 			});
 		}catch(error){
 			console.log(error);
+
+			if(callback){
+				callback();
+			}
 		}
 	}
 
