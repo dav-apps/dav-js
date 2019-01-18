@@ -4,6 +4,8 @@ import * as localforage from "localforage";
 import { assert } from 'chai';
 import 'mocha';
 import { TableObject, TableObjectUploadStatus, generateUUID } from '../../lib/models/TableObject';
+import { Notification } from '../../lib/models/Notification';
+import { UploadStatus } from '../../lib/providers/DataManager';
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);
@@ -72,6 +74,99 @@ describe("RemoveUser function", () => {
 
       // Assert
       assert.isUndefined(savedUser);
+   });
+});
+
+describe("GetAllNotifications function", () => {
+   it("should return all notifications", async () => {
+      // Arrange
+      let generatedNotifications = GenerateNotifications();
+      for(let notification of generatedNotifications){
+         await DatabaseOperations.SaveNotification(notification);
+      }
+
+      // Act
+      let notifications = await DatabaseOperations.GetAllNotifications();
+      assert.equal(notifications.length, generatedNotifications.length);
+
+      // Assert
+      let i = 0;
+      for(let notification of notifications){
+         assert.equal(notification.Uuid, generatedNotifications[i].Uuid);
+         assert.equal(notification.Time, generatedNotifications[i].Time);
+         assert.equal(notification.Interval, generatedNotifications[i].Interval);
+
+         assert.equal(notification.Properties["title"], generatedNotifications[i].Properties["title"])
+         assert.equal(notification.Properties["message"], generatedNotifications[i].Properties["message"])
+
+         i++;
+      }
+
+      // Tidy up
+      clearDatabase();
+   });
+
+   function GenerateNotifications() : Array<Notification>{
+      let notifications: Array<Notification> = [];
+
+      let notification1Properties = {
+         title: "Hello World",
+         message: "You have a notification"
+      }
+      let notification1 = new Notification(new Date().getTime() / 1000, 0, notification1Properties, null, UploadStatus.UpToDate);
+      let notification2Properties = {
+         title: "Good day",
+         message: "Today is pleasant weather with -20°C"
+      }
+      let notification2 = new Notification(new Date().getTime() / 1200, 0, notification2Properties, null, UploadStatus.UpToDate);
+
+      notifications.push(notification1, notification2);
+      return notifications;
+   }
+});
+
+describe("GetNotification function", () => {
+   it("should return the appropriate notification", async () => {
+      // Arrange
+      let uuid = generateUUID();
+      let time = new Date().getTime() / 1000;
+      let interval = 3600
+      let properties = {
+         title: "Hello World",
+         message: "You have a notification!"
+      }
+      let uploadStatus = UploadStatus.UpToDate;
+
+      let notification = new Notification(time, interval, properties, uuid, uploadStatus);
+      await notification.Save();
+
+      // Act
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+
+      // Assert
+      assert.isNotNull(notificationFromDatabase);
+      assert.equal(time, notificationFromDatabase.Time);
+      assert.equal(interval, notificationFromDatabase.Interval);
+      assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
+      assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
+      assert.equal(uploadStatus, notificationFromDatabase.Status);
+
+      // Tidy up
+      clearDatabase();
+   });
+
+   it("should return null if the notification does not exist", async () => {
+      // Arrange
+      let uuid = generateUUID();
+
+      // Act
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+
+      // Assert
+      assert.isNull(notificationFromDatabase);
+
+      // Tidy up
+      clearDatabase();
    });
 });
 

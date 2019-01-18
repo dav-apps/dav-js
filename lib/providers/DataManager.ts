@@ -289,7 +289,7 @@ export async function SyncNotifications(){
 	isSyncingNotifications = true;
 
 	// Get all notifications from the database
-	let removedNotifications = await DatabaseOperations.GetNotificationsArray();
+	let removedNotifications = await DatabaseOperations.GetAllNotifications();
 
 	// Get all notifications from the database
 	let responseData: Array<{id: number,
@@ -307,7 +307,6 @@ export async function SyncNotifications(){
 		});
 		responseData = response.data["notifications"];
 	}catch(error){
-		console.log(error);
 		return;
 	}
 
@@ -342,7 +341,7 @@ export async function SyncNotifications(){
 	// Delete the notifications in removedNotifications
 	for(let notification of removedNotifications){
 		if(notification.Status == UploadStatus.UpToDate){
-			await DatabaseOperations.RemoveNotification(notification.Uuid);
+			await DatabaseOperations.DeleteNotification(notification.Uuid);
 		}
 	}
 
@@ -359,7 +358,7 @@ export async function SyncPushNotifications(){
 	isSyncingNotifications = true;
 
 	// Go through each notification and post or delete to the server if necessary
-	let notifications = await DatabaseOperations.GetNotificationsArray();
+	let notifications = await DatabaseOperations.GetAllNotifications();
 
 	for (let notification of notifications) {
 		switch (notification.Status) {
@@ -381,9 +380,7 @@ export async function SyncPushNotifications(){
 
 					notification.Status = UploadStatus.UpToDate;
 					await notification.Save();
-				}catch(error){
-					console.log(error.response.data);
-				}
+				}catch(error){}
 				break;
 			case UploadStatus.Deleted:
 				// Delete the notification on the server
@@ -395,7 +392,7 @@ export async function SyncPushNotifications(){
 					});
 
 					// Remove the notification from the database
-					await DatabaseOperations.RemoveNotification(notification.Uuid);
+					await DatabaseOperations.DeleteNotification(notification.Uuid);
 				}catch(error){
 					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
 						// Delete the subscription locally
@@ -441,7 +438,6 @@ export async function DownloadUserInformation(jwt: string){
          return null;
       }
    }catch(error){
-      console.log(error);
       return null;
    }
 }
