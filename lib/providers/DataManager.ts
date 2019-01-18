@@ -197,7 +197,7 @@ export async function DeleteLocalTableObject(uuid: string){
 	// Remove the table object locally
 	var tableObject = await DatabaseOperations.GetTableObject(uuid);
 	if(tableObject){
-		tableObject.DeleteImmediately();
+		await tableObject.DeleteImmediately();
 		Dav.globals.callbacks.DeleteTableObject(tableObject)
 	}
 }
