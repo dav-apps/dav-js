@@ -9,7 +9,8 @@ export class Notification{
    public Properties: object = {};
    public Status: UploadStatus;
 
-   constructor(time: number, interval: number, properties: object, uuid: string = generateUUID(), status: UploadStatus = UploadStatus.UpToDate){
+   constructor(time: number, interval: number, properties: object, uuid: string = null, status: UploadStatus = UploadStatus.UpToDate){
+      if(!uuid) uuid = generateUUID();
       this.Uuid = uuid;
       this.Time = time;
       this.Interval = interval;
