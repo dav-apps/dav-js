@@ -9,7 +9,9 @@ import { UploadStatus } from '../../lib/providers/DataManager';
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);
-   localforage.removeItem(Dav.tableObjectsKey);
+	localforage.removeItem(Dav.tableObjectsKey);
+	localforage.removeItem(Dav.notificationsKey);
+	localforage.removeItem(Dav.subscriptionKey);
 }
 
 describe("SetUser function", () => {
@@ -257,6 +259,101 @@ describe("DeleteNotification function", () => {
 
 		// Assert
 		assert.isNull(await DatabaseOperations.GetNotification(uuid));
+
+		// Tidy up
+      clearDatabase();
+	});
+});
+
+describe("SetSubscription function", () => {
+	it("should save the subscription in the database", async () => {
+		// Arrange
+		let uuid = generateUUID();
+		let endpoint = "https://apis.google.com/example"
+		let p256dh = "asdoajsdoashd"
+		let auth = "asdasdasd"
+		let status = UploadStatus.UpToDate;
+		let subscription = {
+			uuid,
+			endpoint,
+			p256dh,
+			auth,
+			status
+		}
+
+		// Act
+		await DatabaseOperations.SetSubscription(subscription);
+
+		// Assert
+		let subscriptionFromDatabase = await DatabaseOperations.GetSubscription();
+		assert.isNotNull(subscriptionFromDatabase);
+		assert.equal(uuid, subscriptionFromDatabase.uuid);
+		assert.equal(endpoint, subscriptionFromDatabase.endpoint);
+		assert.equal(p256dh, subscriptionFromDatabase.p256dh);
+		assert.equal(auth, subscriptionFromDatabase.auth);
+		assert.equal(status, subscriptionFromDatabase.status);
+
+		// Tidy up
+      clearDatabase();
+	});
+});
+
+describe("GetSubscription function", () => {
+	it("should return the subscription", async () => {
+		// Arrange
+		let uuid = generateUUID();
+		let endpoint = "https://apis.google.com/example"
+		let p256dh = "asdoajsdoashd"
+		let auth = "asdasdasd"
+		let status = UploadStatus.UpToDate;
+		let subscription = {
+			uuid,
+			endpoint,
+			p256dh,
+			auth,
+			status
+		}
+		await DatabaseOperations.SetSubscription(subscription);
+
+		// Act
+		let subscriptionFromDatabase = await DatabaseOperations.GetSubscription();
+
+		// Assert
+		assert.isNotNull(subscriptionFromDatabase);
+		assert.equal(uuid, subscriptionFromDatabase.uuid);
+		assert.equal(endpoint, subscriptionFromDatabase.endpoint);
+		assert.equal(p256dh, subscriptionFromDatabase.p256dh);
+		assert.equal(auth, subscriptionFromDatabase.auth);
+		assert.equal(status, subscriptionFromDatabase.status);
+
+		// Tidy up
+      clearDatabase();
+	});
+});
+
+describe("RemoveSubscription function", () => {
+	it("should remove the subscription from the database", async () => {
+		// Arrange
+		let uuid = generateUUID();
+		let endpoint = "https://apis.google.com/example"
+		let p256dh = "asdoajsdoashd"
+		let auth = "asdasdasd"
+		let status = UploadStatus.UpToDate;
+		let subscription = {
+			uuid,
+			endpoint,
+			p256dh,
+			auth,
+			status
+		}
+		await DatabaseOperations.SetSubscription(subscription);
+		assert.isNotNull(await DatabaseOperations.GetSubscription());
+
+		// Act
+		await DatabaseOperations.RemoveSubscription();
+
+		// Assert
+		assert.isNull(await DatabaseOperations.GetSubscription());
 
 		// Tidy up
       clearDatabase();
