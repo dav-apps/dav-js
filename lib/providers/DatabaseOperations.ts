@@ -30,7 +30,7 @@ export async function RemoveUser(){
 //#endregion
 
 //#region Notification methods
-export async function SetNotificationsArray(notifications: Array<Notification>){
+async function SetNotificationsArray(notifications: Array<Notification>){
 	InitLocalforage();
 
 	// Convert the notifications to objects
@@ -48,7 +48,7 @@ export async function SetNotificationsArray(notifications: Array<Notification>){
 	await localforage.setItem(Dav.notificationsKey, notificationObjects);
 }
 
-export async function GetNotificationsArray() : Promise<Array<Notification>>{
+export async function GetAllNotifications() : Promise<Array<Notification>>{
 	InitLocalforage();
 	let notificationObjects = await localforage.getItem(Dav.notificationsKey) as Array<{uuid: string, time: number, interval: number, properties: object, status: number}>;
 	if(!notificationObjects) return [];
@@ -63,7 +63,7 @@ export async function GetNotificationsArray() : Promise<Array<Notification>>{
 }
 
 export async function GetNotification(uuid: string) : Promise<Notification>{
-	let notifications = await GetNotificationsArray();
+	let notifications = await GetAllNotifications();
 
 	let index = notifications.findIndex(n => n.Uuid == uuid);
 	if(index !== -1){
@@ -74,7 +74,7 @@ export async function GetNotification(uuid: string) : Promise<Notification>{
 }
 
 export async function SaveNotification(notification: Notification){
-	let notifications = await GetNotificationsArray();
+	let notifications = await GetAllNotifications();
 
 	// Check if the notification already exists
 	let index = notifications.findIndex(n => n.Uuid == notification.Uuid);
@@ -89,8 +89,8 @@ export async function SaveNotification(notification: Notification){
 	await SetNotificationsArray(notifications);
 }
 
-export async function RemoveNotification(uuid: string){
-	let notifications = await GetNotificationsArray();
+export async function DeleteNotification(uuid: string){
+	let notifications = await GetAllNotifications();
 
 	let index = notifications.findIndex(n => n.Uuid == uuid);
 	if(index !== -1){
