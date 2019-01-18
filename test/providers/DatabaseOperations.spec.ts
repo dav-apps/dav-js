@@ -170,6 +170,99 @@ describe("GetNotification function", () => {
    });
 });
 
+describe("SaveNotification function", () => {
+   it("should save the notification in the database", async () => {
+		// Arrange
+		let uuid = generateUUID();
+      let time = new Date().getTime() / 1000;
+      let interval = 3600;
+      let properties = {
+         title: "Hello World",
+         message: "You have a notification!"
+      }
+		let uploadStatus = UploadStatus.UpToDate;
+		
+		let notification = new Notification(time, interval, properties, uuid, uploadStatus);
+		
+		// Act
+		await DatabaseOperations.SaveNotification(notification);
+
+		// Assert
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+		assert.isNotNull(notificationFromDatabase);
+      assert.equal(time, notificationFromDatabase.Time);
+      assert.equal(interval, notificationFromDatabase.Interval);
+      assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
+      assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
+      assert.equal(uploadStatus, notificationFromDatabase.Status);
+
+		// Tidy up
+      clearDatabase();
+   });
+
+   it("should replace the notification with the same uuid in the database", async () => {
+		// Arrange
+		let uuid = generateUUID();
+		let time = new Date().getTime() / 1000;
+		let newTime = new Date().getTime() / 1400;
+		let interval = 3600;
+		let newInterval = 1000;
+		let properties = {
+			title: "Hello World",
+			message: "You have a notification"
+		}
+		let newProperties = {
+			title: "Hallo Welt",
+			message: "Du hast eine Benachrichtigung"
+		}
+		let uploadStatus = UploadStatus.UpToDate;
+		let notification = new Notification(time, interval, properties, uuid, uploadStatus);
+		let newNotification = new Notification(newTime, newInterval, newProperties, uuid, uploadStatus);
+
+		await DatabaseOperations.SaveNotification(notification);
+
+		// Act
+		await DatabaseOperations.SaveNotification(newNotification);
+
+		// Assert
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+		assert.isNotNull(notificationFromDatabase);
+      assert.equal(newTime, notificationFromDatabase.Time);
+      assert.equal(newInterval, notificationFromDatabase.Interval);
+      assert.equal(newProperties.title, notificationFromDatabase.Properties["title"]);
+      assert.equal(newProperties.message, notificationFromDatabase.Properties["message"]);
+		assert.equal(uploadStatus, notificationFromDatabase.Status);
+		
+		// Tidy up
+      clearDatabase();
+   });
+});
+
+describe("DeleteNotification function", () => {
+	it("should remove the notification from the database", async () => {
+		// Arrange
+		let properties = {
+			title: "Hello World",
+			message: "You have a notification"
+		}
+		let uuid = generateUUID();
+		let notification = new Notification(1000000, 3600, properties, uuid, UploadStatus.UpToDate);
+		await notification.Save();
+
+		// Make sure the notification was saved
+		assert.isNotNull(await DatabaseOperations.GetNotification(uuid));
+
+		// Act
+		await DatabaseOperations.DeleteNotification(uuid);
+
+		// Assert
+		assert.isNull(await DatabaseOperations.GetNotification(uuid));
+
+		// Tidy up
+      clearDatabase();
+	});
+});
+
 describe("CreateTableObject function", () => {
    it("should save the table object and return the uuid", async () => {
       // Arrange
