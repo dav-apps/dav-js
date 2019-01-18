@@ -263,13 +263,15 @@ export async function UnsubscribePushNotifications(){
 	await UpdateSubscriptionOnServer();
 }
 
-export function CreateNotification(time: number, interval: number, properties: object) : string{
+export async function CreateNotification(time: number, interval: number, properties: object) : Promise<string>{
+	if(!Dav.globals.jwt) return;
+
 	// Save the new notification in the database
 	let notification = new Notification(time, interval, properties, null, UploadStatus.New);
-	notification.Save().then(() => {
-		// Update the notifications on the server
-		SyncPushNotifications();
-	});
+	await notification.Save();
+
+	// Update the notifications on the server
+	await SyncPushNotifications();
 
 	return notification.Uuid;
 }
@@ -280,7 +282,7 @@ export async function DeleteNotification(uuid: string){
 	notification.Status = UploadStatus.Deleted;
 	await notification.Save();
 
-	SyncPushNotifications();
+	await SyncPushNotifications();
 }
 
 export async function SyncNotifications(){
@@ -369,6 +371,7 @@ export async function SyncPushNotifications(){
 						method: 'post',
 						url: Dav.globals.apiBaseUrl + "apps/notification"
 									+ "?app_id=" + Dav.globals.appId
+									+ "&uuid=" + notification.Uuid
 									+ "&time=" + notification.Time
 									+ "&interval=" + notification.Interval,
 						headers: {

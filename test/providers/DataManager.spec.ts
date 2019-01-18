@@ -5,7 +5,7 @@ import * as Dav from '../../lib/Dav';
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import * as DataManager from '../../lib/providers/DataManager';
 import * as localforage from "localforage";
-import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap } from '../../lib/models/TableObject';
+import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, generateUUID } from '../../lib/models/TableObject';
 import { davClassLibraryTestUserXTestUserJwt, davClassLibraryTestAppId, davClassLibraryTestUserId, testDataTableId, firstPropertyName, secondPropertyName, firstTestDataTableObject, secondTestDataTableObject } from '../Constants';
 
 function clearDatabase(){
@@ -272,40 +272,6 @@ describe("SyncPush function", () => {
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNull(tableObjectFromDatabase);
    });
-
-   async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
-      try{
-         var response = await axios.get(Dav.globals.apiBaseUrl + "apps/object/" + uuid, {
-            headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
-         });
-   
-         var tableObject = new TableObject();
-         tableObject.TableId = response.data.table_id;
-         tableObject.IsFile = response.data.file;
-         tableObject.Etag = response.data.etag;
-         tableObject.Uuid = response.data.uuid;
-         tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
-         tableObject.Properties = ConvertObjectToMap(response.data.properties);
-   
-         return tableObject;
-      }catch(error){
-         return null;
-      }
-   }
-
-   async function DeleteTableObjectFromServer(uuid: string){
-      try{
-         var response = await axios({
-            method: 'delete',
-            url: Dav.globals.apiBaseUrl + "apps/object/" + uuid,
-            headers: { 'Authorization': davClassLibraryTestUserXTestUserJwt }
-         });
-   
-         return {ok: true, message: response.data};
-      }catch(error){
-         return {ok: false, message: error.response.data};
-      }
-   }
 });
 
 describe("UpdateLocalTableObject function", () => {
@@ -374,3 +340,212 @@ describe("DeleteLocalTableObject function", () => {
       clearDatabase();
    });
 });
+
+describe("UnsubscribePushNotifications function", () => {
+   it("should delete the subscription locally and on the server", async () => {
+      // Arrange
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
+      });
+      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      let uuid = generateUUID();
+
+      // Create the subscription
+      await DatabaseOperations.SetSubscription({
+         uuid,
+         endpoint: "https://example.com/",
+         p256dh: "blablabla",
+         auth: "asdaosdasdj",
+         status: DataManager.UploadStatus.New
+      });
+
+      // Upload the subscription to the server
+      await DataManager.UpdateSubscriptionOnServer();
+
+      // Act
+      await DataManager.UnsubscribePushNotifications();
+
+      // Assert
+      // The subscription should be deleted locally and on the server
+      let subscriptionFromDatabase = await DatabaseOperations.GetSubscription();
+      assert.isNull(subscriptionFromDatabase);
+
+      let subscriptionFromServer = await GetSubscriptionFromServer(uuid);
+      assert.isNull(subscriptionFromServer);
+   });
+});
+
+describe("CreateNotification function", () => {
+   it("should save the notification in the database", async () => {
+      // Arrange
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
+      });
+      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+
+      let time = new Date().getTime() / 1000;
+      let interval = 5000;
+      let properties = {
+         title: "Hello World",
+         message: "You have a new notification"
+      }
+
+      // Act
+      let uuid = await DataManager.CreateNotification(time, interval, properties);
+
+      // Assert
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+      assert.isNotNull(notificationFromDatabase);
+      assert.equal(time, notificationFromDatabase.Time);
+      assert.equal(interval, notificationFromDatabase.Interval);
+      assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
+      assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
+
+      // Delete the notification on the server
+      await DeleteNotificationFromServer(uuid);
+
+      // Tidy up
+      clearDatabase();
+   });
+
+   it("should not save the notification if the user is not logged in", async () => {
+      // Arrange
+      Dav.globals.jwt = null;
+      let time = new Date().getTime() / 1000;
+      let interval = 5000;
+      let properties = {
+         title: "Hello World",
+         message: "You have a new notification"
+      }
+
+      // Act
+      let uuid = await DataManager.CreateNotification(time, interval, properties);
+
+      // Assert
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+      assert.isNull(notificationFromDatabase);
+   });
+});
+
+describe("DeleteNotification function", () => {
+   it("should remove the notification from the database and from the server", async () => {
+      // Arrange
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
+      });
+      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+
+      // Create the notification
+      let time = new Date().getTime() / 1000;
+      let interval = 5000;
+      let properties = {
+         title: "Hello World",
+         message: "You have a new notification"
+      }
+
+      let uuid = await DataManager.CreateNotification(time, interval, properties);
+
+      // Act
+      await DataManager.DeleteNotification(uuid);
+
+      // Assert
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+      assert.isNull(notificationFromDatabase);
+
+      let notificationFromServer = await GetNotificationFromServer(uuid);
+      assert.isNull(notificationFromServer);
+   });
+});
+
+//#region Helper methods
+async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
+   try{
+      var response = await axios.get(Dav.globals.apiBaseUrl + "apps/object/" + uuid, {
+         headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
+      });
+
+      var tableObject = new TableObject();
+      tableObject.TableId = response.data.table_id;
+      tableObject.IsFile = response.data.file;
+      tableObject.Etag = response.data.etag;
+      tableObject.Uuid = response.data.uuid;
+      tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
+      tableObject.Properties = ConvertObjectToMap(response.data.properties);
+
+      return tableObject;
+   }catch(error){
+      return null;
+   }
+}
+
+async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
+   try{
+      var response = await axios({
+         method: 'delete',
+         url: Dav.globals.apiBaseUrl + "apps/object/" + uuid,
+         headers: { 'Authorization': davClassLibraryTestUserXTestUserJwt }
+      });
+
+      return {ok: true, message: response.data};
+   }catch(error){
+      return {ok: false, message: error.response.data};
+   }
+}
+
+async function GetSubscriptionFromServer(uuid: string) : Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string }>{
+   try{
+      var response = await axios.get(Dav.globals.apiBaseUrl + "apps/subscription/" + uuid, {
+         headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
+      });
+
+      return {
+         uuid: response.data.uuid,
+         endpoint: response.data.endpoint,
+         p256dh: response.data.p256dh,
+         auth: response.data.auth
+      }
+   }catch(error){
+      return null;
+   }
+}
+
+async function GetNotificationFromServer(uuid: string) : Promise<{ uuid: string, time: number, interval: number, properties: object }>{
+   try{
+      var response = await axios.get(Dav.globals.apiBaseUrl + "apps/notification/" + uuid, {
+         headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
+      });
+
+      return {
+         uuid: response.data.uuid,
+         time: response.data.time,
+         interval: response.data.interval,
+         properties: response.data.properties
+      }
+   }catch(error){
+      return null;
+   }
+}
+
+async function DeleteNotificationFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
+   try{
+      var response = await axios({
+         method: 'delete',
+         url: Dav.globals.apiBaseUrl + "apps/notification/" + uuid,
+         headers: { 'Authorization': davClassLibraryTestUserXTestUserJwt }
+      });
+
+      return {ok: true, message: response.data};
+   }catch(error){
+      return {ok: false, message: error.response.data};
+   }
+}
+//#endregion
