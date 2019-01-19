@@ -398,8 +398,8 @@ export async function SyncPushNotifications(){
 					await DatabaseOperations.DeleteNotification(notification.Uuid);
 				}catch(error){
 					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
-						// Delete the subscription locally
-						await DatabaseOperations.RemoveSubscription();
+						// Delete the notification locally
+						await DatabaseOperations.DeleteNotification(notification.Uuid);
 					}
 				}
 				break;
