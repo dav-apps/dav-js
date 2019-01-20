@@ -83,12 +83,12 @@ export class DavUser{
 		return this.IsLoggedIn;
 	}
 
-	Logout(){
+	async Logout(){
 		// Delete the user key from the local storage
-		DatabaseOperations.RemoveUser();
-		DataManager.UnsubscribePushNotifications();
+		await DataManager.UnsubscribePushNotifications();
+		await DatabaseOperations.RemoveUser();
 		this.ClearUser();
-		// TODO Delete the notifications
+		await DatabaseOperations.RemoveAllNotifications();
 	}
 }
 

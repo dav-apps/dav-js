@@ -99,6 +99,11 @@ export async function DeleteNotification(uuid: string){
 		await SetNotificationsArray(notifications);
 	}
 }
+
+export async function RemoveAllNotifications(){
+	InitLocalforage();
+	await localforage.removeItem(Dav.notificationsKey);
+}
 //#endregion
 
 //#region Subscription methods

@@ -71,7 +71,7 @@ describe("Logout function", () => {
          assert.isTrue(user.IsLoggedIn);
 
          // Act
-         user.Logout();
+         await user.Logout();
 
          // Assert
          assert.isFalse(user.IsLoggedIn);
@@ -83,7 +83,7 @@ describe("Logout function", () => {
          assert.isEmpty(user.Avatar);
          assert.isEmpty(user.AvatarEtag);
          assert.isEmpty(user.JWT);
-         assert.isEmpty(Dav.globals.jwt);
+			assert.isEmpty(Dav.globals.jwt);
 
          // Tidy up
          clearDatabase();

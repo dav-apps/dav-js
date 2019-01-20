@@ -78,7 +78,6 @@ export class TableObject{
 			}
 			await DatabaseOperations.UpdateTableObject(this);
 		}else{
-			this.UploadStatus = TableObjectUploadStatus.New;
 			await DatabaseOperations.CreateTableObject(this).then(uuid => this.Uuid = uuid);
 		}
 
