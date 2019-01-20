@@ -14,81 +14,194 @@ var syncNotificationsAgain = false;
 //#region Data methods
 export async function Sync(){
 	if(isSyncing) return;
-	if(!Dav.globals.jwt) return;
+
+	var jwt = Dav.globals.jwt;
+	if(!jwt) return;
 	isSyncing = true;
 
-	for(let tableId of Dav.globals.tableIds){
-		var removedTableObjectUuids: string[] = [];
+	// Holds the table ids, e.g. 1, 2, 3, 4
+	var tableIds = Dav.globals.tableIds;
+	// Holds the parallel table ids, e.g. 2, 3
+	var parallelTableIds = Dav.globals.parallelTableIds;
+	// Holds the order of the table ids, sorted by the pages and the parallel table ids, e.g. 1, 2, 3, 2, 3, 4
+	var sortedTableIds: Array<number> = [];
+	// Holds the pages of the table; in the format <tableId, pages>
+	var tablePages: Map<number, number> = new Map<number, number>();
+	// Holds the last downloaded page; in the format <tableId, pages>
+	var currentTablePages: Map<number, number> = new Map<number, number>();
+	// Holds the latest table result; in the format <tableId, tableData>
+	var tableResults: Map<number, object> = new Map<number, object>();
+	// Holds the uuids of the table objects that were removed on the server but not locally; in the format <tableId, Array<string>>
+	var removedTableObjectUuids: Map<number, Array<string>> = new Map<number, Array<string>>();
+	// Is true if all http calls of the specified table are successful; in the format <tableId, Boolean>
+	var tableGetResultsOkay: Map<number, boolean> = new Map<number, boolean>();
+
+	if(!tableIds || !parallelTableIds) return;
+
+	// Populate removedTableObjectUuids
+	for(let tableId of tableIds){
+		removedTableObjectUuids.set(tableId, []);
+
 		for(let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)){
-			removedTableObjectUuids.push(tableObject.Uuid);
+			removedTableObjectUuids.get(tableId).push(tableObject.Uuid);
 		}
+	}
 
-		var response = await axios.get(Dav.globals.apiBaseUrl + "apps/table/" + tableId, {
-			headers: {'Authorization': Dav.globals.jwt}
-		});
-		
-		var newTableObjects: TableObject[] = [];
+	// Get the first page of each table and generate the sorted tableIds list
+	for(let tableId of tableIds){
+		// Get the first page of the table
+		let tableGetResult = await HttpGet(`apps/table/${tableId}?page=1`);
 
-		for(let obj of response.data.table_objects){
-			var removeUuidIndex = removedTableObjectUuids.findIndex(uuid => uuid === obj.uuid);
-			if(removeUuidIndex !== -1){
-				removedTableObjectUuids.splice(removeUuidIndex, 1);
+		tableGetResultsOkay.set(tableId, tableGetResult.ok);
+		if(!tableGetResult.ok) continue;
+
+		// Save the result
+		let table = tableGetResult.message;
+		tableResults.set(tableId, table);
+		tablePages.set(tableId, tableResults.get(tableId)["pages"]);
+		currentTablePages.set(tableId, 1);
+	}
+
+	sortedTableIds = SortTableIds(tableIds, parallelTableIds, tablePages);
+
+	// Process the table results
+	for(let tableId of sortedTableIds){
+		let tableObjects = tableResults.get(tableId)["table_objects"] as Array<object>;
+		let tableChanged = false;
+
+		if(!tableGetResultsOkay.get(tableId)) continue;
+
+		// Get the objects of the table
+		for(let obj of tableObjects){
+			// Remove the object from removedTableObjectUuids
+			let index = removedTableObjectUuids.get(tableId).findIndex(uuid => uuid == obj["uuid"]);
+			if(index !== -1){
+				removedTableObjectUuids.get(tableId).splice(index);
 			}
 
-			// Does the table object already exist?
-			var tableObject = await DatabaseOperations.GetTableObject(obj["uuid"]);
-			var getTableObject = false;
+			// Is obj in the database?
+			var currentTableObject = await DatabaseOperations.GetTableObject(obj["uuid"]);
+			if(currentTableObject){
+				// Is the etag correct?
+				if(obj["etag"] == currentTableObject.Etag){
+					// Is it a file?
+					if(currentTableObject.IsFile){
+						// Was the file downloaded?
+						// TODO
+					}
+				}else{
+					// GET the table object
+					let tableObject = await GetTableObjectFromServer(currentTableObject.Uuid);
+					if(!tableObject) continue;
 
-			if(tableObject){
-				// Has the etag changed?
-				if(tableObject.Etag != obj.etag){
-					// the etag has changed, download the table object and save it in the database
-					getTableObject = true;
-				}
-			}else{
-				// Save the new table object
-				getTableObject = true;
-			}
+					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
 
-			if(getTableObject){
-				// Download the table object
-				var newTableObject = await GetTableObjectFromServer(obj.uuid);
+					// Is it a file?
+					if(tableObject.IsFile){
+						// Remove all properties except ext
+						for(let [key, value] of tableObject.Properties){
+							if(key != Dav.extPropertyName){
+								// Remove the property
+								await tableObject.RemoveProperty(key);
+							}
+						}
 
-				if(newTableObject){
-					newTableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-				
-					if(tableObject){
-						await DatabaseOperations.UpdateTableObject(newTableObject);
-						Dav.globals.callbacks.UpdateTableObject(newTableObject);
+						// Download the file
+						// TODO
 					}else{
-						newTableObjects.push(newTableObject);
+						Dav.globals.callbacks.UpdateTableObject(tableObject);
+						tableChanged = true;
 					}
 				}
+			}else{
+				// GET the table object
+				let tableObject = await GetTableObjectFromServer(obj["uuid"]);
+				if(!tableObject) continue;
+
+				// Is it a file?
+				if(tableObject.IsFile){
+					let etag = tableObject.Etag;
+
+					// Remove all properties except ext
+					for(let [key, value] of tableObject.Properties){
+						if(key != Dav.extPropertyName){
+							// Remove the property
+							await tableObject.RemoveProperty(key);
+						}
+					}
+
+					// Save the table object without properties and etag (the etag will be saved later when the file was downloaded)
+					tableObject.Etag = "";
+					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
+
+					// Download the file
+					// TODO
+
+					Dav.globals.callbacks.UpdateTableObject(tableObject);
+					tableChanged = true;
+				}else{
+					// Save the table object
+					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
+					Dav.globals.callbacks.UpdateTableObject(tableObject);
+					tableChanged = true;
+				}
 			}
 		}
-		
-		if(newTableObjects.length > 0){
-			await DatabaseOperations.CreateTableObjects(newTableObjects);
+
+		if(tableChanged){
 			Dav.globals.callbacks.UpdateAllOfTable(tableId);
 		}
 
-		// Delete the tableObjects that are not on the server
-		for(let uuid of removedTableObjectUuids){
-			var tableObject = await DatabaseOperations.GetTableObject(uuid);
+		// Check if there is a next page
+		currentTablePages[tableId]++;
+		if(currentTablePages.get(tableId) > tablePages.get(tableId)){
+			continue;
+		}
 
-			if(tableObject.UploadStatus == TableObjectUploadStatus.New || 
-				tableObject.UploadStatus == TableObjectUploadStatus.NoUpload ||
-				tableObject.UploadStatus == TableObjectUploadStatus.Deleted){
+		// Get the data of the next page
+		let tableGetResult = await HttpGet(`apps/table/${tableId}?page=${currentTablePages.get(tableId)}`);
+		if(!tableGetResult.ok){
+			tableGetResultsOkay.set(tableId, false);
+			continue;
+		}
+
+		tableResults.set(tableId, tableGetResult.message);
+	}
+
+	// RemovedTableObjects now includes all objects that were deleted on the server but not locally
+	// Delete those objects locally
+	for(let tableId of tableIds){
+		if(!tableGetResultsOkay.get(tableId)) continue;
+		let removedTableObjects = removedTableObjectUuids.get(tableId);
+		let tableChanged = false;
+
+		for(let objUuid of removedTableObjects){
+			let obj = await DatabaseOperations.GetTableObject(objUuid);
+			if(!obj) continue;
+
+			if(obj.UploadStatus == TableObjectUploadStatus.New && obj.IsFile){
+				// TODO
+			}else if(obj.UploadStatus == TableObjectUploadStatus.New
+						|| obj.UploadStatus == TableObjectUploadStatus.NoUpload
+						|| obj.UploadStatus == TableObjectUploadStatus.Deleted){
 				continue;
 			}
 
-			await DatabaseOperations.DeleteTableObjectImmediately(uuid);
-			Dav.globals.callbacks.DeleteTableObject(tableObject);
+			await obj.DeleteImmediately();
+			Dav.globals.callbacks.DeleteTableObject(obj);
+			tableChanged = true;
+		}
+
+		if(tableChanged){
+			Dav.globals.callbacks.UpdateAllOfTable(tableId);
 		}
 	}
 
 	isSyncing = false;
+
+	// Push changes
 	await SyncPush();
+	// TODO Start downloading files
 }
 
 export async function SyncPush(){
@@ -614,6 +727,103 @@ export async function Log(apiKey: string, name: string){
 }
 //#endregion
 
+export function SortTableIds(tableIds: Array<number>, parallelTableIds: Array<number>, tableIdPages: Map<number, number>) : Array<number>{
+	var preparedTableIds: Array<number> = [];
+
+	// Remove all table ids in parallelTableIds that do not occur in tableIds
+	let removeParallelTableIds: Array<number> = [];
+	for(let i = 0; i < parallelTableIds.length; i++){
+		let value = parallelTableIds[i];
+		if(tableIds.indexOf(value) == -1){
+			removeParallelTableIds.push(value);
+		}
+	}
+	
+	for(let tableId of removeParallelTableIds){
+		let index = parallelTableIds.indexOf(tableId);
+		if(index !== -1){
+			parallelTableIds.splice(index, 1);
+		}
+	}
+	
+	// Prepare pagesOfParallelTable
+	var pagesOfParallelTable: Map<number, number> = new Map<number, number>();
+	for(let [key, value] of tableIdPages){
+		if(parallelTableIds.indexOf(key) !== -1){
+			pagesOfParallelTable.set(key, value);
+		}
+	}
+	
+	// Count the pages
+	let pagesSum = 0;
+	for(let [key, value] of tableIdPages){
+		pagesSum += value;
+
+		if(parallelTableIds.indexOf(key) !== -1){
+			pagesOfParallelTable.set(key, value - 1);
+		}
+	}
+	
+	let index = 0;
+	let currentTableIdIndex = 0;
+	let parallelTableIdsInserted = false;
+
+	while (index < pagesSum) {
+		let currentTableId = tableIds[currentTableIdIndex];
+		let currentTablePages = tableIdPages.get(currentTableId);
+
+		if(parallelTableIds.indexOf(currentTableId) !== -1){
+			// Add the table id once as it belongs to parallel table ids
+			preparedTableIds.push(currentTableId);
+			index++;
+		}else{
+			// Add it for all pages
+			for(let j = 0; j < currentTablePages; j++){
+				preparedTableIds.push(currentTableId);
+				index++;
+			}
+		}
+
+		// Check if all parallel table ids are in prepared table ids
+		let hasAll = true;
+		for(let tableId of parallelTableIds){
+			if(preparedTableIds.indexOf(tableId) == -1){
+				hasAll = false;
+			}
+		}
+
+		if(hasAll && !parallelTableIdsInserted){
+			parallelTableIdsInserted = true;
+			let pagesOfParallelTableSum = 0;
+
+			// Update pagesOfParallelTableSum
+			for(let [key, value] of pagesOfParallelTable){
+				pagesOfParallelTableSum += value;
+			}
+
+			// Append the parallel table ids in the right order
+			while(pagesOfParallelTableSum > 0){
+				for(let parallelTableId of parallelTableIds){
+					if(pagesOfParallelTable.get(parallelTableId) > 0){
+						preparedTableIds.push(parallelTableId);
+						pagesOfParallelTableSum--;
+						
+						let oldPages = pagesOfParallelTable.get(parallelTableId);
+						console.log(oldPages)
+						pagesOfParallelTable.set(parallelTableId, oldPages - 1);
+
+						index++;
+					}
+				}
+			}
+		}
+
+		currentTableIdIndex++;
+	}
+
+	return preparedTableIds;
+}
+
 export enum UploadStatus {
 	// The object was created on the server
 	UpToDate = 0,
@@ -624,6 +834,22 @@ export enum UploadStatus {
 }
 
 //#region Helper methods
+async function HttpGet(url: string) : Promise<{ ok: boolean, message: object }>{
+	try{
+		let response = await axios({
+			method: 'get',
+			url: Dav.globals.apiBaseUrl + url,
+			headers: {
+				'Authorization': Dav.globals.jwt
+			}
+		});
+
+		return { ok: true, message: response.data };
+	}catch(error){
+		return { ok: false, message: error.response.data };
+	}
+}
+
 function urlBase64ToUint8Array(base64String) {
    const padding = '='.repeat((4 - base64String.length % 4) % 4);
    const base64 = (base64String + padding)
