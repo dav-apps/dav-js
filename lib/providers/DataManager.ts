@@ -809,7 +809,6 @@ export function SortTableIds(tableIds: Array<number>, parallelTableIds: Array<nu
 						pagesOfParallelTableSum--;
 						
 						let oldPages = pagesOfParallelTable.get(parallelTableId);
-						console.log(oldPages)
 						pagesOfParallelTable.set(parallelTableId, oldPages - 1);
 
 						index++;

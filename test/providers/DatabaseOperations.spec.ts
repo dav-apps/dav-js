@@ -72,10 +72,11 @@ describe("RemoveUser function", () => {
       await localforage.setItem(Dav.userKey, user);
 
       // Act
-      var savedUser = await DatabaseOperations.RemoveUser();
+      await DatabaseOperations.RemoveUser();
 
       // Assert
-      assert.isUndefined(savedUser);
+      let userFromDatabase = await DatabaseOperations.GetUser();
+      assert.isNull(userFromDatabase);
    });
 });
 
@@ -263,6 +264,32 @@ describe("DeleteNotification function", () => {
 		// Tidy up
       clearDatabase();
 	});
+});
+
+describe("RemoveAllNotifications function", () => {
+   it("should remove all notifications from the database", async () => {
+      // Arrange
+      let notifications = [
+         new Notification(1231231, 5000, {
+            title: "Hello World",
+            message: "This is a notification"
+         }),
+         new Notification(121885, 2000, {
+            title: "Notification",
+            message: "Hello World"
+         })
+      ]
+
+		await localforage.setItem(Dav.notificationsKey, notifications);
+		assert.equal(2, (await DatabaseOperations.GetAllNotifications()).length);
+
+      // Act
+      await DatabaseOperations.RemoveAllNotifications();
+
+      // Assert
+      let allNotifications = await DatabaseOperations.GetAllNotifications();
+		assert.equal(0, allNotifications.length);
+   });
 });
 
 describe("SetSubscription function", () => {
