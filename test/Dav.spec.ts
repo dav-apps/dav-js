@@ -17,7 +17,7 @@ describe("Initialize function", () => {
       }
 
       // Act
-      Dav.Initialize(production, appId, tableIds, callbacks);
+      Dav.Initialize(production, appId, tableIds, [], callbacks);
 
       // Assert
       assert.equal(production, Dav.globals.production);
@@ -39,13 +39,13 @@ describe("Globals", () => {
       }
 
       // Act
-      Dav.Initialize(production, appId, tableIds, callbacks);
+      Dav.Initialize(production, appId, tableIds, [], callbacks);
       var firstWebsiteUrl = Dav.globals.websiteUrl;
       var firstApiBaseUrl = Dav.globals.apiBaseUrl;
 
       production = false;
 
-      Dav.Initialize(production, appId, tableIds, callbacks);
+      Dav.Initialize(production, appId, tableIds, [], callbacks);
       var secondWebsiteUrl = Dav.globals.websiteUrl;
       var secondApiBaseUrl = Dav.globals.apiBaseUrl;
 
@@ -88,7 +88,7 @@ describe("Globals", () => {
          }
       }
 
-      Dav.Initialize(production, appId, tableIds, callbacks);
+      Dav.Initialize(production, appId, tableIds, [], callbacks);
 
       // Act
       Dav.globals.callbacks.UpdateAllOfTable(callingTableId);

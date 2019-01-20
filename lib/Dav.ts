@@ -5,6 +5,7 @@ export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
 export const notificationsKey = "notifications";
 export const subscriptionKey = "subscription";
+export const extPropertyName = "ext";
 
 class Globals{
    public apiBaseUrl: string = "http://localhost:3111/v1/";
@@ -13,7 +14,8 @@ class Globals{
 
    constructor(public production: boolean,
 					public appId: number, 
-               public tableIds: number[],
+               public tableIds: Array<number>,
+               public parallelTableIds: Array<number>,
                public callbacks: { 
                   UpdateAllOfTable: Function, 
                   UpdateTableObject: Function, 
@@ -28,7 +30,7 @@ class Globals{
    }
 }
 
-export var globals = new Globals(false, -1, [], {UpdateAllOfTable: (tableId: number) => {}, 
+export var globals = new Globals(false, -1, [], [], {UpdateAllOfTable: (tableId: number) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject) => {}, 
                                                 DeleteTableObject: (tableObject: TableObject) => {},
                                                 ReceiveNotification: (notification: object) => {}
@@ -36,14 +38,15 @@ export var globals = new Globals(false, -1, [], {UpdateAllOfTable: (tableId: num
 
 export function Initialize(production: boolean, 
                            appId: number, 
-                           tableIds: number[], 
+                           tableIds: Array<number>, 
+                           parallelTableIds: Array<number>,
                            callbacks: { 
                               UpdateAllOfTable: Function, 
                               UpdateTableObject: Function, 
                               DeleteTableObject: Function,
                               ReceiveNotification: Function
                            }){
-   globals = new Globals(production, appId, tableIds, callbacks);
+   globals = new Globals(production, appId, tableIds, parallelTableIds, callbacks);
 }
 
 export function startWebWorker(channelName = "TableObjectUpdateChannel"){

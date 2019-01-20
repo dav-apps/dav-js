@@ -179,7 +179,7 @@ describe("RemoveProperty function", () => {
 describe("Delete function", () => {
    it("should set the UploadStatus of the table object to Deleted when the user is logged in", async () => {
       // Arrange
-      Dav.Initialize(false, 1, [1], {
+      Dav.Initialize(false, 1, [1], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -225,7 +225,7 @@ describe("Delete function", () => {
 describe("DeleteImmediately function", () => {
    it("should delete the table object immediately", async () => {
       // Arrange
-      Dav.Initialize(false, 1, [1], {
+      Dav.Initialize(false, 1, [1], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},

@@ -28,7 +28,7 @@ function clearDatabase(){
 describe("Sync function", () => {
    it("should download all table objects from the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -57,7 +57,7 @@ describe("Sync function", () => {
 
    it("should remove the table objects that are not on the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -94,7 +94,7 @@ describe("Sync function", () => {
 
    it("should update only the table objects with a new etag", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -126,7 +126,7 @@ describe("Sync function", () => {
 describe("SyncPush function", () => {
    it("should upload created table objects", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -162,7 +162,7 @@ describe("SyncPush function", () => {
 
    it("should upload updated table objects", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -199,7 +199,7 @@ describe("SyncPush function", () => {
 
    it("should upload deleted table objects", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -237,7 +237,7 @@ describe("SyncPush function", () => {
 
    it("should delete updated table objects that do not exist on the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -262,7 +262,7 @@ describe("SyncPush function", () => {
 
    it("should delete deleted table objects that do not exist on the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -291,7 +291,7 @@ describe("UpdateLocalTableObject function", () => {
       // Arrange
       // Get all table objects from the server
       let callbackCalled = false;
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {
             callbackCalled = true;
@@ -329,7 +329,7 @@ describe("DeleteLocalTableObject function", () => {
       // Assert
       // Get all table objects from the server
       let callbackCalled = false;
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {
@@ -356,7 +356,7 @@ describe("DeleteLocalTableObject function", () => {
 describe("UnsubscribePushNotifications function", () => {
    it("should delete the subscription locally and on the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -393,7 +393,7 @@ describe("UnsubscribePushNotifications function", () => {
 describe("CreateNotification function", () => {
    it("should save the notification in the database", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -448,7 +448,7 @@ describe("CreateNotification function", () => {
 describe("DeleteNotification function", () => {
    it("should remove the notification from the database and from the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -481,7 +481,7 @@ describe("DeleteNotification function", () => {
 describe("SyncNotifications function", () => {
    it("should download all notifications from the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -514,7 +514,7 @@ describe("SyncNotifications function", () => {
 
    it("should remove the notifications that are not on the server", async () => {
       // Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -560,7 +560,7 @@ describe("SyncNotifications function", () => {
 describe("SyncPushNotifications function", () => {
 	it("should upload created notifications", async () => {
 		// Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -602,7 +602,7 @@ describe("SyncPushNotifications function", () => {
 
 	it("should upload deleted notifications", async () => {
 		// Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -640,7 +640,7 @@ describe("SyncPushNotifications function", () => {
 
 	it("should delete deleted notifications that do not exist on the server", async () => {
 		// Arrange
-      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], {
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
