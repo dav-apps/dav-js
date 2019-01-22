@@ -26,12 +26,12 @@ secondTestDataTableObject.Properties = new Map([
    [secondPropertyName, "Tabelle"]
 ]);
 
-export var firstTestNotification = new Notification(1547922131, 3600, {
+export var firstTestNotification = new Notification(1863541331, 3600, {
    title: "Hello World",
    message: "You have an appointment"
 }, "0289e7ab-5497-45dc-a6ad-d5d49143b17b", UploadStatus.UpToDate);
 
-export var secondTestNotification = new Notification(1491222843, 864000, {
+export var secondTestNotification = new Notification(1806755643, 864000, {
    title: "Your daily summary",
    message: "You have 2 appointments and one Todo for today"
 }, "4590db9d-f154-42bc-aaa9-c222e3b82487", UploadStatus.UpToDate);
