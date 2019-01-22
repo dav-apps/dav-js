@@ -7,6 +7,7 @@ export const tableObjectsKey = "tableObjects";
 export const notificationsKey = "notifications";
 export const subscriptionKey = "subscription";
 export const extPropertyName = "ext";
+export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ";
 
 class Globals{
    public apiBaseUrl: string = "http://localhost:3111/v1/";

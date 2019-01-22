@@ -315,7 +315,7 @@ export async function DeleteLocalTableObject(uuid: string){
 	}
 }
 
-export async function SubscribePushNotifications(webPushPublicKey: string) : Promise<Boolean>{
+export async function SubscribePushNotifications() : Promise<Boolean>{
 	if('serviceWorker' in navigator && Dav.globals.production){
 		// Check if the user is logged in
 		if(!Dav.globals.jwt) return false;
@@ -340,7 +340,7 @@ export async function SubscribePushNotifications(webPushPublicKey: string) : Pro
 		let registration = await navigator.serviceWorker.getRegistration();
 		let subscription = await registration.pushManager.subscribe({
 			userVisibleOnly: true,
-			applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
+			applicationServerKey: urlBase64ToUint8Array(Dav.webPushPublicKey)
 		});
 
 		let subscriptionJson = subscription.toJSON();
