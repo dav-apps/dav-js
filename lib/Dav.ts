@@ -1,4 +1,5 @@
 import { TableObject } from "./models/TableObject";
+import { Notification } from "./models/Notification";
 import * as DataManager from "./providers/DataManager";
 
 export const userKey = "user";
@@ -80,7 +81,25 @@ export function startPushNotificationSubscription(){
       navigator.serviceWorker.ready.then((registration) => {
 			navigator.serviceWorker.onmessage = (event) => {
 				if(event.data.type == "PUSH"){
-					globals.callbacks.ReceiveNotification(event.data.data);
+					let notificationObject = event.data.data;
+					if(!notificationObject.uuid) return;
+
+					if(notificationObject.delete){
+						// Delete the notification
+						DataManager.DeleteNotification(notificationObject.uuid);
+					}else{
+						// Update the notification in the database
+						let notification = new Notification(notificationObject.time, 
+						notificationObject.interval, 
+						notificationObject.properties, 
+						notificationObject.uuid,
+						DataManager.UploadStatus.UpToDate);
+						notification.Save();
+					}
+
+					if(notificationObject.properties){
+						globals.callbacks.ReceiveNotification(notificationObject.properties);
+					}
 				}
 			}
       });
