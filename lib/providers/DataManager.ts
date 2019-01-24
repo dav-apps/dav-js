@@ -398,6 +398,11 @@ export async function DeleteNotification(uuid: string){
 	await SyncPushNotifications();
 }
 
+export async function DeleteNotificationImmediately(uuid: string){
+	// Delete the notification directly from the database
+	await DatabaseOperations.DeleteNotification(uuid);
+}
+
 export async function SyncNotifications(){
 	if(isSyncingNotifications) return;
 	if(!Dav.globals.jwt) return;

@@ -478,6 +478,26 @@ describe("DeleteNotification function", () => {
    });
 });
 
+describe("DeleteNotificationImmediately function", () => {
+   it("should remove the notification from the database", async () => {
+      // Arrange
+      let uuid = generateUUID();
+      let notification = new Notification(123123, 3600, {title: "test"}, uuid);
+      await notification.Save();
+
+      // Make sure the notification was saved
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+      assert.isNotNull(notificationFromDatabase);
+
+      // Act
+      await DataManager.DeleteNotificationImmediately(uuid);
+
+      // Assert
+      let notificationFromDatabase2 = await DatabaseOperations.GetNotification(uuid);
+      assert.isNull(notificationFromDatabase2);
+   });
+});
+
 describe("SyncNotifications function", () => {
    it("should download all notifications from the server", async () => {
       // Arrange

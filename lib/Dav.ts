@@ -87,7 +87,7 @@ export function startPushNotificationSubscription(){
 
 					if(notificationObject.delete){
 						// Delete the notification
-						DataManager.DeleteNotification(notificationObject.uuid);
+                  DataManager.DeleteNotificationImmediately(notificationObject.uuid);
 					}else{
 						// Update the notification in the database
 						let notification = new Notification(notificationObject.time, 
