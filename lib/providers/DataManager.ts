@@ -404,7 +404,32 @@ export async function GetNotification(uuid: string) : Promise<{time: number, int
 	}
 }
 
+export async function UpdateNotification(uuid: string, time: number, interval: number, properties: object){
+	if(!Dav.globals.jwt) return;
+
+	let notification = await DatabaseOperations.GetNotification(uuid);
+	if(notification.Status == UploadStatus.UpToDate){
+		notification.Status = UploadStatus.Updated;
+	}
+
+	if(time){
+		notification.Time = time;
+	}
+	if(interval){
+		notification.Interval = interval;
+	}
+	if(properties){
+		notification.Properties = properties;
+	}
+
+	// Save the notification
+	await notification.Save();
+	await SyncPushNotifications();
+}
+
 export async function DeleteNotification(uuid: string){
+	if(!Dav.globals.jwt) return;
+
 	// Set the upload status of the notification to Deleted
 	let notification = await DatabaseOperations.GetNotification(uuid);
 	notification.Status = UploadStatus.Deleted;
@@ -518,6 +543,30 @@ export async function SyncPushNotifications(){
 					await notification.Save();
 				}catch(error){}
 				break;
+			case UploadStatus.Updated:
+				// Update the notification on the server
+				try{
+					await axios({
+						method: 'put',
+						url: `${Dav.globals.apiBaseUrl}apps/notification/${notification.Uuid}?time=${notification.Time}&interval=${notification.Interval}`,
+						headers: {
+							'Authorization': Dav.globals.jwt,
+							'Content-Type': 'application/json'
+						},
+						data: notification.Properties
+					});
+
+					notification.Status = UploadStatus.UpToDate;
+					await notification.Save();
+				}catch(error){
+					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
+						// Delete the notification locally
+						await DatabaseOperations.DeleteNotification(notification.Uuid);
+					}else{
+						console.log(error.response.data)
+					}
+				}
+				break;
 			case UploadStatus.Deleted:
 				// Delete the notification on the server
 				try{
@@ -533,6 +582,8 @@ export async function SyncPushNotifications(){
 					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
 						// Delete the notification locally
 						await DatabaseOperations.DeleteNotification(notification.Uuid);
+					}else{
+						console.log(error.response.data)
 					}
 				}
 				break;
