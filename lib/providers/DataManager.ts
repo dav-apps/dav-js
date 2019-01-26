@@ -316,7 +316,7 @@ export async function DeleteLocalTableObject(uuid: string){
 }
 
 export async function SubscribePushNotifications() : Promise<Boolean>{
-	if('serviceWorker' in navigator && Dav.globals.production){
+	if(Dav.globals.production && 'serviceWorker' in navigator && ('PushManager' in window)){
 		// Check if the user is logged in
 		if(!Dav.globals.jwt) return false;
 
@@ -387,6 +387,21 @@ export async function CreateNotification(time: number, interval: number, propert
 	await SyncPushNotifications();
 
 	return notification.Uuid;
+}
+
+export async function GetNotification(uuid: string) : Promise<{time: number, interval: number, properties: object}>{
+	if(!Dav.globals.jwt) return null;
+
+	let notification = await DatabaseOperations.GetNotification(uuid);
+	if(notification){
+		return {
+			time: notification.Time,
+			interval: notification.Interval,
+			properties: notification.Properties
+		}
+	}else{
+		return null;
+	}
 }
 
 export async function DeleteNotification(uuid: string){
@@ -833,8 +848,10 @@ export enum UploadStatus {
 	UpToDate = 0,
 	// The object was created, but it's still not saved on the server
 	New = 1,
+	// The object was created on the server, but some values changed
+	Updated = 2,
 	// The object in on the server, but it was deleted locally and has to be deleted on the server
-	Deleted = 2
+	Deleted = 3
 }
 
 //#region Helper methods
