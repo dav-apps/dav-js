@@ -445,6 +445,90 @@ describe("CreateNotification function", () => {
    });
 });
 
+describe("GetNotification function", () => {
+	it("should return the values of the notification", async () => {
+		// Arrange
+		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+
+		// Create a notification
+		let uuid = generateUUID();
+		let time = 12312312;
+		let interval = 12321
+		let properties = {
+			title: "Hello World",
+			message: "This is a test notification"
+		}
+		let notification = new Notification(time, interval, properties, uuid, DataManager.UploadStatus.UpToDate);
+		await notification.Save();
+
+		// Act
+		let notificationFromDatabase = await DataManager.GetNotification(uuid);
+		
+		// Assert
+		assert.equal(time, notificationFromDatabase.time)
+		assert.equal(interval, notificationFromDatabase.interval);
+		assert.equal(properties.title, notificationFromDatabase.properties["title"]);
+		assert.equal(properties.message, notificationFromDatabase.properties["message"]);
+	});
+
+	it("should return null if the notification does not exist", async () => {
+		// Arrange
+		let uuid = generateUUID();
+
+		// Act
+		let notificationFromDatabase = await DataManager.GetNotification(uuid);
+
+		// Assert
+		assert.isNull(notificationFromDatabase);
+	});
+});
+
+describe("UpdateNotification function", () => {
+	it("should update the notification in the database and on the server", async () => {
+      // Arrange
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
+      });
+		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+
+		// Create a notification
+		let uuid = generateUUID();
+		let newTime = 1231262343;
+		let newInterval = 123123;
+		let newProperties = {
+			title: "new title",
+			message: "new message"
+		}
+		let notification = new Notification(12312667, 12, {title: "test", message: "test"}, uuid, DataManager.UploadStatus.New);
+		await notification.Save();
+      await DataManager.SyncPushNotifications();
+
+		// Act
+      await DataManager.UpdateNotification(uuid, newTime, newInterval, newProperties);
+
+		// Assert
+		// The notification should have the new values in the database
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+		assert.equal(newTime, notificationFromDatabase.Time);
+		assert.equal(newInterval, notificationFromDatabase.Interval);
+		assert.equal(newProperties.title, notificationFromDatabase.Properties["title"]);
+		assert.equal(newProperties.message, notificationFromDatabase.Properties["message"]);
+
+		let notificationFromServer = await GetNotificationFromServer(uuid);
+		assert.equal(newTime, notificationFromServer.time);
+		assert.equal(newInterval, notificationFromServer.interval);
+		assert.equal(newProperties.title, notificationFromServer.properties["title"]);
+		assert.equal(newProperties.message, notificationFromServer.properties["message"]);
+
+		// Tidy up
+		// Delete the notification on the server
+		await DeleteNotificationFromServer(uuid);
+	});
+});
+
 describe("DeleteNotification function", () => {
    it("should remove the notification from the database and from the server", async () => {
       // Arrange
