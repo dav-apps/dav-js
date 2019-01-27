@@ -618,7 +618,63 @@ describe("SyncPushNotifications function", () => {
 		// Tidy up
 		await DeleteNotificationFromServer(uuid);
 		clearDatabase();
-	});
+   });
+   
+   it("should upload updated notifications", async () => {
+      // Arrange
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
+      });
+		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		
+		let newTime = 1123213;
+		let newInterval = 21312;
+		let newProperties = {
+			title: "New title",
+			message: "New message"
+		}
+
+      // Download all notifications
+      await DataManager.SyncNotifications();
+
+		// Update one existing notification
+		let notification = await DatabaseOperations.GetNotification(firstTestNotification.Uuid);
+		notification.Time = newTime;
+		notification.Interval = newInterval;
+		notification.Properties = newProperties;
+		notification.Status = DataManager.UploadStatus.Updated;
+		await notification.Save();
+      
+      // Act
+		await DataManager.SyncPushNotifications();
+
+		// Assert
+		// The local notification should be updated and the status should be UpToDate
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(firstTestNotification.Uuid);
+		assert.equal(newTime, notificationFromDatabase.Time);
+		assert.equal(newInterval, notificationFromDatabase.Interval);
+		assert.equal(newProperties.title, notificationFromDatabase.Properties["title"]);
+		assert.equal(newProperties.message, notificationFromDatabase.Properties["message"]);
+		assert.equal(DataManager.UploadStatus.UpToDate, notificationFromDatabase.Status);
+		
+		// The notification on the server should be updated
+		let notificationFromServer = await GetNotificationFromServer(firstTestNotification.Uuid);
+		assert.equal(newTime, notificationFromServer.time);
+		assert.equal(newInterval, notificationFromServer.interval);
+		assert.equal(newProperties.title, notificationFromServer.properties["title"]);
+		assert.equal(newProperties.message, notificationFromServer.properties["message"]);
+
+		// Tidy up
+		notificationFromDatabase.Time = firstTestNotification.Time;
+		notificationFromDatabase.Interval = firstTestNotification.Interval;
+		notificationFromDatabase.Properties = firstTestNotification.Properties;
+		notificationFromDatabase.Status = DataManager.UploadStatus.Updated;
+		await notificationFromDatabase.Save();
+		await DataManager.SyncPushNotifications();
+   });
 
 	it("should upload deleted notifications", async () => {
 		// Arrange
@@ -656,6 +712,30 @@ describe("SyncPushNotifications function", () => {
 
 		// Tidy up
       clearDatabase();
+	});
+
+	it("should delete updated notification that do not exist on the server", async () => {
+		// Arrange
+      Dav.Initialize(false, davClassLibraryTestAppId, [testDataTableId], [], {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         ReceiveNotification: () => {}
+      });
+		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+
+		// Create a notification with Status = Updated
+		let uuid = generateUUID();
+		let notification = new Notification(112312, 232, {title: "test"}, uuid, DataManager.UploadStatus.Updated);
+		await notification.Save();
+
+		// Act
+		await DataManager.SyncPushNotifications();
+
+		// Assert
+		// The notification should be deleted
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+		assert.isNull(notificationFromDatabase);
 	});
 
 	it("should delete deleted notifications that do not exist on the server", async () => {
