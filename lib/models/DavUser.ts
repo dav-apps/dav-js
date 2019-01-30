@@ -21,7 +21,7 @@ export class DavUser{
 					this.SetUser(userObject);
 					DataManager.Sync();
 
-					Dav.startWebWorker();
+					Dav.startWebSocketConnection();
 					Dav.startPushNotificationSubscription();
 
 					DataManager.UpdateSubscriptionOnServer();
