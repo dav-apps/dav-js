@@ -51,24 +51,36 @@ export function Initialize(production: boolean,
    globals = new Globals(production, appId, tableIds, parallelTableIds, callbacks);
 }
 
-export function startWebWorker(channelName = "TableObjectUpdateChannel"){
-   // Start the web worker and update the UI when the worker receives a message
-   if(Worker){
-      var worker = new Worker('worker.js');
-      worker.postMessage({
-         appId: globals.appId,
-         jwt: globals.jwt,
-         channelName,
-         baseUrl: globals.apiBaseUrl
-      });
+export function startWebSocketConnection(channelName = "TableObjectUpdateChannel"){
+	if(!globals.jwt || !globals.appId || !globals.apiBaseUrl) return;
 
-      worker.onmessage = function(e){
-         var uuid = e.data.uuid
-         var change = e.data.change
+	let baseUrl = globals.apiBaseUrl.replace("http", "ws");
+	var webSocket = new WebSocket(baseUrl + "cable?app_id=" + globals.appId + "&jwt=" + globals.jwt);
+
+	webSocket.onopen = function (e) {
+		var json = JSON.stringify({
+			command: "subscribe",
+			identifier: '{"channel": "' + channelName + '"}'
+		});
+		webSocket.send(json)
+	}
+
+	webSocket.onmessage = function(e){
+      var json = JSON.parse(e.data);
+      if(json["type"]){
+         if(json["type"] == "reject_subscription"){
+            webSocket.close();
+         }
+      }
+     
+      // Notify the app of the changes
+      if(json["message"]){
+         var uuid = json["message"]["uuid"]
+         var change = json["message"]["change"]
 
          if(uuid != null && change != null){
             if(change == 0 || change == 1){
-               DataManager.UpdateLocalTableObject(uuid);
+            	DataManager.UpdateLocalTableObject(uuid);
             }else if(change == 2){
                DataManager.DeleteLocalTableObject(uuid);
             }
