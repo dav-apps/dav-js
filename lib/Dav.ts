@@ -92,29 +92,13 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
 export function startPushNotificationSubscription(){
 	if('serviceWorker' in navigator && globals.production){
       navigator.serviceWorker.ready.then((registration) => {
-			navigator.serviceWorker.onmessage = (event) => {
-				if(event.data.type == "PUSH"){
-					let notificationObject = event.data.data;
-					if(!notificationObject.uuid) return;
-
-					if(notificationObject.delete){
-						// Delete the notification
-                  DataManager.DeleteNotificationImmediately(notificationObject.uuid);
-					}else{
-						// Update the notification in the database
-						let notification = new Notification(notificationObject.time, 
-						notificationObject.interval, 
-						notificationObject.properties, 
-						notificationObject.uuid,
-						DataManager.UploadStatus.UpToDate);
-						notification.Save();
-					}
-
-					if(notificationObject.properties){
-						globals.callbacks.ReceiveNotification(notificationObject.properties);
-					}
-				}
-			}
+         // Initialize the service worker
+         let baseUrl = `${window.location.protocol}//${window.location.host}`;
+         navigator.serviceWorker.controller.postMessage({
+            baseUrl,
+            icon: "/assets/icons/icon-192x192.png",
+            badge: "/favicon.png"
+         });
       });
 	}
 }
