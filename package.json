@@ -9,9 +9,9 @@
 		"prepublishOnly": "npm run build",
 		"compile": "npm run clean && tsc -p . && npm run copyJs",
 		"watch": "tsc -w -p .",
+		"build": "npm run compile",
+		"prepare": "npm run compile",
 		"clean": "rm -rf dist",
-		"build": "tsc",
-		"prepare": "tsc",
 		"copyJs": "cpx lib/workers/*.js dist/lib/workers"
 	},
 	"repository": {
