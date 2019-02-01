@@ -89,12 +89,17 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
 
 export function startPushNotificationSubscription(){
 	if('serviceWorker' in navigator && globals.production){
-      navigator.serviceWorker.ready.then((registration) => {
+      // Wait for availability of the service worker
+      const p = new Promise(r => {
+         if (navigator.serviceWorker.controller) return r();
+         navigator.serviceWorker.addEventListener('controllerchange', e => r());
+      });
+      p.then(() => {
          // Initialize the service worker
          navigator.serviceWorker.controller.postMessage({
             icon: globals.notificationOptions.icon,
             badge: globals.notificationOptions.badge
          });
       });
-	}
+   }
 }
