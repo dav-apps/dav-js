@@ -439,8 +439,10 @@ export async function DeleteNotification(uuid: string){
 
 	// Set the upload status of the notification to Deleted
 	let notification = await DatabaseOperations.GetNotification(uuid);
-	notification.Status = UploadStatus.Deleted;
-	await notification.Save();
+	if(notification){
+		notification.Status = UploadStatus.Deleted;
+		await notification.Save();
+	}
 
 	await SyncPushNotifications();
 }
