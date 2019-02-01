@@ -1,5 +1,4 @@
 import { TableObject } from "./models/TableObject";
-import { Notification } from "./models/Notification";
 import * as DataManager from "./providers/DataManager";
 
 export const userKey = "user";
@@ -18,11 +17,11 @@ class Globals{
 					public appId: number, 
                public tableIds: Array<number>,
                public parallelTableIds: Array<number>,
+               public notificationOptions: {icon: string, badge: string},
                public callbacks: { 
                   UpdateAllOfTable: Function, 
                   UpdateTableObject: Function, 
-                  DeleteTableObject: Function,
-                  ReceiveNotification: Function
+                  DeleteTableObject: Function
                }){
 
       if(production){
@@ -32,23 +31,22 @@ class Globals{
    }
 }
 
-export var globals = new Globals(false, -1, [], [], {UpdateAllOfTable: (tableId: number) => {}, 
+export var globals = new Globals(false, -1, [], [], {icon: "", badge: ""}, {UpdateAllOfTable: (tableId: number) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject) => {}, 
-                                                DeleteTableObject: (tableObject: TableObject) => {},
-                                                ReceiveNotification: (notification: object) => {}
+                                                DeleteTableObject: (tableObject: TableObject) => {}
                                              });
 
 export function Initialize(production: boolean, 
                            appId: number, 
                            tableIds: Array<number>, 
                            parallelTableIds: Array<number>,
+                           notificationOptions: {icon: string, badge: string},
                            callbacks: { 
                               UpdateAllOfTable: Function, 
                               UpdateTableObject: Function, 
-                              DeleteTableObject: Function,
-                              ReceiveNotification: Function
+                              DeleteTableObject: Function
                            }){
-   globals = new Globals(production, appId, tableIds, parallelTableIds, callbacks);
+   globals = new Globals(production, appId, tableIds, parallelTableIds, notificationOptions, callbacks);
 }
 
 export function startWebSocketConnection(channelName = "TableObjectUpdateChannel"){
@@ -72,7 +70,7 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
             webSocket.close();
          }
       }
-     
+      
       // Notify the app of the changes
       if(json["message"]){
          var uuid = json["message"]["uuid"]
@@ -93,11 +91,9 @@ export function startPushNotificationSubscription(){
 	if('serviceWorker' in navigator && globals.production){
       navigator.serviceWorker.ready.then((registration) => {
          // Initialize the service worker
-         let baseUrl = `${window.location.protocol}//${window.location.host}`;
          navigator.serviceWorker.controller.postMessage({
-            baseUrl,
-            icon: "/assets/icons/icon-192x192.png",
-            badge: "/favicon.png"
+            icon: globals.notificationOptions.icon,
+            badge: globals.notificationOptions.badge
          });
       });
 	}
