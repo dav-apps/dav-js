@@ -12,12 +12,11 @@ describe("Initialize function", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
-         ReceiveNotification: () => {}
+         DeleteTableObject: () => {}
       }
 
       // Act
-      Dav.Initialize(production, appId, tableIds, [], callbacks);
+      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
 
       // Assert
       assert.equal(production, Dav.globals.production);
@@ -34,18 +33,17 @@ describe("Globals", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
-         ReceiveNotification: () => {}
+         DeleteTableObject: () => {}
       }
 
       // Act
-      Dav.Initialize(production, appId, tableIds, [], callbacks);
+      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
       var firstWebsiteUrl = Dav.globals.websiteUrl;
       var firstApiBaseUrl = Dav.globals.apiBaseUrl;
 
       production = false;
 
-      Dav.Initialize(production, appId, tableIds, [], callbacks);
+      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
       var secondWebsiteUrl = Dav.globals.websiteUrl;
       var secondApiBaseUrl = Dav.globals.apiBaseUrl;
 
@@ -82,13 +80,10 @@ describe("Globals", () => {
          DeleteTableObject: (tableObject: TableObject) => {
             deleteTableObjectCalled = true;
             deletedTableObjectUuid = tableObject.Uuid;
-         },
-         ReceiveNotification: (notification: object) => {
-            
          }
       }
 
-      Dav.Initialize(production, appId, tableIds, [], callbacks);
+      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
 
       // Act
       Dav.globals.callbacks.UpdateAllOfTable(callingTableId);
