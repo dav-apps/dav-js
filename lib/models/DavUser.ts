@@ -73,11 +73,10 @@ export class DavUser{
 
 		if(userObject){
 			this.SetUser(userObject);
-			DatabaseOperations.SetUser(userObject);
-			DataManager.SyncNotifications();
+			await DatabaseOperations.SetUser(userObject);
 		}else{
 			this.IsLoggedIn = false;
-			localforage.removeItem(Dav.userKey);
+			await localforage.removeItem(Dav.userKey);
 		}
 
 		return this.IsLoggedIn;
