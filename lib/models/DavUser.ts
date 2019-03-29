@@ -21,9 +21,7 @@ export class DavUser{
 					this.SetUser(userObject);
 					DataManager.Sync();
 
-					Dav.startWebSocketConnection();
 					Dav.startPushNotificationSubscription();
-
 					DataManager.UpdateSubscriptionOnServer();
 					DataManager.SyncNotifications();
 				}
@@ -93,7 +91,14 @@ export class DavUser{
 
 export enum DavPlan{
 	Free = 0,
-	Plus = 1
+	Plus = 1,
+	Pro = 2
+}
+
+export enum DavEnvironment{
+	Development,
+	Test,
+	Production
 }
 
 export function ShowLoginPage(apiKey: string, callbackUrl: string){
