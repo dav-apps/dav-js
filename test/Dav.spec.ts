@@ -2,11 +2,12 @@ import * as Dav from '../lib/Dav';
 import { assert } from 'chai';
 import 'mocha';
 import { TableObject } from '../lib/models/TableObject';
+import { DavEnvironment } from '../lib/models/DavUser';
 
 describe("Initialize function", () => {
    it("should set globals variables to the appropriate values", () => {
       // Arrange
-      var production = true;
+      var environment = DavEnvironment.Test;
       var appId = -23;
       var tableIds = [12, 213];
       var callbacks = {
@@ -17,10 +18,10 @@ describe("Initialize function", () => {
       }
 
       // Act
-      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
 
       // Assert
-      assert.equal(production, Dav.globals.production);
+      assert.equal(environment, Dav.globals.environment);
       assert.equal(appId, Dav.globals.appId)
    });
 });
@@ -28,7 +29,7 @@ describe("Initialize function", () => {
 describe("Globals", () => {
    it("should return different values for apiBaseUrl and websiteUrl in different environments", () => {
       // Arrange
-      var production = true;
+      var environment = DavEnvironment.Test;
       var appId = 12;
       var tableIds = [12, 123];
       var callbacks = {
@@ -39,13 +40,13 @@ describe("Globals", () => {
       }
 
       // Act
-      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
       var firstWebsiteUrl = Dav.globals.websiteUrl;
       var firstApiBaseUrl = Dav.globals.apiBaseUrl;
 
-      production = false;
+      environment = DavEnvironment.Production;
 
-      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
       var secondWebsiteUrl = Dav.globals.websiteUrl;
       var secondApiBaseUrl = Dav.globals.apiBaseUrl;
 
@@ -56,7 +57,7 @@ describe("Globals", () => {
 
    it("should call callback methods", () => {
       // Arrange
-      var production = false;
+      var environment = DavEnvironment.Test;
       var appId = 13;
       var tableIds = [133, 121];
 
@@ -89,7 +90,7 @@ describe("Globals", () => {
          }
       }
 
-      Dav.Initialize(production, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
 
       // Act
       Dav.globals.callbacks.UpdateAllOfTable(callingTableId);

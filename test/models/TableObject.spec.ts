@@ -4,6 +4,7 @@ import * as Dav from '../../lib/Dav';
 import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import { TableObject, TableObjectVisibility, TableObjectUploadStatus, ConvertIntToVisibility, ConvertMapToObject, ConvertObjectToMap } from '../../lib/models/TableObject';
+import { DavEnvironment } from '../../lib/models/DavUser';
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);
@@ -179,7 +180,7 @@ describe("RemoveProperty function", () => {
 describe("Delete function", () => {
    it("should set the UploadStatus of the table object to Deleted when the user is logged in", async () => {
       // Arrange
-      Dav.Initialize(false, 1, [1], [], {icon: "", badge: ""}, {
+      Dav.Initialize(DavEnvironment.Test, 1, [1], [], {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -225,7 +226,7 @@ describe("Delete function", () => {
 describe("DeleteImmediately function", () => {
    it("should delete the table object immediately", async () => {
       // Arrange
-      Dav.Initialize(false, 1, [1], [], {icon: "", badge: ""}, {
+      Dav.Initialize(DavEnvironment.Test, 1, [1], [], {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
