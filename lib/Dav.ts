@@ -21,7 +21,8 @@ class Globals{
                public callbacks: { 
                   UpdateAllOfTable: Function, 
                   UpdateTableObject: Function, 
-                  DeleteTableObject: Function
+                  DeleteTableObject: Function,
+                  SyncFinished: Function
                }){
 
       if(production){
@@ -33,7 +34,8 @@ class Globals{
 
 export var globals = new Globals(false, -1, [], [], {icon: "", badge: ""}, {UpdateAllOfTable: (tableId: number) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject) => {}, 
-                                                DeleteTableObject: (tableObject: TableObject) => {}
+                                                DeleteTableObject: (tableObject: TableObject) => {},
+                                                SyncFinished: () => {}
                                              });
 
 export function Initialize(production: boolean, 
@@ -44,7 +46,8 @@ export function Initialize(production: boolean,
                            callbacks: { 
                               UpdateAllOfTable: Function, 
                               UpdateTableObject: Function, 
-                              DeleteTableObject: Function
+                              DeleteTableObject: Function,
+                              SyncFinished: Function
                            }){
    globals = new Globals(production, appId, tableIds, parallelTableIds, notificationOptions, callbacks);
 }
