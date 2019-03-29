@@ -12,7 +12,8 @@ describe("Initialize function", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {}
+         DeleteTableObject: () => {},
+         SyncFinished: () => {}
       }
 
       // Act
@@ -33,7 +34,8 @@ describe("Globals", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {}
+         DeleteTableObject: () => {},
+         SyncFinished: () => {}
       }
 
       // Act
@@ -65,8 +67,9 @@ describe("Globals", () => {
       var updatedTableId = -1;
       var updateTableObjectCalled = false;
       var updatedTableObjectUuid = "";
-      var deleteTableObjectCalled = true;
+      var deleteTableObjectCalled = false;
       var deletedTableObjectUuid = "";
+      var syncFinishedCalled = false;
 
       var callbacks = {
          UpdateAllOfTable: (tableId: number) => {
@@ -80,6 +83,9 @@ describe("Globals", () => {
          DeleteTableObject: (tableObject: TableObject) => {
             deleteTableObjectCalled = true;
             deletedTableObjectUuid = tableObject.Uuid;
+         },
+         SyncFinished: () => {
+            syncFinishedCalled = true;
          }
       }
 
@@ -89,11 +95,13 @@ describe("Globals", () => {
       Dav.globals.callbacks.UpdateAllOfTable(callingTableId);
       Dav.globals.callbacks.UpdateTableObject(callingTableObject);
       Dav.globals.callbacks.DeleteTableObject(callingTableObject);
+      Dav.globals.callbacks.SyncFinished();
 
       // Assert
       assert.isTrue(updateAllOfTableCalled);
       assert.isTrue(updateTableObjectCalled);
       assert.isTrue(deleteTableObjectCalled);
+      assert.isTrue(syncFinishedCalled);
       assert.equal(callingTableId, updatedTableId);
       assert.equal(callingTableObject.Uuid, updatedTableObjectUuid);
       assert.equal(callingTableObject.Uuid, deletedTableObjectUuid);

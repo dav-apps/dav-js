@@ -6,7 +6,7 @@ import { DavUser } from '../../lib/models/DavUser';
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import * as Constants from '../Constants';
 
-const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJuYW1lIjoiZGF2Q2xhc3NMaWJyYXJ5VGVzdFVzZXIiLCJ1c2VyX2lkIjoxMiwiZGV2X2lkIjoyLCJleHAiOjM3NTI5MTgzODQxfQ.lO-iq5UHk25wnysbrEw1PirgGBhz-rFqrK6iRGkcFnU";
+const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJuYW1lIjoiZGF2Q2xhc3NMaWJyYXJ5VGVzdFVzZXIiLCJ1c2VyX2lkIjo1LCJkZXZfaWQiOjIsImV4cCI6Mzc1NTM4OTc0MjZ9.44FwShkIvYL-4Kbm8Ryc7RXbIIWgtWz3CinUKzw9mPE";
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);
