@@ -100,3 +100,7 @@ export function ShowLoginPage(apiKey: string, callbackUrl: string){
 	window.location.href = Dav.globals.websiteUrl + "login_implicit?api_key=" + 
 									apiKey + "&redirect_url=" + encodeURIComponent(callbackUrl);
 }
+
+export function ShowSignupPage(callbackUrl: string){
+	window.location.href = Dav.globals.websiteUrl + "signup?redirect_url=" + encodeURIComponent(callbackUrl);
+}
