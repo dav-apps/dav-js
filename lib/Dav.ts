@@ -1,5 +1,6 @@
 import { TableObject } from "./models/TableObject";
 import * as DataManager from "./providers/DataManager";
+import { DavEnvironment } from "./models/DavUser";
 
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
@@ -13,7 +14,7 @@ class Globals{
 	public websiteUrl: string = "http://localhost:3000/";
 	public jwt: string = null;
 
-   constructor(public production: boolean,
+   constructor(public environment: DavEnvironment,
 					public appId: number, 
                public tableIds: Array<number>,
                public parallelTableIds: Array<number>,
@@ -25,20 +26,20 @@ class Globals{
                   SyncFinished: Function
                }){
 
-      if(production){
+      if(environment == DavEnvironment.Production){
          this.apiBaseUrl = "https://dav-backend.herokuapp.com/v1/";
          this.websiteUrl = "https://dav-apps.tech/";
       }
    }
 }
 
-export var globals = new Globals(false, -1, [], [], {icon: "", badge: ""}, {UpdateAllOfTable: (tableId: number) => {}, 
+export var globals = new Globals(DavEnvironment.Development, -1, [], [], {icon: "", badge: ""}, {UpdateAllOfTable: (tableId: number) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject) => {}, 
                                                 DeleteTableObject: (tableObject: TableObject) => {},
                                                 SyncFinished: () => {}
                                              });
 
-export function Initialize(production: boolean, 
+export function Initialize(environment: DavEnvironment, 
                            appId: number, 
                            tableIds: Array<number>, 
                            parallelTableIds: Array<number>,
@@ -49,11 +50,11 @@ export function Initialize(production: boolean,
                               DeleteTableObject: Function,
                               SyncFinished: Function
                            }){
-   globals = new Globals(production, appId, tableIds, parallelTableIds, notificationOptions, callbacks);
+   globals = new Globals(environment, appId, tableIds, parallelTableIds, notificationOptions, callbacks);
 }
 
 export function startWebSocketConnection(channelName = "TableObjectUpdateChannel"){
-	if(!globals.jwt || !globals.appId || !globals.apiBaseUrl) return;
+   if(!globals.jwt || !globals.appId || !globals.apiBaseUrl || globals.environment == DavEnvironment.Test) return;
 
 	let baseUrl = globals.apiBaseUrl.replace("http", "ws");
 	var webSocket = new WebSocket(baseUrl + "cable?app_id=" + globals.appId + "&jwt=" + globals.jwt);
@@ -91,7 +92,7 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
 }
 
 export function startPushNotificationSubscription(){
-	if('serviceWorker' in navigator && globals.production){
+	if('serviceWorker' in navigator && globals.environment == DavEnvironment.Production){
       // Wait for availability of the service worker
       const p = new Promise(r => {
          if (navigator.serviceWorker.controller) return r();
