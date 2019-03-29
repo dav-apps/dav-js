@@ -4,6 +4,7 @@ import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertOb
 import { Notification } from '../models/Notification';
 import * as DatabaseOperations from './DatabaseOperations';
 import * as platform from 'platform';
+import { DavEnvironment } from '../models/DavUser';
 
 var isSyncing = false;
 var syncAgain = true;
@@ -202,6 +203,20 @@ export async function Sync(){
 	// Push changes
 	await SyncPush();
 	// TODO Start downloading files
+
+	// Check if all tables were synced
+	let allTableGetResultsOkay = true;
+	for(let value in tableGetResultsOkay.values()){
+		if(!value){
+			allTableGetResultsOkay = false;
+			break;
+		}
+	}
+
+	if(allTableGetResultsOkay){
+		Dav.globals.callbacks.SyncFinished();
+		Dav.startWebSocketConnection();
+	}
 }
 
 export async function SyncPush(){
@@ -323,7 +338,7 @@ export async function DeleteLocalTableObject(uuid: string){
 }
 
 export async function SubscribePushNotifications() : Promise<Boolean>{
-	if(Dav.globals.production && 'serviceWorker' in navigator && ('PushManager' in window)){
+	if(Dav.globals.environment == DavEnvironment.Production && 'serviceWorker' in navigator && ('PushManager' in window)){
 		// Check if the user is logged in
 		if(!Dav.globals.jwt) return false;
 
