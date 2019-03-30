@@ -1,6 +1,6 @@
 {
 	"name": "dav-npm",
-	"version": "0.3",
+	"version": "0.3.0",
 	"description": "This is the npm package for accessing the dav API",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
