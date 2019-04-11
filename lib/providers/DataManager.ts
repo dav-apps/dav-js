@@ -12,6 +12,11 @@ var syncAgain = true;
 var isSyncingNotifications = false;
 var syncNotificationsAgain = false;
 
+const maxFileDownloads = 2;								// The max count of files being downloaded simultaneously
+var fileDownloads: Array<TableObject> = [];			// The TableObjects whose files will be downloaded after Sync was finished
+export var downloadingFiles: Array<string> = [];	// Contains the uuids of the TableObjects whose files are currently downloading
+var fileDownloadsIntervalId: NodeJS.Timer;
+
 //#region Data methods
 export async function Sync(){
 	if(isSyncing) return;
@@ -88,7 +93,7 @@ export async function Sync(){
 					// Is it a file?
 					if(currentTableObject.IsFile){
 						// Was the file downloaded?
-						// TODO
+                  fileDownloads.push(currentTableObject);
 					}
 				}else{
 					// GET the table object
@@ -108,7 +113,7 @@ export async function Sync(){
 						}
 
 						// Download the file
-						// TODO
+                  fileDownloads.push(tableObject);
 					}else{
 						Dav.globals.callbacks.UpdateTableObject(tableObject);
 						tableChanged = true;
@@ -136,7 +141,7 @@ export async function Sync(){
 					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
 
 					// Download the file
-					// TODO
+					fileDownloads.push(tableObject);
 
 					Dav.globals.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
@@ -202,7 +207,7 @@ export async function Sync(){
 
 	// Push changes
 	await SyncPush();
-	// TODO Start downloading files
+	StartFileDownloads();
 
 	// Check if all tables were synced
 	let allTableGetResultsOkay = true;
@@ -216,6 +221,29 @@ export async function Sync(){
 	if(allTableGetResultsOkay){
 		Dav.globals.callbacks.SyncFinished();
 		Dav.startWebSocketConnection();
+	}
+}
+
+function StartFileDownloads(){
+   // Do not download more files than maxFileDownloads at the same time
+   fileDownloadsIntervalId = setInterval(() => {
+		DownloadNextFile();
+	}, 5000);
+}
+
+function DownloadNextFile(){
+   // Check the network connection
+	// TODO
+
+	// Check if fileDownloadsList length is greater than maxFileDownloads
+   if(downloadingFiles.length < maxFileDownloads && fileDownloads.length > 0){
+		// Download the first file of the files to download
+		if(fileDownloads[0].File == null){
+			fileDownloads[0].DownloadFile();
+		}
+	}else if(fileDownloads.length == 0){
+		// Stop the timer
+		clearInterval(fileDownloadsIntervalId);
 	}
 }
 

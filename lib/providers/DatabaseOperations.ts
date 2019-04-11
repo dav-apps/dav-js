@@ -138,7 +138,8 @@ async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 		tableObjects.forEach(tableObject => {
 			objects.push({
 				TableId: tableObject.TableId,
-				IsFile: tableObject.IsFile,
+            IsFile: tableObject.IsFile,
+            File: tableObject.File,
 				Uuid: tableObject.Uuid,
 				Visibility: tableObject.Visibility,
 				UploadStatus: tableObject.UploadStatus,
@@ -166,7 +167,8 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 			var tableObject = new TableObject();
 			tableObject.TableId = obj["TableId"];
 			tableObject.UploadStatus = obj["UploadStatus"];
-			tableObject.IsFile = obj["IsFile"];
+         tableObject.IsFile = obj["IsFile"];
+         tableObject.File = obj["File"];
 			tableObject.Etag = obj["Etag"];
 			tableObject.Visibility = obj["Visibility"];
 			tableObject.Uuid = obj["Uuid"];
