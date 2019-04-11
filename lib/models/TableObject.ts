@@ -1,6 +1,7 @@
 import * as DataManager from '../providers/DataManager';
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as Dav from '../Dav';
+var axios = require('axios');
 
 export class TableObject{
    public TableId: number;
@@ -83,6 +84,44 @@ export class TableObject{
 		this.File = file;
 		await this.Save();
 	}
+
+	GetFileDownloadStatus() : TableObjectFileDownloadStatus{
+		if(!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
+		if(File != null) return TableObjectFileDownloadStatus.Downloaded;
+		if(!Dav.globals.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
+
+		var i = DataManager.downloadingFiles.findIndex(uuid => uuid == this.Uuid);
+		if(i !== -1){
+			return TableObjectFileDownloadStatus.Downloading;
+		}
+		return TableObjectFileDownloadStatus.NotDownloaded;
+	}
+
+	async DownloadFile(){
+		var downloadStatus = this.GetFileDownloadStatus();
+
+		if(downloadStatus == TableObjectFileDownloadStatus.Downloading || 
+			downloadStatus == TableObjectFileDownloadStatus.Downloaded ||
+			!Dav.globals.jwt) return;
+
+		try{
+			var response = await axios({
+				method: 'get',
+				url: Dav.globals.apiBaseUrl + `apps/object/${this.Uuid}`,
+				params: {
+					file: true
+				},
+				headers: {
+					'Authorization': Dav.globals.jwt
+				}
+			});
+
+			this.File = response.data;
+			this.Save();
+		}catch(error){
+			console.log(error);
+		}
+	}
 	
 	private async Save(){
 		if(await DatabaseOperations.TableObjectExists(this.Uuid)){
@@ -110,6 +149,13 @@ export enum TableObjectUploadStatus{
    Updated = 2,
    Deleted = 3,
    NoUpload = 4
+}
+
+export enum TableObjectFileDownloadStatus{
+	NoFileOrNotLoggedIn = 0,
+	NotDownloaded = 1,
+	Downloading = 2,
+	Downloaded = 3
 }
 
 export function ConvertIntToVisibility(visibilityInt: number): TableObjectVisibility{
