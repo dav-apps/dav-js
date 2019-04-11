@@ -6,7 +6,8 @@ export class TableObject{
    public TableId: number;
    public Uuid: string = generateUUID();
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
-   public IsFile: boolean = false;
+	public IsFile: boolean = false;
+	public File: Blob;
 	public Properties: Map<string, string> = new Map();
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
@@ -69,6 +70,18 @@ export class TableObject{
 
 	async DeleteImmediately(): Promise<void>{
 		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
+	}
+
+	async SetFile(file: Blob){
+		if(!this.IsFile) return;
+		if(file == this.File) return;
+
+		if(this.UploadStatus == TableObjectUploadStatus.UpToDate){
+			this.UploadStatus = TableObjectUploadStatus.Deleted;
+		}
+
+		this.File = file;
+		await this.Save();
 	}
 	
 	private async Save(){
