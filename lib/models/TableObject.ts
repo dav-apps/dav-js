@@ -8,7 +8,7 @@ export class TableObject{
    public Uuid: string = generateUUID();
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
-	public File: Blob;
+	public File: File;
 	public Properties: Map<string, string> = new Map();
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
@@ -73,12 +73,18 @@ export class TableObject{
 		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
 	}
 
-	async SetFile(file: Blob){
+	async SetFile(file: File){
 		if(!this.IsFile) return;
 		if(file == this.File) return;
 
 		if(this.UploadStatus == TableObjectUploadStatus.UpToDate){
-			this.UploadStatus = TableObjectUploadStatus.Deleted;
+			this.UploadStatus = TableObjectUploadStatus.Updated;
+		}
+		
+		let fileSplit = file.name.split('.');
+		if(fileSplit.length > 1){
+			let fileExt = fileSplit.pop();
+			await this.SetPropertyValue("ext", fileExt);
 		}
 
 		this.File = file;

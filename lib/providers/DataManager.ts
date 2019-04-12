@@ -265,7 +265,22 @@ export async function SyncPush(){
 	
 	for(let tableObject of sortedTableObjects){
 		switch (tableObject.UploadStatus) {
-			case TableObjectUploadStatus.New:
+         case TableObjectUploadStatus.New:
+            // Check if the TableObject is a file and if it can be uploaded
+            if(tableObject.IsFile && tableObject.File != null){
+               let user = await DatabaseOperations.GetUser();
+
+               if(user != null){
+                  let usedStorage = user["usedStorage"];
+                  let totalStorage = user["totalStorage"];
+                  let fileSize = tableObject.File.size;
+
+                  if (usedStorage + fileSize > totalStorage && totalStorage != 0){
+                     continue;
+                  }
+               }
+            }
+
 				// Upload the table object
 				var result = await CreateTableObjectOnServer(tableObject);
 
@@ -705,23 +720,53 @@ async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
 }
 
 async function CreateTableObjectOnServer(tableObject: TableObject): Promise<object>{		// Return {ok: boolean, message: string}
-	if(!Dav.globals.jwt) return {ok: false, message: null};
+   if(!Dav.globals.jwt) return {ok: false, message: null};
+   if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
 	try{
-		var response = await axios({
-			method: 'post',
-			url: Dav.globals.apiBaseUrl + "apps/object",
-			params: {
-				table_id: tableObject.TableId,
-				app_id: Dav.globals.appId,
-				uuid: tableObject.Uuid
-			},
-			headers: {
-				'Authorization': Dav.globals.jwt,
-				'Content-Type': 'application/json'
-			},
-			data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
-		});
+      let response;
+      if(tableObject.IsFile){
+			let ext = tableObject.GetPropertyValue('ext');
+			
+			// Get the binary data from the file
+			let readFilePromise: Promise<ProgressEvent> = new Promise((resolve, reject) => {
+				let fileReader = new FileReader();
+				fileReader.onloadend = resolve;
+				fileReader.readAsArrayBuffer(tableObject.File);
+			});
+			var result: ProgressEvent = await readFilePromise;
+
+         response = await axios({
+            method: 'post',
+            url: Dav.globals.apiBaseUrl + "apps/object",
+            params: {
+               table_id: tableObject.TableId,
+               app_id: Dav.globals.appId,
+               uuid: tableObject.Uuid,
+               ext: ext
+            },
+            headers: {
+               'Authorization': Dav.globals.jwt,
+               'Content-Type': tableObject.File.type
+            },
+				data: result.currentTarget["result"]
+         });
+      }else{
+         response = await axios({
+            method: 'post',
+            url: Dav.globals.apiBaseUrl + "apps/object",
+            params: {
+               table_id: tableObject.TableId,
+               app_id: Dav.globals.appId,
+               uuid: tableObject.Uuid
+            },
+            headers: {
+               'Authorization': Dav.globals.jwt,
+               'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
+         });
+      }
 
 		return {ok: true, message: response.data};
 	}catch(error){
@@ -731,17 +776,44 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
 
 async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<object>{
 	if(!Dav.globals.jwt) return {ok: false, message: null};
+	if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
 	try{
-		var response = await axios({
-			method: 'put',
-			url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
-			headers: {
-				'Authorization': Dav.globals.jwt,
-				'Content-Type': 'application/json'
-			},
-			data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
-		});
+		let response;
+		if(tableObject.IsFile){
+			let ext = tableObject.GetPropertyValue('ext');
+
+			// Get the binary data from the file
+			let readFilePromise: Promise<ProgressEvent> = new Promise((resolve, reject) => {
+				let fileReader = new FileReader();
+				fileReader.onloadend = resolve;
+				fileReader.readAsArrayBuffer(tableObject.File);
+			});
+			var result: ProgressEvent = await readFilePromise;
+
+			response = await axios({
+            method: 'put',
+            url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
+            params: {
+               ext: ext
+            },
+            headers: {
+               'Authorization': Dav.globals.jwt,
+               'Content-Type': tableObject.File.type
+            },
+				data: result.currentTarget["result"]
+         });
+		}else{
+			response = await axios({
+				method: 'put',
+				url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
+				headers: {
+					'Authorization': Dav.globals.jwt,
+					'Content-Type': 'application/json'
+				},
+				data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
+			});
+		}
 
 		return {ok: true, message: response.data};
 	}catch(error){
