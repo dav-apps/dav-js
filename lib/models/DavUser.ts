@@ -1,4 +1,3 @@
-var localforage = require('localforage');
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as DataManager from '../providers/DataManager';
 import * as Dav from "../Dav";
@@ -19,6 +18,8 @@ export class DavUser{
 			DatabaseOperations.GetUser().then((userObject) => {
 				if(userObject){
 					this.SetUser(userObject);
+					this.DownloadUserInformation();
+
 					DataManager.Sync();
 
 					Dav.startPushNotificationSubscription();
@@ -65,19 +66,30 @@ export class DavUser{
 		Dav.globals.jwt = "";
 	}
 
-	async Login(jwt: string): Promise<boolean>{
-		// Try to log in with the jwt
-		var userObject = await DataManager.DownloadUserInformation(jwt);
+	private async DownloadUserInformation() : Promise<boolean>{
+		if(this.IsLoggedIn){
+			let userObject = await DataManager.DownloadUserInformation(this.JWT);
 
-		if(userObject){
-			this.SetUser(userObject);
-			await DatabaseOperations.SetUser(userObject);
-		}else{
-			this.IsLoggedIn = false;
-			await localforage.removeItem(Dav.userKey);
+			if(userObject){
+				this.SetUser(userObject);
+				await DatabaseOperations.SetUser(userObject);
+				return true;
+			}
 		}
 
-		return this.IsLoggedIn;
+		return false;
+	}
+
+	async Login(jwt: string): Promise<boolean>{
+		this.JWT = jwt;
+		this.IsLoggedIn = true;
+
+		if(await this.DownloadUserInformation()){
+			return true;
+		}else{
+			await this.Logout();
+			return false;
+		}
 	}
 
 	async Logout(){
