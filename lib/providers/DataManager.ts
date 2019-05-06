@@ -82,7 +82,7 @@ export async function Sync(){
 			// Remove the object from removedTableObjectUuids
 			let index = removedTableObjectUuids.get(tableId).findIndex(uuid => uuid == obj["uuid"]);
 			if(index !== -1){
-				removedTableObjectUuids.get(tableId).splice(index);
+				removedTableObjectUuids.get(tableId).splice(index, 1);
 			}
 
 			// Is obj in the database?

@@ -3,7 +3,7 @@ import 'mocha';
 import * as Dav from '../../lib/Dav';
 import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { TableObject, TableObjectVisibility, TableObjectUploadStatus, ConvertIntToVisibility, ConvertMapToObject, ConvertObjectToMap } from '../../lib/models/TableObject';
+import { TableObject, TableObjectVisibility, TableObjectUploadStatus, ConvertMapToObject, ConvertObjectToMap } from '../../lib/models/TableObject';
 import { DavEnvironment } from '../../lib/models/DavUser';
 
 function clearDatabase(){
