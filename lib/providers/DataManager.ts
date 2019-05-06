@@ -686,6 +686,7 @@ export async function DownloadUserInformation(jwt: string){
             plan: response.data.plan,
             avatar: response.data.avatar,
             avatarEtag: response.data.avatar_etag,
+            avatarFile: null,
             jwt: jwt
          }
       }else{
@@ -1059,5 +1060,20 @@ function urlBase64ToUint8Array(base64String) {
       outputArray[i] = rawData.charCodeAt(i);
    }
    return outputArray;
+}
+
+export async function DownloadFile(url: string) : Promise<Blob>{
+   try{
+      let response = await axios({
+         method: 'get',
+         url,
+         responseType: 'blob'
+      });
+   
+      return new Blob([response.data]);
+   }catch(error){
+      console.log(error)
+      return null;
+   }
 }
 //#endregion
