@@ -13,7 +13,7 @@ var isSyncingNotifications = false;
 var syncNotificationsAgain = false;
 
 const maxFileDownloads = 2;								// The max count of files being downloaded simultaneously
-var fileDownloads: Array<TableObject> = [];			// The TableObjects whose files will be downloaded after Sync was finished
+var fileDownloads: Array<{tableObject: TableObject, etag: string}> = [];			// This stores the tableObjects to download and the corresponding new etag
 export var downloadingFiles: Array<string> = [];	// Contains the uuids of the TableObjects whose files are currently downloading
 var fileDownloadsIntervalId: NodeJS.Timer;
 
@@ -93,7 +93,10 @@ export async function Sync(){
 					// Is it a file?
 					if(currentTableObject.IsFile){
 						// Was the file downloaded?
-                  fileDownloads.push(currentTableObject);
+						if(!currentTableObject.File){
+							// Download the file
+							fileDownloads.push({tableObject: currentTableObject, etag: currentTableObject.Etag});
+						}
 					}
 				}else{
 					// GET the table object
@@ -104,16 +107,8 @@ export async function Sync(){
 
 					// Is it a file?
 					if(tableObject.IsFile){
-						// Remove all properties except ext
-						for(let [key, value] of tableObject.Properties){
-							if(key != Dav.extPropertyName){
-								// Remove the property
-								await tableObject.RemoveProperty(key);
-							}
-						}
-
-						// Download the file
-                  fileDownloads.push(tableObject);
+						// Download the file and save the new etag
+                  fileDownloads.push({tableObject: tableObject, etag: obj["etag"]});
 					}else{
 						Dav.globals.callbacks.UpdateTableObject(tableObject);
 						tableChanged = true;
@@ -124,30 +119,17 @@ export async function Sync(){
 				let tableObject = await GetTableObjectFromServer(obj["uuid"]);
 				if(!tableObject) continue;
 
+				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
+
 				// Is it a file?
 				if(tableObject.IsFile){
-					let etag = tableObject.Etag;
-
-					// Remove all properties except ext
-					for(let [key, value] of tableObject.Properties){
-						if(key != Dav.extPropertyName){
-							// Remove the property
-							await tableObject.RemoveProperty(key);
-						}
-					}
-
-					// Save the table object without properties and etag (the etag will be saved later when the file was downloaded)
-					tableObject.Etag = "";
-					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
-
-					// Download the file
-					fileDownloads.push(tableObject);
+					// Download the file and save the new etag
+					fileDownloads.push({tableObject: tableObject, etag: obj["etag"]});
 
 					Dav.globals.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
 				}else{
 					// Save the table object
-					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
 					Dav.globals.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
 				}
@@ -231,15 +213,24 @@ function StartFileDownloads(){
 	}, 5000);
 }
 
-function DownloadNextFile(){
-   // Check the network connection
-	// TODO
-
+async function DownloadNextFile(){
 	// Check if fileDownloadsList length is greater than maxFileDownloads
    if(downloadingFiles.length < maxFileDownloads && fileDownloads.length > 0){
 		// Download the first file of the files to download
-		if(fileDownloads[0].File == null){
-			fileDownloads[0].DownloadFile();
+		let tableObject = fileDownloads[0].tableObject;
+		let etag = fileDownloads[0].etag;
+
+		// Remove the download from the fileDownloads
+		fileDownloads.splice(0, 1);
+
+		if(!tableObject.File){
+			if(await tableObject.DownloadFile()){
+				// Update the table object with the new etag
+				await tableObject.SetEtag(etag);
+
+				// Notify the app of the change
+				Dav.globals.callbacks.UpdateTableObject(tableObject);
+			}
 		}
 	}else if(fileDownloads.length == 0){
 		// Stop the timer
@@ -267,10 +258,10 @@ export async function SyncPush(){
 		switch (tableObject.UploadStatus) {
          case TableObjectUploadStatus.New:
             // Check if the TableObject is a file and if it can be uploaded
-            if(tableObject.IsFile && tableObject.File != null){
+            if(tableObject.IsFile && tableObject.File){
                let user = await DatabaseOperations.GetUser();
 
-               if(user != null){
+               if(user){
                   let usedStorage = user["usedStorage"];
                   let totalStorage = user["totalStorage"];
                   let fileSize = tableObject.File.size;
@@ -697,7 +688,7 @@ export async function DownloadUserInformation(jwt: string){
    }
 }
 
-async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
+export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
 	if(!Dav.globals.jwt) return null;
 
 	try{
