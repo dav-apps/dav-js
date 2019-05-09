@@ -8,7 +8,7 @@ export class TableObject{
    public Uuid: string = generateUUID();
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
-	public File: File;
+	public File: Blob;
 	public Properties: Map<string, string> = new Map();
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
@@ -22,7 +22,12 @@ export class TableObject{
 
 	async SetUploadStatus(uploadStatus: TableObjectUploadStatus): Promise<void>{
 		this.UploadStatus = uploadStatus;
-		await this.Save();
+		await this.Save(false);
+	}
+
+	async SetEtag(etag: string) : Promise<void>{
+      this.Etag = etag;
+		await this.Save(false);
 	}
 
 	async SetPropertyValue(name: string, value: string): Promise<void>{
@@ -73,7 +78,7 @@ export class TableObject{
 		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
 	}
 
-	async SetFile(file: File){
+	async SetFile(file: Blob, fileExt: string){
 		if(!this.IsFile) return;
 		if(file == this.File) return;
 
@@ -81,19 +86,15 @@ export class TableObject{
 			this.UploadStatus = TableObjectUploadStatus.Updated;
 		}
 		
-		let fileSplit = file.name.split('.');
-		if(fileSplit.length > 1){
-			let fileExt = fileSplit.pop();
-			await this.SetPropertyValue("ext", fileExt);
-		}
+		await this.SetPropertyValue("ext", fileExt);
 
 		this.File = file;
-		await this.Save();
+		await this.Save(false);
 	}
 
 	GetFileDownloadStatus() : TableObjectFileDownloadStatus{
 		if(!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
-		if(File != null) return TableObjectFileDownloadStatus.Downloaded;
+		if(this.File) return TableObjectFileDownloadStatus.Downloaded;
 		if(!Dav.globals.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
 
 		var i = DataManager.downloadingFiles.findIndex(uuid => uuid == this.Uuid);
@@ -103,17 +104,20 @@ export class TableObject{
 		return TableObjectFileDownloadStatus.NotDownloaded;
 	}
 
-	async DownloadFile(){
+	async DownloadFile() : Promise<boolean>{
 		var downloadStatus = this.GetFileDownloadStatus();
 
 		if(downloadStatus == TableObjectFileDownloadStatus.Downloading || 
 			downloadStatus == TableObjectFileDownloadStatus.Downloaded ||
-			!Dav.globals.jwt) return;
+			!Dav.globals.jwt) return false;
+
+		let response;
 
 		try{
-			var response = await axios({
+			response = await axios({
 				method: 'get',
 				url: Dav.globals.apiBaseUrl + `apps/object/${this.Uuid}`,
+				responseType: 'blob',
 				params: {
 					file: true
 				},
@@ -122,24 +126,30 @@ export class TableObject{
 				}
 			});
 
-			this.File = response.data;
-			this.Save();
+			if(response && response.data){
+				this.File = response.data as Blob;
+            await this.Save(false);
+            return true;
+         }
 		}catch(error){
 			console.log(error);
+			return false;
 		}
 	}
 	
-	private async Save(){
+	private async Save(updateOnServer: boolean = true){
 		if(await DatabaseOperations.TableObjectExists(this.Uuid)){
-			if(this.UploadStatus == TableObjectUploadStatus.UpToDate){
+			if(this.UploadStatus == TableObjectUploadStatus.UpToDate && updateOnServer){
 				this.UploadStatus = TableObjectUploadStatus.Updated;
 			}
 			await DatabaseOperations.UpdateTableObject(this);
 		}else{
 			await DatabaseOperations.CreateTableObject(this).then(uuid => this.Uuid = uuid);
 		}
-
-		await DataManager.SyncPush();
+		
+		if(updateOnServer){
+			DataManager.SyncPush();
+		}
 	}
 }
 
