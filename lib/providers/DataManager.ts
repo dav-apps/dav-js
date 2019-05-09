@@ -660,14 +660,15 @@ export async function SyncPushNotifications(){
 export async function DownloadUserInformation(jwt: string){
 	var url = Dav.globals.apiBaseUrl + "auth/user";
 
-   var options = {
-      headers: {
-         "Authorization": jwt
-      }
-   }
-
    try{
-      var response = await axios.get(url, options);
+      let response = await axios({
+         method: 'get',
+			url,
+			headers: {
+				"Authorization": jwt
+			}
+      });
+		
       if(response.status == 200){
          return {
             email: response.data.email,
@@ -692,8 +693,12 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 	if(!Dav.globals.jwt) return null;
 
 	try{
-		var response = await axios.get(Dav.globals.apiBaseUrl + "apps/object/" + uuid, {
-			headers: {'Authorization': Dav.globals.jwt}
+		let response = await axios({
+			method: 'get',
+			url: Dav.globals.apiBaseUrl + "apps/object/" + uuid,
+			headers: {
+				'Authorization': Dav.globals.jwt
+			}
 		});
 
 		var tableObject = new TableObject();

@@ -58,6 +58,27 @@ describe("SetUploadStatus function", () => {
    });
 });
 
+describe("SetEtag function", () => {
+   it("should set the Etag of the table object and save it in the database", async () => {
+      // Arrange
+      let tableObject = new TableObject();
+      tableObject.TableId = 12;
+      tableObject.Etag = "blablabla";
+      let newEtag = "hehehehehehe";
+      await DatabaseOperations.CreateTableObject(tableObject);
+
+      // Act
+      await tableObject.SetEtag(newEtag);
+
+      // Assert
+		assert.equal(tableObject.Etag, newEtag);
+		
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+		assert.isNotNull(tableObjectFromDatabase);
+		assert.equal(tableObjectFromDatabase.Etag, newEtag);
+   });
+});
+
 describe("SetPropertyValue function", () => {
    it("should set the property value of the table object and save it in the database", async () => {
       // Arrange
