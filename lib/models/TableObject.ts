@@ -85,11 +85,9 @@ export class TableObject{
 		if(this.UploadStatus == TableObjectUploadStatus.UpToDate){
 			this.UploadStatus = TableObjectUploadStatus.Updated;
 		}
-		
+      
+      this.File = file;
 		await this.SetPropertyValue("ext", fileExt);
-
-		this.File = file;
-		await this.Save(false);
 	}
 
 	GetFileDownloadStatus() : TableObjectFileDownloadStatus{
@@ -144,7 +142,8 @@ export class TableObject{
 			}
 			await DatabaseOperations.UpdateTableObject(this);
 		}else{
-			await DatabaseOperations.CreateTableObject(this).then(uuid => this.Uuid = uuid);
+         let uuid = await DatabaseOperations.CreateTableObject(this);
+         this.Uuid = uuid;
 		}
 		
 		if(updateOnServer){

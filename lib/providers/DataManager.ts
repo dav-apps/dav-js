@@ -351,7 +351,13 @@ export async function UpdateLocalTableObject(uuid: string){
 		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
 
 		// Check if the table object is already saved in the database
-		if(await DatabaseOperations.TableObjectExists(tableObject.Uuid)){
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+
+		if(tableObjectFromDatabase){
+			if(tableObjectFromDatabase.IsFile && tableObjectFromDatabase.File){
+				tableObject.File = tableObjectFromDatabase.File
+			}
+
 			await DatabaseOperations.UpdateTableObject(tableObject);
 		}else{
 			await DatabaseOperations.CreateTableObject(tableObject);
