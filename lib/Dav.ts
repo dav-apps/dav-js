@@ -33,8 +33,9 @@ class Globals{
    }
 }
 
-export var globals = new Globals(DavEnvironment.Development, -1, [], [], {icon: "", badge: ""}, {UpdateAllOfTable: (tableId: number) => {}, 
-                                                UpdateTableObject: (tableObject: TableObject) => {}, 
+export var globals = new Globals(DavEnvironment.Development, -1, [], [], {icon: "", badge: ""}, {
+                                                UpdateAllOfTable: (tableId: number) => {}, 
+                                                UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {}, 
                                                 DeleteTableObject: (tableObject: TableObject) => {},
                                                 SyncFinished: () => {}
                                              });

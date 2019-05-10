@@ -229,7 +229,7 @@ async function DownloadNextFile(){
 				await tableObject.SetEtag(etag);
 
 				// Notify the app of the change
-				Dav.globals.callbacks.UpdateTableObject(tableObject);
+				Dav.globals.callbacks.UpdateTableObject(tableObject, false);
 			}
 		}
 	}else if(fileDownloads.length == 0){
