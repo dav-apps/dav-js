@@ -229,7 +229,7 @@ async function DownloadNextFile(){
 				await tableObject.SetEtag(etag);
 
 				// Notify the app of the change
-				Dav.globals.callbacks.UpdateTableObject(tableObject, false);
+				Dav.globals.callbacks.UpdateTableObject(tableObject, true);
 			}
 		}
 	}else if(fileDownloads.length == 0){
@@ -298,8 +298,8 @@ export async function SyncPush(){
 
 				if(result[okKey]){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-					tableObject.Etag = result[messageKey].etag;
-					await DatabaseOperations.UpdateTableObject(tableObject);
+               tableObject.Etag = result[messageKey].etag;
+               await DatabaseOperations.UpdateTableObject(tableObject);
 				}else if(result[messageKey]){
 					// Check error codes
 					var messageString = JSON.stringify(result[messageKey]);
@@ -446,7 +446,7 @@ export async function CreateNotification(time: number, interval: number, propert
 	await notification.Save();
 
 	// Update the notifications on the server
-	await SyncPushNotifications();
+	SyncPushNotifications();
 
 	return notification.Uuid;
 }
@@ -486,7 +486,7 @@ export async function UpdateNotification(uuid: string, time: number, interval: n
 
 	// Save the notification
 	await notification.Save();
-	await SyncPushNotifications();
+	SyncPushNotifications();
 }
 
 export async function DeleteNotification(uuid: string){
@@ -499,7 +499,7 @@ export async function DeleteNotification(uuid: string){
 		await notification.Save();
 	}
 
-	await SyncPushNotifications();
+	SyncPushNotifications();
 }
 
 export async function DeleteNotificationImmediately(uuid: string){
