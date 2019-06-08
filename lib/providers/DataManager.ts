@@ -446,7 +446,7 @@ export async function CreateNotification(time: number, interval: number, propert
 	await notification.Save();
 
 	// Update the notifications on the server
-	SyncPushNotifications();
+	Dav.globals.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 
 	return notification.Uuid;
 }
@@ -486,7 +486,7 @@ export async function UpdateNotification(uuid: string, time: number, interval: n
 
 	// Save the notification
 	await notification.Save();
-	SyncPushNotifications();
+	Dav.globals.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 }
 
 export async function DeleteNotification(uuid: string){
@@ -499,7 +499,7 @@ export async function DeleteNotification(uuid: string){
 		await notification.Save();
 	}
 
-	SyncPushNotifications();
+	Dav.globals.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 }
 
 export async function DeleteNotificationImmediately(uuid: string){

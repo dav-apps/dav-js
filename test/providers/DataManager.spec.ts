@@ -485,7 +485,7 @@ describe("GetNotification function", () => {
 });
 
 describe("UpdateNotification function", () => {
-	it("should update the notification in the database and on the server", async () => {
+	it("should update the notification in the database", async () => {
       // Arrange
       Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
@@ -505,7 +505,6 @@ describe("UpdateNotification function", () => {
 		}
 		let notification = new Notification(12312667, 12, {title: "test", message: "test"}, uuid, DataManager.UploadStatus.New);
 		await notification.Save();
-      await DataManager.SyncPushNotifications();
 
 		// Act
       await DataManager.UpdateNotification(uuid, newTime, newInterval, newProperties);
@@ -518,12 +517,6 @@ describe("UpdateNotification function", () => {
 		assert.equal(newProperties.title, notificationFromDatabase.Properties["title"]);
 		assert.equal(newProperties.message, notificationFromDatabase.Properties["message"]);
 
-		let notificationFromServer = await GetNotificationFromServer(uuid);
-		assert.equal(newTime, notificationFromServer.time);
-		assert.equal(newInterval, notificationFromServer.interval);
-		assert.equal(newProperties.title, notificationFromServer.properties["title"]);
-		assert.equal(newProperties.message, notificationFromServer.properties["message"]);
-
 		// Tidy up
 		// Delete the notification on the server
 		await DeleteNotificationFromServer(uuid);
@@ -531,7 +524,7 @@ describe("UpdateNotification function", () => {
 });
 
 describe("DeleteNotification function", () => {
-   it("should remove the notification from the database and from the server", async () => {
+   it("should remove the notification from the database", async () => {
       // Arrange
       Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
@@ -549,17 +542,15 @@ describe("DeleteNotification function", () => {
          message: "You have a new notification"
       }
 
-      let uuid = await DataManager.CreateNotification(time, interval, properties);
+		let notification = new Notification(time, interval, properties, null, DataManager.UploadStatus.New);
+		await notification.Save();
 
       // Act
-      await DataManager.DeleteNotification(uuid);
+      await DataManager.DeleteNotification(notification.Uuid);
 
       // Assert
-      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
-      assert.isNull(notificationFromDatabase);
-
-      let notificationFromServer = await GetNotificationFromServer(uuid);
-      assert.isNull(notificationFromServer);
+      let notificationFromDatabase = await DatabaseOperations.GetNotification(notification.Uuid);
+		assert.isNull(notificationFromDatabase);
    });
 });
 
