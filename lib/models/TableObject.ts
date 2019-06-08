@@ -5,7 +5,7 @@ var axios = require('axios');
 
 export class TableObject{
    public TableId: number;
-   public Uuid: string = generateUUID();
+   public Uuid: string;
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
 	public File: Blob;
@@ -13,7 +13,13 @@ export class TableObject{
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
 
-	constructor(){}
+	constructor(uuid?: string){
+      if(uuid){
+         this.Uuid = uuid;
+      }else{
+         this.Uuid = generateUUID();
+      }
+   }
 	
 	async SetVisibility(visibility: TableObjectVisibility): Promise<void>{
 		this.Visibility = visibility;
@@ -139,8 +145,8 @@ export class TableObject{
 		if(await DatabaseOperations.TableObjectExists(this.Uuid)){
 			if(this.UploadStatus == TableObjectUploadStatus.UpToDate && updateOnServer){
 				this.UploadStatus = TableObjectUploadStatus.Updated;
-			}
-			await DatabaseOperations.UpdateTableObject(this);
+         }
+         await DatabaseOperations.UpdateTableObject(this);
 		}else{
          let uuid = await DatabaseOperations.CreateTableObject(this);
          this.Uuid = uuid;
