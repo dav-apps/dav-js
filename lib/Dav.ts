@@ -73,21 +73,30 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
       if(json["type"]){
          if(json["type"] == "reject_subscription"){
             webSocket.close();
-         }
+         }else if(json["type"] == "ping"){
+				return;
+			}
       }
       
       // Notify the app of the changes
       if(json["message"]){
          var uuid = json["message"]["uuid"]
-         var change = json["message"]["change"]
+			var change = json["message"]["change"]
+			var sessionId = json["message"]["session_id"]
 
-         if(uuid != null && change != null){
-            if(change == 0 || change == 1){
-            	DataManager.UpdateLocalTableObject(uuid);
-            }else if(change == 2){
-               DataManager.DeleteLocalTableObject(uuid);
-            }
-         }
+			if(!uuid || !change || !sessionId) return;
+
+			// Don't notify the app if the session is the current session or 0
+			if(sessionId == 0) return;
+
+			let currentSessionId = globals.jwt.split('.')[3];
+			if(currentSessionId && currentSessionId == sessionId) return;
+			
+			if(change == 0 || change == 1){
+				DataManager.UpdateLocalTableObject(uuid);
+			}else if(change == 2){
+				DataManager.DeleteLocalTableObject(uuid);
+			}
       }
    }
 }
