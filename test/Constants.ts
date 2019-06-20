@@ -2,7 +2,7 @@ import { TableObject } from '../lib/models/TableObject';
 import { Notification } from '../lib/models/Notification';
 import { UploadStatus } from '../lib/providers/DataManager';
 
-export const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJuYW1lIjoiZGF2Q2xhc3NMaWJyYXJ5VGVzdFVzZXIiLCJ1c2VyX2lkIjo1LCJkZXZfaWQiOjIsImV4cCI6Mzc1NTM4OTc0MjZ9.44FwShkIvYL-4Kbm8Ryc7RXbIIWgtWz3CinUKzw9mPE";
+export const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJfaWQiOjUsImRldl9pZCI6MiwiZXhwIjozNzU2MTA1MDAyMn0.jZpdLre_ZMWGN2VNbZOn2Xg51RLAT6ocGnyM38jljHI.1";
 export const davClassLibraryTestAppId = 3;
 export const davClassLibraryTestUserId = 5;
 export const testDataTableId = 3;
