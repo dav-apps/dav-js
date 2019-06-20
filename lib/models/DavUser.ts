@@ -103,11 +103,13 @@ export class DavUser{
 	}
 
 	async Logout(){
-		// Delete the user key from the local storage
+      // Delete the user key from the local storage
+      let jwt = this.JWT;
 		await DataManager.UnsubscribePushNotifications();
 		await DatabaseOperations.RemoveUser();
 		this.ClearUser();
-		await DatabaseOperations.RemoveAllNotifications();
+      await DatabaseOperations.RemoveAllNotifications();
+      await DataManager.DeleteSessionOnServer(jwt);
 	}
 }
 
