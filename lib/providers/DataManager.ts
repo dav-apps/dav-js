@@ -168,7 +168,7 @@ export async function Sync(){
 			if(!obj) continue;
 
 			if(obj.UploadStatus == TableObjectUploadStatus.New && obj.IsFile){
-				// TODO
+				continue;
 			}else if(obj.UploadStatus == TableObjectUploadStatus.New
 						|| obj.UploadStatus == TableObjectUploadStatus.NoUpload
 						|| obj.UploadStatus == TableObjectUploadStatus.Deleted){
