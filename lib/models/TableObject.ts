@@ -72,7 +72,7 @@ export class TableObject{
          }else{
             delete this.Properties[name];
          }
-			await this.Save();
+			await this.Save(Dav.globals.environment == DavEnvironment.Test);
 		}
 	}
 
@@ -147,9 +147,9 @@ export class TableObject{
 		}
 	}
 	
-	private async Save(updateOnServer: boolean = true){
+	private async Save(triggerSyncPush: boolean = true){
 		if(await DatabaseOperations.TableObjectExists(this.Uuid)){
-			if(this.UploadStatus == TableObjectUploadStatus.UpToDate && updateOnServer){
+			if(this.UploadStatus == TableObjectUploadStatus.UpToDate && triggerSyncPush){
 				this.UploadStatus = TableObjectUploadStatus.Updated;
          }
          await DatabaseOperations.UpdateTableObject(this);
@@ -158,9 +158,9 @@ export class TableObject{
          this.Uuid = uuid;
 		}
 		
-		if(updateOnServer && Dav.globals.environment == DavEnvironment.Test){
+		if(triggerSyncPush && Dav.globals.environment == DavEnvironment.Test){
 			await DataManager.SyncPush();
-		}else if(updateOnServer){
+		}else if(triggerSyncPush){
 			DataManager.SyncPush();
 		}
 	}
