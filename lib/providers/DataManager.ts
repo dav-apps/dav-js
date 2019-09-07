@@ -1,6 +1,6 @@
 import * as Dav from '../Dav';
 var axios = require('axios');
-import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, ConvertObjectToMap, ConvertMapToObject, generateUUID } from '../models/TableObject';
+import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
 import * as DatabaseOperations from './DatabaseOperations';
 import * as platform from 'platform';
@@ -713,7 +713,7 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 		tableObject.Etag = response.data.etag;
 		tableObject.Uuid = response.data.uuid;
 		tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
-		tableObject.Properties = ConvertObjectToMap(response.data.properties);
+		tableObject.Properties = response.data.properties;
 
 		return tableObject;
 	}catch(error){
@@ -767,7 +767,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
                'Authorization': Dav.globals.jwt,
                'Content-Type': 'application/json'
             },
-            data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
+            data: JSON.stringify(tableObject.Properties)
          });
       }
 
@@ -814,7 +814,7 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<obje
 					'Authorization': Dav.globals.jwt,
 					'Content-Type': 'application/json'
 				},
-				data: JSON.stringify(ConvertMapToObject(tableObject.Properties))
+				data: JSON.stringify(tableObject.Properties)
 			});
 		}
 

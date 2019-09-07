@@ -9,7 +9,7 @@ export class TableObject{
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
 	public File: Blob;
-	public Properties: Map<string, string> = new Map();
+	public Properties: object = {};
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
 
@@ -37,9 +37,9 @@ export class TableObject{
 	}
 
 	async SetPropertyValue(name: string, value: string): Promise<void>{
-		if(this.Properties.get(name) == value) return;
+		if(this.Properties[name] == value) return;
 
-		this.Properties.set(name, value);
+		this.Properties[name] = value;
 		await this.Save();
 	}
 
@@ -47,8 +47,8 @@ export class TableObject{
 		var propertiesChanged = false;
 
 		properties.forEach(property => {
-			if(this.Properties.get(property.name) != property.value){
-				this.Properties.set(property.name, property.value);
+			if(this.Properties[property.name] != property.value){
+				this.Properties[property.name] = property.value;
 				propertiesChanged = true;
 			}
 		});
@@ -59,13 +59,13 @@ export class TableObject{
 	}
 
 	GetPropertyValue(name: string): string{
-		var value = this.Properties.get(name);
+		var value = this.Properties[name];
 		return value ? value : null;
 	}
 
 	async RemoveProperty(name: string): Promise<void>{
-		if(this.Properties.get(name)){
-			this.Properties.delete(name);
+		if(this.Properties[name]){
+			delete this.Properties[name];
 			await this.Save();
 		}
 	}
@@ -158,6 +158,11 @@ export class TableObject{
 	}
 }
 
+export interface Property{
+	name: string;
+	value: string;
+}
+
 export enum TableObjectVisibility{
    Private = 0,
    Protected = 1,
@@ -192,26 +197,6 @@ export function ConvertIntToVisibility(visibilityInt: number): TableObjectVisibi
 	}
 
 	return visibility;
-}
-
-export function ConvertMapToObject(map: Map<string, string>): object{
-	var obj = {};
-
-	for(let [key, value] of map){
-		obj[key] = value;
-	}
-
-	return obj;
-}
-
-export function ConvertObjectToMap(obj: object): Map<string, string>{
-	var map: Map<string, string> = new Map();
-
-	Object.keys(obj).forEach(key => {
-		map.set(key, obj[key]);
-	});
-
-	return map;
 }
 
 // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

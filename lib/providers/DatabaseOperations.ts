@@ -1,7 +1,7 @@
 import * as localforage from "localforage";
 var bowser = require('bowser');
 import * as Dav from '../Dav';
-import { TableObject, TableObjectUploadStatus, generateUUID, ConvertObjectToMap, ConvertMapToObject } from '../models/TableObject';
+import { TableObject, TableObjectUploadStatus, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
 import { UploadStatus } from './DataManager';
 
@@ -144,7 +144,7 @@ async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 				Visibility: tableObject.Visibility,
 				UploadStatus: tableObject.UploadStatus,
 				Etag: tableObject.Etag,
-				Properties: ConvertMapToObject(tableObject.Properties)
+				Properties: tableObject.Properties
 			});
 		});
 
@@ -159,7 +159,7 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 
 	try{
 		var objArray = await localforage.getItem(Dav.tableObjectsKey) as object[];
-		if(!objArray) return [];
+      if(!objArray) return [];
 
 		var tableObjectsArray: TableObject[] = [];
 
@@ -172,9 +172,7 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 			tableObject.Etag = obj["Etag"];
 			tableObject.Visibility = obj["Visibility"];
 			tableObject.Uuid = obj["Uuid"];
-			if(obj["Properties"]){
-				tableObject.Properties = ConvertObjectToMap(obj["Properties"])
-			}
+			tableObject.Properties = obj["Properties"];
 			
 			tableObjectsArray.push(tableObject);
 		});
