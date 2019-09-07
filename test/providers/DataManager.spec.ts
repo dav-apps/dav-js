@@ -1001,7 +1001,7 @@ describe("SortTableIds function", () => {
 });
 
 //#region Helper methods
-async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
+export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
    try{
       var response = await axios.get(Dav.globals.apiBaseUrl + "apps/object/" + uuid, {
          headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
@@ -1021,7 +1021,7 @@ async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
    }
 }
 
-async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
+export async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
    try{
       var response = await axios({
          method: 'delete',

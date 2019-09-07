@@ -5,6 +5,9 @@ import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import { TableObject, TableObjectVisibility, TableObjectUploadStatus } from '../../lib/models/TableObject';
 import { DavEnvironment } from '../../lib/models/DavUser';
+import { SyncPush } from '../../lib/providers/DataManager';
+import { GetTableObjectFromServer, DeleteTableObjectFromServer } from '../providers/DataManager.spec';
+import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTestUserJwt } from '../Constants';
 
 function clearDatabase(){
    localforage.removeItem(Dav.userKey);
@@ -177,9 +180,10 @@ describe("GetPropertyValue function", () => {
 });
 
 describe("RemoveProperty function", () => {
-   it("should remove the property from the table object", async () => {
-      // Arrange
-      var propertyName = "page1";
+   it("should remove the property from the table object if the user is not logged in", async () => {
+		// Arrange
+		Dav.globals.jwt = null;
+		var propertyName = "page1";
       var propertyValue = "test";
       
       var tableObject = new TableObject();
@@ -196,6 +200,48 @@ describe("RemoveProperty function", () => {
       // Tidy up
       clearDatabase();
    });
+
+   it("should remove the property on the server if the user is logged in", async () => {
+		// Arrange
+		Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		var propertyName = "page1";
+		var propertyValue = "Hello World";
+
+		var tableObject = new TableObject();
+		var uuid = tableObject.Uuid;
+		tableObject.TableId = testDataTableId;
+		tableObject.Properties = {
+			[propertyName]: propertyValue
+		}
+		await DatabaseOperations.CreateTableObject(tableObject);
+
+		// Upload the table object to the server
+		await SyncPush();
+
+		// Check if the table object has the property on the server
+		let tableObjectFromServer1 = await GetTableObjectFromServer(uuid);
+		assert.equal(tableObjectFromServer1.Properties[propertyName], propertyValue);
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid);
+
+		// Act
+		await tableObjectFromDatabase.RemoveProperty(propertyName);
+
+		// Assert
+		// Check if the property of the table object was removed on the server
+		let tableObjectFromServer2 = await GetTableObjectFromServer(uuid);
+		assert.isUndefined(tableObjectFromServer2.Properties[propertyName]);
+
+		// Tidy up
+		await DeleteTableObjectFromServer(uuid)
+		clearDatabase();
+	});
 });
 
 describe("Delete function", () => {

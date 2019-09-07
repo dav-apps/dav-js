@@ -1,6 +1,7 @@
 import * as DataManager from '../providers/DataManager';
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as Dav from '../Dav';
+import { DavEnvironment } from './DavUser';
 var axios = require('axios');
 
 export class TableObject{
@@ -65,7 +66,12 @@ export class TableObject{
 
 	async RemoveProperty(name: string): Promise<void>{
 		if(this.Properties[name]){
-			delete this.Properties[name];
+         if(Dav.globals.jwt){
+            // Set the value to empty string if the user is logged in
+            this.Properties[name] = "";
+         }else{
+            delete this.Properties[name];
+         }
 			await this.Save();
 		}
 	}
@@ -152,7 +158,9 @@ export class TableObject{
          this.Uuid = uuid;
 		}
 		
-		if(updateOnServer){
+		if(updateOnServer && Dav.globals.environment == DavEnvironment.Test){
+			await DataManager.SyncPush();
+		}else if(updateOnServer){
 			DataManager.SyncPush();
 		}
 	}
