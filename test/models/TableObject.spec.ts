@@ -3,7 +3,7 @@ import 'mocha';
 import * as Dav from '../../lib/Dav';
 import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { TableObject, TableObjectVisibility, TableObjectUploadStatus, ConvertMapToObject, ConvertObjectToMap } from '../../lib/models/TableObject';
+import { TableObject, TableObjectVisibility, TableObjectUploadStatus } from '../../lib/models/TableObject';
 import { DavEnvironment } from '../../lib/models/DavUser';
 
 function clearDatabase(){
@@ -88,20 +88,20 @@ describe("SetPropertyValue function", () => {
 
       var tableObject = new TableObject();
       tableObject.TableId = 15;
-      tableObject.Properties = new Map([
-         [propertyName, oldPropertyValue]
-      ]);
+      tableObject.Properties = {
+         [propertyName]: oldPropertyValue
+      }
       await DatabaseOperations.CreateTableObject(tableObject);
 
       // Act
       await tableObject.SetPropertyValue(propertyName, newPropertyValue);
 
       // Assert
-      assert.equal(newPropertyValue, tableObject.Properties.get(propertyName));
+      assert.equal(newPropertyValue, tableObject.Properties[propertyName]);
 
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newPropertyValue, tableObjectFromDatabase.Properties.get(propertyName));
+      assert.equal(newPropertyValue, tableObjectFromDatabase.Properties[propertyName]);
 
       // Tidy up
       clearDatabase();
@@ -120,10 +120,10 @@ describe("SetPropertyValues function", () => {
 
       var tableObject = new TableObject();
       tableObject.TableId = 15;
-      tableObject.Properties = new Map([
-         [firstPropertyName, oldFirstPropertyValue],
-         [secondPropertyName, oldSecondPropertyValue]
-      ]);
+      tableObject.Properties = {
+         [firstPropertyName]: oldFirstPropertyValue,
+         [secondPropertyName]: oldSecondPropertyValue
+      }
       await DatabaseOperations.CreateTableObject(tableObject);
 
       // Act
@@ -133,13 +133,13 @@ describe("SetPropertyValues function", () => {
       ]);
 
       // Assert
-      assert.equal(newFirstPropertyValue, tableObject.Properties.get(firstPropertyName));
-      assert.equal(newSecondPropertyValue, tableObject.Properties.get(secondPropertyName));
+      assert.equal(newFirstPropertyValue, tableObject.Properties[firstPropertyName]);
+      assert.equal(newSecondPropertyValue, tableObject.Properties[secondPropertyName]);
 
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newFirstPropertyValue, tableObjectFromDatabase.Properties.get(firstPropertyName));
-      assert.equal(newSecondPropertyValue, tableObjectFromDatabase.Properties.get(secondPropertyName));
+      assert.equal(newFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName]);
+      assert.equal(newSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
       clearDatabase();
@@ -153,9 +153,9 @@ describe("GetPropertyValue function", () => {
       var propertyValue = "testtest";
 
       var tableObject = new TableObject();
-      tableObject.Properties = new Map([
-         [propertyName, propertyValue]
-      ]);
+      tableObject.Properties = {
+         [propertyName]: propertyValue
+      }
 
       // Act
       var value = tableObject.GetPropertyValue(propertyName);
@@ -183,15 +183,15 @@ describe("RemoveProperty function", () => {
       var propertyValue = "test";
       
       var tableObject = new TableObject();
-      tableObject.Properties = new Map([
-         [propertyName, propertyValue]
-      ]);
+      tableObject.Properties = {
+         [propertyName]: propertyValue
+      }
 
       // Act
       await tableObject.RemoveProperty(propertyName);
 
       // Assert
-      assert.isUndefined(tableObject.Properties.get(propertyName));
+      assert.isUndefined(tableObject.Properties[propertyName]);
 
       // Tidy up
       clearDatabase();
@@ -264,48 +264,5 @@ describe("DeleteImmediately function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNull(tableObjectFromDatabase);
-   });
-});
-
-describe("ConvertMapToObject function", () => {
-   it("should convert a map to an object", () => {
-      // Arrange
-      var firstKey = "test1";
-      var secondKey = "test2";
-      var firstValue = "blabla";
-      var secondValue = "testtest";
-
-      var map = new Map([
-         [firstKey, firstValue],
-         [secondKey, secondValue]
-      ]);
-
-      // Act
-      var obj = ConvertMapToObject(map);
-
-      // Assert
-      assert.equal(firstValue, obj[firstKey]);
-      assert.equal(secondValue, obj[secondKey]);
-   });
-});
-
-describe("ConvertObjectToMap function", () => {
-   it("should convert an object to a map", () => {
-      // Arrange
-      var firstKey = "test1";
-      var secondKey = "test2";
-      var firstValue = "blabla";
-      var secondValue = "testtest";
-
-      var obj = {};
-      obj[firstKey] = firstValue;
-      obj[secondKey] = secondValue;
-
-      // Act
-      var map = ConvertObjectToMap(obj);
-
-      // Assert
-      assert.equal(firstValue, map.get(firstKey));
-      assert.equal(secondValue, map.get(secondKey));
    });
 });

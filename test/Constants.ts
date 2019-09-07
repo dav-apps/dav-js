@@ -14,17 +14,17 @@ export const secondNotificationPropertyName = "message";
 
 export var firstTestDataTableObject = new TableObject();
 firstTestDataTableObject.Uuid = "642e6407-f357-4e03-b9c2-82f754931161";
-firstTestDataTableObject.Properties = new Map([
-   [firstPropertyName, "Hello World"],
-   [secondPropertyName, "Hallo Welt"]
-]);
+firstTestDataTableObject.Properties = {
+	[firstPropertyName]: "Hello World",
+	[secondPropertyName]: "Hallo Welt"
+}
 
 export var secondTestDataTableObject = new TableObject();
 secondTestDataTableObject.Uuid = "8d29f002-9511-407b-8289-5ebdcb5a5559";
-secondTestDataTableObject.Properties = new Map([
-   [firstPropertyName, "Table"],
-   [secondPropertyName, "Tabelle"]
-]);
+secondTestDataTableObject.Properties = {
+	[firstPropertyName]: "Table",
+	[secondPropertyName]: "Tabelle"
+}
 
 export var firstTestNotification = new Notification(1863541331, 3600, {
    title: "Hello World",

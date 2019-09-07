@@ -408,10 +408,10 @@ describe("CreateTableObject function", () => {
       tableObject.TableId = tableId;
       tableObject.UploadStatus = uploadStatus;
       tableObject.Etag = etag;
-      tableObject.Properties = new Map([
-         [firstPropertyName, firstPropertyValue],
-         [secondPropertyName, secondPropertyValue]
-      ]);
+      tableObject.Properties = {
+         [firstPropertyName]: firstPropertyValue,
+         [secondPropertyName]: secondPropertyValue
+      }
 
       // Act
       var savedUuid = await DatabaseOperations.CreateTableObject(tableObject);
@@ -557,11 +557,11 @@ describe("GetTableObject function", () => {
       tableObject.Uuid = uuid;
       tableObject.TableId = tableId;
       tableObject.Etag = etag;
-      tableObject.UploadStatus = uploadStatus;
-      tableObject.Properties = new Map([
-         [firstPropertyName, firstPropertyValue],
-         [secondPropertyName, secondPropertyValue]
-      ]);
+		tableObject.UploadStatus = uploadStatus;
+		tableObject.Properties = {
+			[firstPropertyName]: firstPropertyValue,
+			[secondPropertyName]: secondPropertyValue
+		}
 
       await DatabaseOperations.CreateTableObject(tableObject);
 
@@ -573,8 +573,8 @@ describe("GetTableObject function", () => {
       assert.equal(tableId, tableObjectFromDatabase.TableId);
       assert.equal(etag, tableObjectFromDatabase.Etag);
       assert.equal(uploadStatus, tableObjectFromDatabase.UploadStatus);
-      assert.equal(properties[firstPropertyName], tableObjectFromDatabase.Properties.get(firstPropertyName));
-      assert.equal(properties[secondPropertyName], tableObjectFromDatabase.Properties.get(secondPropertyName));
+      assert.equal(properties[firstPropertyName], tableObjectFromDatabase.Properties[firstPropertyName]);
+      assert.equal(properties[secondPropertyName], tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
       clearDatabase();
@@ -834,14 +834,14 @@ describe("UpdateTableObject function", () => {
       
       var tableObject = new TableObject();
       tableObject.TableId = tableId;
-      tableObject.Properties = new Map([
-         [firstPropertyName, firstPropertyValue],
-         [secondPropertyName, secondPropertyValue]
-      ]);
+      tableObject.Properties = {
+         [firstPropertyName]: firstPropertyValue,
+         [secondPropertyName]: secondPropertyValue
+      }
       await DatabaseOperations.CreateTableObject(tableObject);
 
-      tableObject.Properties.set(firstPropertyName, updatedFirstPropertyValue);
-      tableObject.Properties.set(secondPropertyName, updatedSecondPropertyValue);
+      tableObject.Properties[firstPropertyName] = updatedFirstPropertyValue;
+      tableObject.Properties[secondPropertyName] = updatedSecondPropertyValue;
 
       // Act
       await DatabaseOperations.UpdateTableObject(tableObject);
@@ -849,8 +849,8 @@ describe("UpdateTableObject function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.equal(tableId, tableObjectFromDatabase.TableId);
-      assert.equal(updatedFirstPropertyValue, tableObjectFromDatabase.Properties.get(firstPropertyName));
-      assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties.get(secondPropertyName));
+      assert.equal(updatedFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName]);
+      assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
       clearDatabase();
