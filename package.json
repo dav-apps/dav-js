@@ -1,6 +1,6 @@
 {
 	"name": "dav-npm",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"description": "The npm package for accessing the dav API",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -16,14 +16,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com/Dav2070/dav-npm.git"
+		"url": "git+ssh://git@github.com/dav-apps/dav-npm.git"
 	},
 	"author": "Dav",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/Dav2070/dav-npm/issues"
+		"url": "https://github.com/dav-apps/dav-npm/issues"
 	},
-	"homepage": "https://github.com/Dav2070/dav-npm",
+	"homepage": "https://github.com/dav-apps/dav-npm",
 	"files": [
 		"dist/index.js",
 		"dist/index.d.ts",
