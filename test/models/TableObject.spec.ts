@@ -203,7 +203,7 @@ describe("RemoveProperty function", () => {
 
    it("should remove the property on the server if the user is logged in", async () => {
 		// Arrange
-		Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], {icon: "", badge: ""}, {
+		Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
@@ -247,7 +247,7 @@ describe("RemoveProperty function", () => {
 describe("Delete function", () => {
    it("should set the UploadStatus of the table object to Deleted when the user is logged in", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, 1, [1], [], {icon: "", badge: ""}, {
+      Dav.Initialize(DavEnvironment.Test, 1, [1], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -293,7 +293,7 @@ describe("Delete function", () => {
 describe("DeleteImmediately function", () => {
    it("should delete the table object immediately", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, 1, [1], [], {icon: "", badge: ""}, {
+      Dav.Initialize(DavEnvironment.Test, 1, [1], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},

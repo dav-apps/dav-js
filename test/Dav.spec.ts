@@ -18,7 +18,7 @@ describe("Initialize function", () => {
       }
 
       // Act
-      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
 
       // Assert
       assert.equal(environment, Dav.globals.environment);
@@ -40,13 +40,13 @@ describe("Globals", () => {
       }
 
       // Act
-      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
       var firstWebsiteUrl = Dav.globals.websiteUrl;
       var firstApiBaseUrl = Dav.globals.apiBaseUrl;
 
       environment = DavEnvironment.Production;
 
-      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
       var secondWebsiteUrl = Dav.globals.websiteUrl;
       var secondApiBaseUrl = Dav.globals.apiBaseUrl;
 
@@ -90,7 +90,7 @@ describe("Globals", () => {
          }
       }
 
-      Dav.Initialize(environment, appId, tableIds, [], {icon: "", badge: ""}, callbacks);
+      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
 
       // Act
       Dav.globals.callbacks.UpdateAllOfTable(callingTableId);
