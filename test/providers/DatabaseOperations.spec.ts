@@ -1,18 +1,15 @@
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import * as Dav from '../../lib/Dav';
 import * as localforage from "localforage";
+import { extendPrototype } from 'localforage-startswith';
 import { assert } from 'chai';
 import 'mocha';
 import { TableObject, TableObjectUploadStatus, generateUUID } from '../../lib/models/TableObject';
 import { Notification } from '../../lib/models/Notification';
 import { UploadStatus } from '../../lib/providers/DataManager';
+import { DavEnvironment } from '../../lib/models/DavUser';
 
-function clearDatabase(){
-   localforage.removeItem(Dav.userKey);
-	localforage.removeItem(Dav.tableObjectsKey);
-	localforage.removeItem(Dav.notificationsKey);
-	localforage.removeItem(Dav.subscriptionKey);
-}
+extendPrototype(localforage);
 
 describe("SetUser function", () => {
    it("should save the user object", async () => {
@@ -33,7 +30,7 @@ describe("SetUser function", () => {
       assert.equal(user.jwt, savedUser["jwt"]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -56,7 +53,7 @@ describe("GetUser function", () => {
       assert.equal(user.jwt, savedUser["jwt"]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -106,7 +103,7 @@ describe("GetAllNotifications function", () => {
       }
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    function GenerateNotifications() : Array<Notification>{
@@ -155,7 +152,7 @@ describe("GetNotification function", () => {
       assert.equal(uploadStatus, notificationFromDatabase.Status);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should return null if the notification does not exist", async () => {
@@ -169,7 +166,7 @@ describe("GetNotification function", () => {
       assert.isNull(notificationFromDatabase);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -200,7 +197,7 @@ describe("SaveNotification function", () => {
       assert.equal(uploadStatus, notificationFromDatabase.Status);
 
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should replace the notification with the same uuid in the database", async () => {
@@ -237,7 +234,7 @@ describe("SaveNotification function", () => {
 		assert.equal(uploadStatus, notificationFromDatabase.Status);
 		
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -262,7 +259,7 @@ describe("DeleteNotification function", () => {
 		assert.isNull(await DatabaseOperations.GetNotification(uuid));
 
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
 	});
 });
 
@@ -321,7 +318,7 @@ describe("SetSubscription function", () => {
 		assert.equal(status, subscriptionFromDatabase.status);
 
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
 	});
 });
 
@@ -354,7 +351,7 @@ describe("GetSubscription function", () => {
 		assert.equal(status, subscriptionFromDatabase.status);
 
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
 	});
 });
 
@@ -383,15 +380,23 @@ describe("RemoveSubscription function", () => {
 		assert.isNull(await DatabaseOperations.GetSubscription());
 
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
 	});
 });
 
 describe("CreateTableObject function", () => {
-   it("should save the table object and return the uuid", async () => {
-      // Arrange
+	async function saveTableObjectAndReturnUuidTest(separateKeyStorage: boolean){
+		// Arrange
+		var tableId = -13;
+
+		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
       var uuid = "2569d0b8-61a2-4cf1-9bcd-682d55f99db9";
-      var tableId = -13;
       var uploadStatus = TableObjectUploadStatus.Updated;
       var etag = "13212313qd13coi192cn";
       var firstPropertyName = "page1";
@@ -414,10 +419,10 @@ describe("CreateTableObject function", () => {
       }
 
       // Act
-      var savedUuid = await DatabaseOperations.CreateTableObject(tableObject);
+		var savedUuid = await DatabaseOperations.CreateTableObject(tableObject);
 
-      // Assert
-      var savedObject = (await localforage.getItem(Dav.tableObjectsKey) as object[])[0];
+		// Assert
+      var savedObject = separateKeyStorage ? (await localforage.getItem(Dav.getTableObjectsKey(tableObject.TableId, tableObject.Uuid))) : (await localforage.getItem(Dav.tableObjectsKey) as object[])[0];
 
       assert.equal(uuid, savedUuid);
       assert.equal(uuid, savedObject["Uuid"]);
@@ -429,36 +434,59 @@ describe("CreateTableObject function", () => {
       assert.equal(properties[secondPropertyName], savedObject["Properties"][secondPropertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should generate a new uuid if the uuid is already in use", async () => {
-      // Arrange
-      var uuid = "3f0b11b9-78b1-4b63-b613-8a82945300eb";
-      var firstTableObject = new TableObject();
-      firstTableObject.Uuid = uuid;
-      var oldUuid = await DatabaseOperations.CreateTableObject(firstTableObject);
-      assert.equal(uuid, oldUuid);
+	it("should save the table object and return the uuid", async () => await saveTableObjectAndReturnUuidTest(false));
+	it("should save the table object and return the uuid with separateKeyStorage", async () => await saveTableObjectAndReturnUuidTest(true));
 
-      var secondTableObject = new TableObject();
-      secondTableObject.Uuid = uuid;
+	it("should generate a new uuid if the uuid is already in use", async () => {
+		// Arrange
+		var tableId = 1;
 
-      // Act
-      var newUuid = await DatabaseOperations.CreateTableObject(secondTableObject);
-      
-      // Assert
-      assert.notEqual(uuid, newUuid);
+		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], false, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
 
-      // Tidy up
-      clearDatabase();
-   });
+		var uuid = "3f0b11b9-78b1-4b63-b613-8a82945300eb";
+		var firstTableObject = new TableObject();
+		firstTableObject.Uuid = uuid;
+		firstTableObject.TableId = tableId;
+		var oldUuid = await DatabaseOperations.CreateTableObject(firstTableObject);
+		assert.equal(uuid, oldUuid);
+
+		var secondTableObject = new TableObject();
+		secondTableObject.Uuid = uuid;
+		secondTableObject.TableId = tableId;
+		
+		// Act
+		var newUuid = await DatabaseOperations.CreateTableObject(secondTableObject);
+		
+		// Assert
+		assert.notEqual(uuid, newUuid);
+
+		// Tidy up
+		await localforage.clear();
+	});
 });
 
 describe("CreateTableObjects function", () => {
-   it("should save multiple table objects", async () => {
-      // Arrange
+	async function saveMultipleTableObjectsTest(separateKeyStorage: boolean){
+		// Arrange
+		var firstTableId = 1;
+		var secondTableId = 2;
+
+		Dav.Initialize(DavEnvironment.Test, 1, [firstTableId, secondTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
       var firstTableObject = new TableObject();
-      var firstTableId = -123;
       var firstUuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
       var firstEtag = "asdasdpoasjd0asdaud";
       
@@ -467,7 +495,6 @@ describe("CreateTableObjects function", () => {
       firstTableObject.Etag = firstEtag;
 
       var secondTableObject = new TableObject();
-      var secondTableId = -212;
       var secondUuid = "fbf66639-bcca-433c-bd55-34d2717138f3";
       var secondEtag = "ad02qewjs";
 
@@ -483,23 +510,35 @@ describe("CreateTableObjects function", () => {
       // Assert
       assert.equal(tableObjects.length, uuids.length);
       assert.equal(firstUuid, uuids[0]);
-      assert.equal(secondUuid, uuids[1]);
+		assert.equal(secondUuid, uuids[1]);
 
-      var tableObjectsFromDatabase = await localforage.getItem(Dav.tableObjectsKey) as object[];
-
+      var tableObjectsFromDatabase = separateKeyStorage ? await getTableObjects(Dav.getTableObjectsKey()) : await localforage.getItem(Dav.tableObjectsKey) as object[];
+		
       assert.equal(firstTableId, tableObjectsFromDatabase[0]["TableId"]);
       assert.equal(secondTableId, tableObjectsFromDatabase[1]["TableId"]);
       assert.equal(firstEtag, tableObjectsFromDatabase[0]["Etag"]);
       assert.equal(secondEtag, tableObjectsFromDatabase[1]["Etag"]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
+
+	it("should save multiple table objects", async () => await saveMultipleTableObjectsTest(false));
+	it("should save multiple table objects with separateKeyStorage", async () => await saveMultipleTableObjectsTest(true));
 
    it("should generate new uuids for table objects with a uuid that is already in use", async () => {
-      // Arrange
+		// Arrange
+		var firstTableId = -123;
+		var secondTableId = -212;
+		
+		Dav.Initialize(DavEnvironment.Test, 1, [firstTableId, secondTableId], [], false, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
       var firstTableObject = new TableObject();
-      var firstTableId = -123;
       var uuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
       var firstEtag = "asdasdpoasjd0asdaud";
       
@@ -508,7 +547,6 @@ describe("CreateTableObjects function", () => {
       firstTableObject.Etag = firstEtag;
 
       var secondTableObject = new TableObject();
-      var secondTableId = -212;
       var secondEtag = "ad02qewjs";
 
       secondTableObject.TableId = secondTableId;
@@ -532,7 +570,7 @@ describe("CreateTableObjects function", () => {
       assert.equal(secondEtag, tableObjectsFromDatabase[1]["Etag"]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -577,7 +615,7 @@ describe("GetTableObject function", () => {
       assert.equal(properties[secondPropertyName], tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should return null if the table object does not exist", async () => {
@@ -611,7 +649,7 @@ describe("GetAllTableObjects function", () => {
       assert.equal(generatedTableObjects.firstUploadStatus, tableObjects[0].UploadStatus);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should return table objects without specified table and with deleted ones", async () => {
@@ -647,7 +685,7 @@ describe("GetAllTableObjects function", () => {
       assert.equal(generatedTableObjects.fourthUploadStatus, tableObjects[3].UploadStatus);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should return table objects without specified table and without deleted ones", async () => {
@@ -673,7 +711,7 @@ describe("GetAllTableObjects function", () => {
       assert.equal(generatedTableObjects.secondUploadStatus, tableObjects[1].UploadStatus);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should return table objects with specified table and with deleted ones", async () => {
@@ -803,7 +841,7 @@ describe("TableObjectExists function", () => {
       assert.isTrue(exists);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should return false if the table object does not exist", async () => {
@@ -817,7 +855,7 @@ describe("TableObjectExists function", () => {
       assert.isFalse(exists);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -853,7 +891,7 @@ describe("UpdateTableObject function", () => {
       assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -872,7 +910,7 @@ describe("DeleteTableObject function", () => {
       assert.equal(TableObjectUploadStatus.Deleted, tableObjectFromDatabase.UploadStatus);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -890,6 +928,11 @@ describe("DeleteTableObjectImmediately function", () => {
       assert.isNull(tableObjectFromDatabase);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
+
+async function getTableObjects(key: string) : Promise<object[]>{
+	let result = await localforage.startsWith(key);
+	return Object.keys(result).map(key => result[key]);
+}
