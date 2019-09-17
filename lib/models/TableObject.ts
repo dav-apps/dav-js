@@ -5,8 +5,8 @@ import { DavEnvironment } from './DavUser';
 var axios = require('axios');
 
 export class TableObject{
+	public Uuid: string;
    public TableId: number;
-   public Uuid: string;
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
 	public File: Blob;
@@ -205,6 +205,18 @@ export function ConvertIntToVisibility(visibilityInt: number): TableObjectVisibi
 	}
 
 	return visibility;
+}
+
+export function ConvertObjectToTableObject(obj: {Uuid: string, TableId: number, Visibility: number, IsFile: boolean, File: Blob, Properties: object, UploadStatus: number, Etag: string}) : TableObject{
+	let tableObject = new TableObject(obj.Uuid);
+	tableObject.TableId = obj.TableId;
+	tableObject.UploadStatus = obj.UploadStatus;
+	tableObject.IsFile = obj.IsFile;
+	tableObject.File = obj.File;
+	tableObject.Etag = obj.Etag;
+	tableObject.Visibility = obj.Visibility;
+	tableObject.Properties = obj.Properties;
+	return tableObject;
 }
 
 // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
