@@ -9,6 +9,18 @@ export const subscriptionKey = "subscription";
 export const extPropertyName = "ext";
 export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ";
 
+export function getTableObjectsKey(tableId?: number, uuid?: string){
+	if(!tableId && !uuid){
+		return "tableObjects:";
+	}else if(tableId && !uuid){
+		return `tableObjects:${tableId}/`;
+	}else if(tableId && uuid){
+		return `tableObjects:${tableId}/${uuid}`;
+	}else{
+		return null;
+	}
+}
+
 class Globals{
    public apiBaseUrl: string = "http://localhost:3111/v1/";
 	public websiteUrl: string = "http://localhost:3000/";
@@ -18,6 +30,7 @@ class Globals{
 					public appId: number, 
                public tableIds: Array<number>,
                public parallelTableIds: Array<number>,
+               public separateKeyStorage: boolean,
                public notificationOptions: {icon: string, badge: string},
                public callbacks: { 
                   UpdateAllOfTable: Function, 
@@ -33,7 +46,7 @@ class Globals{
    }
 }
 
-export var globals = new Globals(DavEnvironment.Development, -1, [], [], {icon: "", badge: ""}, {
+export var globals = new Globals(DavEnvironment.Development, -1, [], [], false, {icon: "", badge: ""}, {
                                                 UpdateAllOfTable: (tableId: number) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {}, 
                                                 DeleteTableObject: (tableObject: TableObject) => {},
@@ -44,6 +57,7 @@ export function Initialize(environment: DavEnvironment,
                            appId: number, 
                            tableIds: Array<number>, 
                            parallelTableIds: Array<number>,
+                           separateKeyStorage: boolean,
                            notificationOptions: {icon: string, badge: string},
                            callbacks: { 
                               UpdateAllOfTable: Function, 
@@ -51,7 +65,7 @@ export function Initialize(environment: DavEnvironment,
                               DeleteTableObject: Function,
                               SyncFinished: Function
                            }){
-   globals = new Globals(environment, appId, tableIds, parallelTableIds, notificationOptions, callbacks);
+   globals = new Globals(environment, appId, tableIds, parallelTableIds, separateKeyStorage, notificationOptions, callbacks);
 }
 
 export function startWebSocketConnection(channelName = "TableObjectUpdateChannel"){
