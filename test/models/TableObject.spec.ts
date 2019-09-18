@@ -9,14 +9,10 @@ import { SyncPush } from '../../lib/providers/DataManager';
 import { GetTableObjectFromServer, DeleteTableObjectFromServer } from '../providers/DataManager.spec';
 import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTestUserJwt } from '../Constants';
 
-function clearDatabase(){
-   localforage.removeItem(Dav.userKey);
-   localforage.removeItem(Dav.tableObjectsKey);
-}
-
 describe("SetVisibility function", () => {
-   it("should set the visibility of the table object and save it in the database", async () => {
-      // Arrange
+	async function setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       var tableObject = new TableObject();
       tableObject.TableId = 12;
       var oldVisibility = tableObject.Visibility;
@@ -29,18 +25,22 @@ describe("SetVisibility function", () => {
       assert.equal(newVisibility, tableObject.Visibility);
       assert.notEqual(oldVisibility, newVisibility);
 
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNotNull(tableObjectFromDatabase);
       assert.equal(newVisibility, tableObjectFromDatabase.Visibility);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
+
+	it("should set the visibility of the table object and save it in the database", async () => await setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(false));
+	it("should set the visibility of the table object and save it in the database with separateKeyStorage", async () => await setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(true));
 });
 
 describe("SetUploadStatus function", () => {
-   it("should set the UploadStatus of the table object and save it in the database", async () => {
-      // Arrange
+	async function setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       var tableObject = new TableObject();
       tableObject.TableId = 13;
       var newUploadStatus = TableObjectUploadStatus.Updated;
@@ -52,18 +52,22 @@ describe("SetUploadStatus function", () => {
       // Assert
       assert.equal(newUploadStatus, tableObject.UploadStatus);
 
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNotNull(tableObjectFromDatabase);
       assert.equal(newUploadStatus, tableObjectFromDatabase.UploadStatus);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
+
+	it("should set the UploadStatus of the table object and save it in the database", async () => await setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(false));
+	it("should set the UploadStatus of the table object and save it in the database with separateKeyStorage", async () => await setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(true));
 });
 
 describe("SetEtag function", () => {
-   it("should set the Etag of the table object and save it in the database", async () => {
-      // Arrange
+	async function setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       let tableObject = new TableObject();
       tableObject.TableId = 12;
       tableObject.Etag = "blablabla";
@@ -76,15 +80,19 @@ describe("SetEtag function", () => {
       // Assert
 		assert.equal(tableObject.Etag, newEtag);
 		
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
 		assert.isNotNull(tableObjectFromDatabase);
 		assert.equal(tableObjectFromDatabase.Etag, newEtag);
-   });
+	}
+
+	it("should set the Etag of the table object and save it in the database", async () => await setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(false));
+	it("should set the Etag of the table object and save it in the database with separateKeyStorage", async () => await setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(true));
 });
 
 describe("SetPropertyValue function", () => {
-   it("should set the property value of the table object and save it in the database", async () => {
-      // Arrange
+	async function setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       var propertyName = "page1";
       var oldPropertyValue = "test";
       var newPropertyValue = "testtest";
@@ -102,18 +110,22 @@ describe("SetPropertyValue function", () => {
       // Assert
       assert.equal(newPropertyValue, tableObject.Properties[propertyName]);
 
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNotNull(tableObjectFromDatabase);
       assert.equal(newPropertyValue, tableObjectFromDatabase.Properties[propertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
+
+	it("should set the property value of the table object and save it in the database", async () => setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(false));
+	it("should set the property value of the table object and save it in the database with separateKeyStorage", async () => setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(true));
 });
 
 describe("SetPropertyValues function", () => {
-   it("should set the property values of the table object and save it in the database", async () => {
-      // Arrange
+	async function setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       var firstPropertyName = "page1";
       var oldFirstPropertyValue = "test";
       var newFirstPropertyValue = "testtest";
@@ -139,14 +151,17 @@ describe("SetPropertyValues function", () => {
       assert.equal(newFirstPropertyValue, tableObject.Properties[firstPropertyName]);
       assert.equal(newSecondPropertyValue, tableObject.Properties[secondPropertyName]);
 
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNotNull(tableObjectFromDatabase);
       assert.equal(newFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName]);
       assert.equal(newSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
+
+	it("should set the property values of the table object and save it in the database", async () => await setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(false));
+	it("should set the property values of the table object and save it in the database with separateKeyStorage", async () => await setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(true));
 });
 
 describe("GetPropertyValue function", () => {
@@ -198,12 +213,12 @@ describe("RemoveProperty function", () => {
       assert.isUndefined(tableObject.Properties[propertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
-
-   it("should remove the property on the server if the user is logged in", async () => {
+      await localforage.clear();
+	});
+	
+	async function removeThePropertyOnTheServerIfTheUserIsLoggedInTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+		Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
@@ -240,14 +255,19 @@ describe("RemoveProperty function", () => {
 
 		// Tidy up
 		await DeleteTableObjectFromServer(uuid)
-		clearDatabase();
-	});
+		await localforage.clear();
+	}
+
+	it("should remove the property on the server if the user is logged in", async () => await removeThePropertyOnTheServerIfTheUserIsLoggedInTest(false));
+	it("should remove the property on the server if the user is logged in with separateKeyStorage", async () => await removeThePropertyOnTheServerIfTheUserIsLoggedInTest(true));
 });
 
 describe("Delete function", () => {
-   it("should set the UploadStatus of the table object to Deleted when the user is logged in", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, 1, [1], [], false, {icon: "", badge: ""}, {
+	async function setTheUploadStatusOfTheTableObjectToDeletedIfTheUserIsLoggedInTest(separateKeyStorage: boolean){
+		// Arrange
+		let tableId = 34;
+
+      Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -256,7 +276,7 @@ describe("Delete function", () => {
       Dav.globals.jwt = "asdasd";
 
       var tableObject = new TableObject();
-      tableObject.TableId = 34;
+      tableObject.TableId = tableId;
       await DatabaseOperations.CreateTableObject(tableObject);
 
       // Act
@@ -270,30 +290,47 @@ describe("Delete function", () => {
       assert.equal(TableObjectUploadStatus.Deleted, tableObjectFromDatabase.UploadStatus);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should delete the table object immediately when the user is not logged in", async () => {
-      // Arrange
-      Dav.globals.jwt = null;
+	it("should set the UploadStatus of the table object to Deleted if the user is logged in", async () => await setTheUploadStatusOfTheTableObjectToDeletedIfTheUserIsLoggedInTest(false));
+	it("should set the UploadStatus of the table object to Deleted if the user is logged in with separateKeyStorage", async () => await setTheUploadStatusOfTheTableObjectToDeletedIfTheUserIsLoggedInTest(true));
 
-      var tableObject = new TableObject();
-      tableObject.TableId = 23;
-      await DatabaseOperations.CreateTableObject(tableObject);
+	async function deleteTheTableObjectImmediatelyIfTheUserIsNotLoggedInTest(separateKeyStorage: boolean){
+		// Arrange
+		let tableId = 23;
 
-      // Act
-      await tableObject.Delete();
+		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+         UpdateAllOfTable: () => {},
+         UpdateTableObject: () => {},
+         DeleteTableObject: () => {},
+         SyncFinished: () => {}
+		});
+		
+		Dav.globals.jwt = null;
 
-      // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
-      assert.isNull(tableObjectFromDatabase);
-   });
+		var tableObject = new TableObject();
+		tableObject.TableId = tableId;
+		await DatabaseOperations.CreateTableObject(tableObject);
+
+		// Act
+		await tableObject.Delete();
+
+		// Assert
+		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+		assert.isNull(tableObjectFromDatabase);
+	}
+
+	it("should delete the table object immediately if the user is not logged in", async () => await deleteTheTableObjectImmediatelyIfTheUserIsNotLoggedInTest(false));
+	it("should delete the table object immediately if the user is not logged in with separateKeyStorage", async () => await deleteTheTableObjectImmediatelyIfTheUserIsNotLoggedInTest(true));
 });
 
 describe("DeleteImmediately function", () => {
-   it("should delete the table object immediately", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, 1, [1], [], false, {icon: "", badge: ""}, {
+	async function deleteTheTableObjectImmediatelyTest(separateKeyStorage: boolean){
+		// Arrange
+		let tableId = 12;
+
+      Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -301,7 +338,7 @@ describe("DeleteImmediately function", () => {
       });
 
       var tableObject = new TableObject();
-      tableObject.TableId = 12;
+      tableObject.TableId = tableId;
       await DatabaseOperations.CreateTableObject(tableObject);
 
       // Act
@@ -310,5 +347,8 @@ describe("DeleteImmediately function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNull(tableObjectFromDatabase);
-   });
+	}
+
+	it("should delete the table object immediately", async () => await deleteTheTableObjectImmediatelyTest(false));
+	it("should delete the table object immediately with separateKeyStorage", async () => await deleteTheTableObjectImmediatelyTest(true));
 });

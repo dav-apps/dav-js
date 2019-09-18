@@ -8,11 +8,6 @@ import * as Constants from '../Constants';
 
 const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJuYW1lIjoiZGF2Q2xhc3NMaWJyYXJ5VGVzdFVzZXIiLCJ1c2VyX2lkIjo1LCJkZXZfaWQiOjIsImV4cCI6Mzc1NTM4OTc0MjZ9.44FwShkIvYL-4Kbm8Ryc7RXbIIWgtWz3CinUKzw9mPE";
 
-function clearDatabase(){
-   localforage.removeItem(Dav.userKey);
-   localforage.removeItem(Dav.tableObjectsKey);
-}
-
 describe("Login function", () => {
    it("should log the user in and download the user information with valid JWT", (done: Function) => {
       // Arrange
@@ -36,8 +31,8 @@ describe("Login function", () => {
 			assert.equal(user.JWT, davClassLibraryTestUserXTestUserJwt);
 
 			// Tidy up
-			clearDatabase();
-			done();
+         localforage.clear();
+         done();
 		});
    });
 
@@ -55,7 +50,7 @@ describe("Login function", () => {
 			assert.isFalse(user.IsLoggedIn);
 
 			// Tidy up
-			clearDatabase();
+			await localforage.clear();
 			done();
 		});
    });
@@ -86,7 +81,7 @@ describe("Logout function", () => {
 			assert.isEmpty(Dav.globals.jwt);
 
          // Tidy up
-         clearDatabase();
+         await localforage.clear();
          done();
       });
    });
