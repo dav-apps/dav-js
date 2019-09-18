@@ -1,6 +1,5 @@
 import * as localforage from "localforage";
 import { extendPrototype } from 'localforage-startswith';
-var bowser = require('bowser');
 import * as Dav from '../Dav';
 import { TableObject, TableObjectUploadStatus, ConvertObjectToTableObject, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
@@ -8,34 +7,22 @@ import { UploadStatus } from './DataManager';
 
 extendPrototype(localforage);
 
-function InitLocalforage(){
-   if(bowser.firefox){
-      // Use localstorage as driver
-      localforage.setDriver(localforage.LOCALSTORAGE);
-   }
-}
-
 //#region User methods
 export async function SetUser(user: object){
-   InitLocalforage();
    await localforage.setItem(Dav.userKey, user);
 }
 
 export async function GetUser() : Promise<object>{
-   InitLocalforage();
    return await localforage.getItem(Dav.userKey) as object;
 }
 
 export async function RemoveUser(){
-	InitLocalforage();
 	await localforage.removeItem(Dav.userKey);
 }
 //#endregion
 
 //#region Notification methods
 async function SetNotificationsArray(notifications: Array<Notification>){
-	InitLocalforage();
-
 	// Convert the notifications to objects
 	let notificationObjects: Array<{uuid: string, time: number, interval: number, properties: object, status: number}> = [];
 	for(let notification of notifications){
@@ -52,7 +39,6 @@ async function SetNotificationsArray(notifications: Array<Notification>){
 }
 
 export async function GetAllNotifications() : Promise<Array<Notification>>{
-	InitLocalforage();
 	let notificationObjects = await localforage.getItem(Dav.notificationsKey) as Array<{uuid: string, time: number, interval: number, properties: object, status: number}>;
 	if(!notificationObjects) return [];
 
@@ -104,14 +90,12 @@ export async function DeleteNotification(uuid: string){
 }
 
 export async function RemoveAllNotifications(){
-	InitLocalforage();
 	await localforage.removeItem(Dav.notificationsKey);
 }
 //#endregion
 
 //#region Subscription methods
 export async function SetSubscription(subscription: {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus}){
-	InitLocalforage();
 	await localforage.setItem(Dav.subscriptionKey, {
 		uuid: subscription.uuid,
 		endpoint: subscription.endpoint,
@@ -122,19 +106,16 @@ export async function SetSubscription(subscription: {uuid: string, endpoint: str
 }
 
 export async function GetSubscription() : Promise<{uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus}>{
-	InitLocalforage();
 	return await localforage.getItem(Dav.subscriptionKey) as {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus};
 }
 
 export async function RemoveSubscription(){
-	InitLocalforage();
 	await localforage.removeItem(Dav.subscriptionKey);
 }
 //#endregion
 
 //#region TableObject methods
 async function SetTableObjectsArray(tableObjects: Array<TableObject>){
-	InitLocalforage();
 	try{
 		// Convert the table objects into objects
 		var objects: object[] = [];
@@ -158,8 +139,6 @@ async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 }
 
 async function GetTableObjectsArray(): Promise<TableObject[]>{
-	InitLocalforage();
-
 	try{
 		var objArray = await localforage.getItem(Dav.tableObjectsKey) as object[];
       if(!objArray) return [];
