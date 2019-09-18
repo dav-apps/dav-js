@@ -307,11 +307,11 @@ describe("SyncPush function", () => {
 });
 
 describe("UpdateLocalTableObject function", () => {
-   it("should get the table object from the server and update it locally", async () => {
-      // Arrange
+	async function getTheTableObjectFromTheServerAndUpdateItLocallyTest(separateKeyStorage: boolean){
+		// Arrange
       // Get all table objects from the server
       let callbackCalled = false;
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {
             callbackCalled = true;
@@ -341,15 +341,18 @@ describe("UpdateLocalTableObject function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
+
+	it("should get the table object from the server and update it locally", async () => await getTheTableObjectFromTheServerAndUpdateItLocallyTest(false));
+	it("should get the table object from the server and update it locally with separateKeyStorage", async () => await getTheTableObjectFromTheServerAndUpdateItLocallyTest(true));
 });
 
 describe("DeleteLocalTableObject function", () => {
-   it("should delete the table object locally", async () => {
-      // Assert
+	async function deleteTheTableObjectLocallyTest(separateKeyStorage: boolean){
+		// Assert
       // Get all table objects from the server
       let callbackCalled = false;
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {
@@ -370,7 +373,10 @@ describe("DeleteLocalTableObject function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
+
+	it("should delete the table object locally", async () => deleteTheTableObjectLocallyTest(false));
+	it("should delete the table object locally with separateKeyStorage", async () => deleteTheTableObjectLocallyTest(true));
 });
 
 describe("UnsubscribePushNotifications function", () => {
