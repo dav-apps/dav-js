@@ -21,15 +21,10 @@ import { davClassLibraryTestUserXTestUserJwt,
    secondNotificationPropertyName } from '../Constants';
 import { DavEnvironment } from '../../lib/models/DavUser';
 
-function clearDatabase(){
-   localforage.removeItem(Dav.userKey);
-   localforage.removeItem(Dav.tableObjectsKey);
-}
-
 describe("Sync function", () => {
-   it("should download all table objects from the server", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	async function downloadAllTableObjectsFromTheServerTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -53,12 +48,15 @@ describe("Sync function", () => {
       assert.equal(secondTestDataTableObject.Properties[secondPropertyName], tableObjects[1].Properties[secondPropertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should remove the table objects that are not on the server", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	it("should download all table objects from the server", async () => await downloadAllTableObjectsFromTheServerTest(false));
+	it("should download all table objects from the server with separateKeyStorage", async () => await downloadAllTableObjectsFromTheServerTest(true));
+
+	async function removeTheTableObjectsThatAreNotOnTheServerTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -90,12 +88,15 @@ describe("Sync function", () => {
       assert.equal(secondTestDataTableObject.Properties[secondPropertyName], tableObjects[1].Properties[secondPropertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should update only the table objects with a new etag", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	it("should remove the table objects that are not on the server", async () => await removeTheTableObjectsThatAreNotOnTheServerTest(false));
+	it("should remove the table objects that are not on the server with separateKeyStorage", async () => await removeTheTableObjectsThatAreNotOnTheServerTest(true));
+
+	async function updateOnlyTheTableObjectsWithANewEtagTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -120,14 +121,17 @@ describe("Sync function", () => {
       assert.equal(secondTestDataTableObject.Properties[firstPropertyName], secondTableObjectFromDatabase2.Properties[firstPropertyName]);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
+
+	it("should update only the table objects with a new etag", async () => await updateOnlyTheTableObjectsWithANewEtagTest(false));
+	it("should update only the table objects with a new etag with separateKeyStorage", async () => await updateOnlyTheTableObjectsWithANewEtagTest(true));
 });
 
 describe("SyncPush function", () => {
-   it("should upload created table objects", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	async function uploadCreatedTableObjectsTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -158,12 +162,15 @@ describe("SyncPush function", () => {
 
       // Tidy up
       await DeleteTableObjectFromServer(tableObject.Uuid);
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should upload updated table objects", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	it("should upload created table objects", async () => await uploadCreatedTableObjectsTest(false));
+	it("should upload created table objects with separateKeyStorage", async () => await uploadCreatedTableObjectsTest(true));
+
+	async function uploadUpdatedTableObjectsTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -195,12 +202,15 @@ describe("SyncPush function", () => {
       await DatabaseOperations.UpdateTableObject(tableObjectFromDatabase);
       await DataManager.SyncPush();
 
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should upload deleted table objects", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	it("should upload updated table objects", async () => await uploadUpdatedTableObjectsTest(false));
+	it("should upload updated table objects with separateKeyStorage", async () => await uploadUpdatedTableObjectsTest(true));
+
+	async function uploadDeletedTableObjectsTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -233,12 +243,15 @@ describe("SyncPush function", () => {
       assert.isNull(tableObjectFromServer);
 
       // Tidy up
-      clearDatabase();
-   });
+      await localforage.clear();
+	}
 
-   it("should delete updated table objects that do not exist on the server", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	it("should upload deleted table objects", async () => uploadDeletedTableObjectsTest(false));
+	it("should upload deleted table objects with separateKeyStorage", async () => uploadDeletedTableObjectsTest(true));
+
+	async function deleteUpdatedTableObjectsThatDoNotExistOnTheServerTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -259,11 +272,14 @@ describe("SyncPush function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNull(tableObjectFromDatabase);
-   });
+	}
 
-   it("should delete deleted table objects that do not exist on the server", async () => {
-      // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+	it("should delete updated table objects that do not exist on the server", async () => deleteUpdatedTableObjectsThatDoNotExistOnTheServerTest(false));
+	it("should delete updated table objects that do not exist on the server with separateKeyStorage", async () => deleteUpdatedTableObjectsThatDoNotExistOnTheServerTest(true));
+
+	async function deleteDeletedTableObjectsThatDoNotExistOnTheServerTest(separateKeyStorage: boolean){
+		// Arrange
+      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
@@ -284,7 +300,10 @@ describe("SyncPush function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.isNull(tableObjectFromDatabase);
-   });
+	}
+
+	it("should delete deleted table objects that do not exist on the server", async () => deleteDeletedTableObjectsThatDoNotExistOnTheServerTest(false));
+	it("should delete deleted table objects that do not exist on the server with separateKeyStorage", async () => deleteDeletedTableObjectsThatDoNotExistOnTheServerTest(true));
 });
 
 describe("UpdateLocalTableObject function", () => {
@@ -321,7 +340,7 @@ describe("UpdateLocalTableObject function", () => {
       assert.isTrue(callbackCalled);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -350,7 +369,7 @@ describe("DeleteLocalTableObject function", () => {
       assert.isTrue(callbackCalled);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -424,7 +443,7 @@ describe("CreateNotification function", () => {
       await DeleteNotificationFromServer(uuid);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should not save the notification if the user is not logged in", async () => {
@@ -605,7 +624,7 @@ describe("SyncNotifications function", () => {
       assert.equal(secondTestNotification.Properties[secondNotificationPropertyName], notifications[1].Properties[secondNotificationPropertyName]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 
    it("should remove the notifications that are not on the server", async () => {
@@ -649,7 +668,7 @@ describe("SyncNotifications function", () => {
       assert.equal(secondTestNotification.Properties[secondNotificationPropertyName], notifications[1].Properties[secondNotificationPropertyName]);
 
       // Tidy up
-      clearDatabase();
+      await localforage.clear();
    });
 });
 
@@ -693,7 +712,7 @@ describe("SyncPushNotifications function", () => {
 
 		// Tidy up
 		await DeleteNotificationFromServer(uuid);
-		clearDatabase();
+		await localforage.clear();
    });
    
    it("should upload updated notifications", async () => {
@@ -787,7 +806,7 @@ describe("SyncPushNotifications function", () => {
 		assert.isNull(notificationFromServer);
 
 		// Tidy up
-      clearDatabase();
+      await localforage.clear();
 	});
 
 	it("should delete updated notification that do not exist on the server", async () => {
