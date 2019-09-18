@@ -387,16 +387,10 @@ describe("RemoveSubscription function", () => {
 describe("CreateTableObject function", () => {
 	async function saveTableObjectAndReturnUuidTest(separateKeyStorage: boolean){
 		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
+
+		var uuid = "2569d0b8-61a2-4cf1-9bcd-682d55f99db9";
 		var tableId = -13;
-
-		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			SyncFinished: () => {}
-		});
-
-      var uuid = "2569d0b8-61a2-4cf1-9bcd-682d55f99db9";
       var uploadStatus = TableObjectUploadStatus.Updated;
       var etag = "13212313qd13coi192cn";
       var firstPropertyName = "page1";
@@ -442,16 +436,10 @@ describe("CreateTableObject function", () => {
 
 	it("should generate a new uuid if the uuid is already in use", async () => {
 		// Arrange
-		var tableId = 1;
-
-		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], false, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			SyncFinished: () => {}
-		});
+		Dav.globals.separateKeyStorage = false;
 
 		var uuid = "3f0b11b9-78b1-4b63-b613-8a82945300eb";
+		var tableId = 1;
 		var firstTableObject = new TableObject();
 		firstTableObject.Uuid = uuid;
 		firstTableObject.TableId = tableId;
@@ -476,26 +464,20 @@ describe("CreateTableObject function", () => {
 describe("CreateTableObjects function", () => {
 	async function saveMultipleTableObjectsTest(separateKeyStorage: boolean){
 		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
+
+		var firstTableObject = new TableObject();
+		var firstUuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
 		var firstTableId = 1;
-		var secondTableId = 2;
-
-		Dav.Initialize(DavEnvironment.Test, 1, [firstTableId, secondTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			SyncFinished: () => {}
-		});
-
-      var firstTableObject = new TableObject();
-      var firstUuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
       var firstEtag = "asdasdpoasjd0asdaud";
       
       firstTableObject.TableId = firstTableId;
       firstTableObject.Uuid = firstUuid;
       firstTableObject.Etag = firstEtag;
 
-      var secondTableObject = new TableObject();
-      var secondUuid = "fbf66639-bcca-433c-bd55-34d2717138f3";
+		var secondTableObject = new TableObject();
+		var secondUuid = "fbf66639-bcca-433c-bd55-34d2717138f3";
+		var secondTableId = 2;
       var secondEtag = "ad02qewjs";
 
       secondTableObject.TableId = secondTableId;
@@ -528,25 +510,19 @@ describe("CreateTableObjects function", () => {
 
    it("should generate new uuids for table objects with a uuid that is already in use", async () => {
 		// Arrange
-		var firstTableId = -123;
-		var secondTableId = -212;
-		
-		Dav.Initialize(DavEnvironment.Test, 1, [firstTableId, secondTableId], [], false, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			SyncFinished: () => {}
-		});
+		Dav.globals.separateKeyStorage = false;
 
       var firstTableObject = new TableObject();
-      var uuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
+		var uuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
+		var firstTableId = -123;
       var firstEtag = "asdasdpoasjd0asdaud";
       
       firstTableObject.TableId = firstTableId;
       firstTableObject.Uuid = uuid;
       firstTableObject.Etag = firstEtag;
 
-      var secondTableObject = new TableObject();
+		var secondTableObject = new TableObject();
+		var secondTableId = -212;
       var secondEtag = "ad02qewjs";
 
       secondTableObject.TableId = secondTableId;
@@ -575,10 +551,18 @@ describe("CreateTableObjects function", () => {
 });
 
 describe("GetTableObject function", () => {
-   it("should return the appropriate table object", async () => {
+	async function returnAppropriateTableObjectTest(separateKeyStorage: boolean, withTableId: boolean){
       // Arrange
-      var uuid = "ccd8b4d1-5501-4cf9-b05b-17a433fbb042";
       var tableId = 126;
+
+      Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
+		var uuid = "ccd8b4d1-5501-4cf9-b05b-17a433fbb042";
       var etag = "0usadkasdpna";
       var uploadStatus = TableObjectUploadStatus.NoUpload;
 
@@ -601,10 +585,10 @@ describe("GetTableObject function", () => {
 			[secondPropertyName]: secondPropertyValue
 		}
 
-      await DatabaseOperations.CreateTableObject(tableObject);
+		await DatabaseOperations.CreateTableObject(tableObject)
 
       // Act
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid);
+		var tableObjectFromDatabase = withTableId ? await DatabaseOperations.GetTableObject(uuid, tableObject.TableId) : await DatabaseOperations.GetTableObject(uuid);
 
       // Assert
       assert.equal(uuid, tableObjectFromDatabase.Uuid);
@@ -616,29 +600,41 @@ describe("GetTableObject function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
 
-   it("should return null if the table object does not exist", async () => {
-      // Arrange
-      var uuid = "4c4286d8-5acb-49b6-b6ef-b0d3d7de9425";
+	it("should return the appropriate table object", async () => await returnAppropriateTableObjectTest(false, false));
+	it("should return the appropriate table object with separateKeyStorage", async () => await returnAppropriateTableObjectTest(true, false));
+	it("should return the appropriate table object with separateKeyStorage and tableId", async () => await returnAppropriateTableObjectTest(true, true));
+	
+	async function returnNullIfTableObjectDoesNotExistTest(separateKeyStorage: boolean, withTableId: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
 
-      // Act
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid);
+		var uuid = "4c4286d8-5acb-49b6-b6ef-b0d3d7de9425";
 
-      // Assert
-      assert.isNull(tableObjectFromDatabase);
-   });
+		// Act
+		var tableObjectFromDatabase = withTableId ? await DatabaseOperations.GetTableObject(uuid, 1) : await DatabaseOperations.GetTableObject(uuid);
+
+		// Assert
+		assert.isNull(tableObjectFromDatabase);
+	}
+
+	it("should return null if the table object does not exist", async () => await returnNullIfTableObjectDoesNotExistTest(false, false));
+	it("should return null if the table object does not exist with separateKeyStorage", async () => await returnNullIfTableObjectDoesNotExistTest(true, false));
+	it("should return null if the table object does not exist with separateKeyStorage and tableId", async () => await returnNullIfTableObjectDoesNotExistTest(true, true));
 });
 
 describe("GetAllTableObjects function", () => {
-   it("should return table objects with specified table and without deleted ones", async () => {
-      // GetAllTableObjects(2, false);
-      // Arrange
-      var generatedTableObjects = GenerateTableObjects();
+	async function returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(separateKeyStorage: boolean){
+		// GetAllTableObjects(2, false);
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
+
+		var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
 
       // Act
-      var tableObjects = await DatabaseOperations.GetAllTableObjects(2, false);  // Should return only the first table object
+      var tableObjects = await DatabaseOperations.GetAllTableObjects(generatedTableObjects.firstTableId, false);  // Should return only the first table object
 
       // Assert
       assert.equal(1, tableObjects.length);
@@ -650,11 +646,16 @@ describe("GetAllTableObjects function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
 
-   it("should return table objects without specified table and with deleted ones", async () => {
-      // GetAllTableObjects(-1, true);
-      // Arrange
+	it("should return table objects with specified table and without deleted ones", async () => await returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(false));
+	it("should return table objects with specified table and without deleted ones with separateKeyStorage", async () => await returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(true));
+
+	async function returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(separateKeyStorage: boolean){
+		// GetAllTableObjects(-1, true);
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
+
       var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
 
@@ -686,11 +687,16 @@ describe("GetAllTableObjects function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
 
-   it("should return table objects without specified table and without deleted ones", async () => {
-      // GetAllTableObjects(-1, false);
-      // Arrange
+	it("should return table objects without specified table and with deleted ones", async () => await returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(false));
+	it("should return table objects without specified table and with deleted ones with separateKeyStorage", async () => await returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(true));
+
+	async function returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(separateKeyStorage: boolean){
+		// GetAllTableObjects(-1, false);
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
+
       var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
 
@@ -712,11 +718,16 @@ describe("GetAllTableObjects function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
 
-   it("should return table objects with specified table and with deleted ones", async () => {
-      // GetAllTableObjects(2, true);
-      // Arrange
+	it("should return table objects without specified table and without deleted ones", async () => await returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(false));
+	it("should return table objects without specified table and without deleted ones with separateKeyStorage", async () => await returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(true));
+
+	async function returnTableObjectsWithSpecifiedTableAndWithDeletedOnes(separateKeyStorage: boolean){
+		// GetAllTableObjects(2, true);
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
+
       var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
 
@@ -735,7 +746,10 @@ describe("GetAllTableObjects function", () => {
       assert.equal(generatedTableObjects.thirdTableId, tableObjects[1].TableId);
       assert.equal(generatedTableObjects.thirdEtag, tableObjects[1].Etag);
       assert.equal(generatedTableObjects.thirdUploadStatus, tableObjects[1].UploadStatus);
-   });
+	}
+
+	it("should return table objects with specified table and with deleted ones", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnes(false));
+	it("should return table objects with specified table and with deleted ones with separateKeyStorage", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnes(true));
 
    function GenerateTableObjects(): {tableObjects: TableObject[],
                                     firstUuid: string,

@@ -245,7 +245,8 @@ export async function GetTableObject(uuid: string, tableId?: number): Promise<Ta
 		if(tableId){
 			// Get the table object directly
 			let obj = await localforage.getItem(Dav.getTableObjectsKey(tableId, uuid)) as TableObject;
-			if(obj) return ConvertObjectToTableObject(obj);
+         if(obj) return ConvertObjectToTableObject(obj);
+         else return null;
 		}else{
 			for(let id of Dav.globals.tableIds){
 				let tableObject = await localforage.getItem(Dav.getTableObjectsKey(id, uuid)) as TableObject;
