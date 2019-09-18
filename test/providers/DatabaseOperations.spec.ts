@@ -723,7 +723,7 @@ describe("GetAllTableObjects function", () => {
 	it("should return table objects without specified table and without deleted ones", async () => await returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(false));
 	it("should return table objects without specified table and without deleted ones with separateKeyStorage", async () => await returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(true));
 
-	async function returnTableObjectsWithSpecifiedTableAndWithDeletedOnes(separateKeyStorage: boolean){
+	async function returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(separateKeyStorage: boolean){
 		// GetAllTableObjects(2, true);
 		// Arrange
 		Dav.globals.separateKeyStorage = separateKeyStorage;
@@ -748,8 +748,8 @@ describe("GetAllTableObjects function", () => {
       assert.equal(generatedTableObjects.thirdUploadStatus, tableObjects[1].UploadStatus);
 	}
 
-	it("should return table objects with specified table and with deleted ones", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnes(false));
-	it("should return table objects with specified table and with deleted ones with separateKeyStorage", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnes(true));
+	it("should return table objects with specified table and with deleted ones", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(false));
+	it("should return table objects with specified table and with deleted ones with separateKeyStorage", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(true));
 
    function GenerateTableObjects(): {tableObjects: TableObject[],
                                     firstUuid: string,
@@ -843,39 +843,59 @@ describe("GetAllTableObjects function", () => {
 });
 
 describe("TableObjectExists function", () => {
-   it("should return true if the table object exists", async () => {
-      // Arrange
-      var tableObject = new TableObject();
+	async function returnTrueIfTheTableObjectExistsTest(separateKeyStorage: boolean, withTableId: boolean){
+		// Arrange
+		let tableId = 2;
+
+		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
+		var tableObject = new TableObject();
+		tableObject.TableId = tableId;
       await DatabaseOperations.CreateTableObject(tableObject);
 
       // Act
-      var exists = await DatabaseOperations.TableObjectExists(tableObject.Uuid);
+      var exists = withTableId ? await DatabaseOperations.TableObjectExists(tableObject.Uuid, tableObject.TableId) : await DatabaseOperations.TableObjectExists(tableObject.Uuid)
 
       // Assert
       assert.isTrue(exists);
 
       // Tidy up
       await localforage.clear();
-   });
+	}
 
-   it("should return false if the table object does not exist", async () => {
-      // Arrange
+	it("should return true if the table object exists", async () => await returnTrueIfTheTableObjectExistsTest(false, false));
+	it("should return true if the table object exists with separateKeyStorage", async () => await returnTrueIfTheTableObjectExistsTest(true, false));
+	it("should return true if the table object exists with separateKeyStorage and tableId", async () => await returnTrueIfTheTableObjectExistsTest(true, true));
+
+	async function returnFalseIfTheTableObjectDoesNotExistTest(separateKeyStorage: boolean, withTableId: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       var uuid = generateUUID();
 
       // Act
-      var exists = await DatabaseOperations.TableObjectExists(uuid);
+      var exists = withTableId ? await DatabaseOperations.TableObjectExists(uuid, 1) : await DatabaseOperations.TableObjectExists(uuid);
 
       // Assert
       assert.isFalse(exists);
 
       // Tidy up
       await localforage.clear();
-   });
+	}
+
+	it("should return false if the table object does not exist", async () => await returnFalseIfTheTableObjectDoesNotExistTest(false, false));
+	it("should return false if the table object does not exist with separateKeyStorage", async () => await returnFalseIfTheTableObjectDoesNotExistTest(true, false));
+	it("should return false if the table object does not exist with separateKeyStorage and tableId", async () => await returnFalseIfTheTableObjectDoesNotExistTest(true, true));
 });
 
 describe("UpdateTableObject function", () => {
-   it("should update the table object", async () => {
-      // Arrange
+	async function updateTheTableObjectTest(separateKeyStorage: boolean){
+		// Arrange
+		Dav.globals.separateKeyStorage = separateKeyStorage;
       var firstPropertyName = "page1";
       var firstPropertyValue = "Guten Tag";
       var secondPropertyName = "page2";
@@ -899,25 +919,39 @@ describe("UpdateTableObject function", () => {
       await DatabaseOperations.UpdateTableObject(tableObject);
 
       // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.equal(tableId, tableObjectFromDatabase.TableId);
       assert.equal(updatedFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName]);
       assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
 
       // Tidy up
       await localforage.clear();
-   });
+	}
+	
+	it("should update the table object", async () => await updateTheTableObjectTest(false));
+	it("should update the table object with separateKeyStorage", async () => await updateTheTableObjectTest(true));
 });
 
 describe("DeleteTableObject function", () => {
-   it("should set the upload status of the table object to Deleted", async () => {
-      // Arrange
-      var tableObject = new TableObject();
+	async function setTheUploadStatusOfTheTableObjectToDeletedTest(separateKeyStorage: boolean, withTableId: boolean){
+		// Arrange
+		let tableId = 5;
+
+		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
+		var tableObject = new TableObject();
+		tableObject.TableId = tableId;
       tableObject.UploadStatus = TableObjectUploadStatus.NoUpload;
       await DatabaseOperations.CreateTableObject(tableObject);
 
-      // Act
-      await DatabaseOperations.DeleteTableObject(tableObject.Uuid);
+		// Act
+		if(withTableId) await DatabaseOperations.DeleteTableObject(tableObject.Uuid, tableObject.TableId);
+		else await DatabaseOperations.DeleteTableObject(tableObject.Uuid);
 
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
@@ -925,25 +959,44 @@ describe("DeleteTableObject function", () => {
 
       // Tidy up
       await localforage.clear();
-   });
+	}
+
+	it("should set the upload status of the table object to Deleted", async () => await setTheUploadStatusOfTheTableObjectToDeletedTest(false, false));
+	it("should set the upload status of the table object to Deleted with separateKeyStorage", async () => await setTheUploadStatusOfTheTableObjectToDeletedTest(true, false));
+	it("should set the upload status of the table object to Deleted with separateKeyStorage and tableId", async () => await setTheUploadStatusOfTheTableObjectToDeletedTest(true, true));
 });
 
 describe("DeleteTableObjectImmediately function", () => {
-   it("should remove the table object from the database", async () => {
-      // Arrange
-      var tableObject = new TableObject();
+	async function removeTheTableObjectFromTheDatabaseTest(separateKeyStorage: boolean, withTableId: boolean){
+		// Arrange
+		let tableId = 5;
+
+		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			SyncFinished: () => {}
+		});
+
+		var tableObject = new TableObject();
+		tableObject.TableId = tableId;
       await DatabaseOperations.CreateTableObject(tableObject);
 
-      // Act
-      await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+		// Act
+		if(withTableId) await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid, tableObject.TableId);
+		else await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 
       // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
+      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNull(tableObjectFromDatabase);
 
       // Tidy up
       await localforage.clear();
-   });
+	}
+
+	it("should remove the table object from the database", async () => await removeTheTableObjectFromTheDatabaseTest(false, false));
+	it("should remove the table object from the database with separateKeyStorage", async () => await removeTheTableObjectFromTheDatabaseTest(true, false));
+	it("should remove the table object from the database with separateKeyStorage and tableId", async () => await removeTheTableObjectFromTheDatabaseTest(true, true));
 });
 
 async function getTableObjects(key: string) : Promise<object[]>{
