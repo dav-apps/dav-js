@@ -26,7 +26,7 @@ describe("Initialize function", () => {
    });
 });
 
-describe("Globals", () => {
+describe("Globals class", () => {
    it("should return different values for apiBaseUrl and websiteUrl in different environments", () => {
       // Arrange
       var environment = DavEnvironment.Test;
@@ -66,6 +66,7 @@ describe("Globals", () => {
 
       var updateAllOfTableCalled = false;
       var updatedTableId = -1;
+      var updatedTableIdChanged = false;
       var updateTableObjectCalled = false;
       var updatedTableObjectUuid = "";
       var deleteTableObjectCalled = false;
@@ -73,9 +74,10 @@ describe("Globals", () => {
       var syncFinishedCalled = false;
 
       var callbacks = {
-         UpdateAllOfTable: (tableId: number) => {
+         UpdateAllOfTable: (tableId: number, changed: boolean) => {
             updateAllOfTableCalled = true;
-            updatedTableId = tableId;
+				updatedTableId = tableId;
+				updatedTableIdChanged = changed;
          },
          UpdateTableObject: (tableObject: TableObject) => {
             updateTableObjectCalled = true;
@@ -93,7 +95,7 @@ describe("Globals", () => {
       Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
 
       // Act
-      Dav.globals.callbacks.UpdateAllOfTable(callingTableId);
+      Dav.globals.callbacks.UpdateAllOfTable(callingTableId, true);
       Dav.globals.callbacks.UpdateTableObject(callingTableObject);
       Dav.globals.callbacks.DeleteTableObject(callingTableObject);
       Dav.globals.callbacks.SyncFinished();
@@ -104,6 +106,7 @@ describe("Globals", () => {
       assert.isTrue(deleteTableObjectCalled);
       assert.isTrue(syncFinishedCalled);
       assert.equal(callingTableId, updatedTableId);
+      assert.isTrue(updatedTableIdChanged);
       assert.equal(callingTableObject.Uuid, updatedTableObjectUuid);
       assert.equal(callingTableObject.Uuid, deletedTableObjectUuid);
    });

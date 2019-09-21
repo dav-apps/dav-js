@@ -136,9 +136,7 @@ export async function Sync(){
 			}
 		}
 
-		if(tableChanged){
-			Dav.globals.callbacks.UpdateAllOfTable(tableId);
-		}
+		Dav.globals.callbacks.UpdateAllOfTable(tableId, tableChanged);
 
 		// Check if there is a next page
 		currentTablePages[tableId]++;
@@ -180,9 +178,7 @@ export async function Sync(){
 			tableChanged = true;
 		}
 
-		if(tableChanged){
-			Dav.globals.callbacks.UpdateAllOfTable(tableId);
-		}
+		Dav.globals.callbacks.UpdateAllOfTable(tableId, tableChanged);
 	}
 
 	isSyncing = false;

@@ -5,7 +5,7 @@
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"test": "./node_modules/mocha/bin/mocha -r mock-local-storage -r ts-node/register test/**/*.spec.ts",
+		"test": "./node_modules/mocha/bin/mocha -r mock-local-storage -r ts-node/register test/*.spec.ts test/**/*.spec.ts",
 		"prepublishOnly": "npm run build",
 		"compile": "npm run clean && tsc -p . && npm run copyJs",
 		"watch": "tsc -w -p .",

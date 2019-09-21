@@ -47,7 +47,7 @@ class Globals{
 }
 
 export var globals = new Globals(DavEnvironment.Development, -1, [], [], false, {icon: "", badge: ""}, {
-                                                UpdateAllOfTable: (tableId: number) => {}, 
+                                                UpdateAllOfTable: (tableId: number, changed: boolean) => {}, 
                                                 UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {}, 
                                                 DeleteTableObject: (tableObject: TableObject) => {},
                                                 SyncFinished: () => {}
