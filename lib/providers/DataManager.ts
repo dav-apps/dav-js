@@ -1054,7 +1054,7 @@ async function HttpGet(url: string) : Promise<{ ok: boolean, message: object }>{
 
 		return { ok: true, message: response.data };
 	}catch(error){
-		return { ok: false, message: error.response.data };
+		return { ok: false, message: error.response ? error.response.data : "" };
 	}
 }
 
