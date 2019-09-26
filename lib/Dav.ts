@@ -2,6 +2,10 @@ import { TableObject } from "./models/TableObject";
 import * as DataManager from "./providers/DataManager";
 import { DavEnvironment } from "./models/DavUser";
 
+export const apiBaseUrlDevelopment = "http://localhost:3111/v1";
+export const apiBaseUrlProduction = "https://dav-backend.herokuapp.com/v1";
+export const websiteUrlDevelopment = "http://localhost:3000/";
+export const websiteUrlProduction = "https://dav-apps.tech/";
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
 export const notificationsKey = "notifications";
@@ -22,8 +26,8 @@ export function getTableObjectsKey(tableId?: number, uuid?: string){
 }
 
 class Globals{
-   public apiBaseUrl: string = "http://localhost:3111/v1/";
-	public websiteUrl: string = "http://localhost:3000/";
+   public apiBaseUrl: string = apiBaseUrlDevelopment;
+	public websiteUrl: string = websiteUrlDevelopment;
 	public jwt: string = null;
 
    constructor(public environment: DavEnvironment,
@@ -40,8 +44,8 @@ class Globals{
                }){
 
       if(environment == DavEnvironment.Production){
-         this.apiBaseUrl = "https://dav-backend.herokuapp.com/v1/";
-         this.websiteUrl = "https://dav-apps.tech/";
+         this.apiBaseUrl = apiBaseUrlProduction;
+         this.websiteUrl = websiteUrlProduction;
       }
    }
 }
