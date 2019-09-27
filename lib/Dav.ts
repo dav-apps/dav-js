@@ -4,14 +4,64 @@ import { DavEnvironment } from "./models/DavUser";
 
 export const apiBaseUrlDevelopment = "http://localhost:3111/v1";
 export const apiBaseUrlProduction = "https://dav-backend.herokuapp.com/v1";
-export const websiteUrlDevelopment = "http://localhost:3000/";
-export const websiteUrlProduction = "https://dav-apps.tech/";
+export const websiteUrlDevelopment = "http://localhost:3000";
+export const websiteUrlProduction = "https://dav-apps.tech";
 export const userKey = "user";
 export const tableObjectsKey = "tableObjects";
 export const notificationsKey = "notifications";
 export const subscriptionKey = "subscription";
 export const extPropertyName = "ext";
 export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ";
+
+export class Dav{
+	static apiBaseUrl: string = apiBaseUrlDevelopment;
+	static websiteUrl: string = websiteUrlDevelopment;
+	static jwt: string = null;
+	static environment: DavEnvironment = DavEnvironment.Development;
+	static appId: number = -1;
+	static tableIds: number[] = [];
+	static parallelTableIds: number[] = [];
+	static separateKeyStorage: boolean = false;
+	static notificationOptions: {icon: string, badge: string} = {icon: "", badge: ""};
+	static callbacks: {
+		UpdateAllOfTable: Function, 
+		UpdateTableObject: Function, 
+		DeleteTableObject: Function,
+		SyncFinished: Function
+	} = {
+		UpdateAllOfTable: (tableId: number, changed: boolean) => {},
+		UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {},
+		DeleteTableObject: (tableObject: TableObject) => {},
+		SyncFinished: () => {}
+	}
+}
+
+export function Init(
+	environment: DavEnvironment, 
+	appId: number, 
+	tableIds: Array<number>, 
+	parallelTableIds: Array<number>, 
+	separateKeyStorage: boolean, 
+	notificationOptions: {icon: string, badge: string}, 
+	callbacks: { 
+		UpdateAllOfTable: Function, 
+		UpdateTableObject: Function, 
+		DeleteTableObject: Function, 
+		SyncFinished: Function 
+	}
+){
+	Dav.environment = environment;
+	Dav.appId = appId;
+	Dav.tableIds = tableIds;
+	Dav.parallelTableIds = parallelTableIds;
+	Dav.separateKeyStorage = separateKeyStorage;
+	Dav.notificationOptions = notificationOptions;
+	Dav.callbacks = callbacks;
+
+	// Set the urls
+	Dav.apiBaseUrl = environment == DavEnvironment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment;
+	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
+}
 
 export function getTableObjectsKey(tableId?: number, uuid?: string){
 	if(!tableId && !uuid){
@@ -25,58 +75,11 @@ export function getTableObjectsKey(tableId?: number, uuid?: string){
 	}
 }
 
-class Globals{
-   public apiBaseUrl: string = apiBaseUrlDevelopment;
-	public websiteUrl: string = websiteUrlDevelopment;
-	public jwt: string = null;
-
-   constructor(public environment: DavEnvironment,
-					public appId: number, 
-               public tableIds: Array<number>,
-               public parallelTableIds: Array<number>,
-               public separateKeyStorage: boolean,
-               public notificationOptions: {icon: string, badge: string},
-               public callbacks: { 
-                  UpdateAllOfTable: Function, 
-                  UpdateTableObject: Function, 
-                  DeleteTableObject: Function,
-                  SyncFinished: Function
-               }){
-
-      if(environment == DavEnvironment.Production){
-         this.apiBaseUrl = apiBaseUrlProduction;
-         this.websiteUrl = websiteUrlProduction;
-      }
-   }
-}
-
-export var globals = new Globals(DavEnvironment.Development, -1, [], [], false, {icon: "", badge: ""}, {
-                                                UpdateAllOfTable: (tableId: number, changed: boolean) => {}, 
-                                                UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {}, 
-                                                DeleteTableObject: (tableObject: TableObject) => {},
-                                                SyncFinished: () => {}
-                                             });
-
-export function Initialize(environment: DavEnvironment, 
-                           appId: number, 
-                           tableIds: Array<number>, 
-                           parallelTableIds: Array<number>,
-                           separateKeyStorage: boolean,
-                           notificationOptions: {icon: string, badge: string},
-                           callbacks: { 
-                              UpdateAllOfTable: Function, 
-                              UpdateTableObject: Function, 
-                              DeleteTableObject: Function,
-                              SyncFinished: Function
-                           }){
-   globals = new Globals(environment, appId, tableIds, parallelTableIds, separateKeyStorage, notificationOptions, callbacks);
-}
-
 export function startWebSocketConnection(channelName = "TableObjectUpdateChannel"){
-   if(!globals.jwt || !globals.appId || !globals.apiBaseUrl || globals.environment == DavEnvironment.Test) return;
+   if(!Dav.jwt || !Dav.appId || !Dav.apiBaseUrl || Dav.environment == DavEnvironment.Test) return;
 
-	let baseUrl = globals.apiBaseUrl.replace("http", "ws");
-	var webSocket = new WebSocket(baseUrl + "cable?app_id=" + globals.appId + "&jwt=" + globals.jwt);
+	let baseUrl = Dav.apiBaseUrl.replace("http", "ws");
+	var webSocket = new WebSocket(baseUrl + "cable?app_id=" + Dav.appId + "&jwt=" + Dav.jwt);
 
 	webSocket.onopen = function (e) {
 		var json = JSON.stringify({
@@ -107,7 +110,7 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
 			// Don't notify the app if the session is the current session or 0
 			if(sessionId == 0) return;
 
-			let currentSessionId = globals.jwt.split('.')[3];
+			let currentSessionId = Dav.jwt.split('.')[3];
 			if(currentSessionId && currentSessionId == sessionId) return;
 			
 			if(change == 0 || change == 1){
@@ -120,7 +123,7 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
 }
 
 export function startPushNotificationSubscription(){
-	if('serviceWorker' in navigator && globals.environment == DavEnvironment.Production){
+	if('serviceWorker' in navigator && Dav.environment == DavEnvironment.Production){
       // Wait for availability of the service worker
       const p = new Promise(r => {
          if (navigator.serviceWorker.controller) return r();
@@ -129,8 +132,8 @@ export function startPushNotificationSubscription(){
       p.then(() => {
          // Initialize the service worker
          navigator.serviceWorker.controller.postMessage({
-            icon: globals.notificationOptions.icon,
-            badge: globals.notificationOptions.badge
+            icon: Dav.notificationOptions.icon,
+            badge: Dav.notificationOptions.badge
          });
       });
    }
