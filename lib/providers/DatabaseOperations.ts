@@ -1,6 +1,6 @@
 import * as localforage from "localforage";
 import { extendPrototype } from 'localforage-startswith';
-import * as Dav from '../Dav';
+import { Dav, userKey, notificationsKey, subscriptionKey, tableObjectsKey, getTableObjectsKey } from '../Dav';
 import { TableObject, TableObjectUploadStatus, ConvertObjectToTableObject, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
 import { UploadStatus } from './DataManager';
@@ -9,15 +9,15 @@ extendPrototype(localforage);
 
 //#region User methods
 export async function SetUser(user: object){
-   await localforage.setItem(Dav.userKey, user);
+   await localforage.setItem(userKey, user);
 }
 
 export async function GetUser() : Promise<object>{
-   return await localforage.getItem(Dav.userKey) as object;
+   return await localforage.getItem(userKey) as object;
 }
 
 export async function RemoveUser(){
-	await localforage.removeItem(Dav.userKey);
+	await localforage.removeItem(userKey);
 }
 //#endregion
 
@@ -35,11 +35,11 @@ async function SetNotificationsArray(notifications: Array<Notification>){
 		});
 	}
 
-	await localforage.setItem(Dav.notificationsKey, notificationObjects);
+	await localforage.setItem(notificationsKey, notificationObjects);
 }
 
 export async function GetAllNotifications() : Promise<Array<Notification>>{
-	let notificationObjects = await localforage.getItem(Dav.notificationsKey) as Array<{uuid: string, time: number, interval: number, properties: object, status: number}>;
+	let notificationObjects = await localforage.getItem(notificationsKey) as Array<{uuid: string, time: number, interval: number, properties: object, status: number}>;
 	if(!notificationObjects) return [];
 
 	// Convert the objects to Notifications
@@ -90,13 +90,13 @@ export async function DeleteNotification(uuid: string){
 }
 
 export async function RemoveAllNotifications(){
-	await localforage.removeItem(Dav.notificationsKey);
+	await localforage.removeItem(notificationsKey);
 }
 //#endregion
 
 //#region Subscription methods
 export async function SetSubscription(subscription: {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus}){
-	await localforage.setItem(Dav.subscriptionKey, {
+	await localforage.setItem(subscriptionKey, {
 		uuid: subscription.uuid,
 		endpoint: subscription.endpoint,
 		p256dh: subscription.p256dh,
@@ -106,11 +106,11 @@ export async function SetSubscription(subscription: {uuid: string, endpoint: str
 }
 
 export async function GetSubscription() : Promise<{uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus}>{
-	return await localforage.getItem(Dav.subscriptionKey) as {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus};
+	return await localforage.getItem(subscriptionKey) as {uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus};
 }
 
 export async function RemoveSubscription(){
-	await localforage.removeItem(Dav.subscriptionKey);
+	await localforage.removeItem(subscriptionKey);
 }
 //#endregion
 
@@ -132,7 +132,7 @@ async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 			});
 		});
 
-		await localforage.setItem(Dav.tableObjectsKey, objects);
+		await localforage.setItem(tableObjectsKey, objects);
 	}catch(error){
 		console.log(error);
 	}
@@ -140,7 +140,7 @@ async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 
 async function GetTableObjectsArray(): Promise<TableObject[]>{
 	try{
-		var objArray = await localforage.getItem(Dav.tableObjectsKey) as object[];
+		var objArray = await localforage.getItem(tableObjectsKey) as object[];
       if(!objArray) return [];
 
 		var tableObjectsArray: TableObject[] = [];
@@ -167,10 +167,10 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
 }
 
 export async function CreateTableObject(tableObject: TableObject): Promise<string>{
-	if(Dav.globals.separateKeyStorage){
+	if(Dav.separateKeyStorage){
 		if(!tableObject.Uuid) tableObject.Uuid = generateUUID();
 
-		await localforage.setItem(Dav.getTableObjectsKey(tableObject.TableId, tableObject.Uuid), tableObject);
+		await localforage.setItem(getTableObjectsKey(tableObject.TableId, tableObject.Uuid), tableObject);
 		return tableObject.Uuid;
 	}else{
 		var tableObjects = await GetTableObjectsArray();
@@ -190,13 +190,13 @@ export async function CreateTableObject(tableObject: TableObject): Promise<strin
 }
 
 export async function CreateTableObjects(tableObjects: TableObject[]): Promise<string[]>{
-	if(Dav.globals.separateKeyStorage){
+	if(Dav.separateKeyStorage){
 		let uuids: string[] = [];
 
 		for(let tableObject of tableObjects){
 			if(!tableObject.Uuid) tableObject.Uuid = generateUUID();
 
-			await localforage.setItem(Dav.getTableObjectsKey(tableObject.TableId, tableObject.Uuid), tableObject);
+			await localforage.setItem(getTableObjectsKey(tableObject.TableId, tableObject.Uuid), tableObject);
 			uuids.push(tableObject.Uuid);
 		}
 
@@ -220,15 +220,15 @@ export async function CreateTableObjects(tableObjects: TableObject[]): Promise<s
 }
 
 export async function GetTableObject(uuid: string, tableId?: number): Promise<TableObject>{
-	if(Dav.globals.separateKeyStorage){
+	if(Dav.separateKeyStorage){
 		if(tableId){
 			// Get the table object directly
-			let obj = await localforage.getItem(Dav.getTableObjectsKey(tableId, uuid)) as TableObject;
+			let obj = await localforage.getItem(getTableObjectsKey(tableId, uuid)) as TableObject;
          if(obj) return ConvertObjectToTableObject(obj);
          else return null;
 		}else{
-			for(let id of Dav.globals.tableIds){
-				let tableObject = await localforage.getItem(Dav.getTableObjectsKey(id, uuid)) as TableObject;
+			for(let id of Dav.tableIds){
+				let tableObject = await localforage.getItem(getTableObjectsKey(id, uuid)) as TableObject;
 				if(tableObject) return ConvertObjectToTableObject(tableObject);
 			}
 			return null;
@@ -242,8 +242,8 @@ export async function GetTableObject(uuid: string, tableId?: number): Promise<Ta
 }
 
 export async function GetAllTableObjects(tableId: number = -1, deleted: boolean): Promise<TableObject[]>{
-	if(Dav.globals.separateKeyStorage){
-		let key = tableId == -1 ? Dav.getTableObjectsKey() : Dav.getTableObjectsKey(tableId);
+	if(Dav.separateKeyStorage){
+		let key = tableId == -1 ? getTableObjectsKey() : getTableObjectsKey(tableId);
       let tableObjects = (await localforage.startsWith(key) as TableObject[])
 		let tableObjectsArray: TableObject[] = Object.keys(tableObjects).map(key => ConvertObjectToTableObject(tableObjects[key]));
 
@@ -259,14 +259,14 @@ export async function GetAllTableObjects(tableId: number = -1, deleted: boolean)
 }
 
 export async function TableObjectExists(uuid: string, tableId?: number){
-	if(Dav.globals.separateKeyStorage){
+	if(Dav.separateKeyStorage){
 		if(tableId){
 			// Try to get the table object directly
-			return (await localforage.getItem(Dav.getTableObjectsKey(tableId, uuid))) != null;
+			return (await localforage.getItem(getTableObjectsKey(tableId, uuid))) != null;
 		}else{
 			// Try to get the table object with each table id
-			for(let id of Dav.globals.tableIds){
-				let item = await localforage.getItem(Dav.getTableObjectsKey(id, uuid));
+			for(let id of Dav.tableIds){
+				let item = await localforage.getItem(getTableObjectsKey(id, uuid));
 				if(item) return true;
 			}
 			return false;
@@ -278,8 +278,8 @@ export async function TableObjectExists(uuid: string, tableId?: number){
 }
 
 export async function UpdateTableObject(tableObject: TableObject){
-	if(Dav.globals.separateKeyStorage){
-		await localforage.setItem(Dav.getTableObjectsKey(tableObject.TableId, tableObject.Uuid), tableObject);
+	if(Dav.separateKeyStorage){
+		await localforage.setItem(getTableObjectsKey(tableObject.TableId, tableObject.Uuid), tableObject);
 	}else{
 		var tableObjects = await GetTableObjectsArray();
 		var index = tableObjects.findIndex(obj => obj.Uuid == tableObject.Uuid);
@@ -292,10 +292,10 @@ export async function UpdateTableObject(tableObject: TableObject){
 }
 
 export async function DeleteTableObject(uuid: string, tableId?: number){
-	if(Dav.globals.separateKeyStorage){
+	if(Dav.separateKeyStorage){
 		if(tableId){
 			// Update the table object directly
-			let key = Dav.getTableObjectsKey(tableId, uuid);
+			let key = getTableObjectsKey(tableId, uuid);
 			let tableObject = await localforage.getItem(key) as TableObject;
 			if(!tableObject) return;
 
@@ -304,8 +304,8 @@ export async function DeleteTableObject(uuid: string, tableId?: number){
 			await localforage.setItem(key, tableObject);
 		}else{
 			// Find the table object with each table id and update it
-			for(let id of Dav.globals.tableIds){
-				let key = Dav.getTableObjectsKey(id, uuid);
+			for(let id of Dav.tableIds){
+				let key = getTableObjectsKey(id, uuid);
 				let tableObject = await localforage.getItem(key) as TableObject;
 
 				if(tableObject){
@@ -328,14 +328,14 @@ export async function DeleteTableObject(uuid: string, tableId?: number){
 }
 
 export async function DeleteTableObjectImmediately(uuid: string, tableId?: number){
-	if(Dav.globals.separateKeyStorage){
+	if(Dav.separateKeyStorage){
 		if(tableId){
 			// Remove the table object directly
-			await localforage.removeItem(Dav.getTableObjectsKey(tableId, uuid));
+			await localforage.removeItem(getTableObjectsKey(tableId, uuid));
 		}else{
 			// Find the table object with each table id and remove it
-			for(let id of Dav.globals.tableIds){
-				let key = Dav.getTableObjectsKey(id, uuid);
+			for(let id of Dav.tableIds){
+				let key = getTableObjectsKey(id, uuid);
 				let item = await localforage.getItem(key);
 				if(item){
 					await localforage.removeItem(key);

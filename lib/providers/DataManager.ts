@@ -1,5 +1,5 @@
-import * as Dav from '../Dav';
-var axios = require('axios');
+import * as axios from 'axios';
+import { Dav, startWebSocketConnection, webPushPublicKey } from '../Dav';
 import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
 import * as DatabaseOperations from './DatabaseOperations';
@@ -21,14 +21,13 @@ var fileDownloadsIntervalId: NodeJS.Timer;
 export async function Sync(){
 	if(isSyncing) return;
 
-	var jwt = Dav.globals.jwt;
-	if(!jwt) return;
+	if(!Dav.jwt) return;
 	isSyncing = true;
 
 	// Holds the table ids, e.g. 1, 2, 3, 4
-	var tableIds = Dav.globals.tableIds;
+	var tableIds = Dav.tableIds;
 	// Holds the parallel table ids, e.g. 2, 3
-	var parallelTableIds = Dav.globals.parallelTableIds;
+	var parallelTableIds = Dav.parallelTableIds;
 	// Holds the order of the table ids, sorted by the pages and the parallel table ids, e.g. 1, 2, 3, 2, 3, 4
 	var sortedTableIds: Array<number> = [];
 	// Holds the pages of the table; in the format <tableId, pages>
@@ -56,7 +55,7 @@ export async function Sync(){
 	// Get the first page of each table and generate the sorted tableIds list
 	for(let tableId of tableIds){
 		// Get the first page of the table
-		let tableGetResult = await HttpGet(`apps/table/${tableId}?page=1`);
+		let tableGetResult = await HttpGet(`/apps/table/${tableId}?page=1`);
 
 		tableGetResultsOkay.set(tableId, tableGetResult.ok);
 		if(!tableGetResult.ok) continue;
@@ -110,7 +109,7 @@ export async function Sync(){
 						// Download the file and save the new etag
                   fileDownloads.push({tableObject: tableObject, etag: obj["etag"]});
 					}else{
-						Dav.globals.callbacks.UpdateTableObject(tableObject);
+						Dav.callbacks.UpdateTableObject(tableObject);
 						tableChanged = true;
 					}
 				}
@@ -126,17 +125,17 @@ export async function Sync(){
 					// Download the file and save the new etag
 					fileDownloads.push({tableObject: tableObject, etag: obj["etag"]});
 
-					Dav.globals.callbacks.UpdateTableObject(tableObject);
+					Dav.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
 				}else{
 					// Save the table object
-					Dav.globals.callbacks.UpdateTableObject(tableObject);
+					Dav.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
 				}
 			}
 		}
 
-		Dav.globals.callbacks.UpdateAllOfTable(tableId, tableChanged);
+		Dav.callbacks.UpdateAllOfTable(tableId, tableChanged);
 
 		// Check if there is a next page
 		currentTablePages[tableId]++;
@@ -145,7 +144,7 @@ export async function Sync(){
 		}
 
 		// Get the data of the next page
-		let tableGetResult = await HttpGet(`apps/table/${tableId}?page=${currentTablePages.get(tableId)}`);
+		let tableGetResult = await HttpGet(`/apps/table/${tableId}?page=${currentTablePages.get(tableId)}`);
 		if(!tableGetResult.ok){
 			tableGetResultsOkay.set(tableId, false);
 			continue;
@@ -174,11 +173,11 @@ export async function Sync(){
 			}
 
 			await obj.DeleteImmediately();
-			Dav.globals.callbacks.DeleteTableObject(obj);
+			Dav.callbacks.DeleteTableObject(obj);
 			tableChanged = true;
 		}
 
-		Dav.globals.callbacks.UpdateAllOfTable(tableId, tableChanged);
+		Dav.callbacks.UpdateAllOfTable(tableId, tableChanged);
 	}
 
 	isSyncing = false;
@@ -197,8 +196,8 @@ export async function Sync(){
 	}
 
 	if(allTableGetResultsOkay){
-		Dav.globals.callbacks.SyncFinished();
-		Dav.startWebSocketConnection();
+		Dav.callbacks.SyncFinished();
+		startWebSocketConnection();
 	}
 }
 
@@ -225,7 +224,7 @@ async function DownloadNextFile(){
 				await tableObject.SetEtag(etag);
 
 				// Notify the app of the change
-				Dav.globals.callbacks.UpdateTableObject(tableObject, true);
+				Dav.callbacks.UpdateTableObject(tableObject, true);
 			}
 		}
 	}else if(fileDownloads.length == 0){
@@ -238,7 +237,7 @@ export async function SyncPush(){
 	const okKey = "ok";
 	const messageKey = "message";
 
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 	if(isSyncing){
 		syncAgain = true;
 		return;
@@ -359,7 +358,7 @@ export async function UpdateLocalTableObject(uuid: string){
 			await DatabaseOperations.CreateTableObject(tableObject);
 		}
 
-		Dav.globals.callbacks.UpdateTableObject(tableObject);
+		Dav.callbacks.UpdateTableObject(tableObject);
 	}
 }
 
@@ -369,14 +368,14 @@ export async function DeleteLocalTableObject(uuid: string){
 	var tableObject = await DatabaseOperations.GetTableObject(uuid);
 	if(tableObject){
 		await tableObject.DeleteImmediately();
-		Dav.globals.callbacks.DeleteTableObject(tableObject)
+		Dav.callbacks.DeleteTableObject(tableObject)
 	}
 }
 
 export async function SubscribePushNotifications() : Promise<Boolean>{
-	if(Dav.globals.environment == DavEnvironment.Production && 'serviceWorker' in navigator && ('PushManager' in window)){
+	if(Dav.environment == DavEnvironment.Production && 'serviceWorker' in navigator && ('PushManager' in window)){
 		// Check if the user is logged in
-		if(!Dav.globals.jwt) return false;
+		if(!Dav.jwt) return false;
 
 		// Check if the user is already subscribed
 		let oldSubscription = await DatabaseOperations.GetSubscription();
@@ -398,7 +397,7 @@ export async function SubscribePushNotifications() : Promise<Boolean>{
 		let registration = await navigator.serviceWorker.getRegistration();
 		let subscription = await registration.pushManager.subscribe({
 			userVisibleOnly: true,
-			applicationServerKey: urlBase64ToUint8Array(Dav.webPushPublicKey)
+			applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
 		});
 
 		let subscriptionJson = subscription.toJSON();
@@ -422,7 +421,7 @@ export async function SubscribePushNotifications() : Promise<Boolean>{
 }
 
 export async function UnsubscribePushNotifications(){
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 
 	// Get the uuid from the database
 	let subscription = await DatabaseOperations.GetSubscription();
@@ -435,20 +434,20 @@ export async function UnsubscribePushNotifications(){
 }
 
 export async function CreateNotification(time: number, interval: number, properties: object) : Promise<string>{
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 
 	// Save the new notification in the database
 	let notification = new Notification(time, interval, properties, null, UploadStatus.New);
 	await notification.Save();
 
 	// Update the notifications on the server
-	Dav.globals.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
+	Dav.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 
 	return notification.Uuid;
 }
 
 export async function GetNotification(uuid: string) : Promise<{time: number, interval: number, properties: object}>{
-	if(!Dav.globals.jwt) return null;
+	if(!Dav.jwt) return null;
 
 	let notification = await DatabaseOperations.GetNotification(uuid);
 	if(notification){
@@ -463,7 +462,7 @@ export async function GetNotification(uuid: string) : Promise<{time: number, int
 }
 
 export async function UpdateNotification(uuid: string, time: number, interval: number, properties: object){
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 
 	let notification = await DatabaseOperations.GetNotification(uuid);
 	if(notification.Status == UploadStatus.UpToDate){
@@ -482,11 +481,11 @@ export async function UpdateNotification(uuid: string, time: number, interval: n
 
 	// Save the notification
 	await notification.Save();
-	Dav.globals.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
+	Dav.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 }
 
 export async function DeleteNotification(uuid: string){
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 
 	// Set the upload status of the notification to Deleted
 	let notification = await DatabaseOperations.GetNotification(uuid);
@@ -495,7 +494,7 @@ export async function DeleteNotification(uuid: string){
 		await notification.Save();
 	}
 
-	Dav.globals.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
+	Dav.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 }
 
 export async function DeleteNotificationImmediately(uuid: string){
@@ -505,7 +504,7 @@ export async function DeleteNotificationImmediately(uuid: string){
 
 export async function SyncNotifications(){
 	if(isSyncingNotifications) return;
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 	isSyncingNotifications = true;
 
 	// Get all notifications from the database
@@ -520,10 +519,10 @@ export async function SyncNotifications(){
 									uuid: string,
 									properties: object }>;
 	try{
-		let response = await axios({
+		let response = await axios.default({
 			method: 'get',
-			url: Dav.globals.apiBaseUrl + "apps/notifications" + "?app_id=" + Dav.globals.appId,
-			headers: { "Authorization": Dav.globals.jwt }
+			url: `${Dav.apiBaseUrl}/apps/notifications?app_id=${Dav.appId}`,
+			headers: { "Authorization": Dav.jwt }
 		});
 		responseData = response.data["notifications"];
 	}catch(error){
@@ -570,7 +569,7 @@ export async function SyncNotifications(){
 }
 
 export async function SyncPushNotifications(){
-	if(!Dav.globals.jwt) return;
+	if(!Dav.jwt) return;
 	if(isSyncingNotifications){
 		syncNotificationsAgain = true;
 		return;
@@ -585,15 +584,17 @@ export async function SyncPushNotifications(){
 			case UploadStatus.New:
 				// Create the notification on the server
 				try{
-					await axios({
+					await axios.default({
 						method: 'post',
-						url: Dav.globals.apiBaseUrl + "apps/notification"
-									+ "?app_id=" + Dav.globals.appId
-									+ "&uuid=" + notification.Uuid
-									+ "&time=" + notification.Time
-									+ "&interval=" + notification.Interval,
+						url: `${Dav.apiBaseUrl}/apps/notification`,
+						params: {
+							app_id: Dav.appId,
+							uuid: notification.Uuid,
+							time: notification.Time,
+							interval: notification.Interval
+						},
 						headers: {
-							'Authorization': Dav.globals.jwt,
+							'Authorization': Dav.jwt,
 							'Content-Type': 'application/json'
 						},
 						data: notification.Properties
@@ -606,11 +607,15 @@ export async function SyncPushNotifications(){
 			case UploadStatus.Updated:
 				// Update the notification on the server
 				try{
-					await axios({
+					await axios.default({
 						method: 'put',
-						url: `${Dav.globals.apiBaseUrl}apps/notification/${notification.Uuid}?time=${notification.Time}&interval=${notification.Interval}`,
+						url: `${Dav.apiBaseUrl}/apps/notification/${notification.Uuid}`,
+						params: {
+							time: notification.Time,
+							interval: notification.Interval
+						},
 						headers: {
-							'Authorization': Dav.globals.jwt,
+							'Authorization': Dav.jwt,
 							'Content-Type': 'application/json'
 						},
 						data: notification.Properties
@@ -630,10 +635,10 @@ export async function SyncPushNotifications(){
 			case UploadStatus.Deleted:
 				// Delete the notification on the server
 				try{
-					await axios({
+					await axios.default({
 						method: 'delete',
-						url: Dav.globals.apiBaseUrl + "apps/notification/" + notification.Uuid,
-						headers: { 'Authorization': Dav.globals.jwt }
+						url: `${Dav.apiBaseUrl}/apps/notification/${notification.Uuid}`,
+						headers: { 'Authorization': Dav.jwt }
 					});
 
 					// Remove the notification from the database
@@ -660,10 +665,10 @@ export async function SyncPushNotifications(){
 
 //#region Api methods
 export async function DownloadUserInformation(jwt: string){
-	var url = Dav.globals.apiBaseUrl + "auth/user";
+	var url = `${Dav.apiBaseUrl}/auth/user`;
 
    try{
-      let response = await axios({
+      let response = await axios.default({
          method: 'get',
 			url,
 			headers: {
@@ -692,14 +697,14 @@ export async function DownloadUserInformation(jwt: string){
 }
 
 export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
-	if(!Dav.globals.jwt) return null;
+	if(!Dav.jwt) return null;
 
 	try{
-		let response = await axios({
+		let response = await axios.default({
 			method: 'get',
-			url: Dav.globals.apiBaseUrl + "apps/object/" + uuid,
+			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
 			headers: {
-				'Authorization': Dav.globals.jwt
+				'Authorization': Dav.jwt
 			}
 		});
 
@@ -719,7 +724,7 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 }
 
 async function CreateTableObjectOnServer(tableObject: TableObject): Promise<object>{		// Return {ok: boolean, message: string}
-   if(!Dav.globals.jwt) return {ok: false, message: null};
+   if(!Dav.jwt) return {ok: false, message: null};
    if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
 	try{
@@ -735,32 +740,32 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
 			});
 			var result: ProgressEvent = await readFilePromise;
 
-         response = await axios({
+         response = await axios.default({
             method: 'post',
-            url: Dav.globals.apiBaseUrl + "apps/object",
+				url: `${Dav.apiBaseUrl}/apps/object`,
             params: {
                table_id: tableObject.TableId,
-               app_id: Dav.globals.appId,
+               app_id: Dav.appId,
                uuid: tableObject.Uuid,
                ext: ext
             },
             headers: {
-               'Authorization': Dav.globals.jwt,
+               'Authorization': Dav.jwt,
                'Content-Type': tableObject.File.type
             },
 				data: result.currentTarget["result"]
          });
       }else{
-         response = await axios({
+         response = await axios.default({
             method: 'post',
-            url: Dav.globals.apiBaseUrl + "apps/object",
+				url: `${Dav.apiBaseUrl}/apps/object`,
             params: {
                table_id: tableObject.TableId,
-               app_id: Dav.globals.appId,
+               app_id: Dav.appId,
                uuid: tableObject.Uuid
             },
             headers: {
-               'Authorization': Dav.globals.jwt,
+               'Authorization': Dav.jwt,
                'Content-Type': 'application/json'
             },
             data: JSON.stringify(tableObject.Properties)
@@ -774,7 +779,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
 }
 
 async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<object>{
-	if(!Dav.globals.jwt) return {ok: false, message: null};
+	if(!Dav.jwt) return {ok: false, message: null};
 	if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
 	try{
@@ -790,24 +795,24 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<obje
 			});
 			var result: ProgressEvent = await readFilePromise;
 
-			response = await axios({
+			response = await axios.default({
             method: 'put',
-            url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
+				url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
             params: {
                ext: ext
             },
             headers: {
-               'Authorization': Dav.globals.jwt,
+               'Authorization': Dav.jwt,
                'Content-Type': tableObject.File.type
             },
 				data: result.currentTarget["result"]
          });
 		}else{
-			response = await axios({
+			response = await axios.default({
 				method: 'put',
-				url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
+				url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
 				headers: {
-					'Authorization': Dav.globals.jwt,
+					'Authorization': Dav.jwt,
 					'Content-Type': 'application/json'
 				},
 				data: JSON.stringify(tableObject.Properties)
@@ -821,13 +826,13 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<obje
 }
 
 async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<object>{
-	if(!Dav.globals.jwt) return {ok: false, message: null};
+	if(!Dav.jwt) return {ok: false, message: null};
 
 	try{
-		var response = await axios({
+		var response = await axios.default({
 			method: 'delete',
-			url: Dav.globals.apiBaseUrl + "apps/object/" + tableObject.Uuid,
-			headers: { 'Authorization': Dav.globals.jwt }
+			url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
+			headers: { 'Authorization': Dav.jwt }
 		});
 
 		return {ok: true, message: response.data};
@@ -845,11 +850,14 @@ export async function UpdateSubscriptionOnServer(){
 		case UploadStatus.New:
 			// Create the subscription on the server
 			try{
-				await axios({
+				await axios.default({
 					method: 'post',
-					url: Dav.globals.apiBaseUrl + "apps/subscription?uuid=" + subscription.uuid,
+					url: `${Dav.apiBaseUrl}/apps/subscription`,
+					params: {
+						uuid: subscription.uuid
+					},
 					headers: { 
-						'Authorization': Dav.globals.jwt,
+						'Authorization': Dav.jwt,
 						'Content-Type': "application/json"
 					},
 					data: {
@@ -870,10 +878,10 @@ export async function UpdateSubscriptionOnServer(){
 		case UploadStatus.Deleted:
 			// Delete the subscription on the server
 			try{
-				await axios({
+				await axios.default({
 					method: 'delete',
-					url: Dav.globals.apiBaseUrl + "apps/subscription/" + subscription.uuid,
-					headers: { 'Authorization': Dav.globals.jwt }
+					url: `${Dav.apiBaseUrl}/apps/subscription/${subscription.uuid}`,
+					headers: { 'Authorization': Dav.jwt }
 				});
 
 				// Remove the uuid from the database
@@ -901,13 +909,13 @@ export async function Log(apiKey: string, name: string){
 
 	try{
 		// Make request to backend
-		await axios({
+		await axios.default({
 			method: 'post',
-			url: Dav.globals.apiBaseUrl + "analytics/event",
+			url: `${Dav.apiBaseUrl}/analytics/event`,
 			params: {
 				api_key: apiKey,
 				name: name,
-				app_id: Dav.globals.appId,
+				app_id: Dav.appId,
 				save_country: true
 			},
 			headers: {
@@ -925,9 +933,9 @@ export async function DeleteSessionOnServer(jwt: string){
 	if(!jwt.split('.')[3]) return;
 
 	try{
-		await axios({
+		await axios.default({
 			method: 'delete',
-			url: Dav.globals.apiBaseUrl + "auth/session",
+			url: `${Dav.apiBaseUrl}/auth/session`,
 			headers: {'Authorization': jwt}
 		});
 	}catch(error){}
@@ -1044,11 +1052,11 @@ export enum UploadStatus {
 //#region Helper methods
 async function HttpGet(url: string) : Promise<{ ok: boolean, message: object }>{
 	try{
-		let response = await axios({
+		let response = await axios.default({
 			method: 'get',
-			url: Dav.globals.apiBaseUrl + url,
+			url: Dav.apiBaseUrl + url,
 			headers: {
-				'Authorization': Dav.globals.jwt
+				'Authorization': Dav.jwt
 			}
 		});
 
@@ -1075,7 +1083,7 @@ function urlBase64ToUint8Array(base64String) {
 
 export async function DownloadFile(url: string) : Promise<Blob>{
    try{
-      let response = await axios({
+      let response = await axios.default({
          method: 'get',
          url,
          responseType: 'blob'

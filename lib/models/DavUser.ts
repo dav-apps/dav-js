@@ -1,6 +1,6 @@
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as DataManager from '../providers/DataManager';
-import * as Dav from "../Dav";
+import { Dav, startPushNotificationSubscription } from "../Dav";
 
 export class DavUser{
 	public Email: string;
@@ -23,7 +23,7 @@ export class DavUser{
 
 					DataManager.Sync();
 
-					Dav.startPushNotificationSubscription();
+					startPushNotificationSubscription();
 					DataManager.UpdateSubscriptionOnServer();
 					DataManager.SyncNotifications();
 				}
@@ -52,7 +52,7 @@ export class DavUser{
 		this.AvatarEtag = userObject["avatarEtag"];
 		this.AvatarFile = userObject["avatarFile"];
 		this.JWT = userObject["jwt"];
-		Dav.globals.jwt = this.JWT;
+		Dav.jwt = this.JWT;
 	}
 
 	private ClearUser(){
@@ -66,7 +66,7 @@ export class DavUser{
 		this.AvatarEtag = "";
 		this.AvatarFile = null;
 		this.JWT = "";
-		Dav.globals.jwt = "";
+		Dav.jwt = "";
 	}
 
 	private async DownloadUserInformation() : Promise<boolean>{
@@ -126,9 +126,9 @@ export enum DavEnvironment{
 }
 
 export function ShowLoginPage(apiKey: string, callbackUrl: string){
-	window.location.href = `${Dav.globals.websiteUrl}login_session?api_key=${apiKey}&app_id=${Dav.globals.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+	window.location.href = `${Dav.websiteUrl}/login_session?api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
 }
 
 export function ShowSignupPage(apiKey: string, callbackUrl: string){
-	window.location.href = `${Dav.globals.websiteUrl}signup?api_key=${apiKey}&app_id=${Dav.globals.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+	window.location.href = `${Dav.websiteUrl}/signup?api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
 }

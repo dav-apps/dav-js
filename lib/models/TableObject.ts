@@ -1,8 +1,8 @@
+import * as axios from 'axios';
 import * as DataManager from '../providers/DataManager';
 import * as DatabaseOperations from '../providers/DatabaseOperations';
-import * as Dav from '../Dav';
+import { Dav } from '../Dav';
 import { DavEnvironment } from './DavUser';
-var axios = require('axios');
 
 export class TableObject{
 	public Uuid: string;
@@ -66,18 +66,18 @@ export class TableObject{
 
 	async RemoveProperty(name: string): Promise<void>{
 		if(this.Properties[name]){
-         if(Dav.globals.jwt){
+         if(Dav.jwt){
             // Set the value to empty string if the user is logged in
             this.Properties[name] = "";
          }else{
             delete this.Properties[name];
          }
-			await this.Save(Dav.globals.environment == DavEnvironment.Test);
+			await this.Save(Dav.environment == DavEnvironment.Test);
 		}
 	}
 
    async Delete(): Promise<void>{
-		if(Dav.globals.jwt){
+		if(Dav.jwt){
 			// If the user is logged in
 			this.UploadStatus = TableObjectUploadStatus.Deleted;
 			await this.Save();
@@ -105,7 +105,7 @@ export class TableObject{
 	GetFileDownloadStatus() : TableObjectFileDownloadStatus{
 		if(!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
 		if(this.File) return TableObjectFileDownloadStatus.Downloaded;
-		if(!Dav.globals.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
+		if(!Dav.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
 
 		var i = DataManager.downloadingFiles.findIndex(uuid => uuid == this.Uuid);
 		if(i !== -1){
@@ -119,20 +119,20 @@ export class TableObject{
 
 		if(downloadStatus == TableObjectFileDownloadStatus.Downloading || 
 			downloadStatus == TableObjectFileDownloadStatus.Downloaded ||
-			!Dav.globals.jwt) return false;
+			!Dav.jwt) return false;
 
 		let response;
 
 		try{
-			response = await axios({
+			response = await axios.default({
 				method: 'get',
-				url: Dav.globals.apiBaseUrl + `apps/object/${this.Uuid}`,
+				url: `${Dav.apiBaseUrl}/apps/object/${this.Uuid}`,
 				responseType: 'blob',
 				params: {
 					file: true
 				},
 				headers: {
-					'Authorization': Dav.globals.jwt
+					'Authorization': Dav.jwt
 				}
 			});
 
@@ -158,7 +158,7 @@ export class TableObject{
          this.Uuid = uuid;
 		}
 		
-		if(triggerSyncPush && Dav.globals.environment == DavEnvironment.Test){
+		if(triggerSyncPush && Dav.environment == DavEnvironment.Test){
 			await DataManager.SyncPush();
 		}else if(triggerSyncPush){
 			DataManager.SyncPush();
