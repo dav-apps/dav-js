@@ -1,9 +1,9 @@
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import * as Dav from '../../lib/Dav';
+import 'mocha';
+import { assert } from 'chai';
 import * as localforage from "localforage";
 import { extendPrototype } from 'localforage-startswith';
-import { assert } from 'chai';
-import 'mocha';
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
+import { Dav, userKey, notificationsKey, getTableObjectsKey, tableObjectsKey, Init } from '../../lib/Dav';
 import { TableObject, TableObjectUploadStatus, generateUUID } from '../../lib/models/TableObject';
 import { Notification } from '../../lib/models/Notification';
 import { UploadStatus } from '../../lib/providers/DataManager';
@@ -24,7 +24,7 @@ describe("SetUser function", () => {
       DatabaseOperations.SetUser(user);
 
       // Assert
-      var savedUser = await localforage.getItem(Dav.userKey);
+      var savedUser = await localforage.getItem(userKey);
       assert.equal(user.email, savedUser["email"]);
       assert.equal(user.username, savedUser["username"]);
       assert.equal(user.jwt, savedUser["jwt"]);
@@ -42,7 +42,7 @@ describe("GetUser function", () => {
          username: "tester",
          jwt: "jwtjwt"
       }
-      await localforage.setItem(Dav.userKey, user);
+      await localforage.setItem(userKey, user);
 
       // Act
       var savedUser = await DatabaseOperations.GetUser();
@@ -66,7 +66,7 @@ describe("RemoveUser function", () => {
          jwt: "blabla"
       }
 
-      await localforage.setItem(Dav.userKey, user);
+      await localforage.setItem(userKey, user);
 
       // Act
       await DatabaseOperations.RemoveUser();
@@ -277,7 +277,7 @@ describe("RemoveAllNotifications function", () => {
          })
       ]
 
-		await localforage.setItem(Dav.notificationsKey, notifications);
+		await localforage.setItem(notificationsKey, notifications);
 		assert.equal(2, (await DatabaseOperations.GetAllNotifications()).length);
 
       // Act
@@ -387,7 +387,7 @@ describe("RemoveSubscription function", () => {
 describe("CreateTableObject function", () => {
 	async function saveTableObjectAndReturnUuidTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
 		var uuid = "2569d0b8-61a2-4cf1-9bcd-682d55f99db9";
 		var tableId = -13;
@@ -416,7 +416,7 @@ describe("CreateTableObject function", () => {
 		var savedUuid = await DatabaseOperations.CreateTableObject(tableObject);
 
 		// Assert
-      var savedObject = separateKeyStorage ? (await localforage.getItem(Dav.getTableObjectsKey(tableObject.TableId, tableObject.Uuid))) : (await localforage.getItem(Dav.tableObjectsKey) as object[])[0];
+      var savedObject = separateKeyStorage ? (await localforage.getItem(getTableObjectsKey(tableObject.TableId, tableObject.Uuid))) : (await localforage.getItem(tableObjectsKey) as object[])[0];
 
       assert.equal(uuid, savedUuid);
       assert.equal(uuid, savedObject["Uuid"]);
@@ -436,7 +436,7 @@ describe("CreateTableObject function", () => {
 
 	it("should generate a new uuid if the uuid is already in use", async () => {
 		// Arrange
-		Dav.globals.separateKeyStorage = false;
+		Dav.separateKeyStorage = false;
 
 		var uuid = "3f0b11b9-78b1-4b63-b613-8a82945300eb";
 		var tableId = 1;
@@ -464,7 +464,7 @@ describe("CreateTableObject function", () => {
 describe("CreateTableObjects function", () => {
 	async function saveMultipleTableObjectsTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
 		var firstTableObject = new TableObject();
 		var firstUuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
@@ -494,7 +494,7 @@ describe("CreateTableObjects function", () => {
       assert.equal(firstUuid, uuids[0]);
 		assert.equal(secondUuid, uuids[1]);
 
-      var tableObjectsFromDatabase = separateKeyStorage ? await getTableObjects(Dav.getTableObjectsKey()) : await localforage.getItem(Dav.tableObjectsKey) as object[];
+      var tableObjectsFromDatabase = separateKeyStorage ? await getTableObjects(getTableObjectsKey()) : await localforage.getItem(tableObjectsKey) as object[];
 		
       assert.equal(firstTableId, tableObjectsFromDatabase[0]["TableId"]);
       assert.equal(secondTableId, tableObjectsFromDatabase[1]["TableId"]);
@@ -510,7 +510,7 @@ describe("CreateTableObjects function", () => {
 
    it("should generate new uuids for table objects with a uuid that is already in use", async () => {
 		// Arrange
-		Dav.globals.separateKeyStorage = false;
+		Dav.separateKeyStorage = false;
 
       var firstTableObject = new TableObject();
 		var uuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
@@ -538,7 +538,7 @@ describe("CreateTableObjects function", () => {
       assert.notEqual(uuids[0], uuids[1]);
       assert.equal(uuid, uuids[0]);
 
-      var tableObjectsFromDatabase = await localforage.getItem(Dav.tableObjectsKey) as object[];
+      var tableObjectsFromDatabase = await localforage.getItem(tableObjectsKey) as object[];
 
       assert.equal(firstTableId, tableObjectsFromDatabase[0]["TableId"]);
       assert.equal(secondTableId, tableObjectsFromDatabase[1]["TableId"]);
@@ -555,7 +555,7 @@ describe("GetTableObject function", () => {
       // Arrange
       var tableId = 126;
 
-      Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
@@ -608,7 +608,7 @@ describe("GetTableObject function", () => {
 	
 	async function returnNullIfTableObjectDoesNotExistTest(separateKeyStorage: boolean, withTableId: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
 		var uuid = "4c4286d8-5acb-49b6-b6ef-b0d3d7de9425";
 
@@ -628,7 +628,7 @@ describe("GetAllTableObjects function", () => {
 	async function returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(separateKeyStorage: boolean){
 		// GetAllTableObjects(2, false);
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
 		var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
@@ -654,7 +654,7 @@ describe("GetAllTableObjects function", () => {
 	async function returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(separateKeyStorage: boolean){
 		// GetAllTableObjects(-1, true);
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
       var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
@@ -695,7 +695,7 @@ describe("GetAllTableObjects function", () => {
 	async function returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(separateKeyStorage: boolean){
 		// GetAllTableObjects(-1, false);
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
       var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
@@ -726,7 +726,7 @@ describe("GetAllTableObjects function", () => {
 	async function returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(separateKeyStorage: boolean){
 		// GetAllTableObjects(2, true);
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
 
       var generatedTableObjects = GenerateTableObjects();
       await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
@@ -847,7 +847,7 @@ describe("TableObjectExists function", () => {
 		// Arrange
 		let tableId = 2;
 
-		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
@@ -874,7 +874,7 @@ describe("TableObjectExists function", () => {
 
 	async function returnFalseIfTheTableObjectDoesNotExistTest(separateKeyStorage: boolean, withTableId: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       var uuid = generateUUID();
 
       // Act
@@ -895,7 +895,7 @@ describe("TableObjectExists function", () => {
 describe("UpdateTableObject function", () => {
 	async function updateTheTableObjectTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       var firstPropertyName = "page1";
       var firstPropertyValue = "Guten Tag";
       var secondPropertyName = "page2";
@@ -937,7 +937,7 @@ describe("DeleteTableObject function", () => {
 		// Arrange
 		let tableId = 5;
 
-		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
@@ -971,7 +971,7 @@ describe("DeleteTableObjectImmediately function", () => {
 		// Arrange
 		let tableId = 5;
 
-		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},

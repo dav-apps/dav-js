@@ -1,7 +1,7 @@
-import { assert } from 'chai';
 import 'mocha';
+import { assert } from 'chai';
 import * as localforage from "localforage";
-import * as Dav from '../../lib/Dav';
+import { Dav } from '../../lib/Dav';
 import { DavUser } from '../../lib/models/DavUser';
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import * as Constants from '../Constants';
@@ -11,7 +11,7 @@ const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im
 describe("Login function", () => {
    it("should log the user in and download the user information with valid JWT", (done: Function) => {
       // Arrange
-		Dav.globals.appId = Constants.davClassLibraryTestAppId;
+		Dav.appId = Constants.davClassLibraryTestAppId;
 		
 		var user = new DavUser(async () => {
 			// Act
@@ -38,7 +38,7 @@ describe("Login function", () => {
 
    it("should not log the user in with invalid JWT", (done: Function) => {
       // Arrange
-      Dav.globals.appId = Constants.davClassLibraryTestAppId;
+      Dav.appId = Constants.davClassLibraryTestAppId;
 
 		var user = new DavUser(async () => {
 			// Act
@@ -59,7 +59,7 @@ describe("Login function", () => {
 describe("Logout function", () => {
    it("should remove all user data", (done: Function) => {
       // Arrange
-		Dav.globals.appId = Constants.davClassLibraryTestAppId;
+		Dav.appId = Constants.davClassLibraryTestAppId;
 		
       var user = new DavUser(async () => {
          await user.Login(davClassLibraryTestUserXTestUserJwt);
@@ -78,7 +78,7 @@ describe("Logout function", () => {
          assert.isEmpty(user.Avatar);
          assert.isEmpty(user.AvatarEtag);
          assert.isEmpty(user.JWT);
-			assert.isEmpty(Dav.globals.jwt);
+			assert.isEmpty(Dav.jwt);
 
          // Tidy up
          await localforage.clear();

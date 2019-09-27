@@ -1,6 +1,6 @@
-import { assert } from 'chai';
 import 'mocha';
-import * as Dav from '../../lib/Dav';
+import { assert } from 'chai';
+import { Dav, Init } from '../../lib/Dav';
 import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import { TableObject, TableObjectVisibility, TableObjectUploadStatus } from '../../lib/models/TableObject';
@@ -12,7 +12,7 @@ import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTest
 describe("SetVisibility function", () => {
 	async function setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       var tableObject = new TableObject();
       tableObject.TableId = 12;
       var oldVisibility = tableObject.Visibility;
@@ -40,7 +40,7 @@ describe("SetVisibility function", () => {
 describe("SetUploadStatus function", () => {
 	async function setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       var tableObject = new TableObject();
       tableObject.TableId = 13;
       var newUploadStatus = TableObjectUploadStatus.Updated;
@@ -67,7 +67,7 @@ describe("SetUploadStatus function", () => {
 describe("SetEtag function", () => {
 	async function setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       let tableObject = new TableObject();
       tableObject.TableId = 12;
       tableObject.Etag = "blablabla";
@@ -92,7 +92,7 @@ describe("SetEtag function", () => {
 describe("SetPropertyValue function", () => {
 	async function setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       var propertyName = "page1";
       var oldPropertyValue = "test";
       var newPropertyValue = "testtest";
@@ -125,7 +125,7 @@ describe("SetPropertyValue function", () => {
 describe("SetPropertyValues function", () => {
 	async function setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.globals.separateKeyStorage = separateKeyStorage;
+		Dav.separateKeyStorage = separateKeyStorage;
       var firstPropertyName = "page1";
       var oldFirstPropertyValue = "test";
       var newFirstPropertyValue = "testtest";
@@ -197,7 +197,7 @@ describe("GetPropertyValue function", () => {
 describe("RemoveProperty function", () => {
    it("should remove the property from the table object if the user is not logged in", async () => {
 		// Arrange
-		Dav.globals.jwt = null;
+		Dav.jwt = null;
 		var propertyName = "page1";
       var propertyValue = "test";
       
@@ -218,13 +218,13 @@ describe("RemoveProperty function", () => {
 	
 	async function removeThePropertyOnTheServerIfTheUserIsLoggedInTest(separateKeyStorage: boolean){
 		// Arrange
-		Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
 			SyncFinished: () => {}
 		});
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 		var propertyName = "page1";
 		var propertyValue = "Hello World";
 
@@ -267,13 +267,13 @@ describe("Delete function", () => {
 		// Arrange
 		let tableId = 34;
 
-      Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = "asdasd";
+      Dav.jwt = "asdasd";
 
       var tableObject = new TableObject();
       tableObject.TableId = tableId;
@@ -300,14 +300,14 @@ describe("Delete function", () => {
 		// Arrange
 		let tableId = 23;
 
-		Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
 		});
 		
-		Dav.globals.jwt = null;
+		Dav.jwt = null;
 
 		var tableObject = new TableObject();
 		tableObject.TableId = tableId;
@@ -330,7 +330,7 @@ describe("DeleteImmediately function", () => {
 		// Arrange
 		let tableId = 12;
 
-      Dav.Initialize(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},

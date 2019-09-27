@@ -1,4 +1,4 @@
-import * as Dav from '../lib/Dav';
+import { Dav, Init } from '../lib/Dav';
 import { assert } from 'chai';
 import 'mocha';
 import { TableObject } from '../lib/models/TableObject';
@@ -18,11 +18,11 @@ describe("Initialize function", () => {
       }
 
       // Act
-      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
+      Init(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
 
       // Assert
-      assert.equal(environment, Dav.globals.environment);
-      assert.equal(appId, Dav.globals.appId)
+      assert.equal(environment, Dav.environment);
+      assert.equal(appId, Dav.appId)
    });
 });
 
@@ -40,15 +40,15 @@ describe("Globals class", () => {
       }
 
       // Act
-      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
-      var firstWebsiteUrl = Dav.globals.websiteUrl;
-      var firstApiBaseUrl = Dav.globals.apiBaseUrl;
+		Init(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
+      var firstWebsiteUrl = Dav.websiteUrl;
+      var firstApiBaseUrl = Dav.apiBaseUrl;
 
       environment = DavEnvironment.Production;
 
-      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
-      var secondWebsiteUrl = Dav.globals.websiteUrl;
-      var secondApiBaseUrl = Dav.globals.apiBaseUrl;
+      Init(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
+      var secondWebsiteUrl = Dav.websiteUrl;
+      var secondApiBaseUrl = Dav.apiBaseUrl;
 
       // Assert
       assert.notEqual(firstWebsiteUrl, secondWebsiteUrl);
@@ -92,13 +92,13 @@ describe("Globals class", () => {
          }
       }
 
-      Dav.Initialize(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
+      Init(environment, appId, tableIds, [], false, {icon: "", badge: ""}, callbacks);
 
       // Act
-      Dav.globals.callbacks.UpdateAllOfTable(callingTableId, true);
-      Dav.globals.callbacks.UpdateTableObject(callingTableObject);
-      Dav.globals.callbacks.DeleteTableObject(callingTableObject);
-      Dav.globals.callbacks.SyncFinished();
+      Dav.callbacks.UpdateAllOfTable(callingTableId, true);
+      Dav.callbacks.UpdateTableObject(callingTableObject);
+      Dav.callbacks.DeleteTableObject(callingTableObject);
+      Dav.callbacks.SyncFinished();
 
       // Assert
       assert.isTrue(updateAllOfTableCalled);

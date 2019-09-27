@@ -1,11 +1,11 @@
-import { assert } from 'chai';
 import 'mocha';
-var axios = require('axios');
-import * as Dav from '../../lib/Dav';
+import { assert } from 'chai';
+import * as localforage from "localforage";
+import * as axios from 'axios';
+import { Dav, Init } from '../../lib/Dav';
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import * as DataManager from '../../lib/providers/DataManager';
 import { Notification } from '../../lib/models/Notification';
-import * as localforage from "localforage";
 import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, generateUUID } from '../../lib/models/TableObject';
 import { davClassLibraryTestUserXTestUserJwt, 
    davClassLibraryTestAppId, 
@@ -24,13 +24,13 @@ import { DavEnvironment } from '../../lib/models/DavUser';
 describe("Sync function", () => {
 	async function downloadAllTableObjectsFromTheServerTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       // Act
       await DataManager.Sync();
@@ -56,13 +56,13 @@ describe("Sync function", () => {
 
 	async function removeTheTableObjectsThatAreNotOnTheServerTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       var deletedTableObject = new TableObject();
       deletedTableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
@@ -96,13 +96,13 @@ describe("Sync function", () => {
 
 	async function updateOnlyTheTableObjectsWithANewEtagTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       await DataManager.Sync();
 
@@ -131,13 +131,13 @@ describe("Sync function", () => {
 describe("SyncPush function", () => {
 	async function uploadCreatedTableObjectsTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       var tableObject = new TableObject();
       tableObject.TableId = testDataTableId;
@@ -170,13 +170,13 @@ describe("SyncPush function", () => {
 
 	async function uploadUpdatedTableObjectsTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       await DataManager.Sync();
       var newPropertyValue = "testtest";
@@ -210,13 +210,13 @@ describe("SyncPush function", () => {
 
 	async function uploadDeletedTableObjectsTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       var tableObject = new TableObject();
       tableObject.TableId = testDataTableId;
@@ -251,13 +251,13 @@ describe("SyncPush function", () => {
 
 	async function deleteUpdatedTableObjectsThatDoNotExistOnTheServerTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       // Save a table object with upload status updated in the database and run SyncPush
       var tableObject = new TableObject();
@@ -279,13 +279,13 @@ describe("SyncPush function", () => {
 
 	async function deleteDeletedTableObjectsThatDoNotExistOnTheServerTest(separateKeyStorage: boolean){
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       // Save a table object with upload status deleted in the database and run SyncPush
       var tableObject = new TableObject();
@@ -311,7 +311,7 @@ describe("UpdateLocalTableObject function", () => {
 		// Arrange
       // Get all table objects from the server
       let callbackCalled = false;
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {
             callbackCalled = true;
@@ -319,7 +319,7 @@ describe("UpdateLocalTableObject function", () => {
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
       await DataManager.Sync();
 
       // Update the table object in the database
@@ -352,7 +352,7 @@ describe("DeleteLocalTableObject function", () => {
 		// Assert
       // Get all table objects from the server
       let callbackCalled = false;
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {
@@ -360,7 +360,7 @@ describe("DeleteLocalTableObject function", () => {
          },
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
       await DataManager.Sync();
 
       // Act
@@ -382,13 +382,13 @@ describe("DeleteLocalTableObject function", () => {
 describe("UnsubscribePushNotifications function", () => {
    it("should delete the subscription locally and on the server", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
       let uuid = generateUUID();
 
       // Create the subscription
@@ -419,13 +419,13 @@ describe("UnsubscribePushNotifications function", () => {
 describe("CreateNotification function", () => {
    it("should save the notification in the database", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       let time = new Date().getTime() / 1000;
       let interval = 5000;
@@ -454,7 +454,7 @@ describe("CreateNotification function", () => {
 
    it("should not save the notification if the user is not logged in", async () => {
       // Arrange
-      Dav.globals.jwt = null;
+      Dav.jwt = null;
       let time = new Date().getTime() / 1000;
       let interval = 5000;
       let properties = {
@@ -474,7 +474,7 @@ describe("CreateNotification function", () => {
 describe("GetNotification function", () => {
 	it("should return the values of the notification", async () => {
 		// Arrange
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
 		// Create a notification
 		let uuid = generateUUID();
@@ -512,13 +512,13 @@ describe("GetNotification function", () => {
 describe("UpdateNotification function", () => {
 	it("should update the notification in the database", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
 		// Create a notification
 		let uuid = generateUUID();
@@ -551,13 +551,13 @@ describe("UpdateNotification function", () => {
 describe("DeleteNotification function", () => {
    it("should remove the notification from the database", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       // Create the notification
       let time = new Date().getTime() / 1000;
@@ -602,13 +602,13 @@ describe("DeleteNotificationImmediately function", () => {
 describe("SyncNotifications function", () => {
    it("should download all notifications from the server", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       // Act
       await DataManager.SyncNotifications();
@@ -635,13 +635,13 @@ describe("SyncNotifications function", () => {
 
    it("should remove the notifications that are not on the server", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-      Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+      Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
       // Create a notification locally
       let deletedNotificationUuid = generateUUID();
@@ -681,13 +681,13 @@ describe("SyncNotifications function", () => {
 describe("SyncPushNotifications function", () => {
 	it("should upload created notifications", async () => {
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 		
 		let uuid = generateUUID();
 		let time = 123123;
@@ -723,13 +723,13 @@ describe("SyncPushNotifications function", () => {
    
    it("should upload updated notifications", async () => {
       // Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 		
 		let newTime = 1123213;
 		let newInterval = 21312;
@@ -779,13 +779,13 @@ describe("SyncPushNotifications function", () => {
 
 	it("should upload deleted notifications", async () => {
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
 		// Create a notification and save in on the server
 		let uuid = generateUUID();
@@ -817,13 +817,13 @@ describe("SyncPushNotifications function", () => {
 
 	it("should delete updated notification that do not exist on the server", async () => {
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
 		// Create a notification with Status = Updated
 		let uuid = generateUUID();
@@ -841,13 +841,13 @@ describe("SyncPushNotifications function", () => {
 
 	it("should delete deleted notifications that do not exist on the server", async () => {
 		// Arrange
-      Dav.Initialize(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
+      Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
          DeleteTableObject: () => {},
          SyncFinished: () => {}
       });
-		Dav.globals.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
 
 		// Create a notification with Status = Deleted
 		let uuid = generateUUID();
@@ -1028,9 +1028,13 @@ describe("SortTableIds function", () => {
 //#region Helper methods
 export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
    try{
-      var response = await axios.get(Dav.globals.apiBaseUrl + "apps/object/" + uuid, {
-         headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
-      });
+		var response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
+			headers: {
+				'Authorization': davClassLibraryTestUserXTestUserJwt
+			}
+		});
 
       var tableObject = new TableObject();
       tableObject.TableId = response.data.table_id;
@@ -1048,11 +1052,13 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 
 export async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
    try{
-      var response = await axios({
-         method: 'delete',
-         url: Dav.globals.apiBaseUrl + "apps/object/" + uuid,
-         headers: { 'Authorization': davClassLibraryTestUserXTestUserJwt }
-      });
+		var response = await axios.default({
+			method: 'delete',
+			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
+			headers: {
+				'Authorization': davClassLibraryTestUserXTestUserJwt
+			}
+		});
 
       return {ok: true, message: response.data};
    }catch(error){
@@ -1062,9 +1068,13 @@ export async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: 
 
 async function GetSubscriptionFromServer(uuid: string) : Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string }>{
    try{
-      var response = await axios.get(Dav.globals.apiBaseUrl + "apps/subscription/" + uuid, {
-         headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
-      });
+		var response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/apps/subscription/${uuid}`,
+			headers: {
+				'Authorization': davClassLibraryTestUserXTestUserJwt
+			}
+		});
 
       return {
          uuid: response.data.uuid,
@@ -1079,9 +1089,13 @@ async function GetSubscriptionFromServer(uuid: string) : Promise<{ uuid: string,
 
 async function GetNotificationFromServer(uuid: string) : Promise<{ uuid: string, time: number, interval: number, properties: object }>{
    try{
-      var response = await axios.get(Dav.globals.apiBaseUrl + "apps/notification/" + uuid, {
-         headers: {'Authorization': davClassLibraryTestUserXTestUserJwt}
-      });
+		var response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/apps/notification/${uuid}`,
+			headers: {
+				'Authorization': davClassLibraryTestUserXTestUserJwt
+			}
+		});
 
       return {
          uuid: response.data.uuid,
@@ -1096,12 +1110,14 @@ async function GetNotificationFromServer(uuid: string) : Promise<{ uuid: string,
 
 async function DeleteNotificationFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
    try{
-      var response = await axios({
-         method: 'delete',
-         url: Dav.globals.apiBaseUrl + "apps/notification/" + uuid,
-         headers: { 'Authorization': davClassLibraryTestUserXTestUserJwt }
-      });
-
+		var response = await axios.default({
+			method: 'delete',
+			url: `${Dav.apiBaseUrl}/apps/notification/${uuid}`,
+			headers: {
+				'Authorization': davClassLibraryTestUserXTestUserJwt
+			}
+		});
+		
       return {ok: true, message: response.data};
    }catch(error){
       return {ok: false, message: error.response.data};
