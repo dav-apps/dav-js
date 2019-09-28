@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as moxios from 'moxios'
 import { Dav, InitStatic, ApiResponse, Init, ApiErrorResponse, userKey, ApiError } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
-import { Signup, SignupResponseData } from '../../lib/providers/UsersController';
+import { Signup, SignupResponseData, LoginResponseData, Login } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 
 beforeEach(() => {
@@ -274,6 +274,107 @@ describe("Signup function", () => {
 
 		// Act
 		let result = await Signup(auth, email, password, username, appId, apiKey, deviceName, deviceType, deviceOs) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("Login function", () => {
+	it("should call login endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let url = `${Dav.apiBaseUrl}/auth/login`;
+
+		let email = "dav2070@dav-apps.tech";
+		let password = "davdavdav";
+		let jwt = "jwtjwtjwt";
+		let userId = 63;
+
+		let expectedResult: ApiResponse<LoginResponseData> = {
+			status: 200,
+			data: {
+				jwt,
+				userId
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			assert.equal(request.config.params.email, email);
+			assert.equal(request.config.params.password, password);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					jwt: expectedResult.data.jwt,
+					user_id: expectedResult.data.userId
+				}
+			});
+		});
+
+		// Act
+		let result = await Login(auth, email, password) as ApiResponse<LoginResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.jwt, expectedResult.data.jwt);
+		assert.equal(result.data.userId, expectedResult.data.userId);
+	});
+
+	it("should call login endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let url = `${Dav.apiBaseUrl}/auth/login`;
+
+		let email = "dav2070@dav-apps.tech";
+		let password = "davdavdav";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [
+				{
+					code: 1101,
+					message: "Action not allowed"
+				}
+			]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			assert.equal(request.config.params.email, email);
+			assert.equal(request.config.params.password, password);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await Login(auth, email, password) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

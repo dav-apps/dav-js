@@ -32,7 +32,7 @@ export async function Signup(
 		email,
 		password,
 		username
-	};
+	}
 
 	if(appId != -1){
 		params["app_id"] = appId;
@@ -50,7 +50,7 @@ export async function Signup(
 			method: 'post',
 			url,
 			headers: {
-				'Authorization': auth.token
+				Authorization: auth.token
 			},
 			params,
 			data
@@ -67,6 +67,51 @@ export async function Signup(
 				totalStorage: response.data.total_storage,
 				usedStorage: response.data.used_storage,
 				jwt: response.data.jwt
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
+export interface LoginResponseData{
+	jwt: string;
+	userId: number;
+}
+
+export async function Login(
+	auth: Auth,
+	email: string,
+	password: string
+) : Promise<(ApiResponse<LoginResponseData> | ApiErrorResponse)>{
+	let url = `${Dav.apiBaseUrl}/auth/login`;
+
+	let params = {
+		email,
+		password
+	}
+
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url,
+			headers: {
+				Authorization: auth.token
+			},
+			params
+		});
+
+		return {
+			status: response.status,
+			data: {
+				jwt: response.data.jwt,
+				userId: response.data.user_id
 			}
 		}
 	}catch(error){
