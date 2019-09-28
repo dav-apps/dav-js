@@ -1,3 +1,4 @@
+import * as axios from 'axios';
 import { TableObject } from "./models/TableObject";
 import * as DataManager from "./providers/DataManager";
 import { DavEnvironment } from "./models/DavUser";
@@ -12,6 +13,21 @@ export const notificationsKey = "notifications";
 export const subscriptionKey = "subscription";
 export const extPropertyName = "ext";
 export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ";
+
+export interface ApiResponse<T>{
+	status: number;
+	data: T;
+}
+
+export interface ApiErrorResponse{
+	status: number;
+	errors: ApiError[];
+}
+
+export interface ApiError{
+	code: number,
+	message: string
+}
 
 export class Dav{
 	static apiBaseUrl: string = apiBaseUrlDevelopment;
@@ -61,6 +77,10 @@ export function Init(
 	// Set the urls
 	Dav.apiBaseUrl = environment == DavEnvironment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment;
 	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
+}
+
+export function InitStatic(environment: DavEnvironment){
+	Dav.environment = environment;
 }
 
 export function getTableObjectsKey(tableId?: number, uuid?: string){
@@ -137,4 +157,22 @@ export function startPushNotificationSubscription(){
          });
       });
    }
+}
+
+export function ConvertHttpResponseToErrorResponse(response: axios.AxiosResponse) : ApiErrorResponse{
+	let status = response.status;
+	let responseErrors: any[] = response.data.errors;
+	let errors: ApiError[] = [];
+
+	for(let i = 0; i < responseErrors.length; i++){
+		errors.push({
+			code: responseErrors[i][0],
+			message: responseErrors[i][1]
+		});
+	}
+
+	return {
+		status,
+		errors
+	}
 }
