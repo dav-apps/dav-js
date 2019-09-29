@@ -1080,19 +1080,4 @@ function urlBase64ToUint8Array(base64String) {
    }
    return outputArray;
 }
-
-export async function DownloadFile(url: string) : Promise<Blob>{
-   try{
-      let response = await axios.default({
-         method: 'get',
-         url,
-         responseType: 'blob'
-      });
-   
-      return new Blob([response.data]);
-   }catch(error){
-      console.log(error)
-      return null;
-   }
-}
 //#endregion

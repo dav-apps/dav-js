@@ -99,7 +99,7 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
    if(!Dav.jwt || !Dav.appId || !Dav.apiBaseUrl || Dav.environment == DavEnvironment.Test) return;
 
 	let baseUrl = Dav.apiBaseUrl.replace("http", "ws");
-	var webSocket = new WebSocket(baseUrl + "cable?app_id=" + Dav.appId + "&jwt=" + Dav.jwt);
+	var webSocket = new WebSocket(`${baseUrl}/cable?app_id=${Dav.appId}&jwt=${Dav.jwt}`);
 
 	webSocket.onopen = function (e) {
 		var json = JSON.stringify({

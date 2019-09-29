@@ -10,7 +10,6 @@ export class DavUser{
 	public Plan: DavPlan;
 	public Avatar: string;
 	public AvatarEtag: string;
-	public AvatarFile: Blob;
 	public IsLoggedIn: boolean = false;
 	public JWT: string;
 
@@ -50,7 +49,6 @@ export class DavUser{
 		this.Plan = userObject["plan"];
 		this.Avatar = userObject["avatar"];
 		this.AvatarEtag = userObject["avatarEtag"];
-		this.AvatarFile = userObject["avatarFile"];
 		this.JWT = userObject["jwt"];
 		Dav.jwt = this.JWT;
 	}
@@ -64,7 +62,6 @@ export class DavUser{
 		this.Plan = 0;
 		this.Avatar = "";
 		this.AvatarEtag = "";
-		this.AvatarFile = null;
 		this.JWT = "";
 		Dav.jwt = "";
 	}
@@ -74,12 +71,6 @@ export class DavUser{
 			let userObject = await DataManager.DownloadUserInformation(this.JWT);
 
 			if(userObject){
-				// Download the avatar
-				if(this.AvatarEtag != userObject.avatarEtag){
-					this.AvatarFile = await DataManager.DownloadFile(this.Avatar);
-					userObject.avatarFile = this.AvatarFile;
-				}
-
 				this.SetUser(userObject);
 				await DatabaseOperations.SetUser(userObject);
 
