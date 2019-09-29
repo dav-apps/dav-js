@@ -684,8 +684,11 @@ export async function DownloadUserInformation(jwt: string){
             usedStorage: response.data.used_storage,
             plan: response.data.plan,
             avatar: response.data.avatar,
-            avatarEtag: response.data.avatar_etag,
-            avatarFile: null,
+				avatarEtag: response.data.avatar_etag,
+				confirmed: response.data.confirmed,
+				subscriptionStatus: response.data.subscription_status,
+				periodEnd: response.data.period_end,
+				apps: response.data.apps,
             jwt: jwt
          }
       }else{

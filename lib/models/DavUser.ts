@@ -1,6 +1,7 @@
 import * as DatabaseOperations from '../providers/DatabaseOperations';
 import * as DataManager from '../providers/DataManager';
 import { Dav, startPushNotificationSubscription } from "../Dav";
+import { App, ConvertObjectArrayToApps } from './App';
 
 export class DavUser{
 	public Email: string;
@@ -11,6 +12,10 @@ export class DavUser{
 	public Avatar: string;
 	public AvatarEtag: string;
 	public IsLoggedIn: boolean = false;
+	public Confirmed: boolean;
+	public SubscriptionStatus: DavSubscriptionStatus;
+	public PeriodEnd: Date;
+	public Apps: App[] = [];
 	public JWT: string;
 
 	constructor(callback?: Function){
@@ -49,6 +54,10 @@ export class DavUser{
 		this.Plan = userObject["plan"];
 		this.Avatar = userObject["avatar"];
 		this.AvatarEtag = userObject["avatarEtag"];
+		this.Confirmed = userObject["confirmed"];
+		this.SubscriptionStatus = userObject["subscriptionStatus"];
+		this.PeriodEnd = new Date(userObject["periodEnd"]);
+		this.Apps = ConvertObjectArrayToApps(userObject["apps"]);
 		this.JWT = userObject["jwt"];
 		Dav.jwt = this.JWT;
 	}
@@ -62,6 +71,10 @@ export class DavUser{
 		this.Plan = 0;
 		this.Avatar = "";
 		this.AvatarEtag = "";
+		this.Confirmed = false;
+		this.SubscriptionStatus = 0;
+		this.PeriodEnd = null;
+		this.Apps = [];
 		this.JWT = "";
 		Dav.jwt = "";
 	}
@@ -108,6 +121,11 @@ export enum DavPlan{
 	Free = 0,
 	Plus = 1,
 	Pro = 2
+}
+
+export enum DavSubscriptionStatus{
+	Active = 0,
+	Ending = 1
 }
 
 export enum DavEnvironment{
