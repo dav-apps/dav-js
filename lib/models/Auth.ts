@@ -1,4 +1,4 @@
-import * as crypto from 'crypto'
+var cryptoJs = require('crypto-js');
 
 export class Auth{
 	public apiKey: string;
@@ -20,6 +20,10 @@ export class Auth{
 	}
 
 	private GenerateAuthToken() : string{
-		return this.apiKey + "," + Buffer.from(crypto.createHmac("SHA256", this.secretKey).update(this.uuid).digest('hex')).toString('base64');
+		try{
+			return this.apiKey + "," + Buffer.from(cryptoJs.HmacSHA256(this.uuid, this.secretKey).toString(cryptoJs.enc.hex)).toString('base64');
+		}catch(e){
+			return this.apiKey + "," + btoa(cryptoJs.HmacSHA256(this.uuid, this.secretKey).toString(cryptoJs.enc.hex));
+		}
 	}
 }
