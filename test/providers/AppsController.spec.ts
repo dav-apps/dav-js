@@ -4,7 +4,8 @@ import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
-import { GetAllApps, GetAllAppsResponseData } from '../../lib/providers/AppsController';
+import { App } from '../../lib/models/App';
+import { GetAllApps } from '../../lib/providers/AppsController';
 
 beforeEach(() => {
 	moxios.install();
@@ -26,22 +27,16 @@ describe("GetAllApps function", () => {
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/apps/apps/all`;
 
-		let expectedResult: ApiResponse<GetAllAppsResponseData> = {
+		let expectedResult: ApiResponse<App[]> = {
 			status: 200,
-			data: {
-				apps: [{
-					id: 1,
-					name: "TestApp",
-					description: "TestApp is a very good app!",
-					dev_id: 3,
-					published: true,
-					created_at: "Heute",
-					updated_at: "Morgen",
-					link_web: "https://testapp.dav-apps.tech",
-					link_play: null,
-					link_windows: null
-				}]
-			}
+			data: [new App(
+				"TestApp",
+				"TestApp is a very good app!",
+				true,
+				"https://testapp.dav-apps.tech",
+				null,
+				null
+			)]
 		}
 
 		moxios.wait(() => {
@@ -54,25 +49,31 @@ describe("GetAllApps function", () => {
 
 			request.respondWith({
 				status: expectedResult.status,
-				response: expectedResult.data
+				response: {
+					apps: [{
+						id: 1,
+						name: expectedResult.data[0].Name,
+						description: expectedResult.data[0].Description,
+						published: expectedResult.data[0].Published,
+						link_web: expectedResult.data[0].LinkWeb,
+						link_play: expectedResult.data[0].LinkPlay,
+						link_windows: expectedResult.data[0].LinkWindows
+					}]
+				}
 			});
 		});
 
 		// Act
-		let result = await GetAllApps(auth) as ApiResponse<GetAllAppsResponseData>;
+		let result = await GetAllApps(auth) as ApiResponse<App[]>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
-		assert.equal(result.data.apps[0].id, expectedResult.data.apps[0].id);
-		assert.equal(result.data.apps[0].name, expectedResult.data.apps[0].name);
-		assert.equal(result.data.apps[0].description, expectedResult.data.apps[0].description);
-		assert.equal(result.data.apps[0].dev_id, expectedResult.data.apps[0].dev_id);
-		assert.equal(result.data.apps[0].published, expectedResult.data.apps[0].published);
-		assert.equal(result.data.apps[0].created_at, expectedResult.data.apps[0].created_at);
-		assert.equal(result.data.apps[0].updated_at, expectedResult.data.apps[0].updated_at);
-		assert.equal(result.data.apps[0].link_web, expectedResult.data.apps[0].link_web);
-		assert.equal(result.data.apps[0].link_play, expectedResult.data.apps[0].link_play);
-		assert.equal(result.data.apps[0].link_windows, expectedResult.data.apps[0].link_windows);
+		assert.equal(result.data[0].Name, expectedResult.data[0].Name);
+		assert.equal(result.data[0].Description, expectedResult.data[0].Description);
+		assert.equal(result.data[0].Published, expectedResult.data[0].Published);
+		assert.equal(result.data[0].LinkWeb, expectedResult.data[0].LinkWeb);
+		assert.equal(result.data[0].LinkPlay, expectedResult.data[0].LinkPlay);
+		assert.equal(result.data[0].LinkWindows, expectedResult.data[0].LinkWindows);
 	});
 
 	it("should call getAllApps endpoint with error", async () => {

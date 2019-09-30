@@ -1,23 +1,9 @@
 import * as axios from 'axios';
 import { Dav, ApiResponse, ApiErrorResponse, ConvertHttpResponseToErrorResponse } from '../Dav';
 import { Auth } from '../models/Auth';
+import { App, ConvertObjectArrayToApps } from '../models/App';
 
-export interface GetAllAppsResponseData{
-	apps: {
-		id: number,
-		name: string,
-		description: string,
-		dev_id: number,
-		published: boolean,
-		created_at: string,
-		updated_at: string,
-		link_web: string,
-		link_play: string,
-		link_windows: string
-	}[];
-}
-
-export async function GetAllApps(auth: Auth) : Promise<(ApiResponse<GetAllAppsResponseData> | ApiErrorResponse)>{
+export async function GetAllApps(auth: Auth) : Promise<(ApiResponse<App[]> | ApiErrorResponse)>{
 	let url = `${Dav.apiBaseUrl}/apps/apps/all`;
 
 	try{
@@ -31,9 +17,7 @@ export async function GetAllApps(auth: Auth) : Promise<(ApiResponse<GetAllAppsRe
 
 		return {
 			status: response.status,
-			data: {
-				apps: response.data.apps
-			}
+			data: ConvertObjectArrayToApps(response.data.apps)
 		}
 	}catch(error){
 		if(error.response){
