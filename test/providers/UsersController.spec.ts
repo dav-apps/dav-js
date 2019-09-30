@@ -1,7 +1,7 @@
 import 'mocha';
 import { assert } from 'chai';
-import * as moxios from 'moxios'
-import { Dav, InitStatic, ApiResponse, Init, ApiErrorResponse, userKey, ApiError } from '../../lib/Dav';
+import * as moxios from 'moxios';
+import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
 import { Signup, SignupResponseData, LoginResponseData, Login } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
