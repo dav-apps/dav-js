@@ -9,8 +9,10 @@ export {
 	DavUser, 
 	ShowLoginPage, 
 	ShowSignupPage, 
-	DavEnvironment
+	DavEnvironment,
+	DavSubscriptionStatus
 } from "./lib/models/DavUser";
+export { App } from './lib/models/App';
 export { 
 	TableObject, 
 	Property, 

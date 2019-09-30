@@ -1,11 +1,11 @@
 export class App{
 	constructor(
-		public name: string,
-		public description: string,
-		public published: boolean,
-		public linkWeb: string,
-		public linkPlay: string,
-		public linkWindows: string
+		public Name: string,
+		public Description: string,
+		public Published: boolean,
+		public LinkWeb: string,
+		public LinkPlay: string,
+		public LinkWindows: string
 	){}
 }
 
