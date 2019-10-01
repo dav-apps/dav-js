@@ -3,8 +3,9 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
-import { Signup, SignupResponseData, LoginResponseData, Login } from '../../lib/providers/UsersController';
+import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
+import { App } from '../../lib/models/App';
 
 beforeEach(() => {
 	moxios.install();
@@ -375,6 +376,168 @@ describe("Login function", () => {
 
 		// Act
 		let result = await Login(auth, email, password) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("UpdateUser function", () => {
+	it("should call updateUser endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/user`;
+		let jwt = "jwtjwtjwt";
+
+		let updatedEmail = "dav2071@dav-apps.tech";
+		let updatedUsername = "dav2071";
+
+		let expectedResult: ApiResponse<UserResponseData> = {
+			status: 200,
+			data: {
+				id: 2,
+				email: "dav2070@dav-apps.tech",
+				username: updatedUsername,
+				confirmed: true,
+				newEmail: updatedEmail,
+				oldEmail: null,
+				createdAt: "Heute",
+				updatedAt: "Morgen",
+				plan: 1,
+				periodEnd: null,
+				subscriptionStatus: 0,
+				totalStorage: 2000000000,
+				usedStorage: 10000,
+				lastActive: null,
+				avatar: "Avatar",
+				avatarEtag: "asdasdasdasd",
+				apps: [new App("TestApp", "TestApp is a very good app!", true, "testapp.dav-apps.tech", null, null)]
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'put');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.email, updatedEmail);
+			assert.equal(data.username, updatedUsername);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.id,
+					email: expectedResult.data.email,
+					username: expectedResult.data.username,
+					confirmed: expectedResult.data.confirmed,
+					new_email: expectedResult.data.newEmail,
+					old_email: expectedResult.data.oldEmail,
+					created_at: expectedResult.data.createdAt,
+					updated_at: expectedResult.data.updatedAt,
+					plan: expectedResult.data.plan,
+					period_end: expectedResult.data.periodEnd,
+					subscription_status: expectedResult.data.subscriptionStatus,
+					total_storage: expectedResult.data.totalStorage,
+					used_storage: expectedResult.data.usedStorage,
+					last_active: expectedResult.data.lastActive,
+					avatar: expectedResult.data.avatar,
+					avatar_etag: expectedResult.data.avatarEtag,
+					apps: [{
+						name: expectedResult.data.apps[0].Name,
+						description: expectedResult.data.apps[0].Description,
+						published: expectedResult.data.apps[0].Published,
+						link_web: expectedResult.data.apps[0].LinkWeb,
+						link_play: expectedResult.data.apps[0].LinkPlay,
+						link_windows: expectedResult.data.apps[0].LinkWindows
+					}]
+				}
+			});
+		});
+
+		// Act
+		let result = await UpdateUser(jwt, {
+			email: updatedEmail,
+			username: updatedUsername
+		}) as ApiResponse<UserResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.id, expectedResult.data.id);
+		assert.equal(result.data.email, expectedResult.data.email);
+		assert.equal(result.data.username, expectedResult.data.username);
+		assert.equal(result.data.confirmed, expectedResult.data.confirmed);
+		assert.equal(result.data.newEmail, expectedResult.data.newEmail);
+		assert.equal(result.data.oldEmail, expectedResult.data.oldEmail);
+		assert.equal(result.data.createdAt, expectedResult.data.createdAt);
+		assert.equal(result.data.updatedAt, expectedResult.data.updatedAt);
+		assert.equal(result.data.plan, expectedResult.data.plan);
+		assert.equal(result.data.periodEnd, expectedResult.data.periodEnd);
+		assert.equal(result.data.subscriptionStatus, expectedResult.data.subscriptionStatus);
+		assert.equal(result.data.totalStorage, expectedResult.data.totalStorage);
+		assert.equal(result.data.usedStorage, expectedResult.data.usedStorage);
+		assert.equal(result.data.lastActive, expectedResult.data.lastActive);
+		assert.equal(result.data.avatar, expectedResult.data.avatar);
+		assert.equal(result.data.avatarEtag, expectedResult.data.avatarEtag);
+		assert.equal(result.data.apps[0].Name, expectedResult.data.apps[0].Name);
+		assert.equal(result.data.apps[0].Description, expectedResult.data.apps[0].Description);
+		assert.equal(result.data.apps[0].Published, expectedResult.data.apps[0].Published);
+		assert.equal(result.data.apps[0].LinkWeb, expectedResult.data.apps[0].LinkWeb);
+		assert.equal(result.data.apps[0].LinkPlay, expectedResult.data.apps[0].LinkPlay);
+		assert.equal(result.data.apps[0].LinkWindows, expectedResult.data.apps[0].LinkWindows);
+	});
+
+	it("should call updateUser endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/user`;
+		let jwt = "jwtjwtjwt";
+
+		let updatedEmail = "dav2071@dav-apps.tech";
+		let updatedUsername = "dav2071";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2801,
+				message: "Resource does not exist: User"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'put');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.email, updatedEmail);
+			assert.equal(data.username, updatedUsername);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await UpdateUser(jwt, {
+			email: updatedEmail,
+			username: updatedUsername
+		}) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
