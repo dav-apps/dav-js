@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
-import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser } from '../../lib/providers/UsersController';
+import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser, SendDeleteAccountEmail } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 
@@ -538,6 +538,81 @@ describe("UpdateUser function", () => {
 			email: updatedEmail,
 			username: updatedUsername
 		}) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("SendDeleteAccountEmail function", () => {
+	it("should call sendDeleteAccountEmail endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/send_delete_account_email`;
+		let jwt = "jwtjwtjwt";
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			});
+		});
+
+		// Act
+		let result = await SendDeleteAccountEmail(jwt) as ApiResponse<{}>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+	});
+
+	it("should call sendDeleteAccountEmail endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/send_delete_account_email`;
+
+		let expectedResult: ApiErrorResponse = {
+			status: 401,
+			errors: [{
+				code: 2102,
+				message: "Missing field: jwt"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await SendDeleteAccountEmail(null) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
