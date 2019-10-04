@@ -5,7 +5,8 @@ export class App{
 		public Published: boolean,
 		public LinkWeb: string,
 		public LinkPlay: string,
-		public LinkWindows: string
+		public LinkWindows: string,
+		public UsedStorage: number = 0
 	){}
 }
 
@@ -19,7 +20,8 @@ export function ConvertObjectArrayToApps(objArray: any[]) : App[]{
 			obj.published,
 			obj.link_web,
 			obj.link_play,
-			obj.link_windows
+			obj.link_windows,
+			obj.used_storage
 		));
 	}
 

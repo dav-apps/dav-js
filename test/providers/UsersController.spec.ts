@@ -414,7 +414,7 @@ describe("UpdateUser function", () => {
 				lastActive: null,
 				avatar: "Avatar",
 				avatarEtag: "asdasdasdasd",
-				apps: [new App("TestApp", "TestApp is a very good app!", true, "testapp.dav-apps.tech", null, null)]
+				apps: [new App("TestApp", "TestApp is a very good app!", true, "testapp.dav-apps.tech", null, null, 20000)]
 			}
 		}
 
@@ -455,7 +455,8 @@ describe("UpdateUser function", () => {
 						published: expectedResult.data.apps[0].Published,
 						link_web: expectedResult.data.apps[0].LinkWeb,
 						link_play: expectedResult.data.apps[0].LinkPlay,
-						link_windows: expectedResult.data.apps[0].LinkWindows
+						link_windows: expectedResult.data.apps[0].LinkWindows,
+						used_storage: expectedResult.data.apps[0].UsedStorage
 					}]
 				}
 			});
@@ -491,6 +492,7 @@ describe("UpdateUser function", () => {
 		assert.equal(result.data.apps[0].LinkWeb, expectedResult.data.apps[0].LinkWeb);
 		assert.equal(result.data.apps[0].LinkPlay, expectedResult.data.apps[0].LinkPlay);
 		assert.equal(result.data.apps[0].LinkWindows, expectedResult.data.apps[0].LinkWindows);
+		assert.equal(result.data.apps[0].UsedStorage, expectedResult.data.apps[0].UsedStorage);
 	});
 
 	it("should call updateUser endpoint with error", async () => {
