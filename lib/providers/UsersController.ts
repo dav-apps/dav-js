@@ -237,3 +237,33 @@ export async function SendDeleteAccountEmail(jwt: string) : Promise<ApiResponse<
 		}
 	}
 }
+
+export async function SendRemoveAppEmail(jwt: string, appId: number) : Promise<ApiResponse<{}> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/send_remove_app_email`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			params: {
+				app_id: appId
+			},
+			headers: {
+				Authorization: jwt
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}

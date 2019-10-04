@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
-import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser, SendDeleteAccountEmail } from '../../lib/providers/UsersController';
+import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser, SendDeleteAccountEmail, SendRemoveAppEmail } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 
@@ -615,6 +615,86 @@ describe("SendDeleteAccountEmail function", () => {
 
 		// Act
 		let result = await SendDeleteAccountEmail(null) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("SendRemoveAppEmail function", () => {
+	it("should call sendRemoveAppEmail endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/send_remove_app_email`;
+		let jwt = "asdasdoafdasd";
+		let appId = 32;
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			assert.equal(request.config.params.app_id, appId);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			});
+		});
+
+		// Act
+		let result = await SendRemoveAppEmail(jwt, appId) as ApiResponse<{}>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+	});
+
+	it("should call sendRemoveAppEmail endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/send_remove_app_email`;
+		let jwt = "asdasdasd";
+		let appId = 1213;
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2803,
+				message: "Resource does not exist: App"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await SendRemoveAppEmail(jwt, appId) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
