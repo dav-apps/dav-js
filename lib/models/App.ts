@@ -1,5 +1,6 @@
 export class App{
 	constructor(
+		public Id: number,
 		public Name: string,
 		public Description: string,
 		public Published: boolean,
@@ -15,6 +16,7 @@ export function ConvertObjectArrayToApps(objArray: any[]) : App[]{
 
 	for(let obj of objArray){
 		apps.push(new App(
+			obj.id,
 			obj.name,
 			obj.description,
 			obj.published,

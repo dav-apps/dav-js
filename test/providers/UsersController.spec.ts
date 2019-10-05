@@ -414,7 +414,7 @@ describe("UpdateUser function", () => {
 				lastActive: null,
 				avatar: "Avatar",
 				avatarEtag: "asdasdasdasd",
-				apps: [new App("TestApp", "TestApp is a very good app!", true, "testapp.dav-apps.tech", null, null, 20000)]
+				apps: [new App(201, "TestApp", "TestApp is a very good app!", true, "testapp.dav-apps.tech", null, null, 20000)]
 			}
 		}
 
@@ -450,6 +450,7 @@ describe("UpdateUser function", () => {
 					avatar: expectedResult.data.avatar,
 					avatar_etag: expectedResult.data.avatarEtag,
 					apps: [{
+						id: expectedResult.data.apps[0].Id,
 						name: expectedResult.data.apps[0].Name,
 						description: expectedResult.data.apps[0].Description,
 						published: expectedResult.data.apps[0].Published,
@@ -486,6 +487,7 @@ describe("UpdateUser function", () => {
 		assert.equal(result.data.lastActive, expectedResult.data.lastActive);
 		assert.equal(result.data.avatar, expectedResult.data.avatar);
 		assert.equal(result.data.avatarEtag, expectedResult.data.avatarEtag);
+		assert.equal(result.data.apps[0].Id, expectedResult.data.apps[0].Id);
 		assert.equal(result.data.apps[0].Name, expectedResult.data.apps[0].Name);
 		assert.equal(result.data.apps[0].Description, expectedResult.data.apps[0].Description);
 		assert.equal(result.data.apps[0].Published, expectedResult.data.apps[0].Published);

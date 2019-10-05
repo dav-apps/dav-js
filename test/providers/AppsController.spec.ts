@@ -30,12 +30,14 @@ describe("GetAllApps function", () => {
 		let expectedResult: ApiResponse<App[]> = {
 			status: 200,
 			data: [new App(
+				20,
 				"TestApp",
 				"TestApp is a very good app!",
 				true,
 				"https://testapp.dav-apps.tech",
 				null,
-				null
+				null,
+				112000
 			)]
 		}
 
@@ -51,13 +53,14 @@ describe("GetAllApps function", () => {
 				status: expectedResult.status,
 				response: {
 					apps: [{
-						id: 1,
+						id: expectedResult.data[0].Id,
 						name: expectedResult.data[0].Name,
 						description: expectedResult.data[0].Description,
 						published: expectedResult.data[0].Published,
 						link_web: expectedResult.data[0].LinkWeb,
 						link_play: expectedResult.data[0].LinkPlay,
-						link_windows: expectedResult.data[0].LinkWindows
+						link_windows: expectedResult.data[0].LinkWindows,
+						used_storage: expectedResult.data[0].UsedStorage
 					}]
 				}
 			});
@@ -68,12 +71,14 @@ describe("GetAllApps function", () => {
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data[0].Id, expectedResult.data[0].Id);
 		assert.equal(result.data[0].Name, expectedResult.data[0].Name);
 		assert.equal(result.data[0].Description, expectedResult.data[0].Description);
 		assert.equal(result.data[0].Published, expectedResult.data[0].Published);
 		assert.equal(result.data[0].LinkWeb, expectedResult.data[0].LinkWeb);
 		assert.equal(result.data[0].LinkPlay, expectedResult.data[0].LinkPlay);
 		assert.equal(result.data[0].LinkWindows, expectedResult.data[0].LinkWindows);
+		assert.equal(result.data[0].UsedStorage, expectedResult.data[0].UsedStorage);
 	});
 
 	it("should call getAllApps endpoint with error", async () => {
