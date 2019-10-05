@@ -211,6 +211,33 @@ export async function UpdateUser(
 	}
 }
 
+export async function SendVerificationEmail(jwt: string) : Promise<ApiResponse<{}> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/send_verification_email`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export async function SendDeleteAccountEmail(jwt: string) : Promise<ApiResponse<{}> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/auth/send_delete_account_email`;
 
