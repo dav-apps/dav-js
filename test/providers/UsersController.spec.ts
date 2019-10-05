@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
-import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser, SendDeleteAccountEmail, SendRemoveAppEmail, SendVerificationEmail } from '../../lib/providers/UsersController';
+import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser, SendDeleteAccountEmail, SendRemoveAppEmail, SendVerificationEmail, SendPasswordResetEmail } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 
@@ -760,6 +760,7 @@ describe("SendRemoveAppEmail function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -773,6 +774,86 @@ describe("SendRemoveAppEmail function", () => {
 
 		// Act
 		let result = await SendRemoveAppEmail(jwt, appId) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("SendPasswordResetEmail function", () => {
+	it("should call sendPasswordResetEmail endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/send_password_reset_email`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let email = "test@dav-apps.tech";
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			assert.equal(request.config.params.email, email);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			});
+		});
+
+		let result = await SendPasswordResetEmail(auth, email) as ApiResponse<{}>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+	});
+
+	it("should call sendPasswordResetEmail endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/send_password_reset_email`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let email = "test@dav-apps.tech";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 400,
+			errors: [{
+				code: 2106,
+				message: "Missing field: email"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await SendPasswordResetEmail(auth, email) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

@@ -294,3 +294,33 @@ export async function SendRemoveAppEmail(jwt: string, appId: number) : Promise<A
 		}
 	}
 }
+
+export async function SendPasswordResetEmail(auth: Auth, email: string) : Promise<ApiResponse<{}> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/send_password_reset_email`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			params: {
+				email
+			},
+			headers: {
+				Authorization: auth.token
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
