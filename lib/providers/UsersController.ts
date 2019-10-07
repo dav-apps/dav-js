@@ -272,7 +272,7 @@ export async function SendRemoveAppEmail(jwt: string, appId: number) : Promise<A
 		let response = await axios.default({
 			method: 'post',
 			url,
-			params: {
+			data: {
 				app_id: appId
 			},
 			headers: {
@@ -302,7 +302,7 @@ export async function SendPasswordResetEmail(auth: Auth, email: string) : Promis
 		let response = await axios.default({
 			method: 'post',
 			url,
-			params: {
+			data: {
 				email
 			},
 			headers: {

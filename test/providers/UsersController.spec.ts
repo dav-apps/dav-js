@@ -735,7 +735,8 @@ describe("SendRemoveAppEmail function", () => {
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
 
-			assert.equal(request.config.params.app_id, appId);
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.app_id, appId);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -773,6 +774,9 @@ describe("SendRemoveAppEmail function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.app_id, appId);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -816,7 +820,8 @@ describe("SendPasswordResetEmail function", () => {
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
 
-			assert.equal(request.config.params.email, email);
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.email, email);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -855,7 +860,8 @@ describe("SendPasswordResetEmail function", () => {
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
 
-			assert.equal(request.config.params.email, email);
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.email, email);
 
 			request.respondWith({
 				status: expectedResult.status,
