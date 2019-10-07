@@ -14,7 +14,8 @@ import {
 	SendRemoveAppEmail, 
 	SendVerificationEmail, 
 	SendPasswordResetEmail, 
-	SetPassword 
+	SetPassword, 
+	SaveNewPassword
 } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
@@ -972,6 +973,95 @@ describe("SetPassword function", () => {
 
 		// Act
 		let result = await SetPassword(auth, userId, passwordConfirmationToken, password) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("SaveNewPassword function", () => {
+	it("should call saveNewPassword endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let userId = 42;
+		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/save_new_password`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let passwordConfirmationToken = "password_confirmation_token";
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.ContentType, "application/json");
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			});
+		});
+
+		// Act
+		let result = await SaveNewPassword(auth, userId, passwordConfirmationToken) as ApiResponse<{}>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+	});
+
+	it("should call saveNewPassword endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let userId = 42;
+		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/save_new_password`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let passwordConfirmationToken = "password_confirmation_token";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2801,
+				message: "Resource does not exist: User"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.ContentType, "application/json");
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await SaveNewPassword(auth, userId, passwordConfirmationToken) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
