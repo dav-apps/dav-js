@@ -3,7 +3,19 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment, DavPlan } from '../../lib/models/DavUser';
-import { Signup, SignupResponseData, LoginResponseData, Login, UserResponseData, UpdateUser, SendDeleteAccountEmail, SendRemoveAppEmail, SendVerificationEmail, SendPasswordResetEmail } from '../../lib/providers/UsersController';
+import { 
+	Signup, 
+	SignupResponseData, 
+	LoginResponseData, 
+	Login, 
+	UserResponseData, 
+	UpdateUser, 
+	SendDeleteAccountEmail, 
+	SendRemoveAppEmail, 
+	SendVerificationEmail, 
+	SendPasswordResetEmail, 
+	SetPassword 
+} from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 
@@ -812,6 +824,7 @@ describe("SendPasswordResetEmail function", () => {
 			});
 		});
 
+		// Act
 		let result = await SendPasswordResetEmail(auth, email) as ApiResponse<{}>;
 
 		// Assert for the response
@@ -842,6 +855,8 @@ describe("SendPasswordResetEmail function", () => {
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
 
+			assert.equal(request.config.params.email, email);
+
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
@@ -854,6 +869,103 @@ describe("SendPasswordResetEmail function", () => {
 
 		// Act
 		let result = await SendPasswordResetEmail(auth, email) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("SetPassword function", () => {
+	it("should call setPassword endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/set_password`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let userId = 20;
+		let passwordConfirmationToken = "confirmation_token";
+		let password = "my new password";
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.ContentType, "application/json");
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.user_id, userId);
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
+			assert.equal(data.password, password);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			});
+		});
+
+		// Act
+		let result = await SetPassword(auth, userId, passwordConfirmationToken, password) as ApiResponse<{}>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+	});
+
+	it("should call setPassword endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let url = `${Dav.apiBaseUrl}/auth/set_password`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let userId = 20;
+		let passwordConfirmationToken = "confirmation_token";
+		let password = "my new password";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2801,
+				message: "Resource does not exist: User"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.ContentType, "application/json");
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.user_id, userId);
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
+			assert.equal(data.password, password);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await SetPassword(auth, userId, passwordConfirmationToken, password) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

@@ -324,3 +324,36 @@ export async function SendPasswordResetEmail(auth: Auth, email: string) : Promis
 		}
 	}
 }
+
+export async function SetPassword(auth: Auth, userId: number, passwordConfirmationToken: string, password: string) : Promise<ApiResponse<{}> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/set_password`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: auth.token,
+				ContentType: "application/json"
+			},
+			data: {
+				user_id: userId,
+				password_confirmation_token: passwordConfirmationToken,
+				password
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
