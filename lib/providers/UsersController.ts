@@ -419,3 +419,30 @@ export async function SaveNewEmail(auth: Auth, userId: number, emailConfirmation
 		}
 	}
 }
+
+export async function ResetNewEmail(auth: Auth, userId: number) : Promise<ApiResponse<{}> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/user/${userId}/reset_new_email`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: auth.token
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
