@@ -243,6 +243,38 @@ export async function DeleteUser(auth: Auth, userId: number, emailConfirmationTo
 	}
 }
 
+export async function RemoveApp(auth: Auth, appId: number, userId: number, passwordConfirmationToken: string) : Promise<ApiResponse<{}> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/app/${appId}`;
+
+	try{
+		let response = await axios.default({
+			method: 'delete',
+			url,
+			headers: {
+				Authorization: auth.token,
+				ContentType: 'application/json'
+			},
+			data: {
+				user_id: userId,
+				password_confirmation_token: passwordConfirmationToken
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export async function SendVerificationEmail(jwt: string) : Promise<ApiResponse<{}> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/auth/send_verification_email`;
 

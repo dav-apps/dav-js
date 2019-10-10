@@ -18,7 +18,8 @@ import {
 	SaveNewPassword,
 	SaveNewEmail,
 	ResetNewEmail,
-	DeleteUser
+	DeleteUser,
+	RemoveApp
 } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
@@ -651,6 +652,99 @@ describe("DeleteUser function", () => {
 
 		// Act
 		let result = await DeleteUser(auth, userId, emailConfirmationToken, passwordConfirmationToken) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("RemoveApp function", () => {
+	it("should call removeApp endpoint", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let userId = 12;
+		let appId = 23;
+		let passwordConfirmationToken = "passwordconfirmationtoken";
+		let url = `${Dav.apiBaseUrl}/auth/app/${appId}`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'delete');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.user_id, userId);
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			});
+		});
+
+		// Act
+		let result = await RemoveApp(auth, appId, userId, passwordConfirmationToken) as ApiResponse<{}>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+	});
+
+	it("should call removeApp endpoint with error", async () => {
+		// Arrange
+		InitStatic(DavEnvironment.Test);
+
+		let userId = 12;
+		let appId = 23;
+		let passwordConfirmationToken = "passwordconfirmationtoken";
+		let url = `${Dav.apiBaseUrl}/auth/app/${appId}`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2801,
+				message: "Resource does not exist: User"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'delete');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.user_id, userId);
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		});
+
+		// Act
+		let result = await RemoveApp(auth, appId, userId, passwordConfirmationToken) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
