@@ -25,23 +25,22 @@ import {
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 
+const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
+const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
+const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
+
 beforeEach(() => {
 	moxios.install();
+	InitStatic(DavEnvironment.Test);
 });
 
 afterEach(() => {
 	moxios.uninstall();
 });
 
-const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
-const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
-const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
-
 describe("Signup function", () => {
 	it("should call signup endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-		
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/auth/signup`;
 
@@ -107,8 +106,6 @@ describe("Signup function", () => {
 
 	it("should call signup endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/auth/signup`;
 
@@ -159,8 +156,6 @@ describe("Signup function", () => {
 
 	it("should call signup endpoint with session parameters", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/auth/signup`;
 
@@ -238,8 +233,6 @@ describe("Signup function", () => {
 
 	it("should call signup endpoint with session parameters and error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/auth/signup`;
 
@@ -304,8 +297,6 @@ describe("Signup function", () => {
 describe("Login function", () => {
 	it("should call login endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/auth/login`;
 
@@ -353,8 +344,6 @@ describe("Login function", () => {
 
 	it("should call login endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/auth/login`;
 
@@ -405,8 +394,6 @@ describe("Login function", () => {
 describe("UpdateUser function", () => {
 	it("should call updateUser endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/user`;
 		let jwt = "jwtjwtjwt";
 
@@ -517,8 +504,6 @@ describe("UpdateUser function", () => {
 
 	it("should call updateUser endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/user`;
 		let jwt = "jwtjwtjwt";
 
@@ -571,8 +556,6 @@ describe("UpdateUser function", () => {
 describe("DeleteUser function", () => {
 	it("should call deleteUser endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 23;
 		let emailConfirmationToken = "emailconfirmationtoken";
 		let passwordConfirmationToken = "passwordconfirmationtoken";
@@ -612,8 +595,6 @@ describe("DeleteUser function", () => {
 
 	it("should call deleteUser endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 23;
 		let emailConfirmationToken = "emailconfirmationtoken";
 		let passwordConfirmationToken = "passwordconfirmationtoken";
@@ -664,8 +645,6 @@ describe("DeleteUser function", () => {
 describe("RemoveApp function", () => {
 	it("should call removeApp endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 12;
 		let appId = 23;
 		let passwordConfirmationToken = "passwordconfirmationtoken";
@@ -705,8 +684,6 @@ describe("RemoveApp function", () => {
 
 	it("should call removeApp endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 12;
 		let appId = 23;
 		let passwordConfirmationToken = "passwordconfirmationtoken";
@@ -757,8 +734,6 @@ describe("RemoveApp function", () => {
 describe("ConfirmUser function", () => {
 	it("should call confirmUser endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 52;
 		let emailConfirmationToken = "emailconfirmationtoken";
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/confirm`;
@@ -796,8 +771,6 @@ describe("ConfirmUser function", () => {
 
 	it("should call confirmUser endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 52;
 		let emailConfirmationToken = "emailconfirmationtoken";
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/confirm`;
@@ -846,8 +819,6 @@ describe("ConfirmUser function", () => {
 describe("SendVerificationEmail function", () => {
 	it("should call sendVerificationEmail endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_verification_email`;
 		let jwt = "blablabla";
 
@@ -879,8 +850,6 @@ describe("SendVerificationEmail function", () => {
 
 	it("should call sendVerificationEmail endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_verification_email`;
 		let jwt = "blablabla";
 
@@ -922,8 +891,6 @@ describe("SendVerificationEmail function", () => {
 describe("SendDeleteAccountEmail function", () => {
 	it("should call sendDeleteAccountEmail endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_delete_account_email`;
 		let jwt = "jwtjwtjwt";
 
@@ -955,8 +922,6 @@ describe("SendDeleteAccountEmail function", () => {
 
 	it("should call sendDeleteAccountEmail endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_delete_account_email`;
 
 		let expectedResult: ApiErrorResponse = {
@@ -997,8 +962,6 @@ describe("SendDeleteAccountEmail function", () => {
 describe("SendRemoveAppEmail function", () => {
 	it("should call sendRemoveAppEmail endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_remove_app_email`;
 		let jwt = "asdasdoafdasd";
 		let appId = 32;
@@ -1034,8 +997,6 @@ describe("SendRemoveAppEmail function", () => {
 
 	it("should call sendRemoveAppEmail endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_remove_app_email`;
 		let jwt = "asdasdasd";
 		let appId = 1213;
@@ -1082,8 +1043,6 @@ describe("SendRemoveAppEmail function", () => {
 describe("SendPasswordResetEmail function", () => {
 	it("should call sendPasswordResetEmail endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_password_reset_email`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let email = "test@dav-apps.tech";
@@ -1119,8 +1078,6 @@ describe("SendPasswordResetEmail function", () => {
 
 	it("should call sendPasswordResetEmail endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/send_password_reset_email`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let email = "test@dav-apps.tech";
@@ -1167,8 +1124,6 @@ describe("SendPasswordResetEmail function", () => {
 describe("SetPassword function", () => {
 	it("should call setPassword endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/set_password`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 
@@ -1210,8 +1165,6 @@ describe("SetPassword function", () => {
 
 	it("should call setPassword endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let url = `${Dav.apiBaseUrl}/auth/set_password`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 
@@ -1264,8 +1217,6 @@ describe("SetPassword function", () => {
 describe("SaveNewPassword function", () => {
 	it("should call saveNewPassword endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 42;
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/save_new_password`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
@@ -1303,8 +1254,6 @@ describe("SaveNewPassword function", () => {
 
 	it("should call saveNewPassword endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 42;
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/save_new_password`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
@@ -1353,8 +1302,6 @@ describe("SaveNewPassword function", () => {
 describe("SaveNewEmail function", () => {
 	it("should call saveNewEmail endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 42;
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/save_new_email`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
@@ -1392,8 +1339,6 @@ describe("SaveNewEmail function", () => {
 
 	it("should call saveNewEmail endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 42;
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/save_new_email`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
@@ -1442,8 +1387,6 @@ describe("SaveNewEmail function", () => {
 describe("ResetNewEmail function", () => {
 	it("should call resetNewEmail endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 13;
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/reset_new_email`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
@@ -1476,8 +1419,6 @@ describe("ResetNewEmail function", () => {
 
 	it("should call resetNewEmail endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let userId = 13;
 		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/reset_new_email`;
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
