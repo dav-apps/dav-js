@@ -541,3 +541,71 @@ export async function ResetNewEmail(auth: Auth, userId: number) : Promise<ApiRes
 		}
 	}
 }
+
+export interface CreateSessionResponseData{
+	id: number;
+	userId: number;
+	appId: number;
+	exp: number;
+	deviceName: string;
+	deviceType: string;
+	deviceOs: string;
+	jwt: string;
+	createdAt: string;
+}
+
+export async function CreateSession(
+	auth: Auth,
+	email: string,
+	password: string,
+	appId: number,
+	apiKey: string,
+	deviceName: string,
+	deviceType: string,
+	deviceOs: string
+) : Promise<ApiResponse<CreateSessionResponseData> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/session`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: auth.token,
+				ContentType: 'application/json'
+			},
+			data: {
+				email,
+				password,
+				app_id: appId,
+				api_key: apiKey,
+				device_name: deviceName,
+				device_type: deviceType,
+				device_os: deviceOs
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {
+				id: response.data.id,
+				userId: response.data.user_id,
+				appId: response.data.app_id,
+				exp: response.data.exp,
+				deviceName: response.data.device_name,
+				deviceType: response.data.device_type,
+				deviceOs: response.data.device_os,
+				jwt: response.data.jwt,
+				createdAt: response.data.created_at
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
