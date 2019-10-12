@@ -22,7 +22,8 @@ import {
 	RemoveApp,
 	ConfirmUser,
 	CreateSessionResponseData,
-	CreateSession
+	CreateSession,
+	CreateSessionWithJwt
 } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
@@ -1475,7 +1476,7 @@ describe("CreateSession function", () => {
 		let deviceOs = "Android";
 
 		let expectedResult: ApiResponse<CreateSessionResponseData> = {
-			status: 200,
+			status: 201,
 			data: {
 				id: 4,
 				userId: 20,
@@ -1609,6 +1610,160 @@ describe("CreateSession function", () => {
 			auth, 
 			email, 
 			password, 
+			appId, 
+			apiKey, 
+			deviceName, 
+			deviceType, 
+			deviceOs
+		) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+		assert.equal(result.errors[1].code, expectedResult.errors[1].code);
+		assert.equal(result.errors[1].message, expectedResult.errors[1].message);
+		assert.equal(result.errors[2].code, expectedResult.errors[2].code);
+		assert.equal(result.errors[2].message, expectedResult.errors[2].message);
+	});
+});
+
+describe("CreateSessionWithJwt function", () => {
+	it("should call createSessionWithJwt endpoint", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/auth/session/jwt`;
+		let jwt = "jwtjwtjwtjwtjwtjwt";
+		let appId = 6;
+		let apiKey = "asdasdasdasdasdasd";
+		let deviceName = "Surface Neo";
+		let deviceType = "Foldable Laptop";
+		let deviceOs = "Windows 10X";
+
+		let expectedResult: ApiResponse<CreateSessionResponseData> = {
+			status: 201, 
+			data: {
+				id: 4,
+				userId: 21,
+				appId,
+				exp: 1212132423121,
+				deviceName,
+				deviceType,
+				deviceOs,
+				createdAt: "Gestern",
+				jwt: "adpodfioasdjdaa"
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.app_id, appId);
+			assert.equal(data.api_key, apiKey);
+			assert.equal(data.device_name, deviceName);
+			assert.equal(data.device_type, deviceType);
+			assert.equal(data.device_os, deviceOs);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.id,
+					user_id: expectedResult.data.userId,
+					app_id: expectedResult.data.appId,
+					exp: expectedResult.data.exp,
+					device_name: expectedResult.data.deviceName,
+					device_type: expectedResult.data.deviceType,
+					device_os: expectedResult.data.deviceOs,
+					jwt: expectedResult.data.jwt,
+					created_at: expectedResult.data.createdAt
+				}
+			});
+		});
+
+		// Act
+		let result = await CreateSessionWithJwt(
+			jwt, 
+			appId, 
+			apiKey, 
+			deviceName, 
+			deviceType, 
+			deviceOs
+		) as ApiResponse<CreateSessionResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.id, expectedResult.data.id);
+		assert.equal(result.data.userId, expectedResult.data.userId);
+		assert.equal(result.data.appId, expectedResult.data.appId);
+		assert.equal(result.data.exp, expectedResult.data.exp);
+		assert.equal(result.data.deviceName, expectedResult.data.deviceName);
+		assert.equal(result.data.deviceType, expectedResult.data.deviceType);
+		assert.equal(result.data.deviceOs, expectedResult.data.deviceOs);
+		assert.equal(result.data.jwt, expectedResult.data.jwt);
+		assert.equal(result.data.createdAt, expectedResult.data.createdAt);
+	});
+
+	it("should call createSessionWithJwt with error", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/auth/session/jwt`;
+		let jwt = "jwtjwtjwtjwtjwtjwt";
+		let appId = 6;
+		let apiKey = "asdasdasdasdasdasd";
+		let deviceName = "Surface Neo";
+		let deviceType = "Foldable Laptop";
+		let deviceOs = "Windows 10X";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 400,
+			errors: [{
+				code: 2125,
+				message: "Missing field: device_name"
+			}, {
+				code: 2126,
+				message: "Missing field: device_type"
+			}, {
+				code: 2127,
+				message: "Missing field: device_os"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.app_id, appId);
+			assert.equal(data.api_key, apiKey);
+			assert.equal(data.device_name, deviceName);
+			assert.equal(data.device_type, deviceType);
+			assert.equal(data.device_os, deviceOs);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message],
+						[expectedResult.errors[1].code, expectedResult.errors[1].message],
+						[expectedResult.errors[2].code, expectedResult.errors[2].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await CreateSessionWithJwt(
+			jwt, 
 			appId, 
 			apiKey, 
 			deviceName, 
