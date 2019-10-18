@@ -10,6 +10,8 @@ import {
 	Login, 
 	UserResponseData, 
 	UpdateUser, 
+	CreateStripeCustomerForUserResponseData,
+	CreateStripeCustomerForUser,
 	SendDeleteAccountEmail, 
 	SendRemoveAppEmail, 
 	SendVerificationEmail, 
@@ -24,8 +26,6 @@ import {
 	CreateSessionResponseData,
 	CreateSession,
 	CreateSessionWithJwt,
-	CreateStripeCustomerForUserResponse,
-	CreateStripeCustomerForUser
 } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
@@ -564,7 +564,7 @@ describe("CreateStripeCustomerForUser function", () => {
 		let jwt = "jwtjwtjwtjwt";
 		let url = `${Dav.apiBaseUrl}/auth/user/stripe`;
 
-		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponse> = {
+		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> = {
 			status: 201,
 			data: {
 				stripe_customer_id: "stripe_customer_id"
@@ -588,7 +588,7 @@ describe("CreateStripeCustomerForUser function", () => {
 		});
 
 		// Act
-		let result = await CreateStripeCustomerForUser(jwt) as ApiResponse<CreateStripeCustomerForUserResponse>;
+		let result = await CreateStripeCustomerForUser(jwt) as ApiResponse<CreateStripeCustomerForUserResponseData>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

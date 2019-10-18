@@ -211,11 +211,11 @@ export async function UpdateUser(
 	}
 }
 
-export interface CreateStripeCustomerForUserResponse{
+export interface CreateStripeCustomerForUserResponseData{
 	stripe_customer_id: string;
 }
 
-export async function CreateStripeCustomerForUser(jwt: string) : Promise<ApiResponse<CreateStripeCustomerForUserResponse> | ApiErrorResponse>{
+export async function CreateStripeCustomerForUser(jwt: string) : Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/auth/user/stripe`;
 
 	try{
