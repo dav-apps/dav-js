@@ -23,7 +23,9 @@ import {
 	ConfirmUser,
 	CreateSessionResponseData,
 	CreateSession,
-	CreateSessionWithJwt
+	CreateSessionWithJwt,
+	CreateStripeCustomerForUserResponse,
+	CreateStripeCustomerForUser
 } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
@@ -548,6 +550,86 @@ describe("UpdateUser function", () => {
 			email: updatedEmail,
 			username: updatedUsername
 		}) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("CreateStripeCustomerForUser function", () => {
+	it("should call createStripeCustomerForUser endpoint", async () => {
+		// Arrange
+		let userId = 12;
+		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/stripe`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponse> = {
+			status: 201,
+			data: {
+				stripe_customer_id: "stripe_customer_id"
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					stripe_customer_id: expectedResult.data.stripe_customer_id
+				}
+			});
+		});
+
+		// Act
+		let result = await CreateStripeCustomerForUser(auth, userId) as ApiResponse<CreateStripeCustomerForUserResponse>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.stripe_customer_id, expectedResult.data.stripe_customer_id);
+	});
+
+	it("should call createStripeCustomerForUser endpoint with error", async () => {
+		// Arrange
+		let userId = 12;
+		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/stripe`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2801,
+				message: "Resource does not exist: User"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		});
+
+		// Act
+		let result = await CreateStripeCustomerForUser(auth, userId) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
