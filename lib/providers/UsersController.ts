@@ -215,15 +215,15 @@ export interface CreateStripeCustomerForUserResponse{
 	stripe_customer_id: string;
 }
 
-export async function CreateStripeCustomerForUser(auth: Auth, userId: number) : Promise<ApiResponse<CreateStripeCustomerForUserResponse> | ApiErrorResponse>{
-	let url = `${Dav.apiBaseUrl}/auth/user/${userId}/stripe`;
+export async function CreateStripeCustomerForUser(jwt: string) : Promise<ApiResponse<CreateStripeCustomerForUserResponse> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/auth/user/stripe`;
 
 	try{
 		let response = await axios.default({
 			method: 'post',
 			url,
 			headers: {
-				Authorization: auth.token
+				Authorization: jwt
 			}
 		});
 

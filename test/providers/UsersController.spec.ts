@@ -561,9 +561,8 @@ describe("UpdateUser function", () => {
 describe("CreateStripeCustomerForUser function", () => {
 	it("should call createStripeCustomerForUser endpoint", async () => {
 		// Arrange
-		let userId = 12;
-		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/stripe`;
-		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let jwt = "jwtjwtjwtjwt";
+		let url = `${Dav.apiBaseUrl}/auth/user/stripe`;
 
 		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponse> = {
 			status: 201,
@@ -578,7 +577,7 @@ describe("CreateStripeCustomerForUser function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
-			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.Authorization, jwt);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -589,7 +588,7 @@ describe("CreateStripeCustomerForUser function", () => {
 		});
 
 		// Act
-		let result = await CreateStripeCustomerForUser(auth, userId) as ApiResponse<CreateStripeCustomerForUserResponse>;
+		let result = await CreateStripeCustomerForUser(jwt) as ApiResponse<CreateStripeCustomerForUserResponse>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
@@ -598,9 +597,8 @@ describe("CreateStripeCustomerForUser function", () => {
 
 	it("should call createStripeCustomerForUser endpoint with error", async () => {
 		// Arrange
-		let userId = 12;
-		let url = `${Dav.apiBaseUrl}/auth/user/${userId}/stripe`;
-		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let jwt = "jwtjwtjwtjwt";
+		let url = `${Dav.apiBaseUrl}/auth/user/stripe`;
 
 		let expectedResult: ApiErrorResponse = {
 			status: 404,
@@ -616,7 +614,7 @@ describe("CreateStripeCustomerForUser function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
-			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.equal(request.config.headers.Authorization, jwt);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -629,7 +627,7 @@ describe("CreateStripeCustomerForUser function", () => {
 		});
 
 		// Act
-		let result = await CreateStripeCustomerForUser(auth, userId) as ApiErrorResponse;
+		let result = await CreateStripeCustomerForUser(jwt) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
