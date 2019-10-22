@@ -222,6 +222,7 @@ describe("RemoveProperty function", () => {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
 			SyncFinished: () => {}
 		});
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -270,7 +271,8 @@ describe("Delete function", () => {
       Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = "asdasd";
@@ -303,7 +305,8 @@ describe("Delete function", () => {
 		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
 		});
 		
@@ -333,7 +336,8 @@ describe("DeleteImmediately function", () => {
       Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 

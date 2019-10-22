@@ -43,11 +43,13 @@ export class Dav{
 		UpdateAllOfTable: Function, 
 		UpdateTableObject: Function, 
 		DeleteTableObject: Function,
+		UserDownloadFinished: Function,
 		SyncFinished: Function
 	} = {
 		UpdateAllOfTable: (tableId: number, changed: boolean) => {},
 		UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {},
 		DeleteTableObject: (tableObject: TableObject) => {},
+		UserDownloadFinished: () => {},
 		SyncFinished: () => {}
 	}
 }
@@ -63,6 +65,7 @@ export function Init(
 		UpdateAllOfTable: Function, 
 		UpdateTableObject: Function, 
 		DeleteTableObject: Function, 
+		UserDownloadFinished: Function,
 		SyncFinished: Function 
 	}
 ){

@@ -27,7 +27,8 @@ describe("Sync function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -59,7 +60,8 @@ describe("Sync function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -99,7 +101,8 @@ describe("Sync function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -134,7 +137,8 @@ describe("SyncPush function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -173,7 +177,8 @@ describe("SyncPush function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -213,7 +218,8 @@ describe("SyncPush function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -254,7 +260,8 @@ describe("SyncPush function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -282,7 +289,8 @@ describe("SyncPush function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -316,7 +324,8 @@ describe("UpdateLocalTableObject function", () => {
          UpdateTableObject: () => {
             callbackCalled = true;
          },
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -357,7 +366,8 @@ describe("DeleteLocalTableObject function", () => {
          UpdateTableObject: () => {},
          DeleteTableObject: () => {
             callbackCalled = true;
-         },
+			},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -385,7 +395,8 @@ describe("UnsubscribePushNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -422,7 +433,8 @@ describe("CreateNotification function", () => {
 		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -515,7 +527,8 @@ describe("UpdateNotification function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -554,7 +567,8 @@ describe("DeleteNotification function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -605,7 +619,8 @@ describe("SyncNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -638,7 +653,8 @@ describe("SyncNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
       Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -684,7 +700,8 @@ describe("SyncPushNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -726,7 +743,8 @@ describe("SyncPushNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -782,7 +800,8 @@ describe("SyncPushNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -820,7 +839,8 @@ describe("SyncPushNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
@@ -844,7 +864,8 @@ describe("SyncPushNotifications function", () => {
       Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], false, {icon: "", badge: ""}, {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       });
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt;

@@ -559,6 +559,7 @@ describe("GetTableObject function", () => {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
 			SyncFinished: () => {}
 		});
 
@@ -851,6 +852,7 @@ describe("TableObjectExists function", () => {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
 			SyncFinished: () => {}
 		});
 
@@ -941,6 +943,7 @@ describe("DeleteTableObject function", () => {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
 			SyncFinished: () => {}
 		});
 
@@ -975,6 +978,7 @@ describe("DeleteTableObjectImmediately function", () => {
 			UpdateAllOfTable: () => {},
 			UpdateTableObject: () => {},
 			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
 			SyncFinished: () => {}
 		});
 

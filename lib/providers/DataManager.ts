@@ -934,7 +934,7 @@ export async function Log(apiKey: string, name: string){
 
 export async function DeleteSessionOnServer(jwt: string){
 	// Return if the jwt is a normal jwt
-	if(!jwt.split('.')[3]) return;
+	if(!jwt || !jwt.split('.')[3]) return;
 
 	try{
 		await axios.default({

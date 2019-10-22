@@ -31,6 +31,8 @@ export class DavUser{
 					startPushNotificationSubscription();
 					DataManager.UpdateSubscriptionOnServer();
 					DataManager.SyncNotifications();
+				}else{
+					Dav.callbacks.UserDownloadFinished();
 				}
 	
 				if(callback){
@@ -89,11 +91,13 @@ export class DavUser{
 			if(userObject){
 				this.SetUser(userObject);
 				await DatabaseOperations.SetUser(userObject);
+				Dav.callbacks.UserDownloadFinished();
 
 				return true;
 			}
 		}
 
+		Dav.callbacks.UserDownloadFinished();
 		return false;
 	}
 

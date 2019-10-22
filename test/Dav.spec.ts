@@ -13,7 +13,8 @@ describe("Initialize function", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       }
 
@@ -35,7 +36,8 @@ describe("Globals class", () => {
       var callbacks = {
          UpdateAllOfTable: () => {},
          UpdateTableObject: () => {},
-         DeleteTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
          SyncFinished: () => {}
       }
 
@@ -70,7 +72,8 @@ describe("Globals class", () => {
       var updateTableObjectCalled = false;
       var updatedTableObjectUuid = "";
       var deleteTableObjectCalled = false;
-      var deletedTableObjectUuid = "";
+		var deletedTableObjectUuid = "";
+		var userDownloadFinished = false;
       var syncFinishedCalled = false;
 
       var callbacks = {
@@ -86,7 +89,10 @@ describe("Globals class", () => {
          DeleteTableObject: (tableObject: TableObject) => {
             deleteTableObjectCalled = true;
             deletedTableObjectUuid = tableObject.Uuid;
-         },
+			},
+			UserDownloadFinished: () => {
+				userDownloadFinished = true;
+			},
          SyncFinished: () => {
             syncFinishedCalled = true;
          }
@@ -97,13 +103,15 @@ describe("Globals class", () => {
       // Act
       Dav.callbacks.UpdateAllOfTable(callingTableId, true);
       Dav.callbacks.UpdateTableObject(callingTableObject);
-      Dav.callbacks.DeleteTableObject(callingTableObject);
+		Dav.callbacks.DeleteTableObject(callingTableObject);
+		Dav.callbacks.UserDownloadFinished();
       Dav.callbacks.SyncFinished();
 
       // Assert
       assert.isTrue(updateAllOfTableCalled);
       assert.isTrue(updateTableObjectCalled);
-      assert.isTrue(deleteTableObjectCalled);
+		assert.isTrue(deleteTableObjectCalled);
+		assert.isTrue(userDownloadFinished);
       assert.isTrue(syncFinishedCalled);
       assert.equal(callingTableId, updatedTableId);
       assert.isTrue(updatedTableIdChanged);
