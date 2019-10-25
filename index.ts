@@ -35,3 +35,4 @@ export { Auth } from './lib/models/Auth';
 export * from './lib/providers/UsersController';
 export * from './lib/providers/AppsController';
 export * from './lib/providers/DevsController';
+export * from './lib/providers/AnalyticsController';
