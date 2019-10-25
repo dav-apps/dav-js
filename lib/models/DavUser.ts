@@ -59,7 +59,7 @@ export class DavUser{
 		this.AvatarEtag = userObject["avatarEtag"];
 		this.Confirmed = userObject["confirmed"];
 		this.SubscriptionStatus = userObject["subscriptionStatus"];
-		this.PeriodEnd = new Date(userObject["periodEnd"]);
+		this.PeriodEnd = userObject["periodEnd"] ? new Date(userObject["periodEnd"]) : null;
 		this.StripeCustomerId = userObject["stripeCustomerId"];
 		this.Apps = ConvertObjectArrayToApps(userObject["apps"]);
 		this.JWT = userObject["jwt"];
