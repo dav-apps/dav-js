@@ -9,6 +9,7 @@ import { GetAllApps } from '../../lib/providers/AppsController';
 
 beforeEach(() => {
 	moxios.install();
+	InitStatic(DavEnvironment.Test);
 });
 
 afterEach(() => {
@@ -22,8 +23,6 @@ const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
 describe("GetAllApps function", () => {
 	it("should call getAllApps endpoint", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/apps/apps/all`;
 
@@ -83,8 +82,6 @@ describe("GetAllApps function", () => {
 
 	it("should call getAllApps endpoint with error", async () => {
 		// Arrange
-		InitStatic(DavEnvironment.Test);
-
 		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 		let url = `${Dav.apiBaseUrl}/apps/apps/all`;
 

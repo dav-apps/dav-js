@@ -1,6 +1,6 @@
 import * as axios from 'axios';
 import { App, ConvertObjectArrayToApps } from '../models/App';
-import { Auth, } from '../models/Auth';
+import { Auth } from '../models/Auth';
 import { Dav, ApiResponse, ApiErrorResponse, ConvertHttpResponseToErrorResponse } from '../Dav';
 
 export interface DevResponseData{
