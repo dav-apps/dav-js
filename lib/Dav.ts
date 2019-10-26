@@ -84,6 +84,10 @@ export function Init(
 
 export function InitStatic(environment: DavEnvironment){
 	Dav.environment = environment;
+
+	// Set the urls
+	Dav.apiBaseUrl = environment == DavEnvironment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment;
+	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
 }
 
 export function getTableObjectsKey(tableId?: number, uuid?: string){
