@@ -152,9 +152,7 @@ export async function UpdateUser(
 		email?: string,
 		username?: string,
 		password?: string,
-		avatar?: string,
-		paymentToken?: string,
-		plan?: number
+		avatar?: string
 	}
 ) : Promise<(ApiResponse<UserResponseData> | ApiErrorResponse)>{
 	let url = `${Dav.apiBaseUrl}/auth/user`;
@@ -165,8 +163,6 @@ export async function UpdateUser(
 	if(properties.username) data["username"] = properties.username;
 	if(properties.password) data["password"] = properties.password;
 	if(properties.avatar) data["avatar"] = properties.avatar;
-	if(properties.paymentToken) data["payment_token"] = properties.paymentToken;
-	if(properties.plan) data["plan"] = properties.plan;
 
 	try{
 		let response = await axios.default({
