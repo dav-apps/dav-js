@@ -27,6 +27,9 @@ describe("Login function", () => {
 			assert.equal(user.Plan, userFromDatabase["plan"]);
 			assert.equal(user.Avatar, userFromDatabase["avatar"]);
 			assert.equal(user.AvatarEtag, userFromDatabase["avatarEtag"]);
+			assert.equal(user.Confirmed, userFromDatabase["confirmed"]);
+			assert.equal(user.SubscriptionStatus, userFromDatabase["subscriptionStatus"]);
+			assert.equal(user.StripeCustomerId, userFromDatabase["stripeCustomerId"]);
 			assert.equal(user.JWT, userFromDatabase["jwt"]);
 			assert.equal(user.JWT, davClassLibraryTestUserXTestUserJwt);
 
@@ -76,7 +79,12 @@ describe("Logout function", () => {
 			assert.equal(user.UsedStorage, 0);
 			assert.equal(user.Plan, 0);
          assert.isEmpty(user.Avatar);
-         assert.isEmpty(user.AvatarEtag);
+			assert.isEmpty(user.AvatarEtag);
+			assert.isFalse(user.Confirmed);
+			assert.equal(user.SubscriptionStatus, 0);
+			assert.isNull(user.PeriodEnd);
+			assert.isEmpty(user.StripeCustomerId);
+			assert.isEmpty(user.Apps);
          assert.isEmpty(user.JWT);
 			assert.isEmpty(Dav.jwt);
 
