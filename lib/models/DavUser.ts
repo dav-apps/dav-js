@@ -142,9 +142,9 @@ export enum DavEnvironment{
 }
 
 export function ShowLoginPage(apiKey: string, callbackUrl: string){
-	window.location.href = `${Dav.websiteUrl}/login_session?api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+	window.location.href = `${Dav.websiteUrl}/login?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
 }
 
 export function ShowSignupPage(apiKey: string, callbackUrl: string){
-	window.location.href = `${Dav.websiteUrl}/signup?api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+	window.location.href = `${Dav.websiteUrl}/signup?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
 }
