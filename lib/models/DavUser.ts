@@ -61,7 +61,7 @@ export class DavUser{
 		this.SubscriptionStatus = userObject["subscriptionStatus"];
 		this.PeriodEnd = userObject["periodEnd"] ? new Date(userObject["periodEnd"]) : null;
 		this.StripeCustomerId = userObject["stripeCustomerId"];
-		this.Apps = ConvertObjectArrayToApps(userObject["apps"]);
+		this.Apps = userObject["apps"] ? ConvertObjectArrayToApps(userObject["apps"]) : [];
 		this.JWT = userObject["jwt"];
 		Dav.jwt = this.JWT;
 	}
