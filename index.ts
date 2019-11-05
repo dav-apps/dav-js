@@ -13,6 +13,8 @@ export {
 	DavSubscriptionStatus
 } from "./lib/models/DavUser";
 export { App } from './lib/models/App';
+export { Table } from './lib/models/Table';
+export { Event } from './lib/models/Event';
 export { 
 	TableObject, 
 	Property, 
