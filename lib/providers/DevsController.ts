@@ -14,6 +14,42 @@ export interface DevResponseData{
 	apps: App[];
 }
 
+export async function GetDev(jwt: string) : Promise<ApiResponse<DevResponseData> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/devs/dev`;
+
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {
+				id: response.data.id,
+				userId: response.data.user_id,
+				apiKey: response.data.api_key,
+				secretKey: response.data.secret_key,
+				uuid: response.data.uuid,
+				createdAt: response.data.created_at,
+				updatedAt: response.data.updated_at,
+				apps: ConvertObjectArrayToApps(response.data.apps)
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export async function GetDevByApiKey(auth: Auth, apiKey: string) : Promise<ApiResponse<DevResponseData> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/devs/dev/${apiKey}`;
 
