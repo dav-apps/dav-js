@@ -41,8 +41,8 @@ describe("GetApp function", () => {
 				"https://example.com",
 				null,
 				[
-					new Table(8, 4),
-					new Table(12, 4)
+					new Table(8, 4, "Card"),
+					new Table(12, 4, "Deck")
 				],
 				[
 					new Event(12, 4, "visit"),
@@ -72,11 +72,13 @@ describe("GetApp function", () => {
 					tables: [
 						{
 							id: expectedResult.data.Tables[0].Id,
-							app_id: expectedResult.data.Tables[0].AppId
+							app_id: expectedResult.data.Tables[0].AppId,
+							name: expectedResult.data.Tables[0].Name
 						},
 						{
 							id: expectedResult.data.Tables[1].Id,
-							app_id: expectedResult.data.Tables[1].AppId
+							app_id: expectedResult.data.Tables[1].AppId,
+							name: expectedResult.data.Tables[1].Name
 						}
 					],
 					events: [
@@ -110,8 +112,10 @@ describe("GetApp function", () => {
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage);
 		assert.equal(result.data.Tables[0].Id, expectedResult.data.Tables[0].Id);
 		assert.equal(result.data.Tables[0].AppId, expectedResult.data.Tables[0].AppId);
+		assert.equal(result.data.Tables[0].Name, expectedResult.data.Tables[0].Name);
 		assert.equal(result.data.Tables[1].Id, expectedResult.data.Tables[1].Id);
 		assert.equal(result.data.Tables[1].AppId, expectedResult.data.Tables[1].AppId);
+		assert.equal(result.data.Tables[1].Name, expectedResult.data.Tables[1].Name);
 		assert.equal(result.data.Events[0].Id, expectedResult.data.Events[0].Id);
 		assert.equal(result.data.Events[0].AppId, expectedResult.data.Events[0].AppId);
 		assert.equal(result.data.Events[0].Name, expectedResult.data.Events[0].Name);
