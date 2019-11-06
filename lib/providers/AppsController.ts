@@ -80,11 +80,11 @@ export async function UpdateApp(jwt: string, id: number, properties: {
 	let url = `${Dav.apiBaseUrl}/apps/app/${id}`;
 	let data: object = {};
 
-	if(properties.name) data["name"] = properties.name;
-	if(properties.description) data["description"] = properties.description;
-	if(properties.linkWeb) data["link_web"] = properties.linkWeb;
-	if(properties.linkPlay) data["link_play"] = properties.linkPlay;
-	if(properties.linkWindows) data["link_windows"] = properties.linkWindows;
+	if(properties.name != null) data["name"] = properties.name;
+	if(properties.description != null) data["description"] = properties.description;
+	if(properties.linkWeb != null) data["link_web"] = properties.linkWeb;
+	if(properties.linkPlay != null) data["link_play"] = properties.linkPlay;
+	if(properties.linkWindows != null) data["link_windows"] = properties.linkWindows;
 
 	try{
 		let response = await axios.default({

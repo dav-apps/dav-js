@@ -277,6 +277,7 @@ describe("UpdateApp function", () => {
 		let updatedName = "USB";
 		let updatedDescription = "This app is very good!";
 		let updatedLinkPlay = "play.google.com/app.dav.universalsoundboard";
+		let updatedLinkWindows = "";
 
 		let expectedResult: ApiResponse<App> = {
 			status: 200,
@@ -287,7 +288,7 @@ describe("UpdateApp function", () => {
 				true,
 				null,
 				updatedLinkPlay,
-				null
+				updatedLinkWindows
 			)
 		}
 
@@ -304,6 +305,7 @@ describe("UpdateApp function", () => {
 			assert.equal(data.name, updatedName);
 			assert.equal(data.description, updatedDescription);
 			assert.equal(data.link_play, updatedLinkPlay);
+			assert.equal(data.link_windows, updatedLinkWindows);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -323,7 +325,8 @@ describe("UpdateApp function", () => {
 		let result = await UpdateApp(jwt, appId, {
 			name: updatedName,
 			description: updatedDescription,
-			linkPlay: updatedLinkPlay
+			linkPlay: updatedLinkPlay,
+			linkWindows: updatedLinkWindows
 		}) as ApiResponse<App>;
 
 		// Assert for the response
@@ -346,6 +349,7 @@ describe("UpdateApp function", () => {
 		let updatedName = "USB";
 		let updatedDescription = "This app is very good!";
 		let updatedLinkPlay = "play.google.com/app.dav.universalsoundboard";
+		let updatedLinkWindows = "";
 
 		let expectedResult: ApiErrorResponse = {
 			status: 404,
@@ -368,6 +372,7 @@ describe("UpdateApp function", () => {
 			assert.equal(data.name, updatedName);
 			assert.equal(data.description, updatedDescription);
 			assert.equal(data.link_play, updatedLinkPlay);
+			assert.equal(data.link_windows, updatedLinkWindows);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -383,7 +388,8 @@ describe("UpdateApp function", () => {
 		let result = await UpdateApp(jwt, appId, {
 			name: updatedName,
 			description: updatedDescription,
-			linkPlay: updatedLinkPlay
+			linkPlay: updatedLinkPlay,
+			linkWindows: updatedLinkWindows
 		}) as ApiErrorResponse;
 
 		// Assert for the response
