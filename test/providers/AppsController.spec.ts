@@ -5,7 +5,7 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
-import { GetAllApps, GetApp } from '../../lib/providers/AppsController';
+import { GetAllApps, GetApp, UpdateApp } from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 
@@ -259,6 +259,132 @@ describe("GetAllApps function", () => {
 
 		// Act
 		let result = await GetAllApps(auth) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("UpdateApp function", () => {
+	it("should call updateApp endpoint", async () => {
+		// Arrange
+		let appId = 53;
+		let url = `${Dav.apiBaseUrl}/apps/app/${appId}`;
+		let jwt = "jwtjwtjwtjwtjwtjwtjwtjwt";
+
+		let updatedName = "USB";
+		let updatedDescription = "This app is very good!";
+		let updatedLinkPlay = "play.google.com/app.dav.universalsoundboard";
+
+		let expectedResult: ApiResponse<App> = {
+			status: 200,
+			data: new App(
+				4,
+				updatedName,
+				updatedDescription,
+				true,
+				null,
+				updatedLinkPlay,
+				null
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'put');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.name, updatedName);
+			assert.equal(data.description, updatedDescription);
+			assert.equal(data.link_play, updatedLinkPlay);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.Id,
+					name: expectedResult.data.Name,
+					description: expectedResult.data.Description,
+					published: expectedResult.data.Published,
+					link_web: expectedResult.data.LinkWeb,
+					link_play: expectedResult.data.LinkPlay,
+					link_windows: expectedResult.data.LinkWindows
+				}
+			});
+		});
+
+		// Act
+		let result = await UpdateApp(jwt, appId, {
+			name: updatedName,
+			description: updatedDescription,
+			linkPlay: updatedLinkPlay
+		}) as ApiResponse<App>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.Id, expectedResult.data.Id);
+		assert.equal(result.data.Name, expectedResult.data.Name);
+		assert.equal(result.data.Description, expectedResult.data.Description);
+		assert.equal(result.data.Published, expectedResult.data.Published);
+		assert.equal(result.data.LinkWeb, expectedResult.data.LinkWeb);
+		assert.equal(result.data.LinkPlay, expectedResult.data.LinkPlay);
+		assert.equal(result.data.LinkWindows, expectedResult.data.LinkWindows);
+	});
+
+	it("should call updateUser endpoint with error", async () => {
+		// Arrange
+		let appId = 53;
+		let url = `${Dav.apiBaseUrl}/apps/app/${appId}`;
+		let jwt = "jwtjwtjwtjwtjwtjwtjwtjwt";
+
+		let updatedName = "USB";
+		let updatedDescription = "This app is very good!";
+		let updatedLinkPlay = "play.google.com/app.dav.universalsoundboard";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2803,
+				message: "Resource does not exist: App"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'put');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.name, updatedName);
+			assert.equal(data.description, updatedDescription);
+			assert.equal(data.link_play, updatedLinkPlay);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await UpdateApp(jwt, appId, {
+			name: updatedName,
+			description: updatedDescription,
+			linkPlay: updatedLinkPlay
+		}) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
