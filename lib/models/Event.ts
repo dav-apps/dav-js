@@ -1,8 +1,11 @@
+import { EventSummary, ConvertObjectArrayToEventSummaries } from "./EventSummary";
+
 export class Event{
 	constructor(
 		public Id: number,
 		public AppId: number,
-		public Name: string
+		public Name: string,
+		public Logs: EventSummary[]
 	){}
 }
 
@@ -14,7 +17,8 @@ export function ConvertObjectArrayToEvents(objArray: any[]) : Event[]{
 			events.push(new Event(
 				obj.id,
 				obj.app_id,
-				obj.name
+				obj.name,
+				ConvertObjectArrayToEventSummaries(obj.logs)
 			));
 		}
 	}
