@@ -73,6 +73,7 @@ export async function GetAllApps(auth: Auth) : Promise<(ApiResponse<App[]> | Api
 export async function UpdateApp(jwt: string, id: number, properties: {
 	name?: string,
 	description?: string,
+	published?: boolean,
 	linkWeb?: string,
 	linkPlay?: string,
 	linkWindows?: string
@@ -82,6 +83,7 @@ export async function UpdateApp(jwt: string, id: number, properties: {
 
 	if(properties.name != null) data["name"] = properties.name;
 	if(properties.description != null) data["description"] = properties.description;
+	if(properties.published != null) data["published"] = properties.published;
 	if(properties.linkWeb != null) data["link_web"] = properties.linkWeb;
 	if(properties.linkPlay != null) data["link_play"] = properties.linkPlay;
 	if(properties.linkWindows != null) data["link_windows"] = properties.linkWindows;
