@@ -45,8 +45,8 @@ describe("GetApp function", () => {
 					new Table(12, 4, "Deck")
 				],
 				[
-					new Event(12, 4, "visit"),
-					new Event(13, 4, "login")
+					new Event(12, 4, "visit", []),
+					new Event(13, 4, "login", [])
 				]
 			)
 		}
