@@ -15,6 +15,8 @@ export {
 export { App } from './lib/models/App';
 export { Table } from './lib/models/Table';
 export { Event } from './lib/models/Event';
+export { EventSummary, EventSummaryPeriod } from './lib/models/EventSummary';
+export { EventSummaryPropertyCount } from './lib/models/EventSummaryPropertyCount';
 export { 
 	TableObject, 
 	Property, 
