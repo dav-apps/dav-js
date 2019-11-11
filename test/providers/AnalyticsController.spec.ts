@@ -21,13 +21,13 @@ describe("CreateEventLog function", () => {
 	it("should call createEventLog endpoint", async () => {
 		// Arrange
 		let apiKey = "albasdjasodasjda";
-		let name = "Login";
 		let appId = 7;
-		let saveCountry = false;
-		let properties = {
-			browser_name: "Microsoft Edge",
-			browser_version: "76"
-		}
+		let name = "Login";
+		let osName = "Windows";
+		let osVersion = "10";
+		let browserName = "Microsoft Edge";
+		let browserVersion = "80";
+		let country = "DE";
 
 		let url = `${Dav.apiBaseUrl}/analytics/event`;
 
@@ -38,7 +38,11 @@ describe("CreateEventLog function", () => {
 				eventId: 2,
 				createdAt: "Heute",
 				processed: false,
-				properties
+				osName,
+				osVersion,
+				browserName,
+				browserVersion,
+				country
 			}
 		}
 
@@ -49,14 +53,15 @@ describe("CreateEventLog function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 
-			assert.equal(request.config.params.api_key, apiKey);
-			assert.equal(request.config.params.name, name);
-			assert.equal(request.config.params.app_id, appId);
-			assert.equal(request.config.params.save_country, saveCountry);
-
 			let data = JSON.parse(request.config.data);
-			assert.equal(data.browser_name, properties.browser_name);
-			assert.equal(data.browser_version, properties.browser_version);
+			assert.equal(data.api_key, apiKey);
+			assert.equal(data.app_id, appId);
+			assert.equal(data.name, name);
+			assert.equal(data.os_name, osName);
+			assert.equal(data.os_version, osVersion);
+			assert.equal(data.browser_name, browserName);
+			assert.equal(data.browser_version, browserVersion);
+			assert.equal(data.country, country);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -65,13 +70,17 @@ describe("CreateEventLog function", () => {
 					event_id: expectedResult.data.eventId,
 					created_at: expectedResult.data.createdAt,
 					processed: expectedResult.data.processed,
-					properties: expectedResult.data.properties
+					os_name: expectedResult.data.osName,
+					os_version: expectedResult.data.osVersion,
+					browser_name: expectedResult.data.browserName,
+					browser_version: expectedResult.data.browserVersion,
+					country: expectedResult.data.country
 				}
 			});
 		});
 
 		// Act
-		let result = await CreateEventLog(apiKey, name, appId, saveCountry, properties) as ApiResponse<EventLogResponseData>;
+		let result = await CreateEventLog(apiKey, appId, name, osName, osVersion, browserName, browserVersion, country) as ApiResponse<EventLogResponseData>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
@@ -79,20 +88,23 @@ describe("CreateEventLog function", () => {
 		assert.equal(result.data.eventId, expectedResult.data.eventId);
 		assert.equal(result.data.createdAt, expectedResult.data.createdAt);
 		assert.equal(result.data.processed, expectedResult.data.processed);
-		assert.equal(result.data.properties.browser_name, expectedResult.data.properties.browser_name);
-		assert.equal(result.data.properties.browser_version, expectedResult.data.properties.browser_version);
+		assert.equal(result.data.osName, expectedResult.data.osName);
+		assert.equal(result.data.osVersion, expectedResult.data.osVersion);
+		assert.equal(result.data.browserName, expectedResult.data.browserName);
+		assert.equal(result.data.browserVersion, expectedResult.data.browserVersion);
+		assert.equal(result.data.country, expectedResult.data.country);
 	});
 
 	it("should call createEventLog endpoint with error", async () => {
 		// Arrange
 		let apiKey = "albasdjasodasjda";
-		let name = "Login";
 		let appId = 7;
-		let saveCountry = false;
-		let properties = {
-			browser_name: "Microsoft Edge",
-			browser_version: "76"
-		}
+		let name = "Login";
+		let osName = "Windows";
+		let osVersion = "10";
+		let browserName = "Microsoft Edge";
+		let browserVersion = "80";
+		let country = "DE";
 
 		let url = `${Dav.apiBaseUrl}/analytics/event`;
 
@@ -111,14 +123,15 @@ describe("CreateEventLog function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 
-			assert.equal(request.config.params.api_key, apiKey);
-			assert.equal(request.config.params.name, name);
-			assert.equal(request.config.params.app_id, appId);
-			assert.equal(request.config.params.save_country, saveCountry);
-
 			let data = JSON.parse(request.config.data);
-			assert.equal(data.browser_name, properties.browser_name);
-			assert.equal(data.browser_version, properties.browser_version);
+			assert.equal(data.api_key, apiKey);
+			assert.equal(data.app_id, appId);
+			assert.equal(data.name, name);
+			assert.equal(data.os_name, osName);
+			assert.equal(data.os_version, osVersion);
+			assert.equal(data.browser_name, browserName);
+			assert.equal(data.browser_version, browserVersion);
+			assert.equal(data.country, country);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -131,7 +144,7 @@ describe("CreateEventLog function", () => {
 		});
 
 		// Act
-		let result = await CreateEventLog(apiKey, name, appId, saveCountry, properties) as ApiErrorResponse;
+		let result = await CreateEventLog(apiKey, appId, name, osName, osVersion, browserName, browserVersion, country) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

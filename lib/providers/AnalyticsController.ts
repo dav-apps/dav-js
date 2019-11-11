@@ -8,15 +8,22 @@ export interface EventLogResponseData{
 	eventId: number;
 	createdAt: string;
 	processed: boolean;
-	properties: any;
+	osName: string;
+	osVersion: string;
+	browserName: string;
+	browserVersion: string;
+	country: string;
 }
 
 export async function CreateEventLog(
 	apiKey: string, 
-	name: string, 
 	appId: number, 
-	saveCountry: boolean, 
-	properties: any
+	name: string, 
+	osName: string,
+	osVersion: string,
+	browserName: string,
+	browserVersion: string,
+	country?: string
 ) : Promise<ApiResponse<EventLogResponseData> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/analytics/event`;
 
@@ -24,13 +31,19 @@ export async function CreateEventLog(
 		let response = await axios.default({
 			method: 'post',
 			url,
-			params: {
-				api_key: apiKey,
-				name,
-				app_id: appId,
-				save_country: saveCountry
+			headers: {
+				ContentType: 'application/json'
 			},
-			data: properties
+			data: {
+				api_key: apiKey,
+				app_id: appId,
+				name,
+				os_name: osName,
+				os_version: osVersion,
+				browser_name: browserName,
+				browser_version: browserVersion,
+				country
+			}
 		});
 
 		return {
@@ -40,7 +53,11 @@ export async function CreateEventLog(
 				eventId: response.data.event_id,
 				createdAt: response.data.created_at,
 				processed: response.data.processed,
-				properties: response.data.properties
+				osName: response.data.os_name,
+				osVersion: response.data.os_version,
+				browserName: response.data.browser_name,
+				browserVersion: response.data.browser_version,
+				country: response.data.country
 			}
 		}
 	}catch(error){
