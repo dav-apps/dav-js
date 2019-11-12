@@ -15,8 +15,10 @@ export {
 export { App } from './lib/models/App';
 export { Table } from './lib/models/Table';
 export { Event } from './lib/models/Event';
-export { EventSummary, EventSummaryPeriod } from './lib/models/EventSummary';
-export { EventSummaryPropertyCount } from './lib/models/EventSummaryPropertyCount';
+export { StandardEventSummary, EventSummaryPeriod } from './lib/models/StandardEventSummary';
+export { EventSummaryOsCount } from './lib/models/EventSummaryOsCount';
+export { EventSummaryBrowserCount } from './lib/models/EventSummaryBrowserCount';
+export { EventSummaryCountryCount } from './lib/models/EventSummaryCountryCount';
 export { 
 	TableObject, 
 	Property, 
