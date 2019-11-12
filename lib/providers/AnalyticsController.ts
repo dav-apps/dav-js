@@ -1,7 +1,7 @@
 import * as axios from 'axios';
 import { Dav, ConvertHttpResponseToErrorResponse, ApiResponse, ApiErrorResponse } from '../Dav';
 import { Event } from '../models/Event';
-import { ConvertObjectArrayToEventSummaries, EventSummaryPeriod } from '../models/EventSummary';
+import { ConvertObjectArrayToStandardEventSummaries, EventSummaryPeriod } from '../models/StandardEventSummary';
 
 export interface EventLogResponseData{
 	id: number;
@@ -77,25 +77,9 @@ export async function GetEventByName(
 	appId: number, 
 	start?: number, 
 	end?: number, 
-	sort?: EventSummaryPeriod
+	period?: EventSummaryPeriod
 ) : Promise<ApiResponse<Event> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/analytics/event`;
-
-	let sorting = null;
-	switch(sort){
-		case EventSummaryPeriod.Hour:
-			sorting = "hour";
-			break;
-		case EventSummaryPeriod.Day:
-			sorting = "day";
-			break;
-		case EventSummaryPeriod.Month:
-			sorting = "month";
-			break;
-		case EventSummaryPeriod.Year:
-			sorting = "year";
-			break;
-	}
 
 	try{
 		let response = await axios.default({
@@ -109,13 +93,13 @@ export async function GetEventByName(
 				app_id: appId,
 				start,
 				end,
-				sort: sorting
+				period
 			}
 		});
 
 		// In the response the period is only given on the root object. Set the period of each log
-		let logs = ConvertObjectArrayToEventSummaries(response.data.logs);
-		for(let log of logs) log.Period = response.data.period;
+		let summaries = ConvertObjectArrayToStandardEventSummaries(response.data.summaries);
+		for(let summary of summaries) summary.Period = response.data.period;
 
 		return {
 			status: response.status,
@@ -123,7 +107,7 @@ export async function GetEventByName(
 				response.data.id,
 				response.data.app_id,
 				response.data.name,
-				logs
+				summaries
 			)
 		}
 	}catch(error){

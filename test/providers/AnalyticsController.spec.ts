@@ -5,8 +5,10 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { CreateEventLog, EventLogResponseData, GetEventByName } from '../../lib/providers/AnalyticsController';
 import { Event } from '../../lib/models/Event';
-import { EventSummary, EventSummaryPeriod } from '../../lib/models/EventSummary';
-import { EventSummaryPropertyCount } from '../../lib/models/EventSummaryPropertyCount';
+import { StandardEventSummary, EventSummaryPeriod } from '../../lib/models/StandardEventSummary';
+import { EventSummaryOsCount } from '../../lib/models/EventSummaryOsCount';
+import { EventSummaryBrowserCount } from '../../lib/models/EventSummaryBrowserCount';
+import { EventSummaryCountryCount } from '../../lib/models/EventSummaryCountryCount';
 
 beforeEach(() => {
 	moxios.install();
@@ -160,7 +162,7 @@ describe("GetEventByName function", () => {
 		let jwt = "jwtjwtjwtjwtjwt";
 		let appId = 234;
 		let name = "visit";
-		let sorting = EventSummaryPeriod.Year;
+		let period = EventSummaryPeriod.Year;
 		let firstEventSummaryTime = "2019-10-29T00:00:00Z";
 		let secondEventSummaryTime = "2019-11-14T00:00:00Z";
 
@@ -171,31 +173,47 @@ describe("GetEventByName function", () => {
 				appId,
 				name,
 				[
-					new EventSummary(
+					new StandardEventSummary(
 						new Date(firstEventSummaryTime),
+						period,
 						20,
-						sorting,
 						[
-							new EventSummaryPropertyCount("os_name", "Windows", 5),
-							new EventSummaryPropertyCount("os_version", "10", 5)
+							new EventSummaryOsCount("Windows", "10", 10),
+							new EventSummaryOsCount("Ubuntu", "20.04", 3)
+						],
+						[
+							new EventSummaryBrowserCount("Microsoft Edge", "83", 5),
+							new EventSummaryBrowserCount("Firefox", "85", 7)
+						],
+						[
+							new EventSummaryCountryCount("DE", 9),
+							new EventSummaryCountryCount("FR", 4)
 						]
 					),
-					new EventSummary(
+					new StandardEventSummary(
 						new Date(secondEventSummaryTime),
-						38,
-						sorting,
+						period,
+						20,
 						[
-							new EventSummaryPropertyCount("os_name", "Chrome OS", 9),
-							new EventSummaryPropertyCount("os_version", "81", 9)
+							new EventSummaryOsCount("Windows", "7", 5),
+							new EventSummaryOsCount("Chrome OS", "81", 4)
+						],
+						[
+							new EventSummaryBrowserCount("Google Chrome", "81", 4),
+							new EventSummaryBrowserCount("Firefox", "85", 5)
+						],
+						[
+							new EventSummaryCountryCount("DE", 6),
+							new EventSummaryCountryCount("US", 3)
 						]
-					)
+					),
 				]
 			)
 		}
 
 		moxios.wait(() => {
 			let request = moxios.requests.mostRecent();
-
+			
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'get');
@@ -203,7 +221,7 @@ describe("GetEventByName function", () => {
 
 			assert.equal(request.config.params.name, expectedResult.data.Name);
 			assert.equal(request.config.params.app_id, expectedResult.data.AppId);
-			assert.equal(request.config.params.sort, "year");
+			assert.equal(request.config.params.period, period);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -211,37 +229,81 @@ describe("GetEventByName function", () => {
 					id: expectedResult.data.Id, 
 					app_id: expectedResult.data.AppId,
 					name: expectedResult.data.Name,
-					period: sorting,
-					logs: [
+					period,
+					summaries: [
 						{
 							time: firstEventSummaryTime,
-							total: expectedResult.data.Logs[0].Total,
-							properties: [
+							total: expectedResult.data.Summaries[0].Total,
+							os_counts: [
 								{
-									name: expectedResult.data.Logs[0].Properties[0].Name,
-									value: expectedResult.data.Logs[0].Properties[0].Value,
-									count: expectedResult.data.Logs[0].Properties[0].Count
+									name: expectedResult.data.Summaries[0].OsCounts[0].Name,
+									version: expectedResult.data.Summaries[0].OsCounts[0].Version,
+									count: expectedResult.data.Summaries[0].OsCounts[0].Count
 								},
 								{
-									name: expectedResult.data.Logs[0].Properties[1].Name,
-									value: expectedResult.data.Logs[0].Properties[1].Value,
-									count: expectedResult.data.Logs[0].Properties[1].Count
+									name: expectedResult.data.Summaries[0].OsCounts[1].Name,
+									version: expectedResult.data.Summaries[0].OsCounts[1].Version,
+									count: expectedResult.data.Summaries[0].OsCounts[1].Count
+								}
+							],
+							browser_counts: [
+								{
+									name: expectedResult.data.Summaries[0].BrowserCounts[0].Name,
+									version: expectedResult.data.Summaries[0].BrowserCounts[0].Version,
+									count: expectedResult.data.Summaries[0].BrowserCounts[0].Count
+								},
+								{
+									name: expectedResult.data.Summaries[0].BrowserCounts[1].Name,
+									version: expectedResult.data.Summaries[0].BrowserCounts[1].Version,
+									count: expectedResult.data.Summaries[0].BrowserCounts[1].Count
+								}
+							],
+							country_counts: [
+								{
+									country: expectedResult.data.Summaries[0].CountryCounts[0].Country,
+									count: expectedResult.data.Summaries[0].CountryCounts[0].Count
+								},
+								{
+									country: expectedResult.data.Summaries[0].CountryCounts[1].Country,
+									count: expectedResult.data.Summaries[0].CountryCounts[1].Count
 								}
 							]
 						},
 						{
 							time: secondEventSummaryTime,
-							total: expectedResult.data.Logs[1].Total,
-							properties: [
+							total: expectedResult.data.Summaries[1].Total,
+							os_counts: [
 								{
-									name: expectedResult.data.Logs[1].Properties[0].Name,
-									value: expectedResult.data.Logs[1].Properties[0].Value,
-									count: expectedResult.data.Logs[1].Properties[0].Count
+									name: expectedResult.data.Summaries[1].OsCounts[0].Name,
+									version: expectedResult.data.Summaries[1].OsCounts[0].Version,
+									count: expectedResult.data.Summaries[1].OsCounts[0].Count
 								},
 								{
-									name: expectedResult.data.Logs[1].Properties[1].Name,
-									value: expectedResult.data.Logs[1].Properties[1].Value,
-									count: expectedResult.data.Logs[1].Properties[1].Count
+									name: expectedResult.data.Summaries[1].OsCounts[1].Name,
+									version: expectedResult.data.Summaries[1].OsCounts[1].Version,
+									count: expectedResult.data.Summaries[1].OsCounts[1].Count
+								}
+							],
+							browser_counts: [
+								{
+									name: expectedResult.data.Summaries[1].BrowserCounts[0].Name,
+									version: expectedResult.data.Summaries[1].BrowserCounts[0].Version,
+									count: expectedResult.data.Summaries[1].BrowserCounts[0].Count
+								},
+								{
+									name: expectedResult.data.Summaries[1].BrowserCounts[1].Name,
+									version: expectedResult.data.Summaries[1].BrowserCounts[1].Version,
+									count: expectedResult.data.Summaries[1].BrowserCounts[1].Count
+								}
+							],
+							country_counts: [
+								{
+									country: expectedResult.data.Summaries[1].CountryCounts[0].Country,
+									count: expectedResult.data.Summaries[1].CountryCounts[0].Count
+								},
+								{
+									country: expectedResult.data.Summaries[1].CountryCounts[1].Country,
+									count: expectedResult.data.Summaries[1].CountryCounts[1].Count
 								}
 							]
 						}
@@ -251,31 +313,51 @@ describe("GetEventByName function", () => {
 		});
 
 		// Act
-		let result = await GetEventByName(jwt, name, appId, null, null, sorting) as ApiResponse<Event>;
+		let result = await GetEventByName(jwt, name, appId, null, null, period) as ApiResponse<Event>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
 		assert.equal(result.data.Id, expectedResult.data.Id);
 		assert.equal(result.data.AppId, expectedResult.data.AppId);
 		assert.equal(result.data.Name, expectedResult.data.Name);
-		assert.equal(result.data.Logs[0].Time.toString(), expectedResult.data.Logs[0].Time.toString());
-		assert.equal(result.data.Logs[0].Total, expectedResult.data.Logs[0].Total);
-		assert.equal(result.data.Logs[0].Period, expectedResult.data.Logs[0].Period);
-		assert.equal(result.data.Logs[0].Properties[0].Name, expectedResult.data.Logs[0].Properties[0].Name);
-		assert.equal(result.data.Logs[0].Properties[0].Value, expectedResult.data.Logs[0].Properties[0].Value);
-		assert.equal(result.data.Logs[0].Properties[0].Count, expectedResult.data.Logs[0].Properties[0].Count);
-		assert.equal(result.data.Logs[0].Properties[1].Name, expectedResult.data.Logs[0].Properties[1].Name);
-		assert.equal(result.data.Logs[0].Properties[1].Value, expectedResult.data.Logs[0].Properties[1].Value);
-		assert.equal(result.data.Logs[0].Properties[1].Count, expectedResult.data.Logs[0].Properties[1].Count);
-		assert.equal(result.data.Logs[1].Time.toString(), expectedResult.data.Logs[1].Time.toString());
-		assert.equal(result.data.Logs[1].Total, expectedResult.data.Logs[1].Total);
-		assert.equal(result.data.Logs[1].Period, expectedResult.data.Logs[1].Period);
-		assert.equal(result.data.Logs[1].Properties[0].Name, expectedResult.data.Logs[1].Properties[0].Name);
-		assert.equal(result.data.Logs[1].Properties[0].Value, expectedResult.data.Logs[1].Properties[0].Value);
-		assert.equal(result.data.Logs[1].Properties[0].Count, expectedResult.data.Logs[1].Properties[0].Count);
-		assert.equal(result.data.Logs[1].Properties[1].Name, expectedResult.data.Logs[1].Properties[1].Name);
-		assert.equal(result.data.Logs[1].Properties[1].Value, expectedResult.data.Logs[1].Properties[1].Value);
-		assert.equal(result.data.Logs[1].Properties[1].Count, expectedResult.data.Logs[1].Properties[1].Count);
+
+		assert.equal(result.data.Summaries[0].OsCounts[0].Name, expectedResult.data.Summaries[0].OsCounts[0].Name);
+		assert.equal(result.data.Summaries[0].OsCounts[0].Version, expectedResult.data.Summaries[0].OsCounts[0].Version);
+		assert.equal(result.data.Summaries[0].OsCounts[0].Count, expectedResult.data.Summaries[0].OsCounts[0].Count);
+		assert.equal(result.data.Summaries[0].OsCounts[1].Name, expectedResult.data.Summaries[0].OsCounts[1].Name);
+		assert.equal(result.data.Summaries[0].OsCounts[1].Version, expectedResult.data.Summaries[0].OsCounts[1].Version);
+		assert.equal(result.data.Summaries[0].OsCounts[1].Count, expectedResult.data.Summaries[0].OsCounts[1].Count);
+
+		assert.equal(result.data.Summaries[0].BrowserCounts[0].Name, expectedResult.data.Summaries[0].BrowserCounts[0].Name);
+		assert.equal(result.data.Summaries[0].BrowserCounts[0].Version, expectedResult.data.Summaries[0].BrowserCounts[0].Version);
+		assert.equal(result.data.Summaries[0].BrowserCounts[0].Count, expectedResult.data.Summaries[0].BrowserCounts[0].Count);
+		assert.equal(result.data.Summaries[0].BrowserCounts[1].Name, expectedResult.data.Summaries[0].BrowserCounts[1].Name);
+		assert.equal(result.data.Summaries[0].BrowserCounts[1].Version, expectedResult.data.Summaries[0].BrowserCounts[1].Version);
+		assert.equal(result.data.Summaries[0].BrowserCounts[1].Count, expectedResult.data.Summaries[0].BrowserCounts[1].Count);
+
+		assert.equal(result.data.Summaries[0].CountryCounts[0].Country, expectedResult.data.Summaries[0].CountryCounts[0].Country);
+		assert.equal(result.data.Summaries[0].CountryCounts[0].Count, expectedResult.data.Summaries[0].CountryCounts[0].Count);
+		assert.equal(result.data.Summaries[0].CountryCounts[1].Country, expectedResult.data.Summaries[0].CountryCounts[1].Country);
+		assert.equal(result.data.Summaries[0].CountryCounts[1].Count, expectedResult.data.Summaries[0].CountryCounts[1].Count);
+
+		assert.equal(result.data.Summaries[1].OsCounts[0].Name, expectedResult.data.Summaries[1].OsCounts[0].Name);
+		assert.equal(result.data.Summaries[1].OsCounts[0].Version, expectedResult.data.Summaries[1].OsCounts[0].Version);
+		assert.equal(result.data.Summaries[1].OsCounts[0].Count, expectedResult.data.Summaries[1].OsCounts[0].Count);
+		assert.equal(result.data.Summaries[1].OsCounts[1].Name, expectedResult.data.Summaries[1].OsCounts[1].Name);
+		assert.equal(result.data.Summaries[1].OsCounts[1].Version, expectedResult.data.Summaries[1].OsCounts[1].Version);
+		assert.equal(result.data.Summaries[1].OsCounts[1].Count, expectedResult.data.Summaries[1].OsCounts[1].Count);
+
+		assert.equal(result.data.Summaries[1].BrowserCounts[0].Name, expectedResult.data.Summaries[1].BrowserCounts[0].Name);
+		assert.equal(result.data.Summaries[1].BrowserCounts[0].Version, expectedResult.data.Summaries[1].BrowserCounts[0].Version);
+		assert.equal(result.data.Summaries[1].BrowserCounts[0].Count, expectedResult.data.Summaries[1].BrowserCounts[0].Count);
+		assert.equal(result.data.Summaries[1].BrowserCounts[1].Name, expectedResult.data.Summaries[1].BrowserCounts[1].Name);
+		assert.equal(result.data.Summaries[1].BrowserCounts[1].Version, expectedResult.data.Summaries[1].BrowserCounts[1].Version);
+		assert.equal(result.data.Summaries[1].BrowserCounts[1].Count, expectedResult.data.Summaries[1].BrowserCounts[1].Count);
+
+		assert.equal(result.data.Summaries[1].CountryCounts[0].Country, expectedResult.data.Summaries[1].CountryCounts[0].Country);
+		assert.equal(result.data.Summaries[1].CountryCounts[0].Count, expectedResult.data.Summaries[1].CountryCounts[0].Count);
+		assert.equal(result.data.Summaries[1].CountryCounts[1].Country, expectedResult.data.Summaries[1].CountryCounts[1].Country);
+		assert.equal(result.data.Summaries[1].CountryCounts[1].Count, expectedResult.data.Summaries[1].CountryCounts[1].Count);
 	});
 
 	it("should call getEventByName endpoint with error", async () => {
@@ -286,7 +368,7 @@ describe("GetEventByName function", () => {
 		let name = "visit";
 		let start = 234234;
 		let end = 2923423234234;
-		let sorting = EventSummaryPeriod.Year;
+		let period = EventSummaryPeriod.Year;
 
 		let expectedResult: ApiErrorResponse = {
 			status: 404,
@@ -310,7 +392,7 @@ describe("GetEventByName function", () => {
 			assert.equal(request.config.params.app_id, appId);
 			assert.equal(request.config.params.start, start);
 			assert.equal(request.config.params.end, end);
-			assert.equal(request.config.params.sort, "year");
+			assert.equal(request.config.params.period, period);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -323,7 +405,7 @@ describe("GetEventByName function", () => {
 		});
 
 		// Act
-		let result = await GetEventByName(jwt, name, appId, start, end, sorting) as ApiErrorResponse;
+		let result = await GetEventByName(jwt, name, appId, start, end, period) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
