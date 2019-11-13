@@ -1,10 +1,11 @@
 import * as axios from 'axios';
+import * as platform from 'platform';
 import { Dav, startWebSocketConnection, webPushPublicKey } from '../Dav';
 import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
 import * as DatabaseOperations from './DatabaseOperations';
-import * as platform from 'platform';
 import { DavEnvironment } from '../models/DavUser';
+import { CreateEventLog } from './AnalyticsController';
 
 var isSyncing = false;
 var syncAgain = true;
@@ -904,32 +905,16 @@ export async function UpdateSubscriptionOnServer(){
 export async function Log(apiKey: string, name: string){
 	if(/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
 
-	var properties = {
-		browser_name: platform.name,
-		browser_version: platform.version,
-		os_name: platform.os.family,
-		os_version: platform.os.version
-	}
-
-	try{
-		// Make request to backend
-		await axios.default({
-			method: 'post',
-			url: `${Dav.apiBaseUrl}/analytics/event`,
-			params: {
-				api_key: apiKey,
-				name: name,
-				app_id: Dav.appId,
-				save_country: true
-			},
-			headers: {
-				"Content-Type": "application/json"
-			},
-			data: JSON.stringify(properties)
-		});
-	}catch(error){
-		console.log(error)
-	}
+	// Create event log on the server
+	await CreateEventLog(
+		apiKey, 
+		Dav.appId, 
+		name, 
+		platform.os.family, 
+		platform.os.version, 
+		platform.name, 
+		platform.version
+	)
 }
 
 export async function DeleteSessionOnServer(jwt: string){
