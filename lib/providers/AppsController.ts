@@ -2,7 +2,7 @@ import * as axios from 'axios';
 import { Dav, ApiResponse, ApiErrorResponse, ConvertHttpResponseToErrorResponse } from '../Dav';
 import { Auth } from '../models/Auth';
 import { App, ConvertObjectArrayToApps } from '../models/App';
-import { ConvertObjectArrayToTables } from '../models/Table';
+import { Table, ConvertObjectArrayToTables } from '../models/Table';
 import { ConvertObjectArrayToEvents } from '../models/Event';
 
 export async function GetApp(jwt: string, id: number) : Promise<ApiResponse<App> | ApiErrorResponse>{
@@ -110,6 +110,37 @@ export async function UpdateApp(jwt: string, id: number, properties: {
 				response.data.link_play,
 				response.data.link_windows
 			)
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
+export async function CreateTable(jwt: string, appId: number, name: string) : Promise<ApiResponse<Table> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/apps/${appId}/table`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: jwt,
+				ContentType: 'application/json'
+			},
+			data: {
+				name
+			}
+		});
+
+		return {
+			status: response.status,
+			data: new Table(response.data.id, response.data.app_id, response.data.name)
 		}
 	}catch(error){
 		if(error.response){

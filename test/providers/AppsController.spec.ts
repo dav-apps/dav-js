@@ -5,7 +5,7 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
-import { GetAllApps, GetApp, UpdateApp } from '../../lib/providers/AppsController';
+import { GetAllApps, GetApp, UpdateApp, CreateTable } from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 
@@ -340,7 +340,7 @@ describe("UpdateApp function", () => {
 		assert.equal(result.data.LinkWindows, expectedResult.data.LinkWindows);
 	});
 
-	it("should call updateUser endpoint with error", async () => {
+	it("should call updateApp endpoint with error", async () => {
 		// Arrange
 		let appId = 53;
 		let url = `${Dav.apiBaseUrl}/apps/app/${appId}`;
@@ -391,6 +391,98 @@ describe("UpdateApp function", () => {
 			linkPlay: updatedLinkPlay,
 			linkWindows: updatedLinkWindows
 		}) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("CreateTable function", () => {
+	it("should call createTable endpoint", async () => {
+		// Arrange
+		let appId = 43;
+		let url = `${Dav.apiBaseUrl}/apps/${appId}/table`;
+		let jwt = "blablablabla";
+		let name = "Test";
+
+		let expectedResult: ApiResponse<Table> = {
+			status: 201,
+			data: new Table(10, appId, name)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.name, name);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.Id,
+					app_id: expectedResult.data.AppId,
+					name: expectedResult.data.Name
+				}
+			});
+		});
+
+		// Act
+		let result = await CreateTable(jwt, appId, name) as ApiResponse<Table>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.Id, expectedResult.data.Id);
+		assert.equal(result.data.AppId, expectedResult.data.AppId);
+		assert.equal(result.data.Name, expectedResult.data.Name);
+	});
+
+	it("should call createTable endpoint with error", async () => {
+		// Arrange
+		let appId = 43;
+		let url = `${Dav.apiBaseUrl}/apps/${appId}/table`;
+		let jwt = "blablablabla";
+		let name = "Test";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2803,
+				message: "Resource does not exist: App"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.name, name);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		});
+
+		// Act
+		let result = await CreateTable(jwt, appId, name) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
