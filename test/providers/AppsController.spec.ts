@@ -5,7 +5,7 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
-import { GetAllApps, GetApp, UpdateApp, CreateTable } from '../../lib/providers/AppsController';
+import { CreateApp, GetApp, GetAllApps, UpdateApp, CreateTable } from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 
@@ -21,6 +21,126 @@ afterEach(() => {
 const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
 const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
 const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
+
+describe("CreateApp function", () => {
+	it("should call createApp endpoint", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/apps/app`;
+		let jwt = "jwtjwtjwtjwt";
+		let name = "TestApp";
+		let description = "This is a test app";
+		let linkWeb = "https://testapp.dav-apps.tech";
+		let linkPlay = "https://play.google.com";
+		let linkWindows = "https://store.microsoft.com";
+
+		let expectedResult: ApiResponse<App> = {
+			status: 201,
+			data: new App(
+				3,
+				name,
+				description,
+				false,
+				linkWeb,
+				linkPlay,
+				linkWindows
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.name, name);
+			assert.equal(data.description, description);
+			assert.equal(data.link_web, linkWeb);
+			assert.equal(data.link_play, linkPlay);
+			assert.equal(data.link_windows, linkWindows);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.Id,
+					name: expectedResult.data.Name,
+					description: expectedResult.data.Description,
+					published: false,
+					link_web: expectedResult.data.LinkWeb,
+					link_play: expectedResult.data.LinkPlay,
+					link_windows: expectedResult.data.LinkWindows,
+					tables: []
+				}
+			});
+		});
+
+		// Act
+		let result = await CreateApp(jwt, name, description, linkWeb, linkPlay, linkWindows) as ApiResponse<App>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.Id, expectedResult.data.Id);
+		assert.equal(result.data.Name, expectedResult.data.Name);
+		assert.equal(result.data.Description, expectedResult.data.Description);
+		assert.equal(result.data.Published, expectedResult.data.Published);
+		assert.equal(result.data.LinkWeb, expectedResult.data.LinkWeb);
+		assert.equal(result.data.LinkPlay, expectedResult.data.LinkPlay);
+		assert.equal(result.data.LinkWindows, expectedResult.data.LinkWindows);
+		assert.equal(0, result.data.Tables.length);
+	});
+
+	it("should call createApp endpoint with error", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/apps/app`;
+		let jwt = "jwtjwtjwtjwt";
+		let name = "TestApp";
+		let linkWeb = "https://testapp.dav-apps.tech";
+		let linkWindows = "https://store.microsoft.com";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 400,
+			errors: [{
+				code: 2112,
+				message: "Missing field: description"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.ContentType, 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.name, name);
+			assert.equal(data.link_web, linkWeb);
+			assert.equal(data.link_windows, linkWindows);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await CreateApp(jwt, name, null, linkWeb, null, linkWindows) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
 
 describe("GetApp function", () => {
 	it("should call getApp endpoint", async () => {

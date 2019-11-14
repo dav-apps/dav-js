@@ -5,6 +5,56 @@ import { App, ConvertObjectArrayToApps } from '../models/App';
 import { Table, ConvertObjectArrayToTables } from '../models/Table';
 import { ConvertObjectArrayToEvents } from '../models/Event';
 
+export async function CreateApp(
+	jwt: string, 
+	name: string, 
+	description: string, 
+	linkWeb?: string, 
+	linkPlay?: string, 
+	linkWindows?: string
+) : Promise<ApiResponse<App> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/apps/app`;
+
+	try{
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: jwt,
+				ContentType: 'application/json'
+			},
+			data: {
+				name,
+				description,
+				link_web: linkWeb,
+				link_play: linkPlay,
+				link_windows: linkWindows
+			}
+		});
+
+		return {
+			status: response.status,
+			data: new App(
+				response.data.id,
+				response.data.name,
+				response.data.description,
+				response.data.published,
+				response.data.link_web,
+				response.data.link_play,
+				response.data.link_windows
+			)
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export async function GetApp(jwt: string, id: number) : Promise<ApiResponse<App> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/apps/app/${id}`;
 
