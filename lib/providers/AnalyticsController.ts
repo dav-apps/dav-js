@@ -120,3 +120,72 @@ export async function GetEventByName(
 		}
 	}
 }
+
+export interface GetUsersResponseData{
+	users: GetUsersResponseDataUser[]
+}
+
+interface GetUsersResponseDataUser{
+	id: number,
+	createdAt: string,
+	updatedAt: string,
+	confirmed: boolean,
+	plan: number,
+	lastActive: string,
+	apps: GetUsersResponseDataUsersApp[]
+}
+
+interface GetUsersResponseDataUsersApp{
+	id: number,
+	name: string
+}
+
+export async function GetUsers(jwt: string) : Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse>{
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/analytics/users`,
+			headers: {
+				Authorization: jwt
+			}
+		});
+
+		let users: GetUsersResponseDataUser[] = [];
+
+		for(let user of response.data.users){
+			let apps: GetUsersResponseDataUsersApp[] = [];
+
+			for(let app of user.apps){
+				apps.push({
+					id: app.id,
+					name: app.name
+				})
+			}
+
+			users.push({
+				id: user.id,
+				createdAt: user.created_at,
+				updatedAt: user.updated_at,
+				confirmed: user.confirmed,
+				plan: user.plan,
+				lastActive: user.last_active,
+				apps
+			})
+		}
+
+		return {
+			status: response.status,
+			data: {
+				users
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
