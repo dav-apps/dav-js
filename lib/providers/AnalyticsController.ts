@@ -189,3 +189,56 @@ export async function GetUsers(jwt: string) : Promise<ApiResponse<GetUsersRespon
 		}
 	}
 }
+
+export interface GetActiveUsersResponseData{
+	days: GetActiveUsersResponseDataDay[]
+}
+
+interface GetActiveUsersResponseDataDay{
+	time: string,
+	countDaily: number,
+	countMonthly: number,
+	countYearly: number
+}
+
+export async function GetActiveUsers(jwt: string, start?: number, end?: number) : Promise<ApiResponse<GetActiveUsersResponseData> | ApiErrorResponse>{
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/analytics/active_users`,
+			headers: {
+				Authorization: jwt
+			},
+			params: {
+				start,
+				end
+			}
+		});
+
+		let days: GetActiveUsersResponseDataDay[] = [];
+
+		for(let day of response.data.days){
+			days.push({
+				time: day.time,
+				countDaily: day.count_daily,
+				countMonthly: day.count_monthly,
+				countYearly: day.count_yearly
+			})
+		}
+
+		return {
+			status: response.status,
+			data: {
+				days
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}

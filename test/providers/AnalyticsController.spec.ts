@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
-import { CreateEventLog, EventLogResponseData, GetEventByName, GetUsers, GetUsersResponseData } from '../../lib/providers/AnalyticsController';
+import { CreateEventLog, EventLogResponseData, GetEventByName, GetUsers, GetUsersResponseData, GetActiveUsersResponseData, GetActiveUsers } from '../../lib/providers/AnalyticsController';
 import { Event } from '../../lib/models/Event';
 import { StandardEventSummary, EventSummaryPeriod } from '../../lib/models/StandardEventSummary';
 import { EventSummaryOsCount } from '../../lib/models/EventSummaryOsCount';
@@ -552,6 +552,122 @@ describe("GetUsers function", () => {
 
 		// Act
 		let result = await GetUsers(jwt) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("GetActiveUsers function", () => {
+	it("should call getActiveUsers endpoint", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/analytics/active_users`;
+		let jwt = "jwtjwtjwtjwtjwtjwt";
+		let start = 234235;
+		let end = 13938291;
+
+		let expectedResult: ApiResponse<GetActiveUsersResponseData> = {
+			status: 200,
+			data: {
+				days: [{
+					time: "Heute",
+					countDaily: 4,
+					countMonthly: 10,
+					countYearly: 21
+				}, {
+					time: "Gestern",
+					countDaily: 7,
+					countMonthly: 13,
+					countYearly: 123
+				}]
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			assert.equal(request.config.params.start, start);
+			assert.equal(request.config.params.end, end);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					days: [{
+						time: expectedResult.data.days[0].time,
+						count_daily: expectedResult.data.days[0].countDaily,
+						count_monthly: expectedResult.data.days[0].countMonthly,
+						count_yearly: expectedResult.data.days[0].countYearly
+					}, {
+						time: expectedResult.data.days[1].time,
+						count_daily: expectedResult.data.days[1].countDaily,
+						count_monthly: expectedResult.data.days[1].countMonthly,
+						count_yearly: expectedResult.data.days[1].countYearly
+					}]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetActiveUsers(jwt, start, end) as ApiResponse<GetActiveUsersResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.days[0].time, expectedResult.data.days[0].time);
+		assert.equal(result.data.days[0].countDaily, expectedResult.data.days[0].countDaily);
+		assert.equal(result.data.days[0].countMonthly, expectedResult.data.days[0].countMonthly);
+		assert.equal(result.data.days[0].countYearly, expectedResult.data.days[0].countYearly);
+
+		assert.equal(result.data.days[1].time, expectedResult.data.days[1].time);
+		assert.equal(result.data.days[1].countDaily, expectedResult.data.days[1].countDaily);
+		assert.equal(result.data.days[1].countMonthly, expectedResult.data.days[1].countMonthly);
+		assert.equal(result.data.days[1].countYearly, expectedResult.data.days[1].countYearly);
+	});
+
+	it("should call getActiveUsers endpoint with error", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/analytics/active_users`;
+		let jwt = "jwtjwtjwtjwtjwtjwt";
+		let start = 234235;
+		let end = 13938291;
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			assert.equal(request.config.params.start, start);
+			assert.equal(request.config.params.end, end);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetActiveUsers(jwt, start, end) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
