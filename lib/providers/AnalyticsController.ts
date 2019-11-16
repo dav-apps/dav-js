@@ -121,6 +121,51 @@ export async function GetEventByName(
 	}
 }
 
+export interface GetAppResponseData{
+	users: GetAppResponseDataUser[]
+}
+
+interface GetAppResponseDataUser{
+	id: number,
+	startedUsing: string
+}
+
+export async function GetApp(jwt: string, id: number) : Promise<ApiResponse<GetAppResponseData> | ApiErrorResponse>{
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/analytics/app/${id}`,
+			headers: {
+				Authorization: jwt
+			}
+		});
+
+		let users: GetAppResponseDataUser[] = [];
+
+		for(let user of response.data.users){
+			users.push({
+				id: user.id,
+				startedUsing: user.started_using
+			})
+		}
+
+		return {
+			status: response.status,
+			data: {
+				users
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export interface GetUsersResponseData{
 	users: GetUsersResponseDataUser[]
 }

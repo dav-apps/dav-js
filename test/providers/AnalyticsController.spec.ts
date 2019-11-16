@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
-import { CreateEventLog, EventLogResponseData, GetEventByName, GetUsers, GetUsersResponseData, GetActiveUsersResponseData, GetActiveUsers } from '../../lib/providers/AnalyticsController';
+import { CreateEventLog, EventLogResponseData, GetEventByName, GetUsers, GetUsersResponseData, GetActiveUsersResponseData, GetActiveUsers, GetAppResponseData, GetApp } from '../../lib/providers/AnalyticsController';
 import { Event } from '../../lib/models/Event';
 import { StandardEventSummary, EventSummaryPeriod } from '../../lib/models/StandardEventSummary';
 import { EventSummaryOsCount } from '../../lib/models/EventSummaryOsCount';
@@ -406,6 +406,101 @@ describe("GetEventByName function", () => {
 
 		// Act
 		let result = await GetEventByName(jwt, name, appId, start, end, period) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("GetApp function", () => {
+	it("should call getApp endpoint", async () => {
+		// Arrange
+		let appId = 4;
+		let jwt = "jwtjwtjwtjwtjwtjwtjwtjwt";
+		let url = `${Dav.apiBaseUrl}/analytics/app/${appId}`;
+
+		let expectedResult: ApiResponse<GetAppResponseData> = {
+			status: 200,
+			data: {
+				users: [{
+					id: 4,
+					startedUsing: "Vorgestern"
+				}, {
+					id: 5,
+					startedUsing: "Heute"
+				}]
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					users: [{
+						id: expectedResult.data.users[0].id,
+						started_using: expectedResult.data.users[0].startedUsing
+					}, {
+						id: expectedResult.data.users[1].id,
+						started_using: expectedResult.data.users[1].startedUsing
+					}]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetApp(jwt, appId) as ApiResponse<GetAppResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.users[0].id, expectedResult.data.users[0].id);
+		assert.equal(result.data.users[0].startedUsing, expectedResult.data.users[0].startedUsing);
+		assert.equal(result.data.users[1].id, expectedResult.data.users[1].id);
+		assert.equal(result.data.users[1].startedUsing, expectedResult.data.users[1].startedUsing);
+	});
+
+	it("should call getApp endpoint with error", async () => {
+		// Arrange
+		let appId = 4;
+		let jwt = "jwtjwtjwtjwtjwtjwtjwtjwt";
+		let url = `${Dav.apiBaseUrl}/analytics/app/${appId}`;
+
+		let expectedResult: ApiErrorResponse = {
+			status: 401,
+			errors: [{
+				code: 1302,
+				message: "JWT not valid"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetApp(jwt, appId) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
