@@ -3,7 +3,17 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
-import { CreateEventLog, EventLogResponseData, GetEventByName, GetUsers, GetUsersResponseData, GetActiveUsersResponseData, GetActiveUsers, GetAppResponseData, GetApp } from '../../lib/providers/AnalyticsController';
+import { 
+	CreateEventLog, 
+	EventLogResponseData, 
+	GetEventByName, 
+	GetUsers, 
+	GetUsersResponseData, 
+	GetActiveUsersResponseData, 
+	GetActiveUsers,
+	GetAppUsers,
+	GetAppUsersResponseData
+} from '../../lib/providers/AnalyticsController';
 import { Event } from '../../lib/models/Event';
 import { StandardEventSummary, EventSummaryPeriod } from '../../lib/models/StandardEventSummary';
 import { EventSummaryOsCount } from '../../lib/models/EventSummaryOsCount';
@@ -414,14 +424,14 @@ describe("GetEventByName function", () => {
 	});
 });
 
-describe("GetApp function", () => {
-	it("should call getApp endpoint", async () => {
+describe("GetAppUsers function", () => {
+	it("should call getAppUsers endpoint", async () => {
 		// Arrange
 		let appId = 4;
 		let jwt = "jwtjwtjwtjwtjwtjwtjwtjwt";
 		let url = `${Dav.apiBaseUrl}/analytics/app/${appId}`;
 
-		let expectedResult: ApiResponse<GetAppResponseData> = {
+		let expectedResult: ApiResponse<GetAppUsersResponseData> = {
 			status: 200,
 			data: {
 				users: [{
@@ -457,7 +467,7 @@ describe("GetApp function", () => {
 		});
 
 		// Act
-		let result = await GetApp(jwt, appId) as ApiResponse<GetAppResponseData>;
+		let result = await GetAppUsers(jwt, appId) as ApiResponse<GetAppUsersResponseData>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
@@ -467,7 +477,7 @@ describe("GetApp function", () => {
 		assert.equal(result.data.users[1].startedUsing, expectedResult.data.users[1].startedUsing);
 	});
 
-	it("should call getApp endpoint with error", async () => {
+	it("should call getAppUsers endpoint with error", async () => {
 		// Arrange
 		let appId = 4;
 		let jwt = "jwtjwtjwtjwtjwtjwtjwtjwt";
@@ -500,7 +510,7 @@ describe("GetApp function", () => {
 		});
 
 		// Act
-		let result = await GetApp(jwt, appId) as ApiErrorResponse;
+		let result = await GetAppUsers(jwt, appId) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

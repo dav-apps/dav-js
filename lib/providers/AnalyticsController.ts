@@ -121,16 +121,16 @@ export async function GetEventByName(
 	}
 }
 
-export interface GetAppResponseData{
-	users: GetAppResponseDataUser[]
+export interface GetAppUsersResponseData{
+	users: GetAppUsersResponseDataUser[]
 }
 
-interface GetAppResponseDataUser{
+interface GetAppUsersResponseDataUser{
 	id: number,
 	startedUsing: string
 }
 
-export async function GetApp(jwt: string, id: number) : Promise<ApiResponse<GetAppResponseData> | ApiErrorResponse>{
+export async function GetAppUsers(jwt: string, id: number) : Promise<ApiResponse<GetAppUsersResponseData> | ApiErrorResponse>{
 	try{
 		let response = await axios.default({
 			method: 'get',
@@ -140,7 +140,7 @@ export async function GetApp(jwt: string, id: number) : Promise<ApiResponse<GetA
 			}
 		});
 
-		let users: GetAppResponseDataUser[] = [];
+		let users: GetAppUsersResponseDataUser[] = [];
 
 		for(let user of response.data.users){
 			users.push({
