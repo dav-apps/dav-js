@@ -5,7 +5,7 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
-import { CreateApp, GetApp, GetAllApps, UpdateApp, CreateTable } from '../../lib/providers/AppsController';
+import { CreateApp, GetApp, GetActiveAppUsers, GetAllApps, UpdateApp, CreateTable, GetActiveAppUsersResponseData } from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 
@@ -278,6 +278,124 @@ describe("GetApp function", () => {
 
 		// Act
 		let result = await GetApp(jwt, appId) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("GetActiveAppUsers function", () => {
+	it("should call getActiveAppUsers endpoint", async () => {
+		// Arrange
+		let jwt = "asdoisdbosdf";
+		let appId = 5;
+		let start = 234234234;
+		let end = 123123123123;
+		let url = `${Dav.apiBaseUrl}/apps/app/${appId}/active_users`;
+
+		let expectedResult: ApiResponse<GetActiveAppUsersResponseData> = {
+			status: 200,
+			data: {
+				days: [{
+					time: "Gestern",
+					countDaily: 4,
+					countMonthly: 7,
+					countYearly: 12
+				}, {
+					time: "Heute",
+					countDaily: 7,
+					countMonthly: 10,
+					countYearly: 17
+				}]
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			assert.equal(request.config.params.start, start);
+			assert.equal(request.config.params.end, end);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					days: [{
+						time: expectedResult.data.days[0].time,
+						count_daily: expectedResult.data.days[0].countDaily,
+						count_monthly: expectedResult.data.days[0].countMonthly,
+						count_yearly: expectedResult.data.days[0].countYearly
+					}, {
+						time: expectedResult.data.days[1].time,
+						count_daily: expectedResult.data.days[1].countDaily,
+						count_monthly: expectedResult.data.days[1].countMonthly,
+						count_yearly: expectedResult.data.days[1].countYearly
+					}]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetActiveAppUsers(jwt, appId, start, end) as ApiResponse<GetActiveAppUsersResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.days[0].time, expectedResult.data.days[0].time);
+		assert.equal(result.data.days[0].countDaily, expectedResult.data.days[0].countDaily);
+		assert.equal(result.data.days[0].countMonthly, expectedResult.data.days[0].countMonthly);
+		assert.equal(result.data.days[0].countYearly, expectedResult.data.days[0].countYearly);
+
+		assert.equal(result.data.days[1].time, expectedResult.data.days[1].time);
+		assert.equal(result.data.days[1].countDaily, expectedResult.data.days[1].countDaily);
+		assert.equal(result.data.days[1].countMonthly, expectedResult.data.days[1].countMonthly);
+		assert.equal(result.data.days[1].countYearly, expectedResult.data.days[1].countYearly);
+	});
+
+	it("should call getActiveAppUsers endpoint with error", async () => {
+		// Arrange
+		let jwt = "asdoisdbosdf";
+		let appId = 5;
+		let start = 234234234;
+		let end = null;
+		let url = `${Dav.apiBaseUrl}/apps/app/${appId}/active_users`;
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2803,
+				message: "Resource does not exist: App"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, jwt);
+
+			assert.equal(request.config.params.start, start);
+			assert.equal(request.config.params.end, end);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetActiveAppUsers(jwt, appId, start, end) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
