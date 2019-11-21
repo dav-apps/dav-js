@@ -16,6 +16,7 @@ export class DavUser{
 	public SubscriptionStatus: DavSubscriptionStatus;
 	public PeriodEnd: Date;
 	public StripeCustomerId: string;
+	public IsDev: boolean;
 	public Apps: App[] = [];
 	public JWT: string;
 
@@ -61,6 +62,7 @@ export class DavUser{
 		this.SubscriptionStatus = userObject["subscriptionStatus"];
 		this.PeriodEnd = userObject["periodEnd"] ? new Date(userObject["periodEnd"]) : null;
 		this.StripeCustomerId = userObject["stripeCustomerId"];
+		this.IsDev = userObject["isDev"] || false;
 		this.Apps = userObject["apps"] ? ConvertObjectArrayToApps(userObject["apps"]) : [];
 		this.JWT = userObject["jwt"];
 		Dav.jwt = this.JWT;
@@ -79,6 +81,7 @@ export class DavUser{
 		this.SubscriptionStatus = 0;
 		this.PeriodEnd = null;
 		this.StripeCustomerId = "";
+		this.IsDev = false;
 		this.Apps = [];
 		this.JWT = "";
 		Dav.jwt = "";
