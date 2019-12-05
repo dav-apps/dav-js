@@ -8,6 +8,10 @@ import { App } from '../../lib/models/App';
 import { CreateApp, GetApp, GetActiveAppUsers, GetAllApps, UpdateApp, CreateTable, GetActiveAppUsersResponseData } from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
+import { Api } from '../../lib/models/Api';
+import { ApiEndpoint } from '../../lib/models/ApiEndpoint';
+import { ApiFunction } from '../../lib/models/ApiFunction';
+import { ApiError } from '../../lib/models/ApiError';
 
 beforeEach(() => {
 	moxios.install();
@@ -167,6 +171,10 @@ describe("GetApp function", () => {
 				[
 					new Event(12, 4, "visit", []),
 					new Event(13, 4, "login", [])
+				],
+				[
+					new Api(23, "Test API", [], [], []),
+					new Api(24, "Test API 2", [], [], [])
 				]
 			)
 		}
@@ -212,6 +220,16 @@ describe("GetApp function", () => {
 							app_id: expectedResult.data.Events[1].AppId,
 							name: expectedResult.data.Events[1].Name
 						}
+					],
+					apis: [
+						{
+							id: expectedResult.data.Apis[0].Id,
+							name: expectedResult.data.Apis[0].Name
+						},
+						{
+							id: expectedResult.data.Apis[1].Id,
+							name: expectedResult.data.Apis[1].Name
+						}
 					]
 				}
 			});
@@ -242,6 +260,10 @@ describe("GetApp function", () => {
 		assert.equal(result.data.Events[1].Id, expectedResult.data.Events[1].Id);
 		assert.equal(result.data.Events[1].AppId, expectedResult.data.Events[1].AppId);
 		assert.equal(result.data.Events[1].Name, expectedResult.data.Events[1].Name);
+		assert.equal(result.data.Apis[0].Id, expectedResult.data.Apis[0].Id);
+		assert.equal(result.data.Apis[0].Name, expectedResult.data.Apis[0].Name);
+		assert.equal(result.data.Apis[1].Id, expectedResult.data.Apis[1].Id);
+		assert.equal(result.data.Apis[1].Name, expectedResult.data.Apis[1].Name);
 	});
 
 	it("should call getApp endpoint with error", async () => {

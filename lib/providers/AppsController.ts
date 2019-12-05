@@ -4,6 +4,7 @@ import { Auth } from '../models/Auth';
 import { App, ConvertObjectArrayToApps } from '../models/App';
 import { Table, ConvertObjectArrayToTables } from '../models/Table';
 import { ConvertObjectArrayToEvents } from '../models/Event';
+import { ConvertObjectArrayToApis } from '../models/Api';
 
 export async function CreateApp(
 	jwt: string, 
@@ -79,7 +80,8 @@ export async function GetApp(jwt: string, id: number) : Promise<ApiResponse<App>
 				response.data.link_windows,
 				null,
 				ConvertObjectArrayToTables(response.data.tables),
-				ConvertObjectArrayToEvents(response.data.events)
+				ConvertObjectArrayToEvents(response.data.events),
+				ConvertObjectArrayToApis(response.data.apis)
 			)
 		}
 	}catch(error){
