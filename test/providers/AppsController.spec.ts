@@ -9,9 +9,6 @@ import { CreateApp, GetApp, GetActiveAppUsers, GetAllApps, UpdateApp, CreateTabl
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 import { Api } from '../../lib/models/Api';
-import { ApiEndpoint } from '../../lib/models/ApiEndpoint';
-import { ApiFunction } from '../../lib/models/ApiFunction';
-import { ApiError } from '../../lib/models/ApiError';
 
 beforeEach(() => {
 	moxios.install();

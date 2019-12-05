@@ -3,7 +3,7 @@ export {
 	InitStatic,
 	ApiResponse,
 	ApiErrorResponse,
-	ApiError
+	ApiResponseError
 } from "./lib/Dav";
 export { 
 	DavUser, 
@@ -19,6 +19,10 @@ export { StandardEventSummary, EventSummaryPeriod } from './lib/models/StandardE
 export { EventSummaryOsCount } from './lib/models/EventSummaryOsCount';
 export { EventSummaryBrowserCount } from './lib/models/EventSummaryBrowserCount';
 export { EventSummaryCountryCount } from './lib/models/EventSummaryCountryCount';
+export { Api } from './lib/models/Api';
+export { ApiEndpoint } from './lib/models/ApiEndpoint';
+export { ApiFunction } from './lib/models/ApiFunction';
+export { ApiError } from './lib/models/ApiError';
 export { 
 	TableObject, 
 	Property, 
@@ -42,3 +46,4 @@ export * from './lib/providers/UsersController';
 export * from './lib/providers/AppsController';
 export * from './lib/providers/DevsController';
 export * from './lib/providers/AnalyticsController';
+export * from './lib/providers/ApisController';

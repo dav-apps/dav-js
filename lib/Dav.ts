@@ -21,10 +21,10 @@ export interface ApiResponse<T>{
 
 export interface ApiErrorResponse{
 	status: number;
-	errors: ApiError[];
+	errors: ApiResponseError[];
 }
 
-export interface ApiError{
+export interface ApiResponseError{
 	code: number,
 	message: string
 }
@@ -169,7 +169,7 @@ export function startPushNotificationSubscription(){
 export function ConvertHttpResponseToErrorResponse(response: axios.AxiosResponse) : ApiErrorResponse{
 	let status = response.status;
 	let responseErrors: any[] = response.data.errors;
-	let errors: ApiError[] = [];
+	let errors: ApiResponseError[] = [];
 
 	for(let i = 0; i < responseErrors.length; i++){
 		errors.push({
