@@ -1,5 +1,6 @@
 import { Table, ConvertObjectArrayToTables } from './Table';
 import { Event, ConvertObjectArrayToEvents } from './Event';
+import { Api, ConvertObjectArrayToApis } from './Api';
 
 export class App{
 	constructor(
@@ -12,7 +13,8 @@ export class App{
 		public LinkWindows: string,
 		public UsedStorage: number = 0,
 		public Tables: Table[] = [],
-		public Events: Event[] = []
+		public Events: Event[] = [],
+		public Apis: Api[] = []
 	){}
 }
 
@@ -31,7 +33,8 @@ export function ConvertObjectArrayToApps(objArray: any[]) : App[]{
 				obj.link_windows,
 				obj.used_storage,
 				ConvertObjectArrayToTables(obj.tables),
-				ConvertObjectArrayToEvents(obj.event)
+				ConvertObjectArrayToEvents(obj.events),
+				ConvertObjectArrayToApis(obj.apis)
 			));
 		}
 	}
