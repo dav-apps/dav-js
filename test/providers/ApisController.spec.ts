@@ -4,10 +4,11 @@ import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Api } from '../../lib/models/Api';
-import { CreateApi, GetApi } from '../../lib/providers/ApisController';
+import { CreateApi, GetApi, SetApiError } from '../../lib/providers/ApisController';
 import { ApiEndpoint } from '../../lib/models/ApiEndpoint';
 import { ApiFunction } from '../../lib/models/ApiFunction';
 import { ApiError } from '../../lib/models/ApiError';
+import { Auth } from '../../lib/models/Auth';
 
 beforeEach(() => {
 	moxios.install();
@@ -263,11 +264,108 @@ describe("GetApi function", () => {
 						[expectedResult.errors[0].code, expectedResult.errors[0].message]
 					]
 				}
-			})
+			});
 		});
 
 		// Act
 		let result = await GetApi(jwt, id) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("SetApiError function", () => {
+	it("should call setApiError endpoint", async () => {
+		// Arrange
+		let apiId = 23;
+		let url = `${Dav.apiBaseUrl}/api/${apiId}/error`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let code = 1110;
+		let message = "Resource does not exist: Bla";
+
+		let expectedResult: ApiResponse<ApiError> = {
+			status: 200,
+			data: new ApiError(12, 1110, message)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'put');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.include(request.config.headers["Content-Type"], 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.code, code);
+			assert.equal(data.message, message);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.Id,
+					api_id: apiId,
+					code: expectedResult.data.Code,
+					message: expectedResult.data.Message
+				}
+			});
+		});
+
+		// Act
+		let result = await SetApiError(auth, apiId, code, message) as ApiResponse<ApiError>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.Id, expectedResult.data.Id);
+		assert.equal(result.data.Code, expectedResult.data.Code);
+		assert.equal(result.data.Message, expectedResult.data.Message);
+	});
+
+	it("should call setApiError endpoint with error", async () => {
+		// Arrange
+		let apiId = 23;
+		let url = `${Dav.apiBaseUrl}/api/${apiId}/error`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+		let code = 1110;
+		let message = "Resource does not exist: Bla";
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2815,
+				message: "Resource does not exist: Api"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'put');
+			assert.equal(request.config.headers.Authorization, auth.token);
+			assert.include(request.config.headers["Content-Type"], 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.code, code);
+			assert.equal(data.message, message);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await SetApiError(auth, apiId, code, message) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
