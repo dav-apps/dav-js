@@ -54,7 +54,7 @@ describe("CreateApp function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.name, name);
@@ -116,7 +116,7 @@ describe("CreateApp function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.name, name);
@@ -556,7 +556,7 @@ describe("UpdateApp function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'put');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.name, updatedName);
@@ -623,7 +623,7 @@ describe("UpdateApp function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'put');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.name, updatedName);
@@ -676,7 +676,7 @@ describe("CreateTable function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.name, name);
@@ -723,7 +723,7 @@ describe("CreateTable function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.name, name);

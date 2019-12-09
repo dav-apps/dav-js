@@ -12,8 +12,7 @@ export async function CreateApi(jwt: string, appId: number, name: string) : Prom
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/apps/app/${appId}/api`,
 			headers: {
-				Authorization: jwt,
-				ContentType: 'application/json'
+				Authorization: jwt
 			},
 			data: {
 				name

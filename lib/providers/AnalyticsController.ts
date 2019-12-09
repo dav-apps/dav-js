@@ -31,9 +31,6 @@ export async function CreateEventLog(
 		let response = await axios.default({
 			method: 'post',
 			url,
-			headers: {
-				ContentType: 'application/json'
-			},
 			data: {
 				api_key: apiKey,
 				app_id: appId,

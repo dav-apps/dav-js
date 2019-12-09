@@ -248,8 +248,7 @@ export async function DeleteUser(auth: Auth, userId: number, emailConfirmationTo
 			method: 'delete',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: 'application/json'
+				Authorization: auth.token
 			},
 			data: {
 				email_confirmation_token: emailConfirmationToken,
@@ -280,8 +279,7 @@ export async function RemoveApp(auth: Auth, appId: number, userId: number, passw
 			method: 'delete',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: 'application/json'
+				Authorization: auth.token
 			},
 			data: {
 				user_id: userId,
@@ -312,8 +310,7 @@ export async function ConfirmUser(auth: Auth, userId: number, emailConfirmationT
 			method: 'post',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: 'application/json'
+				Authorization: auth.token
 			},
 			data: {
 				email_confirmation_token: emailConfirmationToken
@@ -457,8 +454,7 @@ export async function SetPassword(auth: Auth, userId: number, passwordConfirmati
 			method: 'post',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: "application/json"
+				Authorization: auth.token
 			},
 			data: {
 				user_id: userId,
@@ -490,8 +486,7 @@ export async function SaveNewPassword(auth: Auth, userId: number, passwordConfir
 			method: 'post',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: "application/json"
+				Authorization: auth.token
 			},
 			data: {
 				password_confirmation_token: passwordConfirmationToken
@@ -521,8 +516,7 @@ export async function SaveNewEmail(auth: Auth, userId: number, emailConfirmation
 			method: 'post',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: "application/json"
+				Authorization: auth.token
 			},
 			data: {
 				email_confirmation_token: emailConfirmationToken
@@ -600,8 +594,7 @@ export async function CreateSession(
 			method: 'post',
 			url,
 			headers: {
-				Authorization: auth.token,
-				ContentType: 'application/json'
+				Authorization: auth.token
 			},
 			data: {
 				email,
@@ -654,8 +647,7 @@ export async function CreateSessionWithJwt(
 			method: 'post',
 			url,
 			headers: {
-				Authorization: jwt,
-				ContentType: 'application/json'
+				Authorization: jwt
 			},
 			data: {
 				app_id: appId,

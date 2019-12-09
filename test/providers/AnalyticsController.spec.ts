@@ -64,6 +64,7 @@ describe("CreateEventLog function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.api_key, apiKey);
@@ -134,6 +135,7 @@ describe("CreateEventLog function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.api_key, apiKey);

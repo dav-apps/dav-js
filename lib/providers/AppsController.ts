@@ -21,8 +21,7 @@ export async function CreateApp(
 			method: 'post',
 			url,
 			headers: {
-				Authorization: jwt,
-				ContentType: 'application/json'
+				Authorization: jwt
 			},
 			data: {
 				name,
@@ -198,8 +197,7 @@ export async function UpdateApp(jwt: string, id: number, properties: {
 			method: 'put',
 			url,
 			headers: {
-				Authorization: jwt,
-				ContentType: 'application/json'
+				Authorization: jwt
 			},
 			data
 		});
@@ -235,8 +233,7 @@ export async function CreateTable(jwt: string, appId: number, name: string) : Pr
 			method: 'post',
 			url,
 			headers: {
-				Authorization: jwt,
-				ContentType: 'application/json'
+				Authorization: jwt
 			},
 			data: {
 				name

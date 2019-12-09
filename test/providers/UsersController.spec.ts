@@ -435,6 +435,7 @@ describe("UpdateUser function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'put');
 			assert.equal(request.config.headers.Authorization, jwt);
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email, updatedEmail);
@@ -530,6 +531,7 @@ describe("UpdateUser function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'put');
 			assert.equal(request.config.headers.Authorization, jwt);
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email, updatedEmail);
@@ -657,7 +659,7 @@ describe("DeleteUser function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'delete');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email_confirmation_token, emailConfirmationToken);
@@ -699,7 +701,7 @@ describe("DeleteUser function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'delete');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email_confirmation_token, emailConfirmationToken);
@@ -746,7 +748,7 @@ describe("RemoveApp function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'delete');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.user_id, userId);
@@ -788,7 +790,7 @@ describe("RemoveApp function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'delete');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.user_id, userId);
@@ -834,7 +836,7 @@ describe("ConfirmUser function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email_confirmation_token, emailConfirmationToken);
@@ -874,7 +876,7 @@ describe("ConfirmUser function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email_confirmation_token, emailConfirmationToken);
@@ -1226,7 +1228,7 @@ describe("SetPassword function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, "application/json");
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.user_id, userId);
@@ -1270,7 +1272,7 @@ describe("SetPassword function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, "application/json");
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.user_id, userId);
@@ -1317,7 +1319,7 @@ describe("SaveNewPassword function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, "application/json");
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
@@ -1357,7 +1359,7 @@ describe("SaveNewPassword function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, "application/json");
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.password_confirmation_token, passwordConfirmationToken);
@@ -1402,7 +1404,7 @@ describe("SaveNewEmail function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, "application/json");
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email_confirmation_token, emailConfirmationToken);
@@ -1442,7 +1444,7 @@ describe("SaveNewEmail function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, "application/json");
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email_confirmation_token, emailConfirmationToken);
@@ -1577,7 +1579,7 @@ describe("CreateSession function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email, email);
@@ -1662,7 +1664,7 @@ describe("CreateSession function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, auth.token);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.email, email);
@@ -1741,7 +1743,7 @@ describe("CreateSessionWithJwt function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.app_id, appId);
@@ -1820,7 +1822,7 @@ describe("CreateSessionWithJwt function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
-			assert.equal(request.config.headers.ContentType, 'application/json');
+			assert.include(request.config.headers["Content-Type"], 'application/json');
 
 			let data = JSON.parse(request.config.data);
 			assert.equal(data.app_id, appId);
