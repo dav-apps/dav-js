@@ -4,6 +4,7 @@ import { Dav, startPushNotificationSubscription } from "../Dav";
 import { App, ConvertObjectArrayToApps } from './App';
 
 export class DavUser{
+	public Id: number;
 	public Email: string;
 	public Username: string;
 	public TotalStorage: number;
@@ -51,6 +52,7 @@ export class DavUser{
 
 	private SetUser(userObject: object){
 		this.IsLoggedIn = true;
+		this.Id = userObject["id"];
 		this.Email = userObject["email"];
 		this.Username = userObject["username"];
 		this.TotalStorage = userObject["totalStorage"];
@@ -70,6 +72,7 @@ export class DavUser{
 
 	private ClearUser(){
 		this.IsLoggedIn = false;
+		this.Id = 0;
 		this.Email = "";
 		this.Username = "";
 		this.TotalStorage = 0;

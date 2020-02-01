@@ -679,6 +679,7 @@ export async function DownloadUserInformation(jwt: string){
 		
       if(response.status == 200){
          return {
+				id: response.data.id,
             email: response.data.email,
             username: response.data.username,
             totalStorage: response.data.total_storage,

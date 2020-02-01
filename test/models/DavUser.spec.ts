@@ -20,6 +20,7 @@ describe("Login function", () => {
 			// Assert
 			var userFromDatabase = await DatabaseOperations.GetUser();
 			assert.isTrue(user.IsLoggedIn);
+			assert.equal(user.Id, userFromDatabase["id"]);
 			assert.equal(user.Email, userFromDatabase["email"]);
 			assert.equal(user.Username, userFromDatabase["username"]);
 			assert.equal(user.TotalStorage, userFromDatabase["totalStorage"]);
@@ -73,7 +74,8 @@ describe("Logout function", () => {
          await user.Logout();
 
          // Assert
-         assert.isFalse(user.IsLoggedIn);
+			assert.isFalse(user.IsLoggedIn);
+			assert.equal(user.Id, 0);
          assert.isEmpty(user.Email);
 			assert.isEmpty(user.Username);
 			assert.equal(user.TotalStorage, 0);
