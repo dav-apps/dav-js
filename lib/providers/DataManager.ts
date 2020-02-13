@@ -691,7 +691,8 @@ export async function DownloadUserInformation(jwt: string){
 				subscriptionStatus: response.data.subscription_status,
 				periodEnd: response.data.period_end,
 				stripeCustomerId: response.data.stripe_customer_id,
-				isDev: response.data.is_dev,
+				dev: response.data.dev,
+				provider: response.data.provider,
 				apps: response.data.apps,
             jwt: jwt
          }

@@ -31,7 +31,8 @@ describe("Login function", () => {
 			assert.equal(user.Confirmed, userFromDatabase["confirmed"]);
 			assert.equal(user.SubscriptionStatus, userFromDatabase["subscriptionStatus"]);
 			assert.equal(user.StripeCustomerId, userFromDatabase["stripeCustomerId"]);
-			assert.equal(user.IsDev, userFromDatabase["isDev"]);
+			assert.equal(user.Dev, userFromDatabase["dev"]);
+			assert.equal(user.Provider, userFromDatabase["provider"]);
 			assert.equal(user.JWT, userFromDatabase["jwt"]);
 			assert.equal(user.JWT, davClassLibraryTestUserXTestUserJwt);
 
@@ -87,7 +88,8 @@ describe("Logout function", () => {
 			assert.equal(user.SubscriptionStatus, 0);
 			assert.isNull(user.PeriodEnd);
 			assert.isEmpty(user.StripeCustomerId);
-			assert.isFalse(user.IsDev);
+			assert.isFalse(user.Dev);
+			assert.isFalse(user.Provider);
 			assert.isEmpty(user.Apps);
          assert.isEmpty(user.JWT);
 			assert.isEmpty(Dav.jwt);
