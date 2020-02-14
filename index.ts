@@ -47,3 +47,4 @@ export * from './lib/providers/AppsController';
 export * from './lib/providers/DevsController';
 export * from './lib/providers/AnalyticsController';
 export * from './lib/providers/ApisController';
+export * from './lib/providers/ProvidersController';
