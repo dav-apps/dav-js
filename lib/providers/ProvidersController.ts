@@ -35,3 +35,32 @@ export async function CreateProvider(jwt: string) : Promise<ApiResponse<Provider
 		}
 	}
 }
+
+export async function GetProvider(jwt: string) : Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse>{
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/provider`,
+			headers: {
+				Authorization: jwt
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {
+				id: response.data.id,
+				userId: response.data.user_id,
+				stripeAccountId: response.data.stripe_account_id
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
