@@ -19,13 +19,14 @@ describe("CreateProvider function", () => {
 		// Arrange
 		let url = `${Dav.apiBaseUrl}/provider`;
 		let jwt = "asdasasdasdasdasd";
+		let country = "US";
 
 		let expectedResult: ApiResponse<ProviderResponseData> = {
 			status: 201,
 			data: {
 				id: 1,
 				userId: 1,
-				stripeAccountId: "accnt_asasda"
+				stripeAccountId: "acct_asasda"
 			}
 		}
 
@@ -36,6 +37,10 @@ describe("CreateProvider function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers['Content-Type'], 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.country, country);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -48,7 +53,7 @@ describe("CreateProvider function", () => {
 		});
 
 		// Act
-		let result = await CreateProvider(jwt) as ApiResponse<ProviderResponseData>;
+		let result = await CreateProvider(jwt, country) as ApiResponse<ProviderResponseData>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
@@ -61,6 +66,7 @@ describe("CreateProvider function", () => {
 		// Arrange
 		let url = `${Dav.apiBaseUrl}/provider`;
 		let jwt = "asdasasdasdasdasd";
+		let country = "US";
 
 		let expectedResult: ApiErrorResponse = {
 			status: 409,
@@ -77,6 +83,10 @@ describe("CreateProvider function", () => {
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'post');
 			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers['Content-Type'], 'application/json');
+
+			let data = JSON.parse(request.config.data);
+			assert.equal(data.country, country);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -89,7 +99,7 @@ describe("CreateProvider function", () => {
 		});
 
 		// Act
-		let result = await CreateProvider(jwt) as ApiErrorResponse;
+		let result = await CreateProvider(jwt, country) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

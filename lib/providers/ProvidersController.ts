@@ -7,13 +7,17 @@ export interface ProviderResponseData{
 	stripeAccountId: string;
 }
 
-export async function CreateProvider(jwt: string) : Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse>{
+export async function CreateProvider(jwt: string, country: string) : Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse>{
 	try{
 		let response = await axios.default({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {
-				Authorization: jwt
+				Authorization: jwt,
+				'Content-Type': 'application/json'
+			},
+			data: {
+				country
 			}
 		});
 
