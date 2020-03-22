@@ -48,3 +48,4 @@ export * from './lib/providers/DevsController';
 export * from './lib/providers/AnalyticsController';
 export * from './lib/providers/ApisController';
 export * from './lib/providers/ProvidersController';
+export * from './lib/providers/PurchasesController';
