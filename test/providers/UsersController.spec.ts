@@ -9,6 +9,7 @@ import {
 	LoginResponseData, 
 	Login, 
 	UserResponseData, 
+	GetUserByAuth,
 	UpdateUser, 
 	CreateStripeCustomerForUserResponseData,
 	CreateStripeCustomerForUser,
@@ -25,7 +26,7 @@ import {
 	ConfirmUser,
 	CreateSessionResponseData,
 	CreateSession,
-	CreateSessionWithJwt,
+	CreateSessionWithJwt
 } from '../../lib/providers/UsersController';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
@@ -388,6 +389,150 @@ describe("Login function", () => {
 
 		// Act
 		let result = await Login(auth, email, password) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("GetUserByAuth function", () => {
+	it("should call getUserByAuth endpoint", async () => {
+		// Arrange
+		let id = 123;
+		let url = `${Dav.apiBaseUrl}/auth/user/${id}/auth`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiResponse<UserResponseData> = {
+			status: 200,
+			data: {
+				id,
+				email: "testuser@dav-apps.tech",
+				username: "Testuser",
+				confirmed: false,
+				newEmail: "testuser2@dav-apps.tech",
+				oldEmail: null,
+				createdAt: "Gestern",
+				updatedAt: "Heute",
+				plan: 0,
+				periodEnd: null,
+				subscriptionStatus: 0,
+				totalStorage: 2000000000,
+				usedStorage: 10000,
+				lastActive: null,
+				avatar: "Avatar",
+				avatarEtag: "asdasdasdasd",
+				apps: [new App(201, "TestApp", "TestApp is a very good app!", true, "testapp.dav-apps.tech", null, null, 20000)]
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.id,
+					email: expectedResult.data.email,
+					username: expectedResult.data.username,
+					confirmed: expectedResult.data.confirmed,
+					new_email: expectedResult.data.newEmail,
+					old_email: expectedResult.data.oldEmail,
+					created_at: expectedResult.data.createdAt,
+					updated_at: expectedResult.data.updatedAt,
+					plan: expectedResult.data.plan,
+					period_end: expectedResult.data.periodEnd,
+					subscription_status: expectedResult.data.subscriptionStatus,
+					total_storage: expectedResult.data.totalStorage,
+					used_storage: expectedResult.data.usedStorage,
+					last_active: expectedResult.data.lastActive,
+					avatar: expectedResult.data.avatar,
+					avatar_etag: expectedResult.data.avatarEtag,
+					apps: [{
+						id: expectedResult.data.apps[0].Id,
+						name: expectedResult.data.apps[0].Name,
+						description: expectedResult.data.apps[0].Description,
+						published: expectedResult.data.apps[0].Published,
+						link_web: expectedResult.data.apps[0].LinkWeb,
+						link_play: expectedResult.data.apps[0].LinkPlay,
+						link_windows: expectedResult.data.apps[0].LinkWindows,
+						used_storage: expectedResult.data.apps[0].UsedStorage
+					}]
+				}
+			})
+		});
+
+		// Act
+		let result = await GetUserByAuth(auth, id) as ApiResponse<UserResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.id, expectedResult.data.id);
+		assert.equal(result.data.email, expectedResult.data.email);
+		assert.equal(result.data.username, expectedResult.data.username);
+		assert.equal(result.data.confirmed, expectedResult.data.confirmed);
+		assert.equal(result.data.newEmail, expectedResult.data.newEmail);
+		assert.equal(result.data.oldEmail, expectedResult.data.oldEmail);
+		assert.equal(result.data.createdAt, expectedResult.data.createdAt);
+		assert.equal(result.data.updatedAt, expectedResult.data.updatedAt);
+		assert.equal(result.data.plan, expectedResult.data.plan);
+		assert.equal(result.data.periodEnd, expectedResult.data.periodEnd);
+		assert.equal(result.data.subscriptionStatus, expectedResult.data.subscriptionStatus);
+		assert.equal(result.data.totalStorage, expectedResult.data.totalStorage);
+		assert.equal(result.data.usedStorage, expectedResult.data.usedStorage);
+		assert.equal(result.data.lastActive, expectedResult.data.lastActive);
+		assert.equal(result.data.avatar, expectedResult.data.avatar);
+		assert.equal(result.data.avatarEtag, expectedResult.data.avatarEtag);
+		assert.equal(result.data.apps[0].Id, expectedResult.data.apps[0].Id);
+		assert.equal(result.data.apps[0].Name, expectedResult.data.apps[0].Name);
+		assert.equal(result.data.apps[0].Description, expectedResult.data.apps[0].Description);
+		assert.equal(result.data.apps[0].Published, expectedResult.data.apps[0].Published);
+		assert.equal(result.data.apps[0].LinkWeb, expectedResult.data.apps[0].LinkWeb);
+		assert.equal(result.data.apps[0].LinkPlay, expectedResult.data.apps[0].LinkPlay);
+		assert.equal(result.data.apps[0].LinkWindows, expectedResult.data.apps[0].LinkWindows);
+		assert.equal(result.data.apps[0].UsedStorage, expectedResult.data.apps[0].UsedStorage);
+	});
+
+	it("should call getUserByAuth endpoint with error", async () => {
+		// Arrange
+		let id = 123;
+		let url = `${Dav.apiBaseUrl}/auth/user/${id}/auth`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiErrorResponse = {
+			status: 404,
+			errors: [{
+				code: 2801,
+				message: "Resource does not exist: User"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'get');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await GetUserByAuth(auth, id) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

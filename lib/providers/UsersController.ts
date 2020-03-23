@@ -146,6 +146,49 @@ export interface UserResponseData{
 	apps: App[];
 }
 
+export async function GetUserByAuth(auth: Auth, id: number) : Promise<ApiResponse<UserResponseData> | ApiErrorResponse>{
+	try{
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/auth/user/${id}/auth`,
+			headers: {
+				Authorization: auth.token
+			}
+		});
+
+		return {
+			status: response.status,
+			data: {
+				id: response.data.id,
+				email: response.data.email,
+				username: response.data.username,
+				confirmed: response.data.confirmed,
+				newEmail: response.data.new_email,
+				oldEmail: response.data.old_email,
+				createdAt: response.data.created_at,
+				updatedAt: response.data.updated_at,
+				plan: response.data.plan,
+				periodEnd: response.data.period_end,
+				subscriptionStatus: response.data.subscription_status,
+				totalStorage: response.data.total_storage,
+				usedStorage: response.data.used_storage,
+				lastActive: response.data.last_active,
+				avatar: response.data.avatar,
+				avatarEtag: response.data.avatar_etag,
+				apps: ConvertObjectArrayToApps(response.data.apps)
+			}
+		}
+	}catch(error){
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export async function UpdateUser(
 	jwt: string,
 	properties: {
