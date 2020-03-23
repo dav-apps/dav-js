@@ -3,7 +3,12 @@ import { assert } from 'chai';
 import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
+import { Auth } from '../../lib/models/Auth';
 import { PurchaseResponseData, GetPurchase } from '../../lib/providers/PurchasesController';
+
+const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
+const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
+const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
 
 beforeEach(() => {
 	moxios.install();
@@ -19,7 +24,7 @@ describe("GetPurchase function", () => {
 		// Arrange
 		let id = 12;
 		let url = `${Dav.apiBaseUrl}/purchase/${id}`;
-		let jwt = "asdasdasdasd";
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 
 		let expectedResult: ApiResponse<PurchaseResponseData> = {
 			status: 200,
@@ -40,7 +45,7 @@ describe("GetPurchase function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'get');
-			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.Authorization, auth.token);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -57,7 +62,7 @@ describe("GetPurchase function", () => {
 		});
 
 		// Act
-		let result = await GetPurchase(jwt, id) as ApiResponse<PurchaseResponseData>;
+		let result = await GetPurchase(auth, id) as ApiResponse<PurchaseResponseData>;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
@@ -74,7 +79,7 @@ describe("GetPurchase function", () => {
 		// Arrange
 		let id = 12;
 		let url = `${Dav.apiBaseUrl}/purchase/${id}`;
-		let jwt = "asdasdasdasd";
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -90,7 +95,7 @@ describe("GetPurchase function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url);
 			assert.equal(request.config.method, 'get');
-			assert.equal(request.config.headers.Authorization, jwt);
+			assert.equal(request.config.headers.Authorization, auth.token);
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -103,7 +108,7 @@ describe("GetPurchase function", () => {
 		});
 
 		// Act
-		let result = await GetPurchase(jwt, id) as ApiErrorResponse;
+		let result = await GetPurchase(auth, id) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);

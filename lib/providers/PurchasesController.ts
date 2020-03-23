@@ -1,5 +1,6 @@
 import * as axios from 'axios';
 import { Dav, ApiResponse, ApiErrorResponse, ConvertHttpResponseToErrorResponse } from '../Dav';
+import { Auth } from '../models/Auth';
 
 export interface PurchaseResponseData{
 	id: number;
@@ -11,13 +12,13 @@ export interface PurchaseResponseData{
 	completed: boolean;
 }
 
-export async function GetPurchase(jwt: string, id: number) : Promise<ApiResponse<PurchaseResponseData> | ApiErrorResponse>{
+export async function GetPurchase(auth: Auth, id: number) : Promise<ApiResponse<PurchaseResponseData> | ApiErrorResponse>{
 	try{
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/purchase/${id}`,
 			headers: {
-				Authorization: jwt
+				Authorization: auth.token
 			}
 		});
 
