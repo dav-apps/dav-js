@@ -4,7 +4,7 @@ import * as moxios from 'moxios';
 import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
-import { PurchaseResponseData, CreatePurchase, GetPurchase } from '../../lib/providers/PurchasesController';
+import { PurchaseResponseData, CreatePurchase, GetPurchase, CompletePurchase } from '../../lib/providers/PurchasesController';
 
 const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
 const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
@@ -38,13 +38,13 @@ describe("CreatePurchase function", () => {
 				id: 23,
 				userId: 25,
 				tableObjectId: 381,
+				paymentIntentId: "pi_asdasdasd",
 				productImage,
 				productName,
 				providerImage,
 				providerName,
 				price,
 				currency,
-				paid: false,
 				completed: false
 			}
 		}
@@ -71,13 +71,13 @@ describe("CreatePurchase function", () => {
 					id: expectedResult.data.id,
 					user_id: expectedResult.data.userId,
 					table_object_id: expectedResult.data.tableObjectId,
+					payment_intent_id: expectedResult.data.paymentIntentId,
 					product_image: expectedResult.data.productImage,
 					product_name: expectedResult.data.productName,
 					provider_image: expectedResult.data.providerImage,
 					provider_name: expectedResult.data.providerName,
 					price: expectedResult.data.price,
 					currency: expectedResult.data.currency,
-					paid: expectedResult.data.paid,
 					completed: expectedResult.data.completed
 				}
 			})
@@ -100,13 +100,13 @@ describe("CreatePurchase function", () => {
 		assert.equal(result.data.id, expectedResult.data.id);
 		assert.equal(result.data.userId, expectedResult.data.userId);
 		assert.equal(result.data.tableObjectId, expectedResult.data.tableObjectId);
+		assert.equal(result.data.paymentIntentId, expectedResult.data.paymentIntentId);
 		assert.equal(result.data.productImage, expectedResult.data.productImage);
 		assert.equal(result.data.productName, expectedResult.data.productName);
 		assert.equal(result.data.providerImage, expectedResult.data.providerImage);
 		assert.equal(result.data.providerName, expectedResult.data.providerName);
 		assert.equal(result.data.price, expectedResult.data.price);
 		assert.equal(result.data.currency, expectedResult.data.currency);
-		assert.equal(result.data.paid, expectedResult.data.paid);
 		assert.equal(result.data.completed, expectedResult.data.completed);
 	});
 
@@ -188,13 +188,13 @@ describe("GetPurchase function", () => {
 				id,
 				userId: 23,
 				tableObjectId: 52,
+				paymentIntentId: "pi_asdasdasdasd",
 				productImage: "http://localhost:3001/bla.png",
 				productName: "Bla",
 				providerImage: "http://localhost:3001/snicket.png",
 				providerName: "Lemony Snicket",
 				price: 1200,
 				currency: "eur",
-				paid: false,
 				completed: true
 			}
 		}
@@ -213,13 +213,13 @@ describe("GetPurchase function", () => {
 					id: expectedResult.data.id,
 					user_id: expectedResult.data.userId,
 					table_object_id: expectedResult.data.tableObjectId,
+					payment_intent_id: expectedResult.data.paymentIntentId,
 					product_image: expectedResult.data.productImage,
 					product_name: expectedResult.data.productName,
 					provider_image: expectedResult.data.providerImage,
 					provider_name: expectedResult.data.providerName,
 					price: expectedResult.data.price,
 					currency: expectedResult.data.currency,
-					paid: expectedResult.data.paid,
 					completed: expectedResult.data.completed
 				}
 			});
@@ -233,13 +233,13 @@ describe("GetPurchase function", () => {
 		assert.equal(result.data.id, expectedResult.data.id);
 		assert.equal(result.data.userId, expectedResult.data.userId);
 		assert.equal(result.data.tableObjectId, expectedResult.data.tableObjectId);
+		assert.equal(result.data.paymentIntentId, expectedResult.data.paymentIntentId);
 		assert.equal(result.data.productImage, expectedResult.data.productImage);
 		assert.equal(result.data.productName, expectedResult.data.productName);
 		assert.equal(result.data.providerImage, expectedResult.data.providerImage);
 		assert.equal(result.data.providerName, expectedResult.data.providerName);
 		assert.equal(result.data.price, expectedResult.data.price);
 		assert.equal(result.data.currency, expectedResult.data.currency);
-		assert.equal(result.data.paid, expectedResult.data.paid);
 		assert.equal(result.data.completed, expectedResult.data.completed);
 	});
 
@@ -277,6 +277,116 @@ describe("GetPurchase function", () => {
 
 		// Act
 		let result = await GetPurchase(auth, id) as ApiErrorResponse;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code);
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
+	});
+});
+
+describe("CompletePurchase function", () => {
+	it("should call completePurchase endpoint", async () => {
+		// Arrange
+		let id = 34;
+		let url = `${Dav.apiBaseUrl}/purchase/${id}/complete`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiResponse<PurchaseResponseData> = {
+			status: 200,
+			data: {
+				id,
+				userId: 93,
+				tableObjectId: 25,
+				paymentIntentId: "pi_asdasdasdasdasd",
+				productImage: "http://localhost:3001/bla.png",
+				productName: "Bla",
+				providerImage: "http://localhost:3001/snicket.png",
+				providerName: "Lemony Snicket",
+				price: 1342,
+				currency: "eur",
+				completed: true
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id: expectedResult.data.id,
+					user_id: expectedResult.data.userId,
+					table_object_id: expectedResult.data.tableObjectId,
+					payment_intent_id: expectedResult.data.paymentIntentId,
+					product_image: expectedResult.data.productImage,
+					product_name: expectedResult.data.productName,
+					provider_image: expectedResult.data.providerImage,
+					provider_name: expectedResult.data.providerName,
+					price: expectedResult.data.price,
+					currency: expectedResult.data.currency,
+					completed: expectedResult.data.completed
+				}
+			})
+		});
+
+		// Act
+		let result = await CompletePurchase(auth, id) as ApiResponse<PurchaseResponseData>;
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status);
+		assert.equal(result.data.id, expectedResult.data.id);
+		assert.equal(result.data.userId, expectedResult.data.userId);
+		assert.equal(result.data.tableObjectId, expectedResult.data.tableObjectId);
+		assert.equal(result.data.paymentIntentId, expectedResult.data.paymentIntentId);
+		assert.equal(result.data.productImage, expectedResult.data.productImage);
+		assert.equal(result.data.productName, expectedResult.data.productName);
+		assert.equal(result.data.providerImage, expectedResult.data.providerImage);
+		assert.equal(result.data.providerName, expectedResult.data.providerName);
+		assert.equal(result.data.price, expectedResult.data.price);
+		assert.equal(result.data.currency, expectedResult.data.currency);
+		assert.equal(result.data.completed, expectedResult.data.completed);
+	});
+
+	it("should call completePurchase endpoint with error", async () => {
+		// Arrange
+		let id = 34;
+		let url = `${Dav.apiBaseUrl}/purchase/${id}/complete`;
+		let auth = new Auth(devApiKey, devSecretKey, devUuid);
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent();
+
+			// Assert for the request
+			assert.equal(request.config.url, url);
+			assert.equal(request.config.method, 'post');
+			assert.equal(request.config.headers.Authorization, auth.token);
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			});
+		});
+
+		// Act
+		let result = await CompletePurchase(auth, id) as ApiErrorResponse;
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status);
