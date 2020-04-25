@@ -235,9 +235,6 @@ async function DownloadNextFile(){
 }
 
 export async function SyncPush(){
-	const okKey = "ok";
-	const messageKey = "message";
-
 	if(!Dav.jwt) return;
 	if(isSyncing){
 		syncAgain = true;
@@ -247,8 +244,9 @@ export async function SyncPush(){
 	
 	// Get all table objects
 	var tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true);
-	var sortedTableObjects = tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate && 
-													obj.UploadStatus != TableObjectUploadStatus.NoUpload).reverse();
+	var sortedTableObjects = tableObjects.filter(obj =>
+		obj.UploadStatus != TableObjectUploadStatus.UpToDate && obj.UploadStatus != TableObjectUploadStatus.NoUpload
+	).reverse();
 	
 	for(let tableObject of sortedTableObjects){
 		switch (tableObject.UploadStatus) {
@@ -271,20 +269,20 @@ export async function SyncPush(){
 				// Upload the table object
 				var result = await CreateTableObjectOnServer(tableObject);
 
-				if(result[okKey]){
+				if(result.ok){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-					tableObject.Etag = result[messageKey].etag;
+					tableObject.Etag = result.message.etag;
 					await DatabaseOperations.UpdateTableObject(tableObject);
-				}else if(result[messageKey]){
+				}else if(result.message){
 					// Check error codes
-					var messageString = JSON.stringify(result[messageKey]);
+					var messageString = JSON.stringify(result.message);
 
 					if(messageString.includes("2704")){		// Field already taken: uuid
 						// Set the upload status to UpToDate
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
 						await DatabaseOperations.UpdateTableObject(tableObject);
 					}else{
-						console.log(result[messageKey]);
+						console.log(result.message);
 					}
 				}
 				break;
@@ -292,38 +290,59 @@ export async function SyncPush(){
 				// Update the table object
 				var result = await UpdateTableObjectOnServer(tableObject);
 
-				if(result[okKey]){
+				if(result.ok){
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-               tableObject.Etag = result[messageKey].etag;
+               tableObject.Etag = result.message.etag;
                await DatabaseOperations.UpdateTableObject(tableObject);
-				}else if(result[messageKey]){
+				}else if(result.message){
 					// Check error codes
-					var messageString = JSON.stringify(result[messageKey]);
+					var messageString = JSON.stringify(result.message);
 
 					if(messageString.includes("2805")){		// Resource does not exist: TableObject
-						// Delete the table object locally
 						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 					}else{
-						console.log(result[messageKey]);
+						console.log(result.message);
 					}
 				}
 				break;
 			case TableObjectUploadStatus.Deleted:
 				var result = await DeleteTableObjectOnServer(tableObject);
 
-				if(result[okKey]){
+				if(result.ok){
 					// Delete the table object
 					await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
-				}else if(result[messageKey]){
+				}else if(result.message){
 					// Check error codes
-					var messageString = JSON.stringify(result[messageKey]);
+					var messageString = JSON.stringify(result.message);
 
-					if(messageString.includes("2805")){		// Resource does not exist: TableObject
-						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
-					}else if(messageString.includes("1102")){		// Action not allowed
+					if (
+						messageString.includes("2805") ||	// Resource does not exist: TableObject
+						messageString.includes("1102")		// Action not allowed
+					) {
 						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
 					}else{
-						console.log(result[messageKey]);
+						console.log(result.message);
+					}
+				}
+				break;
+			case TableObjectUploadStatus.Removed:
+				var result = await RemoveTableObjectOnServer(tableObject);
+
+				if (result.ok) {
+					// Delete the table object
+					await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+				} else if (result.message) {
+					// Check error codes
+					var messageString = JSON.stringify(result.message);
+
+					if (
+						messageString.includes("2805") ||	// Resource does not exist: TableObject
+						messageString.includes("2819") ||	// Resource does not exist: TableObjectUserAccess
+						messageString.includes("1102")		// Action not allowed
+					) {	
+						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+					} else {
+						console.log(result.message);
 					}
 				}
 				break;
@@ -712,7 +731,7 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
 			headers: {
-				'Authorization': Dav.jwt
+				Authorization: Dav.jwt
 			}
 		});
 
@@ -731,7 +750,7 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 	}
 }
 
-async function CreateTableObjectOnServer(tableObject: TableObject): Promise<object>{		// Return {ok: boolean, message: string}
+async function CreateTableObjectOnServer(tableObject: TableObject) : Promise<{ok: boolean, message: any}>{		// Return {ok: boolean, message: string}
    if(!Dav.jwt) return {ok: false, message: null};
    if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
@@ -758,7 +777,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
                ext: ext
             },
             headers: {
-               'Authorization': Dav.jwt,
+               Authorization: Dav.jwt,
                'Content-Type': tableObject.File.type
             },
 				data: result.currentTarget["result"]
@@ -773,7 +792,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
                uuid: tableObject.Uuid
             },
             headers: {
-               'Authorization': Dav.jwt,
+               Authorization: Dav.jwt,
                'Content-Type': 'application/json'
             },
             data: JSON.stringify(tableObject.Properties)
@@ -786,7 +805,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject): Promise<obje
 	}
 }
 
-async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<object>{
+async function UpdateTableObjectOnServer(tableObject: TableObject) : Promise<{ok: boolean, message: any}>{
 	if(!Dav.jwt) return {ok: false, message: null};
 	if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
@@ -810,7 +829,7 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<obje
                ext: ext
             },
             headers: {
-               'Authorization': Dav.jwt,
+               Authorization: Dav.jwt,
                'Content-Type': tableObject.File.type
             },
 				data: result.currentTarget["result"]
@@ -820,7 +839,7 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<obje
 				method: 'put',
 				url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
 				headers: {
-					'Authorization': Dav.jwt,
+					Authorization: Dav.jwt,
 					'Content-Type': 'application/json'
 				},
 				data: JSON.stringify(tableObject.Properties)
@@ -833,19 +852,39 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<obje
 	}
 }
 
-async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<object>{
+async function DeleteTableObjectOnServer(tableObject: TableObject) : Promise<{ok: boolean, message: any}>{
 	if(!Dav.jwt) return {ok: false, message: null};
 
 	try{
 		var response = await axios.default({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
-			headers: { 'Authorization': Dav.jwt }
+			headers: {
+				Authorization: Dav.jwt
+			}
 		});
 
 		return {ok: true, message: response.data};
 	}catch(error){
 		return {ok: false, message: error.response.data};
+	}
+}
+
+async function RemoveTableObjectOnServer(tableObject: TableObject) : Promise<{ ok: boolean, message: any }>{
+	if (!Dav.jwt) return { ok: false, message: null };
+
+	try {
+		var response = await axios.default({
+			method: 'delete',
+			url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}/access`,
+			headers: {
+				Authorization: Dav.jwt
+			}
+		});
+
+		return { ok: true, message: response.data };
+	} catch (error) {
+		return { ok: false, message: error.response.data };
 	}
 }
 
