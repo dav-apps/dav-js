@@ -934,41 +934,6 @@ describe("UpdateTableObject function", () => {
 	it("should update the table object with separateKeyStorage", async () => await updateTheTableObjectTest(true));
 });
 
-describe("DeleteTableObject function", () => {
-	async function setTheUploadStatusOfTheTableObjectToDeletedTest(separateKeyStorage: boolean, withTableId: boolean){
-		// Arrange
-		let tableId = 5;
-
-		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-			SyncFinished: () => {}
-		});
-
-		var tableObject = new TableObject();
-		tableObject.TableId = tableId;
-      tableObject.UploadStatus = TableObjectUploadStatus.NoUpload;
-      await DatabaseOperations.CreateTableObject(tableObject);
-
-		// Act
-		if(withTableId) await DatabaseOperations.DeleteTableObject(tableObject.Uuid, tableObject.TableId);
-		else await DatabaseOperations.DeleteTableObject(tableObject.Uuid);
-
-      // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
-      assert.equal(TableObjectUploadStatus.Deleted, tableObjectFromDatabase.UploadStatus);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should set the upload status of the table object to Deleted", async () => await setTheUploadStatusOfTheTableObjectToDeletedTest(false, false));
-	it("should set the upload status of the table object to Deleted with separateKeyStorage", async () => await setTheUploadStatusOfTheTableObjectToDeletedTest(true, false));
-	it("should set the upload status of the table object to Deleted with separateKeyStorage and tableId", async () => await setTheUploadStatusOfTheTableObjectToDeletedTest(true, true));
-});
-
 describe("DeleteTableObjectImmediately function", () => {
 	async function removeTheTableObjectFromTheDatabaseTest(separateKeyStorage: boolean, withTableId: boolean){
 		// Arrange

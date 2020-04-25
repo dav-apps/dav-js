@@ -291,42 +291,6 @@ export async function UpdateTableObject(tableObject: TableObject){
 	}
 }
 
-export async function DeleteTableObject(uuid: string, tableId?: number){
-	if(Dav.separateKeyStorage){
-		if(tableId){
-			// Update the table object directly
-			let key = getTableObjectsKey(tableId, uuid);
-			let tableObject = await localforage.getItem(key) as TableObject;
-			if(!tableObject) return;
-
-			tableObject = ConvertObjectToTableObject(tableObject);
-			tableObject.UploadStatus = TableObjectUploadStatus.Deleted;
-			await localforage.setItem(key, tableObject);
-		}else{
-			// Find the table object with each table id and update it
-			for(let id of Dav.tableIds){
-				let key = getTableObjectsKey(id, uuid);
-				let tableObject = await localforage.getItem(key) as TableObject;
-
-				if(tableObject){
-					tableObject = ConvertObjectToTableObject(tableObject);
-					tableObject.UploadStatus = TableObjectUploadStatus.Deleted;
-					await localforage.setItem(key, tableObject);
-					return;
-				}
-			}
-		}
-	}else{
-		var tableObjects = await GetTableObjectsArray();
-		var index = tableObjects.findIndex(obj => obj.Uuid == uuid);
-
-		if(index !== -1){
-			tableObjects[index].UploadStatus = TableObjectUploadStatus.Deleted;
-			await SetTableObjectsArray(tableObjects);
-		}
-	}
-}
-
 export async function DeleteTableObjectImmediately(uuid: string, tableId?: number){
 	if(Dav.separateKeyStorage){
 		if(tableId){
@@ -337,9 +301,9 @@ export async function DeleteTableObjectImmediately(uuid: string, tableId?: numbe
 			for(let id of Dav.tableIds){
 				let key = getTableObjectsKey(id, uuid);
 				let item = await localforage.getItem(key);
-				if(item){
+				if (item) {
 					await localforage.removeItem(key);
-					return;
+					break;
 				}
 			}
 		}
