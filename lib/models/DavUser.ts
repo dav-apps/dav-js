@@ -27,13 +27,14 @@ export class DavUser{
 			DatabaseOperations.GetUser().then((userObject) => {
 				if(userObject){
 					this.SetUser(userObject);
-					this.DownloadUserInformation();
+					this.DownloadUserInformation().then((success: boolean) => {
+						if (!success) return;
 
-					DataManager.Sync();
-
-					startPushNotificationSubscription();
-					DataManager.UpdateSubscriptionOnServer();
-					DataManager.SyncNotifications();
+						DataManager.Sync();
+						startPushNotificationSubscription();
+						DataManager.UpdateSubscriptionOnServer();
+						DataManager.SyncNotifications();
+					});
 				}else{
 					Dav.callbacks.UserDownloadFinished();
 				}
@@ -95,15 +96,18 @@ export class DavUser{
 
 	private async DownloadUserInformation() : Promise<boolean>{
 		if(this.IsLoggedIn){
-			let userObject = await DataManager.DownloadUserInformation(this.JWT);
+			let result = await DataManager.DownloadUserInformation(this.JWT);
 
-			if(userObject){
-				this.SetUser(userObject);
-				await DatabaseOperations.SetUser(userObject);
+			if (result.success) {
+				this.SetUser(result.data);
+				await DatabaseOperations.SetUser(result.data);
 				Dav.callbacks.UserDownloadFinished();
-
-				return true;
+			} else if (result.logout) {
+				// Log the user out
+				await this.Logout();
 			}
+
+			return result.success;
 		}
 
 		Dav.callbacks.UserDownloadFinished();

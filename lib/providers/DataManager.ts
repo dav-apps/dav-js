@@ -684,7 +684,7 @@ export async function SyncPushNotifications(){
 //#endregion
 
 //#region Api methods
-export async function DownloadUserInformation(jwt: string){
+export async function DownloadUserInformation(jwt: string) : Promise<{success: boolean, logout: boolean, data: any}>{
 	var url = `${Dav.apiBaseUrl}/auth/user`;
 
    try{
@@ -694,32 +694,44 @@ export async function DownloadUserInformation(jwt: string){
 			headers: {
 				"Authorization": jwt
 			}
-      });
+		});
 		
-      if(response.status == 200){
-         return {
-				id: response.data.id,
-            email: response.data.email,
-            username: response.data.username,
-            totalStorage: response.data.total_storage,
-            usedStorage: response.data.used_storage,
-            plan: response.data.plan,
-            avatar: response.data.avatar,
-				avatarEtag: response.data.avatar_etag,
-				confirmed: response.data.confirmed,
-				subscriptionStatus: response.data.subscription_status,
-				periodEnd: response.data.period_end,
-				stripeCustomerId: response.data.stripe_customer_id,
-				dev: response.data.dev,
-				provider: response.data.provider,
-				apps: response.data.apps,
-            jwt: jwt
-         }
-      }else{
-         return null;
+		if (response.status == 200) {
+			return {
+				success: true,
+				logout: false,
+				data: {
+					id: response.data.id,
+					email: response.data.email,
+					username: response.data.username,
+					totalStorage: response.data.total_storage,
+					usedStorage: response.data.used_storage,
+					plan: response.data.plan,
+					avatar: response.data.avatar,
+					avatarEtag: response.data.avatar_etag,
+					confirmed: response.data.confirmed,
+					subscriptionStatus: response.data.subscription_status,
+					periodEnd: response.data.period_end,
+					stripeCustomerId: response.data.stripe_customer_id,
+					dev: response.data.dev,
+					provider: response.data.provider,
+					apps: response.data.apps,
+					jwt: jwt
+				}
+			}
+		} else {
+			return {
+				success: false,
+				logout: false,
+				data: null
+			}
       }
-   }catch(error){
-      return null;
+	} catch (error) {
+		return {
+			success: false,
+			logout: error.response.status == 404 && error.response.data.errors[0][0] == 2814,	// Session does not exist
+			data: null
+		}
    }
 }
 
