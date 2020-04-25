@@ -76,9 +76,8 @@ export class TableObject{
 		}
 	}
 
-   async Delete(): Promise<void>{
+   async Delete() : Promise<void>{
 		if(Dav.jwt){
-			// If the user is logged in
 			this.UploadStatus = TableObjectUploadStatus.Deleted;
 			await this.Save();
 		}else{
@@ -86,8 +85,17 @@ export class TableObject{
 		}
 	}
 
-	async DeleteImmediately(): Promise<void>{
+	async DeleteImmediately() : Promise<void>{
 		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
+	}
+
+	async Remove(): Promise<void>{
+		if (Dav.jwt) {
+			this.UploadStatus = TableObjectUploadStatus.Removed;
+			await this.Save();
+		} else {
+			await this.DeleteImmediately();
+		}
 	}
 
 	async SetFile(file: Blob, fileExt: string){
@@ -181,8 +189,9 @@ export enum TableObjectUploadStatus{
    UpToDate = 0,
    New = 1,
    Updated = 2,
-   Deleted = 3,
-   NoUpload = 4
+	Deleted = 3,
+	Removed = 4,
+	NoUpload = 5
 }
 
 export enum TableObjectFileDownloadStatus{
