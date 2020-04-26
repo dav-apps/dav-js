@@ -202,6 +202,27 @@ export async function Sync(){
 	}
 }
 
+export async function DownloadTableObject(uuid: string) {
+	// Check if the table object is already in the database
+	let obj = await DatabaseOperations.GetTableObject(uuid);
+	if (obj) return;
+
+	let tableObject = await GetTableObjectFromServer(uuid);
+	if (!tableObject) return;
+
+	await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
+
+	if (tableObject.IsFile) {
+		// Download the file
+		if (await tableObject.DownloadFile()) {
+			// Notify the app of the change
+			Dav.callbacks.UpdateTableObject(tableObject, true);
+		}
+	} else {
+		Dav.callbacks.UpdateTableObject(tableObject);
+	}
+}
+
 function StartFileDownloads(){
    // Do not download more files than maxFileDownloads at the same time
    fileDownloadsIntervalId = setInterval(() => {

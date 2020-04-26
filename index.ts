@@ -32,13 +32,14 @@ export {
 	GetTableObject, 
 	GetAllTableObjects
 } from './lib/providers/DatabaseOperations';
-export { 
-	Log, 
-	SubscribePushNotifications, 
-	UnsubscribePushNotifications, 
-	CreateNotification, 
-	GetNotification, 
-	UpdateNotification, 
+export {
+	DownloadTableObject,
+	Log,
+	SubscribePushNotifications,
+	UnsubscribePushNotifications,
+	CreateNotification,
+	GetNotification,
+	UpdateNotification,
 	DeleteNotification
 } from './lib/providers/DataManager';
 export { Auth } from './lib/models/Auth';
