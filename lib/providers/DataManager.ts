@@ -778,7 +778,6 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 
 		return tableObject;
 	}catch(error){
-		console.log(error);
 		return null;
 	}
 }

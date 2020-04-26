@@ -314,6 +314,52 @@ describe("SyncPush function", () => {
 	it("should delete deleted table objects that do not exist on the server with separateKeyStorage", async () => deleteDeletedTableObjectsThatDoNotExistOnTheServerTest(true));
 });
 
+describe("DownloadTableObject function", () => {
+	it("should download table object", async () => {
+		// Arrange
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], true, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
+			SyncFinished: () => {}
+		});
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
+
+		// Act
+		await DataManager.DownloadTableObject(firstTestDataTableObject.Uuid);
+
+		// Assert
+		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid);
+		assert.isNotNull(tableObjectFromDatabase);
+		assert.equal(firstTestDataTableObject.Properties[firstPropertyName], tableObjectFromDatabase.Properties[firstPropertyName]);
+		assert.equal(firstTestDataTableObject.Properties[secondPropertyName], tableObjectFromDatabase.Properties[secondPropertyName]);
+
+		// Tidy up
+		await localforage.clear();
+	});
+
+	it("should not download table object that does not exist", async () => {
+		// Arrange
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], true, {icon: "", badge: ""}, {
+			UpdateAllOfTable: () => {},
+			UpdateTableObject: () => {},
+			DeleteTableObject: () => {},
+			UserDownloadFinished: () => {},
+			SyncFinished: () => {}
+		});
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
+		let uuid = "asdasd-asdasdasd-asdasd-asdasd";
+
+		// Act
+		await DataManager.DownloadTableObject(uuid);
+
+		// Assert
+		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid);
+		assert.isNull(tableObjectFromDatabase);
+	});
+});
+
 describe("UpdateLocalTableObject function", () => {
 	async function getTheTableObjectFromTheServerAndUpdateItLocallyTest(separateKeyStorage: boolean){
 		// Arrange
