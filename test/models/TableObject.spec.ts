@@ -6,7 +6,7 @@ import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import { TableObject, TableObjectVisibility, TableObjectUploadStatus } from '../../lib/models/TableObject';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { SyncPush } from '../../lib/providers/DataManager';
-import { GetTableObjectFromServer, DeleteTableObjectFromServer } from '../providers/DataManager.spec';
+import { GetTableObjectFromServer, DeleteTableObjectFromServer } from '../utils';
 import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTestUserJwt } from '../Constants';
 
 describe("SetVisibility function", () => {

@@ -34,7 +34,7 @@ export async function CreateApi(jwt: string, appId: number, name: string) : Prom
 	}
 }
 
-export async function GetApi(jwt: string, id: number){
+export async function GetApi(jwt: string, id: number) : Promise<ApiResponse<Api> | ApiErrorResponse>{
 	try{
 		let response = await axios.default({
 			method: 'get',
