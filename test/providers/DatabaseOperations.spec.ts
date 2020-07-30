@@ -398,18 +398,14 @@ describe("CreateTableObject function", () => {
       var secondPropertyName = "page2";
       var secondPropertyValue = "Hallo Welt";
 
-      var properties = {};
-      properties[firstPropertyName] = firstPropertyValue;
-      properties[secondPropertyName] = secondPropertyValue;
-
       var tableObject = new TableObject();
       tableObject.Uuid = uuid;
       tableObject.TableId = tableId;
       tableObject.UploadStatus = uploadStatus;
       tableObject.Etag = etag;
       tableObject.Properties = {
-         [firstPropertyName]: firstPropertyValue,
-         [secondPropertyName]: secondPropertyValue
+         [firstPropertyName]: {value: firstPropertyValue},
+         [secondPropertyName]: {value: secondPropertyValue}
       }
 
       // Act
@@ -424,8 +420,8 @@ describe("CreateTableObject function", () => {
       assert.equal(uploadStatus, savedObject["UploadStatus"]);
       assert.equal(etag, savedObject["Etag"]);
 
-      assert.equal(properties[firstPropertyName], savedObject["Properties"][firstPropertyName]);
-      assert.equal(properties[secondPropertyName], savedObject["Properties"][secondPropertyName]);
+      assert.equal(firstPropertyValue, savedObject["Properties"][firstPropertyName].value);
+      assert.equal(secondPropertyValue, savedObject["Properties"][secondPropertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -572,18 +568,14 @@ describe("GetTableObject function", () => {
       var secondPropertyName = "page2";
       var secondPropertyValue = "Hallo Welt";
 
-      var properties = {};
-      properties[firstPropertyName] = firstPropertyValue;
-      properties[secondPropertyName] = secondPropertyValue;
-
       var tableObject = new TableObject();
       tableObject.Uuid = uuid;
       tableObject.TableId = tableId;
       tableObject.Etag = etag;
 		tableObject.UploadStatus = uploadStatus;
 		tableObject.Properties = {
-			[firstPropertyName]: firstPropertyValue,
-			[secondPropertyName]: secondPropertyValue
+			[firstPropertyName]: {value: firstPropertyValue},
+			[secondPropertyName]: {value: secondPropertyValue}
 		}
 
 		await DatabaseOperations.CreateTableObject(tableObject)
@@ -596,8 +588,8 @@ describe("GetTableObject function", () => {
       assert.equal(tableId, tableObjectFromDatabase.TableId);
       assert.equal(etag, tableObjectFromDatabase.Etag);
       assert.equal(uploadStatus, tableObjectFromDatabase.UploadStatus);
-      assert.equal(properties[firstPropertyName], tableObjectFromDatabase.Properties[firstPropertyName]);
-      assert.equal(properties[secondPropertyName], tableObjectFromDatabase.Properties[secondPropertyName]);
+      assert.equal(firstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName].value);
+      assert.equal(secondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -909,13 +901,13 @@ describe("UpdateTableObject function", () => {
       var tableObject = new TableObject();
       tableObject.TableId = tableId;
       tableObject.Properties = {
-         [firstPropertyName]: firstPropertyValue,
-         [secondPropertyName]: secondPropertyValue
+         [firstPropertyName]: {value: firstPropertyName},
+         [secondPropertyName]: {value: secondPropertyValue}
       }
       await DatabaseOperations.CreateTableObject(tableObject);
 
-      tableObject.Properties[firstPropertyName] = updatedFirstPropertyValue;
-      tableObject.Properties[secondPropertyName] = updatedSecondPropertyValue;
+      tableObject.Properties[firstPropertyName].value = updatedFirstPropertyValue;
+      tableObject.Properties[secondPropertyName].value = updatedSecondPropertyValue;
 
       // Act
       await DatabaseOperations.UpdateTableObject(tableObject);
@@ -923,8 +915,8 @@ describe("UpdateTableObject function", () => {
       // Assert
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.equal(tableId, tableObjectFromDatabase.TableId);
-      assert.equal(updatedFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName]);
-      assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
+      assert.equal(updatedFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName].value);
+      assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName].value);
 
       // Tidy up
       await localforage.clear();

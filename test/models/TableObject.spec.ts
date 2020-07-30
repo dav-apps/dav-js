@@ -100,19 +100,19 @@ describe("SetPropertyValue function", () => {
       var tableObject = new TableObject();
       tableObject.TableId = 15;
       tableObject.Properties = {
-         [propertyName]: oldPropertyValue
+         [propertyName]: {value: oldPropertyValue}
       }
       await DatabaseOperations.CreateTableObject(tableObject);
 
-      // Act
-      await tableObject.SetPropertyValue(propertyName, newPropertyValue);
+		// Act
+		await tableObject.SetPropertyValue({name: propertyName, value: newPropertyValue})
 
       // Assert
-      assert.equal(newPropertyValue, tableObject.Properties[propertyName]);
+      assert.equal(newPropertyValue, tableObject.Properties[propertyName].value);
 
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newPropertyValue, tableObjectFromDatabase.Properties[propertyName]);
+      assert.equal(newPropertyValue, tableObjectFromDatabase.Properties[propertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -136,8 +136,8 @@ describe("SetPropertyValues function", () => {
       var tableObject = new TableObject();
       tableObject.TableId = 15;
       tableObject.Properties = {
-         [firstPropertyName]: oldFirstPropertyValue,
-         [secondPropertyName]: oldSecondPropertyValue
+         [firstPropertyName]: {value: oldFirstPropertyValue},
+         [secondPropertyName]: {value: oldSecondPropertyValue}
       }
       await DatabaseOperations.CreateTableObject(tableObject);
 
@@ -148,13 +148,13 @@ describe("SetPropertyValues function", () => {
       ]);
 
       // Assert
-      assert.equal(newFirstPropertyValue, tableObject.Properties[firstPropertyName]);
-      assert.equal(newSecondPropertyValue, tableObject.Properties[secondPropertyName]);
+      assert.equal(newFirstPropertyValue, tableObject.Properties[firstPropertyName].value);
+      assert.equal(newSecondPropertyValue, tableObject.Properties[secondPropertyName].value);
 
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
       assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName]);
-      assert.equal(newSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName]);
+      assert.equal(newFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName].value);
+      assert.equal(newSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -172,7 +172,7 @@ describe("GetPropertyValue function", () => {
 
       var tableObject = new TableObject();
       tableObject.Properties = {
-         [propertyName]: propertyValue
+         [propertyName]: {value: propertyValue}
       }
 
       // Act
@@ -203,7 +203,7 @@ describe("RemoveProperty function", () => {
       
       var tableObject = new TableObject();
       tableObject.Properties = {
-         [propertyName]: propertyValue
+         [propertyName]: {value: propertyValue}
       }
 
       // Act
@@ -233,7 +233,7 @@ describe("RemoveProperty function", () => {
 		var uuid = tableObject.Uuid;
 		tableObject.TableId = testDataTableId;
 		tableObject.Properties = {
-			[propertyName]: propertyValue
+			[propertyName]: {value: propertyValue}
 		}
 		await DatabaseOperations.CreateTableObject(tableObject);
 
@@ -242,7 +242,7 @@ describe("RemoveProperty function", () => {
 
 		// Check if the table object has the property on the server
 		let tableObjectFromServer1 = await GetTableObjectFromServer(uuid);
-		assert.equal(tableObjectFromServer1.Properties[propertyName], propertyValue);
+		assert.equal(tableObjectFromServer1.Properties[propertyName].value, propertyValue);
 
 		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid);
 

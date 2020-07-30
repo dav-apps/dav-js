@@ -18,8 +18,11 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
       tableObject.IsFile = response.data.file;
       tableObject.Etag = response.data.etag;
       tableObject.Uuid = response.data.uuid;
-      tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
-      tableObject.Properties = response.data.properties;
+		tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
+		
+		for (let key of Object.keys(response.data.properties)) {
+			tableObject.Properties[key] = {value: response.data.properties[key]}
+		}
 
       return tableObject;
    }catch(error){

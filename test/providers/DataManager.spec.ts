@@ -49,11 +49,11 @@ describe("Sync function", () => {
       assert.equal(testDataTableId, tableObjects[0].TableId);
       assert.equal(testDataTableId, tableObjects[1].TableId);
       assert.equal(firstTestDataTableObject.Uuid, tableObjects[0].Uuid);
-      assert.equal(secondTestDataTableObject.Uuid, tableObjects[1].Uuid);
-      assert.equal(firstTestDataTableObject.Properties[firstPropertyName], tableObjects[0].Properties[firstPropertyName]);
-      assert.equal(firstTestDataTableObject.Properties[secondPropertyName], tableObjects[0].Properties[secondPropertyName]);
-      assert.equal(secondTestDataTableObject.Properties[firstPropertyName], tableObjects[1].Properties[firstPropertyName]);
-      assert.equal(secondTestDataTableObject.Properties[secondPropertyName], tableObjects[1].Properties[secondPropertyName]);
+		assert.equal(secondTestDataTableObject.Uuid, tableObjects[1].Uuid);
+      assert.equal(firstTestDataTableObject.Properties[firstPropertyName].value, tableObjects[0].Properties[firstPropertyName].value);
+      assert.equal(firstTestDataTableObject.Properties[secondPropertyName].value, tableObjects[0].Properties[secondPropertyName].value);
+		assert.equal(secondTestDataTableObject.Properties[firstPropertyName].value, tableObjects[1].Properties[firstPropertyName].value);
+      assert.equal(secondTestDataTableObject.Properties[secondPropertyName].value, tableObjects[1].Properties[secondPropertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -91,10 +91,10 @@ describe("Sync function", () => {
       assert.equal(testDataTableId, tableObjects[1].TableId);
       assert.equal(firstTestDataTableObject.Uuid, tableObjects[0].Uuid);
       assert.equal(secondTestDataTableObject.Uuid, tableObjects[1].Uuid);
-      assert.equal(firstTestDataTableObject.Properties[firstPropertyName], tableObjects[0].Properties[firstPropertyName]);
-      assert.equal(firstTestDataTableObject.Properties[secondPropertyName], tableObjects[0].Properties[secondPropertyName]);
-      assert.equal(secondTestDataTableObject.Properties[firstPropertyName], tableObjects[1].Properties[firstPropertyName]);
-      assert.equal(secondTestDataTableObject.Properties[secondPropertyName], tableObjects[1].Properties[secondPropertyName]);
+      assert.equal(firstTestDataTableObject.Properties[firstPropertyName].value, tableObjects[0].Properties[firstPropertyName].value);
+      assert.equal(firstTestDataTableObject.Properties[secondPropertyName].value, tableObjects[0].Properties[secondPropertyName].value);
+      assert.equal(secondTestDataTableObject.Properties[firstPropertyName].value, tableObjects[1].Properties[firstPropertyName].value);
+      assert.equal(secondTestDataTableObject.Properties[secondPropertyName].value, tableObjects[1].Properties[secondPropertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -119,7 +119,7 @@ describe("Sync function", () => {
       // Change the etag so that it downloads the table object again
       var secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTestDataTableObject.Uuid);
       var oldEtag = secondTableObjectFromDatabase.Etag;
-		secondTableObjectFromDatabase.Properties[firstPropertyName] = "blablabla";
+		secondTableObjectFromDatabase.Properties[firstPropertyName].value = "blablabla";
       secondTableObjectFromDatabase.Etag = "blablabla";
 
       // Act
@@ -128,7 +128,7 @@ describe("Sync function", () => {
       // Assert
       var secondTableObjectFromDatabase2 = await DatabaseOperations.GetTableObject(secondTestDataTableObject.Uuid);
       assert.equal(oldEtag, secondTableObjectFromDatabase2.Etag);
-      assert.equal(secondTestDataTableObject.Properties[firstPropertyName], secondTableObjectFromDatabase2.Properties[firstPropertyName]);
+      assert.equal(secondTestDataTableObject.Properties[firstPropertyName].value, secondTableObjectFromDatabase2.Properties[firstPropertyName].value);
 
       // Tidy up
       await localforage.clear();
@@ -153,8 +153,8 @@ describe("SyncPush function", () => {
       var tableObject = new TableObject();
       tableObject.TableId = testDataTableId;
 		tableObject.Properties = {
-			[firstPropertyName]: "Testtest",
-			[secondPropertyName]: "Test"
+			[firstPropertyName]: {value: "Testtest"},
+			[secondPropertyName]: {value: "Test"}
 		}
       await DatabaseOperations.CreateTableObject(tableObject);
 
@@ -165,8 +165,8 @@ describe("SyncPush function", () => {
       // Get the table object from the server
       var tableObjectFromServer = await GetTableObjectFromServer(tableObject.Uuid);
       assert.isNotNull(tableObjectFromServer);
-      assert.equal(tableObject.Properties[firstPropertyName], tableObjectFromServer.Properties[firstPropertyName]);
-      assert.equal(tableObject.Properties[secondPropertyName], tableObjectFromServer.Properties[secondPropertyName]);
+      assert.equal(tableObject.Properties[firstPropertyName].value, tableObjectFromServer.Properties[firstPropertyName].value);
+      assert.equal(tableObject.Properties[secondPropertyName].value, tableObjectFromServer.Properties[secondPropertyName].value);
       
       var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
       assert.equal(TableObjectUploadStatus.UpToDate, tableObjectFromDatabase.UploadStatus);
@@ -194,7 +194,7 @@ describe("SyncPush function", () => {
       var newPropertyValue = "testtest";
 
       var tableObject = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid);
-		tableObject.Properties[firstPropertyName] = newPropertyValue;
+		tableObject.Properties[firstPropertyName].value = newPropertyValue;
       tableObject.UploadStatus = TableObjectUploadStatus.Updated;
       await DatabaseOperations.UpdateTableObject(tableObject);
       
@@ -206,7 +206,7 @@ describe("SyncPush function", () => {
       assert.equal(TableObjectUploadStatus.UpToDate, tableObjectFromDatabase.UploadStatus);
 
       var tableObjectFromServer = await GetTableObjectFromServer(tableObject.Uuid);
-      assert.equal(newPropertyValue, tableObjectFromServer.Properties[firstPropertyName]);
+      assert.equal(newPropertyValue, tableObjectFromServer.Properties[firstPropertyName].value);
 
       // Tidy up
 		tableObjectFromDatabase.Properties[firstPropertyName] = firstTestDataTableObject.Properties[firstPropertyName];
@@ -234,8 +234,8 @@ describe("SyncPush function", () => {
       var tableObject = new TableObject();
       tableObject.TableId = testDataTableId;
 		tableObject.Properties = {
-			[firstPropertyName]: "blabla",
-			[secondPropertyName]: "testtest"
+			[firstPropertyName]: {value: "blabla"},
+			[secondPropertyName]: {value: "testtest"}
 		}
       await DatabaseOperations.CreateTableObject(tableObject);
 
@@ -345,8 +345,8 @@ describe("DownloadTableObject function", () => {
 		// Assert
 		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid);
 		assert.isNotNull(tableObjectFromDatabase);
-		assert.equal(firstTestDataTableObject.Properties[firstPropertyName], tableObjectFromDatabase.Properties[firstPropertyName]);
-		assert.equal(firstTestDataTableObject.Properties[secondPropertyName], tableObjectFromDatabase.Properties[secondPropertyName]);
+		assert.equal(firstTestDataTableObject.Properties[firstPropertyName].value, tableObjectFromDatabase.Properties[firstPropertyName].value);
+		assert.equal(firstTestDataTableObject.Properties[secondPropertyName].value, tableObjectFromDatabase.Properties[secondPropertyName].value);
 
 		// Tidy up
 		await localforage.clear();
@@ -392,8 +392,8 @@ describe("UpdateLocalTableObject function", () => {
 
       // Update the table object in the database
 		let tableObject = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid);
-		tableObject.Properties[firstPropertyName] = "blabla";
-		tableObject.Properties[secondPropertyName] = "testtest";
+		tableObject.Properties[firstPropertyName].value = "blabla";
+		tableObject.Properties[secondPropertyName].value = "testtest";
       await DatabaseOperations.UpdateTableObject(tableObject);
 
       // Act
@@ -403,8 +403,8 @@ describe("UpdateLocalTableObject function", () => {
 		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid);
       
       // The table object should be the same as before
-      assert.equal(tableObjectFromDatabase.Properties[firstPropertyName], firstTestDataTableObject.Properties[firstPropertyName]);
-      assert.equal(tableObjectFromDatabase.Properties[secondPropertyName], firstTestDataTableObject.Properties[secondPropertyName]);
+      assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstTestDataTableObject.Properties[firstPropertyName].value);
+      assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, firstTestDataTableObject.Properties[secondPropertyName].value);
       assert.isTrue(callbackCalled);
 
       // Tidy up
