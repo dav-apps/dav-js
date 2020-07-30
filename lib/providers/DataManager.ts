@@ -774,7 +774,10 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 		tableObject.Etag = response.data.etag;
 		tableObject.Uuid = response.data.uuid;
 		tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
-		tableObject.Properties = response.data.properties;
+
+		for (let key of Object.keys(response.data.properties)) {
+			tableObject.Properties[key] = {value: response.data.properties[key]}
+		}
 
 		return tableObject;
 	}catch(error){
@@ -815,6 +818,14 @@ async function CreateTableObjectOnServer(tableObject: TableObject) : Promise<{ok
 				data: result.currentTarget["result"]
          });
       }else{
+			let properties = {}
+			for (let key of Object.keys(tableObject.Properties)) {
+				let property = tableObject.Properties[key]
+				if(property.local) continue
+				
+				properties[key] = property.value
+			}
+
          response = await axios.default({
             method: 'post',
 				url: `${Dav.apiBaseUrl}/apps/object`,
@@ -827,7 +838,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject) : Promise<{ok
                Authorization: Dav.jwt,
                'Content-Type': 'application/json'
             },
-            data: JSON.stringify(tableObject.Properties)
+            data: JSON.stringify(properties)
          });
       }
 
@@ -837,7 +848,7 @@ async function CreateTableObjectOnServer(tableObject: TableObject) : Promise<{ok
 	}
 }
 
-async function UpdateTableObjectOnServer(tableObject: TableObject) : Promise<{ok: boolean, message: any}>{
+async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<{ ok: boolean, message: any }>{
 	if(!Dav.jwt) return {ok: false, message: null};
 	if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
 
@@ -867,6 +878,14 @@ async function UpdateTableObjectOnServer(tableObject: TableObject) : Promise<{ok
 				data: result.currentTarget["result"]
          });
 		}else{
+			let properties = {}
+			for (let key of Object.keys(tableObject.Properties)) {
+				let property = tableObject.Properties[key]
+				if(property.local) continue
+				
+				properties[key] = property.value
+			}
+
 			response = await axios.default({
 				method: 'put',
 				url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
@@ -874,7 +893,7 @@ async function UpdateTableObjectOnServer(tableObject: TableObject) : Promise<{ok
 					Authorization: Dav.jwt,
 					'Content-Type': 'application/json'
 				},
-				data: JSON.stringify(tableObject.Properties)
+				data: JSON.stringify(properties)
 			});
 		}
 

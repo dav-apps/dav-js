@@ -10,7 +10,7 @@ export class TableObject{
    public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
 	public File: Blob;
-	public Properties: object = {};
+	public Properties: TableObjectProperties = {};
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
 
@@ -37,43 +37,69 @@ export class TableObject{
 		await this.Save(false);
 	}
 
-	async SetPropertyValue(name: string, value: string): Promise<void>{
-		if(this.Properties[name] == value) return;
-
-		this.Properties[name] = value;
-		await this.Save();
+	async SetPropertyValue(property: Property): Promise<void>{
+		if (this.SetProperty(property)) {
+			await this.Save();
+		}
 	}
 
-	async SetPropertyValues(properties: { name: string, value: string }[]): Promise<void>{
+	async SetPropertyValues(properties: Property[]): Promise<void>{
 		var propertiesChanged = false;
 
-		properties.forEach(property => {
-			if(this.Properties[property.name] != property.value){
-				this.Properties[property.name] = property.value;
-				propertiesChanged = true;
+		for (let property of properties) {
+			if (this.SetProperty(property)) {
+				propertiesChanged = true
 			}
-		});
+		}
 
 		if(propertiesChanged){
 			await this.Save();
 		}
 	}
 
+	/**
+	 * Updates this.Properties with the property if necessary, and returns true if the this.Properties has changed
+	 * @param property 
+	 */
+	private SetProperty(property: Property) : boolean {
+		if (this.Properties[property.name] == null) {
+			// Add the property
+			this.Properties[property.name] = { value: property.value }
+			
+			if (property.options) {
+				this.Properties[property.name].local = property.options.local
+			}
+		} else if (this.Properties[property.name].value == property.value) {
+			if (!property.options) return false
+			if (this.Properties[property.name].local == property.options.local) return false
+			this.Properties[property.name].local = property.options.local
+		} else {
+			this.Properties[property.name].value = property.value
+
+			if (property.options) {
+				this.Properties[property.name].local = property.options.local
+			}
+		}
+
+		return true
+	}
+
 	GetPropertyValue(name: string): string{
-		var value = this.Properties[name];
-		return value ? value : null;
+		var property = this.Properties[name];
+		return property ? property.value : null;
 	}
 
 	async RemoveProperty(name: string): Promise<void>{
-		if(this.Properties[name]){
-         if(Dav.jwt){
-            // Set the value to empty string if the user is logged in
-            this.Properties[name] = "";
-         }else{
-            delete this.Properties[name];
-         }
-			await this.Save(Dav.environment == DavEnvironment.Test);
+		if (this.Properties[name] == null) return
+		
+		if(Dav.jwt){
+			// Set the value to empty string if the user is logged in
+			this.Properties[name].value = null;
+		}else{
+			delete this.Properties[name];
 		}
+
+		await this.Save(Dav.environment == DavEnvironment.Test);
 	}
 
    async Delete() : Promise<void>{
@@ -89,7 +115,7 @@ export class TableObject{
 		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
 	}
 
-	async Remove(): Promise<void>{
+	async Remove() : Promise<void>{
 		if (Dav.jwt) {
 			this.UploadStatus = TableObjectUploadStatus.Removed;
 			await this.Save();
@@ -107,7 +133,7 @@ export class TableObject{
 		}
       
       this.File = file;
-		await this.SetPropertyValue("ext", fileExt);
+		await this.SetPropertyValue({ name: "ext", value: fileExt });
 	}
 
 	GetFileDownloadStatus() : TableObjectFileDownloadStatus{
@@ -174,9 +200,21 @@ export class TableObject{
 	}
 }
 
+type TableObjectProperties = {
+	[name: string]: TableObjectProperty
+}
+
+interface TableObjectProperty{
+	value: string,
+	local?: boolean	// default: false
+}
+
 export interface Property{
 	name: string;
 	value: string;
+	options?: {
+		local: boolean
+	}
 }
 
 export enum TableObjectVisibility{
@@ -216,7 +254,17 @@ export function ConvertIntToVisibility(visibilityInt: number): TableObjectVisibi
 	return visibility;
 }
 
-export function ConvertObjectToTableObject(obj: {Uuid: string, TableId: number, Visibility: number, IsFile: boolean, File: Blob, Properties: object, UploadStatus: number, Etag: string}) : TableObject{
+export function ConvertObjectToTableObject(
+	obj: {
+		Uuid: string,
+		TableId: number,
+		Visibility: number,
+		IsFile: boolean,
+		File: Blob,
+		Properties: TableObjectProperties,
+		UploadStatus: number,
+		Etag: string
+	}): TableObject{
 	let tableObject = new TableObject(obj.Uuid);
 	tableObject.TableId = obj.TableId;
 	tableObject.UploadStatus = obj.UploadStatus;
