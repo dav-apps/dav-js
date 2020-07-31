@@ -1,7 +1,7 @@
 import * as axios from 'axios';
 import * as platform from 'platform';
 import { Dav, startWebSocketConnection, webPushPublicKey } from '../Dav';
-import { TableObject, TableObjectUploadStatus, ConvertIntToVisibility, generateUUID } from '../models/TableObject';
+import { TableObject, TableObjectUploadStatus, generateUUID } from '../models/TableObject';
 import { Notification } from '../models/Notification';
 import * as DatabaseOperations from './DatabaseOperations';
 import { DavEnvironment } from '../models/DavUser';
@@ -773,7 +773,6 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 		tableObject.IsFile = response.data.file;
 		tableObject.Etag = response.data.etag;
 		tableObject.Uuid = response.data.uuid;
-		tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
 
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = {value: response.data.properties[key]}

@@ -1,6 +1,6 @@
 import * as axios from 'axios';
 import { Dav } from '../lib/Dav';
-import { TableObject, ConvertIntToVisibility } from '../lib/models/TableObject';
+import { TableObject } from '../lib/models/TableObject';
 import { davClassLibraryTestUserXTestUserJwt } from './Constants';
 
 export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
@@ -18,7 +18,6 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
       tableObject.IsFile = response.data.file;
       tableObject.Etag = response.data.etag;
       tableObject.Uuid = response.data.uuid;
-		tableObject.Visibility = ConvertIntToVisibility(response.data.visibility);
 		
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = {value: response.data.properties[key]}

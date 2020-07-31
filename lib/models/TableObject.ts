@@ -7,7 +7,6 @@ import { DavEnvironment } from './DavUser';
 export class TableObject{
 	public Uuid: string;
    public TableId: number;
-   public Visibility: TableObjectVisibility = TableObjectVisibility.Private;
 	public IsFile: boolean = false;
 	public File: Blob;
 	public Properties: TableObjectProperties = {};
@@ -21,11 +20,6 @@ export class TableObject{
          this.Uuid = generateUUID();
       }
    }
-	
-	async SetVisibility(visibility: TableObjectVisibility): Promise<void>{
-		this.Visibility = visibility;
-		await this.Save();
-	}
 
 	async SetUploadStatus(uploadStatus: TableObjectUploadStatus): Promise<void>{
 		this.UploadStatus = uploadStatus;
@@ -217,12 +211,6 @@ export interface Property{
 	}
 }
 
-export enum TableObjectVisibility{
-   Private = 0,
-   Protected = 1,
-   Public = 2
-}
-
 export enum TableObjectUploadStatus{
    UpToDate = 0,
    New = 1,
@@ -239,26 +227,10 @@ export enum TableObjectFileDownloadStatus{
 	Downloaded = 3
 }
 
-export function ConvertIntToVisibility(visibilityInt: number): TableObjectVisibility{
-	var visibility = TableObjectVisibility.Private;
-
-	switch (visibilityInt) {
-		case 1:
-			visibility = TableObjectVisibility.Protected
-			break;
-		case 2:
-			visibility = TableObjectVisibility.Public;
-			break;
-	}
-
-	return visibility;
-}
-
 export function ConvertObjectToTableObject(
 	obj: {
 		Uuid: string,
 		TableId: number,
-		Visibility: number,
 		IsFile: boolean,
 		File: Blob,
 		Properties: TableObjectProperties,
@@ -271,7 +243,6 @@ export function ConvertObjectToTableObject(
 	tableObject.IsFile = obj.IsFile;
 	tableObject.File = obj.File;
 	tableObject.Etag = obj.Etag;
-	tableObject.Visibility = obj.Visibility;
 	tableObject.Properties = obj.Properties;
 	return tableObject;
 }

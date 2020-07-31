@@ -3,39 +3,11 @@ import { assert } from 'chai';
 import { Dav, Init } from '../../lib/Dav';
 import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { TableObject, TableObjectVisibility, TableObjectUploadStatus } from '../../lib/models/TableObject';
+import { TableObject, TableObjectUploadStatus } from '../../lib/models/TableObject';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { SyncPush } from '../../lib/providers/DataManager';
 import { GetTableObjectFromServer, DeleteTableObjectFromServer } from '../utils';
 import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTestUserJwt } from '../Constants';
-
-describe("SetVisibility function", () => {
-	async function setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      var tableObject = new TableObject();
-      tableObject.TableId = 12;
-      var oldVisibility = tableObject.Visibility;
-      var newVisibility = TableObjectVisibility.Protected;
-
-      // Act
-      await tableObject.SetVisibility(newVisibility);
-
-      // Assert
-      assert.equal(newVisibility, tableObject.Visibility);
-      assert.notEqual(oldVisibility, newVisibility);
-
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-      assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newVisibility, tableObjectFromDatabase.Visibility);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should set the visibility of the table object and save it in the database", async () => await setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(false));
-	it("should set the visibility of the table object and save it in the database with separateKeyStorage", async () => await setTheVisibilityOfTheTableObjectAndSaveItInTheDatabaseTest(true));
-});
 
 describe("SetUploadStatus function", () => {
 	async function setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){

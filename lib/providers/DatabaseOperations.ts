@@ -125,7 +125,6 @@ async function SetTableObjectsArray(tableObjects: Array<TableObject>){
             IsFile: tableObject.IsFile,
             File: tableObject.File,
 				Uuid: tableObject.Uuid,
-				Visibility: tableObject.Visibility,
 				UploadStatus: tableObject.UploadStatus,
 				Etag: tableObject.Etag,
 				Properties: tableObject.Properties
@@ -152,7 +151,6 @@ async function GetTableObjectsArray(): Promise<TableObject[]>{
          tableObject.IsFile = obj["IsFile"];
          tableObject.File = obj["File"];
 			tableObject.Etag = obj["Etag"];
-			tableObject.Visibility = obj["Visibility"];
 			tableObject.Uuid = obj["Uuid"];
 			tableObject.Properties = obj["Properties"];
 			
