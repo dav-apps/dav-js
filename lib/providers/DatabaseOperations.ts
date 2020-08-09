@@ -247,13 +247,16 @@ async function GetAllTableObjectsFromTableObjectsArray(tableId: number = -1, del
 		return []
 	}
 
-	let selectedDatabaseTableObjects = tableObjects.filter(obj => (
-		(deleted && obj.UploadStatus != TableObjectUploadStatus.Deleted)
-		&& (tableId == -1 || obj.TableId == tableId)
-	))
+	let selectedDatabaseTableObjects = deleted ?
+		tableObjects
+		: tableObjects.filter(obj => (
+			obj.UploadStatus != TableObjectUploadStatus.Deleted
+			&& obj.UploadStatus != TableObjectUploadStatus.Removed
+		))
 
 	let selectedTableObjects = []
 	for (let obj of selectedDatabaseTableObjects) {
+		if(tableId != -1 && obj.TableId != tableId) continue
 		selectedTableObjects.push(ConvertDatabaseTableObjectToTableObject(obj))
 	}
 
@@ -336,6 +339,7 @@ async function GetAllTableObjectsFromSeparateKeyStorage(tableId: number = -1, de
 		tableObjects
 		: tableObjects.filter(obj => (
 			obj.UploadStatus != TableObjectUploadStatus.Deleted
+			&& obj.UploadStatus != TableObjectUploadStatus.Removed
 		))
 
 	let selectedTableObjects = []
