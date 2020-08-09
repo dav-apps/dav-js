@@ -5,326 +5,665 @@ import * as localforage from "localforage";
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
 import { TableObject, TableObjectUploadStatus } from '../../lib/models/TableObject';
 import { DavEnvironment } from '../../lib/models/DavUser';
-import { SyncPush } from '../../lib/providers/DataManager';
-import { GetTableObjectFromServer, DeleteTableObjectFromServer } from '../utils';
 import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTestUserJwt } from '../Constants';
 
+beforeEach(async () => {
+	// Reset global variables
+	Dav.skipSyncPushInTests = true
+	Dav.jwt = null
+
+	// Clear the database
+	await localforage.clear()
+})
+
 describe("SetUploadStatus function", () => {
-	async function setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+	it("should set the UploadStatus of the table object and save it in the database", async () => {
 		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      var tableObject = new TableObject();
-      tableObject.TableId = 13;
-      var newUploadStatus = TableObjectUploadStatus.Updated;
-      await DatabaseOperations.CreateTableObject(tableObject);
+		let newUploadStatus = TableObjectUploadStatus.Removed
 
-      // Act
-      await tableObject.SetUploadStatus(newUploadStatus);
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.UploadStatus = TableObjectUploadStatus.New
 
-      // Assert
-      assert.equal(newUploadStatus, tableObject.UploadStatus);
-
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-      assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newUploadStatus, tableObjectFromDatabase.UploadStatus);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should set the UploadStatus of the table object and save it in the database", async () => await setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(false));
-	it("should set the UploadStatus of the table object and save it in the database with separateKeyStorage", async () => await setTheUploadStatusOfTheTableObjectAndSaveItInTheDatabaseTest(true));
-});
-
-describe("SetEtag function", () => {
-	async function setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      let tableObject = new TableObject();
-      tableObject.TableId = 12;
-      tableObject.Etag = "blablabla";
-      let newEtag = "hehehehehehe";
-      await DatabaseOperations.CreateTableObject(tableObject);
-
-      // Act
-      await tableObject.SetEtag(newEtag);
-
-      // Assert
-		assert.equal(tableObject.Etag, newEtag);
-		
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-		assert.isNotNull(tableObjectFromDatabase);
-		assert.equal(tableObjectFromDatabase.Etag, newEtag);
-	}
-
-	it("should set the Etag of the table object and save it in the database", async () => await setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(false));
-	it("should set the Etag of the table object and save it in the database with separateKeyStorage", async () => await setTheEtagOfTheTableObjectAndSaveItInTheDatabaseTest(true));
-});
-
-describe("SetPropertyValue function", () => {
-	async function setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      var propertyName = "page1";
-      var oldPropertyValue = "test";
-      var newPropertyValue = "testtest";
-
-      var tableObject = new TableObject();
-      tableObject.TableId = 15;
-      tableObject.Properties = {
-         [propertyName]: {value: oldPropertyValue}
-      }
-      await DatabaseOperations.CreateTableObject(tableObject);
+		await DatabaseOperations.SetTableObject(tableObject)
 
 		// Act
-		await tableObject.SetPropertyValue({name: propertyName, value: newPropertyValue})
+		await tableObject.SetUploadStatus(newUploadStatus)
 
-      // Assert
-      assert.equal(newPropertyValue, tableObject.Properties[propertyName].value);
+		// Assert
+		assert.equal(tableObject.UploadStatus, newUploadStatus)
 
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-      assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newPropertyValue, tableObjectFromDatabase.Properties[propertyName].value);
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.UploadStatus, newUploadStatus)
+	})
+})
 
-      // Tidy up
-      await localforage.clear();
-	}
+describe("SetEtag function", () => {
+	it("should set the Etag of the table object and save it in the database", async () => {
+		// Arrange
+		let newEtag = "asdasdasd"
 
-	it("should set the property value of the table object and save it in the database", async () => setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(false));
-	it("should set the property value of the table object and save it in the database with separateKeyStorage", async () => setThePropertyValueOfTheTableObjectAndSaveItInTheDatabaseTest(true));
-});
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Etag = "testtest"
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetEtag(newEtag)
+
+		// Assert
+		assert.equal(tableObject.Etag, newEtag)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Etag, newEtag)
+	})
+})
+
+describe("SetPropertyValue function", () => {
+	it("should set the property value of the table object and save it in the database if the property does not exist", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = "Lorem ipsum"
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObject.Properties[propertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
+	})
+
+	it("should set the property value of the table object and save it in the database if the property already exists", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = "Lorem ipsum"
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: "Hello World" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObject.Properties[propertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
+	})
+
+	it("should set the property value of the table object with options and save it in the database if the property does not exist", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = "Hello World"
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue,
+			options: {
+				local
+			}
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObject.Properties[propertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+	})
+
+	it("should set the property value of the table object with options and save it in the database if the property already exists", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = "Lorem ipsum"
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: "Hello World", local: !local }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue,
+			options: {
+				local
+			}
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObject.Properties[propertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+	})
+})
 
 describe("SetPropertyValues function", () => {
-	async function setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(separateKeyStorage: boolean){
+	it("should set the property values of the table object and save it in the database if the properties do not exist", async () => {
 		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      var firstPropertyName = "page1";
-      var oldFirstPropertyValue = "test";
-      var newFirstPropertyValue = "testtest";
-      var secondPropertyName = "page2";
-      var oldSecondPropertyValue = "bla";
-      var newSecondPropertyValue = "blubb";
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Hallo Welt"
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = "Bonjour le monde"
 
-      var tableObject = new TableObject();
-      tableObject.TableId = 15;
-      tableObject.Properties = {
-         [firstPropertyName]: {value: oldFirstPropertyValue},
-         [secondPropertyName]: {value: oldSecondPropertyValue}
-      }
-      await DatabaseOperations.CreateTableObject(tableObject);
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
 
-      // Act
-      await tableObject.SetPropertyValues([
-         { name: firstPropertyName, value: newFirstPropertyValue },
-         { name: secondPropertyName, value: newSecondPropertyValue }
-      ]);
+		await DatabaseOperations.SetTableObject(tableObject)
 
-      // Assert
-      assert.equal(newFirstPropertyValue, tableObject.Properties[firstPropertyName].value);
-      assert.equal(newSecondPropertyValue, tableObject.Properties[secondPropertyName].value);
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue
+			}
+		])
 
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-      assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(newFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName].value);
-      assert.equal(newSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName].value);
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
 
-      // Tidy up
-      await localforage.clear();
-	}
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+	})
 
-	it("should set the property values of the table object and save it in the database", async () => await setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(false));
-	it("should set the property values of the table object and save it in the database with separateKeyStorage", async () => await setThePropertyValuesOfTheTableObjectAndSaveItInTheDatabaseTest(true));
-});
+	it("should set the property values of the table object and save it in the database if the properties already exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Hallo Welt"
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = "Bonjour le monde"
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[firstPropertyName]: { value: "test test" },
+			[secondPropertyName]: { value: "bla bla" },
+			[thirdPropertyName]: { value: "Lorem ipsum" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+	})
+
+	it("should set the property values of the table object with options and save it in the database if the properties do not exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Hallo Welt"
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = "Bonjour le monde"
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue,
+				options: {
+					local
+				}
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObject.Properties[firstPropertyName].local, local)
+		assert.equal(tableObject.Properties[secondPropertyName].local, local)
+		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+	})
+
+	it("should set the property values of the table object with options and save it in the database if the properties already exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Hallo Welt"
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = "Bonjour le monde"
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[firstPropertyName]: { value: "test test", local: !local },
+			[secondPropertyName]: { value: "bla bla", local: !local },
+			[thirdPropertyName]: { value: "Lorem ipsum", local: !local }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue,
+				options: {
+					local
+				}
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObject.Properties[firstPropertyName].local, local)
+		assert.equal(tableObject.Properties[secondPropertyName].local, local)
+		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+	})
+})
 
 describe("GetPropertyValue function", () => {
-   it("should return the value of the property", () => {
-      // Arrange
-      var propertyName = "page1";
-      var propertyValue = "testtest";
+	it("should return the value of the property", () => {
+		// Arrange
+		let propertyName = "page1"
+		let propertyValue = "Hello World"
 
-      var tableObject = new TableObject();
-      tableObject.Properties = {
-         [propertyName]: {value: propertyValue}
-      }
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: propertyValue }
+		}
 
-      // Act
-      var value = tableObject.GetPropertyValue(propertyName);
+		// Act
+		let value = tableObject.GetPropertyValue(propertyName)
 
-      // Assert
-      assert.equal(propertyValue, value);
-   });
+		// Assert
+		assert.equal(value, propertyValue)
+	})
 
-   it("should return null if the property does not exist", () => {
-      // Arrange
-      var tableObject = new TableObject();
+	it("should return null if the property does not exist", () => {
+		// Arrange
+		var tableObject = new TableObject();
 
-      // Act
-      var value = tableObject.GetPropertyValue("page1");
+		// Act
+		var value = tableObject.GetPropertyValue("page1");
 
-      // Assert
-      assert.isNull(value);
-   });
+		// Assert
+		assert.isNull(value);
+	})
 });
 
 describe("RemoveProperty function", () => {
-   it("should remove the property from the table object if the user is not logged in", async () => {
+	it("should remove the property of the table object and save it in the database", async () => {
 		// Arrange
-		Dav.jwt = null;
-		var propertyName = "page1";
-      var propertyValue = "test";
-      
-      var tableObject = new TableObject();
-      tableObject.Properties = {
-         [propertyName]: {value: propertyValue}
-      }
+		let propertyName = "test"
 
-      // Act
-      await tableObject.RemoveProperty(propertyName);
-
-      // Assert
-      assert.isUndefined(tableObject.Properties[propertyName]);
-
-      // Tidy up
-      await localforage.clear();
-	});
-	
-	async function removeThePropertyOnTheServerIfTheUserIsLoggedInTest(separateKeyStorage: boolean){
-		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-			SyncFinished: () => {}
-		});
-		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
-		var propertyName = "page1";
-		var propertyValue = "Hello World";
-
-		var tableObject = new TableObject();
-		var uuid = tableObject.Uuid;
-		tableObject.TableId = testDataTableId;
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
 		tableObject.Properties = {
-			[propertyName]: {value: propertyValue}
+			[propertyName]: { value: "Hello World" }
 		}
-		await DatabaseOperations.CreateTableObject(tableObject);
 
-		// Upload the table object to the server
-		await SyncPush();
-
-		// Check if the table object has the property on the server
-		let tableObjectFromServer1 = await GetTableObjectFromServer(uuid);
-		assert.equal(tableObjectFromServer1.Properties[propertyName].value, propertyValue);
-
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid);
+		await DatabaseOperations.SetTableObject(tableObject)
 
 		// Act
-		await tableObjectFromDatabase.RemoveProperty(propertyName);
+		await tableObject.RemoveProperty(propertyName)
 
 		// Assert
-		// Check if the property of the table object was removed on the server
-		let tableObjectFromServer2 = await GetTableObjectFromServer(uuid);
-		assert.isUndefined(tableObjectFromServer2.Properties[propertyName]);
+		assert.equal(Object.keys(tableObject.Properties).length, 0)
+		assert.isUndefined(tableObject.Properties[propertyName])
 
-		// Tidy up
-		await DeleteTableObjectFromServer(uuid)
-		await localforage.clear();
-	}
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 0)
+		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName])
+	})
 
-	it("should remove the property on the server if the user is logged in", async () => await removeThePropertyOnTheServerIfTheUserIsLoggedInTest(false));
-	it("should remove the property on the server if the user is logged in with separateKeyStorage", async () => await removeThePropertyOnTheServerIfTheUserIsLoggedInTest(true));
-});
+	it("should set the value of the property to null and save it in the database if the user is logged in", async () => {
+		// Arrange
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
+
+		let propertyName = "test"
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: "Hello World" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.RemoveProperty(propertyName)
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.isNull(tableObject.Properties[propertyName].value)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.isNull(tableObjectFromDatabase.Properties[propertyName].value)
+	})
+
+	it("should remove the property of the table object and save it in the database if the user is logged in and the property is local", async () => {
+		// Arrange
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
+
+		let propertyName = "test"
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: "Hello World", local: true }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.RemoveProperty(propertyName)
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 0)
+		assert.isUndefined(tableObject.Properties[propertyName])
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 0)
+		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName])
+	})
+})
 
 describe("Delete function", () => {
-	async function setTheUploadStatusOfTheTableObjectToDeletedIfTheUserIsLoggedInTest(separateKeyStorage: boolean){
+	it("should delete the table object", async () => {
 		// Arrange
-		let tableId = 34;
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			"test": { value: "test" }
+		}
 
-      Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-         UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-         SyncFinished: () => {}
-      });
-      Dav.jwt = "asdasd";
-
-      var tableObject = new TableObject();
-      tableObject.TableId = tableId;
-      await DatabaseOperations.CreateTableObject(tableObject);
-
-      // Act
-      await tableObject.Delete();
-
-      // Assert
-      assert.equal(TableObjectUploadStatus.Deleted, tableObject.UploadStatus);
-
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
-      assert.isNotNull(tableObjectFromDatabase);
-      assert.equal(TableObjectUploadStatus.Deleted, tableObjectFromDatabase.UploadStatus);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should set the UploadStatus of the table object to Deleted if the user is logged in", async () => await setTheUploadStatusOfTheTableObjectToDeletedIfTheUserIsLoggedInTest(false));
-	it("should set the UploadStatus of the table object to Deleted if the user is logged in with separateKeyStorage", async () => await setTheUploadStatusOfTheTableObjectToDeletedIfTheUserIsLoggedInTest(true));
-
-	async function deleteTheTableObjectImmediatelyIfTheUserIsNotLoggedInTest(separateKeyStorage: boolean){
-		// Arrange
-		let tableId = 23;
-
-		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-         UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-         SyncFinished: () => {}
-		});
-		
-		Dav.jwt = null;
-
-		var tableObject = new TableObject();
-		tableObject.TableId = tableId;
-		await DatabaseOperations.CreateTableObject(tableObject);
+		await DatabaseOperations.SetTableObject(tableObject)
 
 		// Act
-		await tableObject.Delete();
+		await tableObject.Delete()
 
 		// Assert
-		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
-		assert.isNull(tableObjectFromDatabase);
-	}
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNull(tableObjectFromDatabase)
+	})
 
-	it("should delete the table object immediately if the user is not logged in", async () => await deleteTheTableObjectImmediatelyIfTheUserIsNotLoggedInTest(false));
-	it("should delete the table object immediately if the user is not logged in with separateKeyStorage", async () => await deleteTheTableObjectImmediatelyIfTheUserIsNotLoggedInTest(true));
-});
+	it("should set the UploadStatus of the table object to Deleted if the user is logged in", async () => {
+		// Arrange
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			"test": { value: "test" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.Delete()
+
+		// Assert
+		assert.equal(tableObject.UploadStatus, TableObjectUploadStatus.Deleted)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.Deleted)
+	})
+})
 
 describe("DeleteImmediately function", () => {
-	async function deleteTheTableObjectImmediatelyTest(separateKeyStorage: boolean){
+	it("should remove the table object from the database", async () => {
 		// Arrange
-		let tableId = 12;
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			"test": { value: "test" }
+		}
 
-      Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-         UpdateAllOfTable: () => {},
-         UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-         SyncFinished: () => {}
-      });
+		await DatabaseOperations.SetTableObject(tableObject)
 
-      var tableObject = new TableObject();
-      tableObject.TableId = tableId;
-      await DatabaseOperations.CreateTableObject(tableObject);
+		// Act
+		await tableObject.DeleteImmediately()
 
-      // Act
-      await tableObject.DeleteImmediately();
+		// Assert
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNull(tableObjectFromDatabase)
+	})
+})
 
-      // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
-      assert.isNull(tableObjectFromDatabase);
-	}
+describe("Remove function", () => {
+	it("should delete the table object", async () => {
+		// Arrange
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			"test": { value: "test" }
+		}
 
-	it("should delete the table object immediately", async () => await deleteTheTableObjectImmediatelyTest(false));
-	it("should delete the table object immediately with separateKeyStorage", async () => await deleteTheTableObjectImmediatelyTest(true));
-});
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.Remove()
+
+		// Assert
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNull(tableObjectFromDatabase)
+	})
+
+	it("should set the UploadStatus of the table object to Removed if the user is logged in", async () => {
+		// Arrange
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			"test": { value: "test" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.Remove()
+
+		// Assert
+		assert.equal(tableObject.UploadStatus, TableObjectUploadStatus.Removed)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.Removed)
+	})
+})
