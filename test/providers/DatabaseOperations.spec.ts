@@ -1,13 +1,24 @@
-import 'mocha';
-import { assert } from 'chai';
-import * as localforage from "localforage";
-import { extendPrototype } from 'localforage-startswith';
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { Dav, Init, userKey, notificationsKey } from '../../lib/Dav';
-import { TableObject, TableObjectUploadStatus, generateUUID } from '../../lib/models/TableObject';
-import { Notification } from '../../lib/models/Notification';
-import { UploadStatus } from '../../lib/providers/DataManager';
-import { DavEnvironment } from '../../lib/models/DavUser';
+import 'mocha'
+import { assert } from 'chai'
+import * as localforage from 'localforage'
+import { extendPrototype } from 'localforage-startswith'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
+import {
+	Dav,
+	Init,
+	userKey,
+	notificationsKey,
+	tableObjectsKey
+} from '../../lib/Dav'
+import {
+	TableObject,
+	TableObjectUploadStatus,
+	generateUUID
+} from '../../lib/models/TableObject'
+import { Notification } from '../../lib/models/Notification'
+import { UploadStatus } from '../../lib/providers/DataManager'
+import { DavEnvironment } from '../../lib/models/DavUser'
+import { SetTableObjectsArray } from '../utils'
 
 extendPrototype(localforage);
 
@@ -889,7 +900,7 @@ describe("GetAllTableObjects function", () => {
 
 		let fourthUuid = generateUUID()
 		let fourthTableId = thirdTableId
-		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = "asdjiohsdgu2q98h"
@@ -911,6 +922,8 @@ describe("GetAllTableObjects function", () => {
 
 		// Act
 		let tableObjects = await DatabaseOperations.GetAllTableObjects()
+
+		// Assert
 		assert.equal(tableObjects.length, 2)
 
 		assert.equal(tableObjects[0].Uuid, firstUuid)
@@ -926,6 +939,179 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].Etag, thirdEtag)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
+	})
+
+	it("should return table objects from tableObjectsArray and separateKeyStorage that are not deleted", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		let fifthUuid = generateUUID()
+		let fifthTableId = firstTableId
+		let fifthUploadStatus = TableObjectUploadStatus.New
+		let fifthEtag = "asduhaoghsd"
+		let fifthPropertyName = "test5"
+		let fifthPropertyValue = "ogsoibsf80wniocs<"
+
+		let fifthTableObject = new TableObject(fifthUuid)
+		fifthTableObject.TableId = fifthTableId
+		fifthTableObject.UploadStatus = fifthUploadStatus
+		fifthTableObject.Etag = fifthEtag
+		fifthTableObject.Properties = {
+			[fifthPropertyName]: { value: fifthPropertyValue }
+		}
+
+		let sixthUuid = generateUUID()
+		let sixthTableId = fifthTableId
+		let sixthUploadStatus = TableObjectUploadStatus.Deleted
+		let sixthEtag = "oh9hioasdfkbjabgf"
+		let sixthPropertyName = "test6"
+		let sixthPropertyValue = "asiohagbi9sfh0aw"
+
+		let sixthTableObject = new TableObject(sixthUuid)
+		sixthTableObject.TableId = sixthTableId
+		sixthTableObject.UploadStatus = sixthUploadStatus
+		sixthTableObject.Etag = sixthEtag
+		sixthTableObject.Properties = {
+			[sixthPropertyName]: { value: sixthPropertyValue }
+		}
+
+		let seventhUuid = generateUUID()
+		let seventhTableId = thirdTableId
+		let seventhUploadStatus = TableObjectUploadStatus.NoUpload
+		let seventhEtag = "asdnoabguasfsd"
+		let seventhPropertyName = "test7"
+		let seventhPropertyValue = "u9139rhafpdfbn90q"
+
+		let seventhTableObject = new TableObject(seventhUuid)
+		seventhTableObject.TableId = seventhTableId
+		seventhTableObject.UploadStatus = seventhUploadStatus
+		seventhTableObject.Etag = seventhEtag
+		seventhTableObject.Properties = {
+			[seventhPropertyName]: { value: seventhPropertyValue }
+		}
+
+		let eighthUuid = generateUUID()
+		let eighthTableId = seventhTableId
+		let eighthUploadStatus = TableObjectUploadStatus.Removed
+		let eighthEtag = "9098wrw0efhsdfjpsdf"
+		let eighthPropertyName = "test8"
+		let eighthPropertyValue = "uoasopff98wz3nqwöf"
+
+		let eighthTableObject = new TableObject(eighthUuid)
+		eighthTableObject.TableId = eighthTableId
+		eighthTableObject.UploadStatus = eighthUploadStatus
+		eighthTableObject.Etag = eighthEtag
+		eighthTableObject.Properties = {
+			[eighthPropertyName]: { value: eighthPropertyValue }
+		}
+
+		// Create the first four table objects in separateKeyStorage
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Create the last four table objects in tableObjectsArray
+		await SetTableObjectsArray([
+			fifthTableObject,
+			sixthTableObject,
+			seventhTableObject,
+			eighthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects()
+
+		// Assert
+		assert.equal(tableObjects.length, 4)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, thirdUuid)
+		assert.equal(tableObjects[1].TableId, thirdTableId)
+		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
+
+		assert.equal(tableObjects[2].Uuid, fifthUuid)
+		assert.equal(tableObjects[2].TableId, fifthTableId)
+		assert.equal(tableObjects[2].UploadStatus, fifthUploadStatus)
+		assert.equal(tableObjects[2].Etag, fifthEtag)
+		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
+		assert.equal(tableObjects[2].Properties[fifthPropertyName].value, fifthPropertyValue)
+
+		assert.equal(tableObjects[3].Uuid, seventhUuid)
+		assert.equal(tableObjects[3].TableId, seventhTableId)
+		assert.equal(tableObjects[3].UploadStatus, seventhUploadStatus)
+		assert.equal(tableObjects[3].Etag, seventhEtag)
+		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
+		assert.equal(tableObjects[3].Properties[seventhPropertyName].value, seventhPropertyValue)
 	})
 
 	it("should return all table objects", async () => {
@@ -977,7 +1163,7 @@ describe("GetAllTableObjects function", () => {
 
 		let fourthUuid = generateUUID()
 		let fourthTableId = thirdTableId
-		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = "asdjiohsdgu2q98h"
@@ -999,6 +1185,8 @@ describe("GetAllTableObjects function", () => {
 
 		// Act
 		let tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true)
+
+		// Assert
 		assert.equal(tableObjects.length, 4)
 
 		assert.equal(tableObjects[0].Uuid, firstUuid)
@@ -1028,6 +1216,207 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[3].Etag, fourthEtag)
 		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
 		assert.equal(tableObjects[3].Properties[fourthPropertyName].value, fourthPropertyValue)
+	})
+
+	it("should return all table objects from tableObjectsArray and separateKeyStorage", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		let fifthUuid = generateUUID()
+		let fifthTableId = firstTableId
+		let fifthUploadStatus = TableObjectUploadStatus.New
+		let fifthEtag = "asduhaoghsd"
+		let fifthPropertyName = "test5"
+		let fifthPropertyValue = "ogsoibsf80wniocs<"
+
+		let fifthTableObject = new TableObject(fifthUuid)
+		fifthTableObject.TableId = fifthTableId
+		fifthTableObject.UploadStatus = fifthUploadStatus
+		fifthTableObject.Etag = fifthEtag
+		fifthTableObject.Properties = {
+			[fifthPropertyName]: { value: fifthPropertyValue }
+		}
+
+		let sixthUuid = generateUUID()
+		let sixthTableId = fifthTableId
+		let sixthUploadStatus = TableObjectUploadStatus.Deleted
+		let sixthEtag = "oh9hioasdfkbjabgf"
+		let sixthPropertyName = "test6"
+		let sixthPropertyValue = "asiohagbi9sfh0aw"
+
+		let sixthTableObject = new TableObject(sixthUuid)
+		sixthTableObject.TableId = sixthTableId
+		sixthTableObject.UploadStatus = sixthUploadStatus
+		sixthTableObject.Etag = sixthEtag
+		sixthTableObject.Properties = {
+			[sixthPropertyName]: { value: sixthPropertyValue }
+		}
+
+		let seventhUuid = generateUUID()
+		let seventhTableId = thirdTableId
+		let seventhUploadStatus = TableObjectUploadStatus.NoUpload
+		let seventhEtag = "asdnoabguasfsd"
+		let seventhPropertyName = "test7"
+		let seventhPropertyValue = "u9139rhafpdfbn90q"
+
+		let seventhTableObject = new TableObject(seventhUuid)
+		seventhTableObject.TableId = seventhTableId
+		seventhTableObject.UploadStatus = seventhUploadStatus
+		seventhTableObject.Etag = seventhEtag
+		seventhTableObject.Properties = {
+			[seventhPropertyName]: { value: seventhPropertyValue }
+		}
+
+		let eighthUuid = generateUUID()
+		let eighthTableId = seventhTableId
+		let eighthUploadStatus = TableObjectUploadStatus.Removed
+		let eighthEtag = "9098wrw0efhsdfjpsdf"
+		let eighthPropertyName = "test8"
+		let eighthPropertyValue = "uoasopff98wz3nqwöf"
+
+		let eighthTableObject = new TableObject(eighthUuid)
+		eighthTableObject.TableId = eighthTableId
+		eighthTableObject.UploadStatus = eighthUploadStatus
+		eighthTableObject.Etag = eighthEtag
+		eighthTableObject.Properties = {
+			[eighthPropertyName]: { value: eighthPropertyValue }
+		}
+
+		// Create the first four table objects in separateKeyStorage
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Create the last four table objects in tableObjectsArray
+		await SetTableObjectsArray([
+			fifthTableObject,
+			sixthTableObject,
+			seventhTableObject,
+			eighthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true)
+
+		// Assert
+		assert.equal(tableObjects.length, 8)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, secondUuid)
+		assert.equal(tableObjects[1].TableId, secondTableId)
+		assert.equal(tableObjects[1].UploadStatus, secondUploadStatus)
+		assert.equal(tableObjects[1].Etag, secondEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[secondPropertyName].value, secondPropertyValue)
+
+		assert.equal(tableObjects[2].Uuid, thirdUuid)
+		assert.equal(tableObjects[2].TableId, thirdTableId)
+		assert.equal(tableObjects[2].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[2].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
+		assert.equal(tableObjects[2].Properties[thirdPropertyName].value, thirdPropertyValue)
+
+		assert.equal(tableObjects[3].Uuid, fourthUuid)
+		assert.equal(tableObjects[3].TableId, fourthTableId)
+		assert.equal(tableObjects[3].UploadStatus, fourthUploadStatus)
+		assert.equal(tableObjects[3].Etag, fourthEtag)
+		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
+		assert.equal(tableObjects[3].Properties[fourthPropertyName].value, fourthPropertyValue)
+
+		assert.equal(tableObjects[4].Uuid, fifthUuid)
+		assert.equal(tableObjects[4].TableId, fifthTableId)
+		assert.equal(tableObjects[4].UploadStatus, fifthUploadStatus)
+		assert.equal(tableObjects[4].Etag, fifthEtag)
+		assert.equal(Object.keys(tableObjects[4].Properties).length, 1)
+		assert.equal(tableObjects[4].Properties[fifthPropertyName].value, fifthPropertyValue)
+
+		assert.equal(tableObjects[5].Uuid, sixthUuid)
+		assert.equal(tableObjects[5].TableId, sixthTableId)
+		assert.equal(tableObjects[5].UploadStatus, sixthUploadStatus)
+		assert.equal(tableObjects[5].Etag, sixthEtag)
+		assert.equal(Object.keys(tableObjects[5].Properties).length, 1)
+		assert.equal(tableObjects[5].Properties[sixthPropertyName].value, sixthPropertyValue)
+
+		assert.equal(tableObjects[6].Uuid, seventhUuid)
+		assert.equal(tableObjects[6].TableId, seventhTableId)
+		assert.equal(tableObjects[6].UploadStatus, seventhUploadStatus)
+		assert.equal(tableObjects[6].Etag, seventhEtag)
+		assert.equal(Object.keys(tableObjects[6].Properties).length, 1)
+		assert.equal(tableObjects[6].Properties[seventhPropertyName].value, seventhPropertyValue)
+
+		assert.equal(tableObjects[7].Uuid, eighthUuid)
+		assert.equal(tableObjects[7].TableId, eighthTableId)
+		assert.equal(tableObjects[7].UploadStatus, eighthUploadStatus)
+		assert.equal(tableObjects[7].Etag, eighthEtag)
+		assert.equal(Object.keys(tableObjects[7].Properties).length, 1)
+		assert.equal(tableObjects[7].Properties[eighthPropertyName].value, eighthPropertyValue)
 	})
 
 	it("should return all table objects of a table that are not deleted", async () => {
@@ -1079,7 +1468,7 @@ describe("GetAllTableObjects function", () => {
 
 		let fourthUuid = generateUUID()
 		let fourthTableId = thirdTableId
-		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = "asdjiohsdgu2q98h"
@@ -1101,6 +1490,8 @@ describe("GetAllTableObjects function", () => {
 
 		// Act
 		let tableObjects = await DatabaseOperations.GetAllTableObjects(firstTableId)
+
+		// Assert
 		assert.equal(tableObjects.length, 1)
 
 		assert.equal(tableObjects[0].Uuid, firstUuid)
@@ -1109,6 +1500,165 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].Etag, firstEtag)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+	})
+
+	it("should return all table objects of a table that are not deleted from tableObjectsArray and separateKeyStorage", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		let fifthUuid = generateUUID()
+		let fifthTableId = firstTableId
+		let fifthUploadStatus = TableObjectUploadStatus.New
+		let fifthEtag = "asduhaoghsd"
+		let fifthPropertyName = "test5"
+		let fifthPropertyValue = "ogsoibsf80wniocs<"
+
+		let fifthTableObject = new TableObject(fifthUuid)
+		fifthTableObject.TableId = fifthTableId
+		fifthTableObject.UploadStatus = fifthUploadStatus
+		fifthTableObject.Etag = fifthEtag
+		fifthTableObject.Properties = {
+			[fifthPropertyName]: { value: fifthPropertyValue }
+		}
+
+		let sixthUuid = generateUUID()
+		let sixthTableId = fifthTableId
+		let sixthUploadStatus = TableObjectUploadStatus.Deleted
+		let sixthEtag = "oh9hioasdfkbjabgf"
+		let sixthPropertyName = "test6"
+		let sixthPropertyValue = "asiohagbi9sfh0aw"
+
+		let sixthTableObject = new TableObject(sixthUuid)
+		sixthTableObject.TableId = sixthTableId
+		sixthTableObject.UploadStatus = sixthUploadStatus
+		sixthTableObject.Etag = sixthEtag
+		sixthTableObject.Properties = {
+			[sixthPropertyName]: { value: sixthPropertyValue }
+		}
+
+		let seventhUuid = generateUUID()
+		let seventhTableId = thirdTableId
+		let seventhUploadStatus = TableObjectUploadStatus.NoUpload
+		let seventhEtag = "asdnoabguasfsd"
+		let seventhPropertyName = "test7"
+		let seventhPropertyValue = "u9139rhafpdfbn90q"
+
+		let seventhTableObject = new TableObject(seventhUuid)
+		seventhTableObject.TableId = seventhTableId
+		seventhTableObject.UploadStatus = seventhUploadStatus
+		seventhTableObject.Etag = seventhEtag
+		seventhTableObject.Properties = {
+			[seventhPropertyName]: { value: seventhPropertyValue }
+		}
+
+		let eighthUuid = generateUUID()
+		let eighthTableId = seventhTableId
+		let eighthUploadStatus = TableObjectUploadStatus.Removed
+		let eighthEtag = "9098wrw0efhsdfjpsdf"
+		let eighthPropertyName = "test8"
+		let eighthPropertyValue = "uoasopff98wz3nqwöf"
+
+		let eighthTableObject = new TableObject(eighthUuid)
+		eighthTableObject.TableId = eighthTableId
+		eighthTableObject.UploadStatus = eighthUploadStatus
+		eighthTableObject.Etag = eighthEtag
+		eighthTableObject.Properties = {
+			[eighthPropertyName]: { value: eighthPropertyValue }
+		}
+
+		// Create the first four table objects in separateKeyStorage
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Create the last four table objects in tableObjectsArray
+		await SetTableObjectsArray([
+			fifthTableObject,
+			sixthTableObject,
+			seventhTableObject,
+			eighthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(firstTableId)
+
+		// Assert
+		assert.equal(tableObjects.length, 2)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, fifthUuid)
+		assert.equal(tableObjects[1].TableId, fifthTableId)
+		assert.equal(tableObjects[1].UploadStatus, fifthUploadStatus)
+		assert.equal(tableObjects[1].Etag, fifthEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[fifthPropertyName].value, fifthPropertyValue)
 	})
 
 	it("should return all table objects of a table", async () => {
@@ -1160,7 +1710,7 @@ describe("GetAllTableObjects function", () => {
 
 		let fourthUuid = generateUUID()
 		let fourthTableId = thirdTableId
-		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = "asdjiohsdgu2q98h"
@@ -1182,6 +1732,8 @@ describe("GetAllTableObjects function", () => {
 
 		// Act
 		let tableObjects = await DatabaseOperations.GetAllTableObjects(thirdTableId, true)
+
+		// Assert
 		assert.equal(tableObjects.length, 2)
 
 		assert.equal(tableObjects[0].Uuid, thirdUuid)
@@ -1197,6 +1749,179 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].Etag, fourthEtag)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[fourthPropertyName].value, fourthPropertyValue)
+	})
+
+	it("should return all table objects of a table from tableObjectsArray and separateKeyStorage", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Removed
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		let fifthUuid = generateUUID()
+		let fifthTableId = firstTableId
+		let fifthUploadStatus = TableObjectUploadStatus.New
+		let fifthEtag = "asduhaoghsd"
+		let fifthPropertyName = "test5"
+		let fifthPropertyValue = "ogsoibsf80wniocs<"
+
+		let fifthTableObject = new TableObject(fifthUuid)
+		fifthTableObject.TableId = fifthTableId
+		fifthTableObject.UploadStatus = fifthUploadStatus
+		fifthTableObject.Etag = fifthEtag
+		fifthTableObject.Properties = {
+			[fifthPropertyName]: { value: fifthPropertyValue }
+		}
+
+		let sixthUuid = generateUUID()
+		let sixthTableId = fifthTableId
+		let sixthUploadStatus = TableObjectUploadStatus.Deleted
+		let sixthEtag = "oh9hioasdfkbjabgf"
+		let sixthPropertyName = "test6"
+		let sixthPropertyValue = "asiohagbi9sfh0aw"
+
+		let sixthTableObject = new TableObject(sixthUuid)
+		sixthTableObject.TableId = sixthTableId
+		sixthTableObject.UploadStatus = sixthUploadStatus
+		sixthTableObject.Etag = sixthEtag
+		sixthTableObject.Properties = {
+			[sixthPropertyName]: { value: sixthPropertyValue }
+		}
+
+		let seventhUuid = generateUUID()
+		let seventhTableId = thirdTableId
+		let seventhUploadStatus = TableObjectUploadStatus.NoUpload
+		let seventhEtag = "asdnoabguasfsd"
+		let seventhPropertyName = "test7"
+		let seventhPropertyValue = "u9139rhafpdfbn90q"
+
+		let seventhTableObject = new TableObject(seventhUuid)
+		seventhTableObject.TableId = seventhTableId
+		seventhTableObject.UploadStatus = seventhUploadStatus
+		seventhTableObject.Etag = seventhEtag
+		seventhTableObject.Properties = {
+			[seventhPropertyName]: { value: seventhPropertyValue }
+		}
+
+		let eighthUuid = generateUUID()
+		let eighthTableId = seventhTableId
+		let eighthUploadStatus = TableObjectUploadStatus.Removed
+		let eighthEtag = "9098wrw0efhsdfjpsdf"
+		let eighthPropertyName = "test8"
+		let eighthPropertyValue = "uoasopff98wz3nqwöf"
+
+		let eighthTableObject = new TableObject(eighthUuid)
+		eighthTableObject.TableId = eighthTableId
+		eighthTableObject.UploadStatus = eighthUploadStatus
+		eighthTableObject.Etag = eighthEtag
+		eighthTableObject.Properties = {
+			[eighthPropertyName]: { value: eighthPropertyValue }
+		}
+
+		// Create the first four table objects in separateKeyStorage
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Create the last four table objects in tableObjectsArray
+		await SetTableObjectsArray([
+			fifthTableObject,
+			sixthTableObject,
+			seventhTableObject,
+			eighthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(thirdTableId, true)
+
+		// Assert
+		assert.equal(tableObjects.length, 4)
+
+		assert.equal(tableObjects[0].Uuid, thirdUuid)
+		assert.equal(tableObjects[0].TableId, thirdTableId)
+		assert.equal(tableObjects[0].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[0].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[thirdPropertyName].value, thirdPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, fourthUuid)
+		assert.equal(tableObjects[1].TableId, fourthTableId)
+		assert.equal(tableObjects[1].UploadStatus, fourthUploadStatus)
+		assert.equal(tableObjects[1].Etag, fourthEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[fourthPropertyName].value, fourthPropertyValue)
+
+		assert.equal(tableObjects[2].Uuid, seventhUuid)
+		assert.equal(tableObjects[2].TableId, seventhTableId)
+		assert.equal(tableObjects[2].UploadStatus, seventhUploadStatus)
+		assert.equal(tableObjects[2].Etag, seventhEtag)
+		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
+		assert.equal(tableObjects[2].Properties[seventhPropertyName].value, seventhPropertyValue)
+
+		assert.equal(tableObjects[3].Uuid, eighthUuid)
+		assert.equal(tableObjects[3].TableId, eighthTableId)
+		assert.equal(tableObjects[3].UploadStatus, eighthUploadStatus)
+		assert.equal(tableObjects[3].Etag, eighthEtag)
+		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
+		assert.equal(tableObjects[3].Properties[eighthPropertyName].value, eighthPropertyValue)
 	})
 })
 
@@ -1222,6 +1947,42 @@ describe("GetTableObject function", () => {
 		tableObject.Etag = etag
 
 		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+
+		// Assert
+		assert.isNotNull(tableObjectFromDatabase)
+
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
+	})
+
+	it("should return the table object from tableObjectsArray", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 14
+		let uploadStatus = TableObjectUploadStatus.NoUpload
+		let etag = "asdonsdgonasdpnasd"
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.UploadStatus = uploadStatus
+		tableObject.Etag = etag
+
+		await SetTableObjectsArray([
+			tableObject
+		])
 
 		// Act
 		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
@@ -1269,6 +2030,42 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Etag, etag)
 	})
 
+	it("should return the table object without tableId from tableObjectsArray", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 14
+		let uploadStatus = TableObjectUploadStatus.NoUpload
+		let etag = "asdonsdgonasdpnasd"
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.UploadStatus = uploadStatus
+		tableObject.Etag = etag
+
+		await SetTableObjectsArray([
+			tableObject
+		])
+
+		// Act
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+
+		// Assert
+		assert.isNotNull(tableObjectFromDatabase)
+
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
+	})
+
 	it("should return null if the table object does not exist", async () => {
 		// Arrange
 		let uuid = generateUUID()
@@ -1282,7 +2079,7 @@ describe("GetTableObject function", () => {
 })
 
 describe("TableObjectExists function", () => {
-	it("should return true if the table object exists2", async () => {
+	it("should return true if the table object exists", async () => {
 		// Arrange
 		let uuid = generateUUID()
 		let tableId = 123
@@ -1299,6 +2096,33 @@ describe("TableObjectExists function", () => {
 		tableObject.TableId = tableId
 
 		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid, tableId)
+
+		// Assert
+		assert.isTrue(tableObjectExists)
+	})
+
+	it("should return true if the table object exists from tableObjectsArray", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 123
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+
+		await SetTableObjectsArray([
+			tableObject
+		])
 
 		// Act
 		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid, tableId)
@@ -1324,6 +2148,33 @@ describe("TableObjectExists function", () => {
 		tableObject.TableId = tableId
 
 		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid)
+
+		// Assert
+		assert.isTrue(tableObjectExists)
+	})
+
+	it("should return true if the table object exists without tableId from tableObjectsArray", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 123
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+
+		await SetTableObjectsArray([
+			tableObject
+		])
 
 		// Act
 		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid)
@@ -1374,6 +2225,89 @@ describe("RemoveTableObject function", () => {
 		assert.isNull(tableObjectFromDatabase)
 	})
 
+	it("should remove the table object from the database and save all other table objects from tableObjectsArray as separateKeyStorage", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = 25
+		let secondUploadStatus = TableObjectUploadStatus.Updated
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 631
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		Init(DavEnvironment.Test, 1, [firstTableId, secondTableId, thirdTableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		await SetTableObjectsArray([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject
+		])
+
+		// Act
+		await DatabaseOperations.RemoveTableObject(secondUuid, secondTableId)
+
+		// Assert
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true)
+		assert.equal(tableObjects.length, 2)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, thirdUuid)
+		assert.equal(tableObjects[1].TableId, thirdTableId)
+		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
+	})
+
 	it("should remove the table object from the database without tableId", async () => {
 		// Arrage
 		let uuid = generateUUID()
@@ -1401,5 +2335,88 @@ describe("RemoveTableObject function", () => {
 		// Assert
 		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
 		assert.isNull(tableObjectFromDatabase)
+	})
+
+	it("should remove the table object from the database without tableId and save all other table objects from tableObjectsArray as separateKeyStorage", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = 25
+		let secondUploadStatus = TableObjectUploadStatus.Updated
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 631
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		Init(DavEnvironment.Test, 1, [firstTableId, secondTableId, thirdTableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		await SetTableObjectsArray([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject
+		])
+
+		// Act
+		await DatabaseOperations.RemoveTableObject(secondUuid)
+
+		// Assert
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true)
+		assert.equal(tableObjects.length, 2)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, thirdUuid)
+		assert.equal(tableObjects[1].TableId, thirdTableId)
+		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
 	})
 })
