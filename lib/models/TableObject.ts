@@ -4,40 +4,40 @@ import * as DatabaseOperations from '../providers/DatabaseOperations';
 import { Dav } from '../Dav';
 import { DavEnvironment } from './DavUser';
 
-export class TableObject{
+export class TableObject {
 	public Uuid: string;
-   public TableId: number;
+	public TableId: number;
 	public IsFile: boolean = false;
 	public File: Blob;
 	public Properties: TableObjectProperties = {};
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
 	public Etag: string;
 
-	constructor(uuid?: string){
-      if(uuid){
-         this.Uuid = uuid;
-      }else{
-         this.Uuid = generateUUID();
-      }
-   }
+	constructor(uuid?: string) {
+		if (uuid) {
+			this.Uuid = uuid;
+		} else {
+			this.Uuid = generateUUID();
+		}
+	}
 
-	async SetUploadStatus(uploadStatus: TableObjectUploadStatus): Promise<void>{
+	async SetUploadStatus(uploadStatus: TableObjectUploadStatus): Promise<void> {
 		this.UploadStatus = uploadStatus;
 		await this.Save(false);
 	}
 
-	async SetEtag(etag: string) : Promise<void>{
-      this.Etag = etag;
+	async SetEtag(etag: string): Promise<void> {
+		this.Etag = etag;
 		await this.Save(false);
 	}
 
-	async SetPropertyValue(property: Property): Promise<void>{
+	async SetPropertyValue(property: Property): Promise<void> {
 		if (this.SetProperty(property)) {
 			await this.Save();
 		}
 	}
 
-	async SetPropertyValues(properties: Property[]): Promise<void>{
+	async SetPropertyValues(properties: Property[]): Promise<void> {
 		var propertiesChanged = false;
 
 		for (let property of properties) {
@@ -46,7 +46,7 @@ export class TableObject{
 			}
 		}
 
-		if(propertiesChanged){
+		if (propertiesChanged) {
 			await this.Save();
 		}
 	}
@@ -55,11 +55,11 @@ export class TableObject{
 	 * Updates this.Properties with the property if necessary, and returns true if the this.Properties has changed
 	 * @param property 
 	 */
-	private SetProperty(property: Property) : boolean {
+	private SetProperty(property: Property): boolean {
 		if (this.Properties[property.name] == null) {
 			// Add the property
 			this.Properties[property.name] = { value: property.value }
-			
+
 			if (property.options) {
 				this.Properties[property.name].local = property.options.local
 			}
@@ -78,38 +78,38 @@ export class TableObject{
 		return true
 	}
 
-	GetPropertyValue(name: string): string{
+	GetPropertyValue(name: string): string {
 		var property = this.Properties[name];
 		return property ? property.value : null;
 	}
 
-	async RemoveProperty(name: string): Promise<void>{
+	async RemoveProperty(name: string): Promise<void> {
 		if (this.Properties[name] == null) return
-		
-		if(Dav.jwt){
+
+		if (!Dav.jwt || this.Properties[name].local) {
+			delete this.Properties[name];
+		} else {
 			// Set the value to empty string if the user is logged in
 			this.Properties[name].value = null;
-		}else{
-			delete this.Properties[name];
 		}
 
 		await this.Save(Dav.environment == DavEnvironment.Test);
 	}
 
-   async Delete() : Promise<void>{
-		if(Dav.jwt){
+	async Delete(): Promise<void> {
+		if (Dav.jwt) {
 			this.UploadStatus = TableObjectUploadStatus.Deleted;
 			await this.Save();
-		}else{
+		} else {
 			await this.DeleteImmediately();
 		}
 	}
 
-	async DeleteImmediately() : Promise<void>{
-		await DatabaseOperations.DeleteTableObjectImmediately(this.Uuid);
+	async DeleteImmediately(): Promise<void> {
+		await DatabaseOperations.RemoveTableObject(this.Uuid, this.TableId);
 	}
 
-	async Remove() : Promise<void>{
+	async Remove(): Promise<void> {
 		if (Dav.jwt) {
 			this.UploadStatus = TableObjectUploadStatus.Removed;
 			await this.Save();
@@ -118,41 +118,39 @@ export class TableObject{
 		}
 	}
 
-	async SetFile(file: Blob, fileExt: string){
-		if(!this.IsFile) return;
-		if(file == this.File) return;
+	async SetFile(file: Blob, fileExt: string) {
+		if (!this.IsFile) return;
+		if (file == this.File) return;
 
-		if(this.UploadStatus == TableObjectUploadStatus.UpToDate){
+		if (this.UploadStatus == TableObjectUploadStatus.UpToDate) {
 			this.UploadStatus = TableObjectUploadStatus.Updated;
 		}
-      
-      this.File = file;
+
+		this.File = file;
 		await this.SetPropertyValue({ name: "ext", value: fileExt });
 	}
 
-	GetFileDownloadStatus() : TableObjectFileDownloadStatus{
-		if(!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
-		if(this.File) return TableObjectFileDownloadStatus.Downloaded;
-		if(!Dav.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
+	GetFileDownloadStatus(): TableObjectFileDownloadStatus {
+		if (!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
+		if (this.File) return TableObjectFileDownloadStatus.Downloaded;
+		if (!Dav.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
 
 		var i = DataManager.downloadingFiles.findIndex(uuid => uuid == this.Uuid);
-		if(i !== -1){
+		if (i !== -1) {
 			return TableObjectFileDownloadStatus.Downloading;
 		}
 		return TableObjectFileDownloadStatus.NotDownloaded;
 	}
 
-	async DownloadFile() : Promise<boolean>{
+	async DownloadFile(): Promise<boolean> {
 		var downloadStatus = this.GetFileDownloadStatus();
 
-		if(downloadStatus == TableObjectFileDownloadStatus.Downloading || 
+		if (downloadStatus == TableObjectFileDownloadStatus.Downloading ||
 			downloadStatus == TableObjectFileDownloadStatus.Downloaded ||
 			!Dav.jwt) return false;
 
-		let response;
-
-		try{
-			response = await axios.default({
+		try {
+			let response = await axios.default({
 				method: 'get',
 				url: `${Dav.apiBaseUrl}/apps/object/${this.Uuid}`,
 				responseType: 'blob',
@@ -164,46 +162,60 @@ export class TableObject{
 				}
 			});
 
-			if(response && response.data){
+			if (response && response.data) {
 				this.File = response.data as Blob;
-            await this.Save(false);
-            return true;
-         }
-		}catch(error){
+				await this.Save(false);
+				return true;
+			}
+		} catch (error) {
 			console.log(error);
 			return false;
 		}
 	}
-	
-	private async Save(triggerSyncPush: boolean = true){
-		if(await DatabaseOperations.TableObjectExists(this.Uuid)){
-			if(this.UploadStatus == TableObjectUploadStatus.UpToDate && triggerSyncPush){
-				this.UploadStatus = TableObjectUploadStatus.Updated;
-         }
-         await DatabaseOperations.UpdateTableObject(this);
-		}else{
-         let uuid = await DatabaseOperations.CreateTableObject(this);
-         this.Uuid = uuid;
+
+	private async Save(triggerSyncPush: boolean = true) {
+		if (
+			await DatabaseOperations.TableObjectExists(this.Uuid)
+			&& this.UploadStatus == TableObjectUploadStatus.UpToDate
+			&& triggerSyncPush
+		) {
+			this.UploadStatus = TableObjectUploadStatus.Updated;
 		}
-		
-		if(triggerSyncPush && Dav.environment == DavEnvironment.Test){
+
+		await DatabaseOperations.SetTableObject(this)
+
+		if (Dav.environment == DavEnvironment.Test && triggerSyncPush && !Dav.skipSyncPushInTests) {
 			await DataManager.SyncPush();
-		}else if(triggerSyncPush){
+		} else if (Dav.environment != DavEnvironment.Test && triggerSyncPush) {
 			DataManager.SyncPush();
 		}
 	}
 }
 
-type TableObjectProperties = {
+export type DatabaseTableObject = {
+	Uuid: string,
+	TableId: number,
+	IsFile: boolean,
+	File: Blob,
+	Properties: TableObjectProperties | OldTableObjectProperties,
+	UploadStatus: number,
+	Etag: string
+}
+
+export type TableObjectProperties = {
 	[name: string]: TableObjectProperty
 }
 
-interface TableObjectProperty{
+export type OldTableObjectProperties = {
+	[name: string]: string
+}
+
+export interface TableObjectProperty {
 	value: string,
 	local?: boolean	// default: false
 }
 
-export interface Property{
+export interface Property {
 	name: string;
 	value: string;
 	options?: {
@@ -211,16 +223,16 @@ export interface Property{
 	}
 }
 
-export enum TableObjectUploadStatus{
-   UpToDate = 0,
-   New = 1,
-   Updated = 2,
+export enum TableObjectUploadStatus {
+	UpToDate = 0,
+	New = 1,
+	Updated = 2,
 	Deleted = 3,
 	Removed = 4,
 	NoUpload = 5
 }
 
-export enum TableObjectFileDownloadStatus{
+export enum TableObjectFileDownloadStatus {
 	NoFileOrNotLoggedIn = 0,
 	NotDownloaded = 1,
 	Downloading = 2,
@@ -236,7 +248,7 @@ export function ConvertObjectToTableObject(
 		Properties: TableObjectProperties,
 		UploadStatus: number,
 		Etag: string
-	}): TableObject{
+	}): TableObject {
 	let tableObject = new TableObject(obj.Uuid);
 	tableObject.TableId = obj.TableId;
 	tableObject.UploadStatus = obj.UploadStatus;
@@ -249,13 +261,13 @@ export function ConvertObjectToTableObject(
 
 // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 export function generateUUID() { // Public Domain/MIT
-   var d = new Date().getTime();
-   if (typeof performance !== 'undefined' && typeof performance.now === 'function'){
-      d += performance.now(); //use high-precision timer if available
-   }
-   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      var r = (d + Math.random() * 16) % 16 | 0;
+	var d = new Date().getTime();
+	if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+		d += performance.now(); //use high-precision timer if available
+	}
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = (d + Math.random() * 16) % 16 | 0;
 		d = Math.floor(d / 16);
 		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-   });
+	});
 }
