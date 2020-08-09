@@ -14,15 +14,15 @@ var isSyncingNotifications = false;
 var syncNotificationsAgain = false;
 
 const maxFileDownloads = 2;								// The max count of files being downloaded simultaneously
-var fileDownloads: Array<{tableObject: TableObject, etag: string}> = [];			// This stores the tableObjects to download and the corresponding new etag
+var fileDownloads: Array<{ tableObject: TableObject, etag: string }> = [];			// This stores the tableObjects to download and the corresponding new etag
 export var downloadingFiles: Array<string> = [];	// Contains the uuids of the TableObjects whose files are currently downloading
 var fileDownloadsIntervalId: NodeJS.Timer;
 
 //#region Data methods
-export async function Sync(){
-	if(isSyncing) return;
+export async function Sync() {
+	if (isSyncing) return;
 
-	if(!Dav.jwt) return;
+	if (!Dav.jwt) return;
 	isSyncing = true;
 
 	// Holds the table ids, e.g. 1, 2, 3, 4
@@ -42,24 +42,24 @@ export async function Sync(){
 	// Is true if all http calls of the specified table are successful; in the format <tableId, Boolean>
 	var tableGetResultsOkay: Map<number, boolean> = new Map<number, boolean>();
 
-	if(!tableIds || !parallelTableIds) return;
+	if (!tableIds || !parallelTableIds) return;
 
 	// Populate removedTableObjectUuids
-	for(let tableId of tableIds){
+	for (let tableId of tableIds) {
 		removedTableObjectUuids.set(tableId, []);
 
-		for(let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)){
+		for (let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)) {
 			removedTableObjectUuids.get(tableId).push(tableObject.Uuid);
 		}
 	}
 
 	// Get the first page of each table and generate the sorted tableIds list
-	for(let tableId of tableIds){
+	for (let tableId of tableIds) {
 		// Get the first page of the table
 		let tableGetResult = await HttpGet(`/apps/table/${tableId}?page=1`);
 
 		tableGetResultsOkay.set(tableId, tableGetResult.ok);
-		if(!tableGetResult.ok) continue;
+		if (!tableGetResult.ok) continue;
 
 		// Save the result
 		let table = tableGetResult.message;
@@ -71,64 +71,64 @@ export async function Sync(){
 	sortedTableIds = SortTableIds(tableIds, parallelTableIds, tablePages);
 
 	// Process the table results
-	for(let tableId of sortedTableIds){
+	for (let tableId of sortedTableIds) {
 		let tableObjects = tableResults.get(tableId)["table_objects"] as Array<object>;
 		let tableChanged = false;
 
-		if(!tableGetResultsOkay.get(tableId)) continue;
+		if (!tableGetResultsOkay.get(tableId)) continue;
 
 		// Get the objects of the table
-		for(let obj of tableObjects){
+		for (let obj of tableObjects) {
 			// Remove the object from removedTableObjectUuids
 			let index = removedTableObjectUuids.get(tableId).findIndex(uuid => uuid == obj["uuid"]);
-			if(index !== -1){
+			if (index !== -1) {
 				removedTableObjectUuids.get(tableId).splice(index, 1);
 			}
 
 			// Is obj in the database?
 			var currentTableObject = await DatabaseOperations.GetTableObject(obj["uuid"]);
-			if(currentTableObject){
+			if (currentTableObject) {
 				// Is the etag correct?
-				if(obj["etag"] == currentTableObject.Etag){
+				if (obj["etag"] == currentTableObject.Etag) {
 					// Is it a file?
-					if(currentTableObject.IsFile){
+					if (currentTableObject.IsFile) {
 						// Was the file downloaded?
-						if(!currentTableObject.File){
+						if (!currentTableObject.File) {
 							// Download the file
-							fileDownloads.push({tableObject: currentTableObject, etag: currentTableObject.Etag});
+							fileDownloads.push({ tableObject: currentTableObject, etag: currentTableObject.Etag });
 						}
 					}
-				}else{
+				} else {
 					// GET the table object
 					let tableObject = await GetTableObjectFromServer(currentTableObject.Uuid);
-					if(!tableObject) continue;
+					if (!tableObject) continue;
 
 					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
 
 					// Is it a file?
-					if(tableObject.IsFile){
+					if (tableObject.IsFile) {
 						// Download the file and save the new etag
-                  fileDownloads.push({tableObject: tableObject, etag: obj["etag"]});
-					}else{
+						fileDownloads.push({ tableObject: tableObject, etag: obj["etag"] });
+					} else {
 						Dav.callbacks.UpdateTableObject(tableObject);
 						tableChanged = true;
 					}
 				}
-			}else{
+			} else {
 				// GET the table object
 				let tableObject = await GetTableObjectFromServer(obj["uuid"]);
-				if(!tableObject) continue;
+				if (!tableObject) continue;
 
 				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate);
 
 				// Is it a file?
-				if(tableObject.IsFile){
+				if (tableObject.IsFile) {
 					// Download the file and save the new etag
-					fileDownloads.push({tableObject: tableObject, etag: obj["etag"]});
+					fileDownloads.push({ tableObject: tableObject, etag: obj["etag"] });
 
 					Dav.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
-				}else{
+				} else {
 					// Save the table object
 					Dav.callbacks.UpdateTableObject(tableObject);
 					tableChanged = true;
@@ -140,13 +140,13 @@ export async function Sync(){
 
 		// Check if there is a next page
 		currentTablePages[tableId]++;
-		if(currentTablePages.get(tableId) > tablePages.get(tableId)){
+		if (currentTablePages.get(tableId) > tablePages.get(tableId)) {
 			continue;
 		}
 
 		// Get the data of the next page
 		let tableGetResult = await HttpGet(`/apps/table/${tableId}?page=${currentTablePages.get(tableId)}`);
-		if(!tableGetResult.ok){
+		if (!tableGetResult.ok) {
 			tableGetResultsOkay.set(tableId, false);
 			continue;
 		}
@@ -156,20 +156,20 @@ export async function Sync(){
 
 	// RemovedTableObjects now includes all objects that were deleted on the server but not locally
 	// Delete those objects locally
-	for(let tableId of tableIds){
-		if(!tableGetResultsOkay.get(tableId)) continue;
+	for (let tableId of tableIds) {
+		if (!tableGetResultsOkay.get(tableId)) continue;
 		let removedTableObjects = removedTableObjectUuids.get(tableId);
 		let tableChanged = false;
 
-		for(let objUuid of removedTableObjects){
+		for (let objUuid of removedTableObjects) {
 			let obj = await DatabaseOperations.GetTableObject(objUuid);
-			if(!obj) continue;
+			if (!obj) continue;
 
-			if(obj.UploadStatus == TableObjectUploadStatus.New && obj.IsFile){
+			if (obj.UploadStatus == TableObjectUploadStatus.New && obj.IsFile) {
 				continue;
-			}else if(obj.UploadStatus == TableObjectUploadStatus.New
-						|| obj.UploadStatus == TableObjectUploadStatus.NoUpload
-						|| obj.UploadStatus == TableObjectUploadStatus.Deleted){
+			} else if (obj.UploadStatus == TableObjectUploadStatus.New
+				|| obj.UploadStatus == TableObjectUploadStatus.NoUpload
+				|| obj.UploadStatus == TableObjectUploadStatus.Deleted) {
 				continue;
 			}
 
@@ -189,14 +189,14 @@ export async function Sync(){
 
 	// Check if all tables were synced
 	let allTableGetResultsOkay = true;
-	for(let value in tableGetResultsOkay.values()){
-		if(!value){
+	for (let value in tableGetResultsOkay.values()) {
+		if (!value) {
 			allTableGetResultsOkay = false;
 			break;
 		}
 	}
 
-	if(allTableGetResultsOkay){
+	if (allTableGetResultsOkay) {
 		Dav.callbacks.SyncFinished();
 		startWebSocketConnection();
 	}
@@ -223,16 +223,16 @@ export async function DownloadTableObject(uuid: string) {
 	}
 }
 
-function StartFileDownloads(){
-   // Do not download more files than maxFileDownloads at the same time
-   fileDownloadsIntervalId = setInterval(() => {
+function StartFileDownloads() {
+	// Do not download more files than maxFileDownloads at the same time
+	fileDownloadsIntervalId = setInterval(() => {
 		DownloadNextFile();
 	}, 5000);
 }
 
-async function DownloadNextFile(){
+async function DownloadNextFile() {
 	// Check if fileDownloadsList length is greater than maxFileDownloads
-   if(downloadingFiles.length < maxFileDownloads && fileDownloads.length > 0){
+	if (downloadingFiles.length < maxFileDownloads && fileDownloads.length > 0) {
 		// Download the first file of the files to download
 		let tableObject = fileDownloads[0].tableObject;
 		let etag = fileDownloads[0].etag;
@@ -240,8 +240,8 @@ async function DownloadNextFile(){
 		// Remove the download from the fileDownloads
 		fileDownloads.splice(0, 1);
 
-		if(!tableObject.File){
-			if(await tableObject.DownloadFile()){
+		if (!tableObject.File) {
+			if (await tableObject.DownloadFile()) {
 				// Update the table object with the new etag
 				await tableObject.SetEtag(etag);
 
@@ -249,60 +249,60 @@ async function DownloadNextFile(){
 				Dav.callbacks.UpdateTableObject(tableObject, true);
 			}
 		}
-	}else if(fileDownloads.length == 0){
+	} else if (fileDownloads.length == 0) {
 		// Stop the timer
 		clearInterval(fileDownloadsIntervalId);
 	}
 }
 
-export async function SyncPush(){
-	if(!Dav.jwt) return;
-	if(isSyncing){
+export async function SyncPush() {
+	if (!Dav.jwt) return;
+	if (isSyncing) {
 		syncAgain = true;
 		return;
 	}
 	isSyncing = true;
-	
+
 	// Get all table objects
 	var tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true);
 	var sortedTableObjects = tableObjects.filter(obj =>
 		obj.UploadStatus != TableObjectUploadStatus.UpToDate && obj.UploadStatus != TableObjectUploadStatus.NoUpload
 	).reverse();
-	
-	for(let tableObject of sortedTableObjects){
+
+	for (let tableObject of sortedTableObjects) {
 		switch (tableObject.UploadStatus) {
-         case TableObjectUploadStatus.New:
-            // Check if the TableObject is a file and if it can be uploaded
-            if(tableObject.IsFile && tableObject.File){
-               let user = await DatabaseOperations.GetUser();
+			case TableObjectUploadStatus.New:
+				// Check if the TableObject is a file and if it can be uploaded
+				if (tableObject.IsFile && tableObject.File) {
+					let user = await DatabaseOperations.GetUser();
 
-               if(user){
-                  let usedStorage = user["usedStorage"];
-                  let totalStorage = user["totalStorage"];
-                  let fileSize = tableObject.File.size;
+					if (user) {
+						let usedStorage = user["usedStorage"];
+						let totalStorage = user["totalStorage"];
+						let fileSize = tableObject.File.size;
 
-                  if (usedStorage + fileSize > totalStorage && totalStorage != 0){
-                     continue;
-                  }
-               }
-            }
+						if (usedStorage + fileSize > totalStorage && totalStorage != 0) {
+							continue;
+						}
+					}
+				}
 
 				// Upload the table object
 				var result = await CreateTableObjectOnServer(tableObject);
 
-				if(result.ok){
+				if (result.ok) {
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
 					tableObject.Etag = result.message.etag;
-					await DatabaseOperations.UpdateTableObject(tableObject);
-				}else if(result.message){
+					await DatabaseOperations.SetTableObject(tableObject);
+				} else if (result.message) {
 					// Check error codes
 					var messageString = JSON.stringify(result.message);
 
-					if(messageString.includes("2704")){		// Field already taken: uuid
+					if (messageString.includes("2704")) {		// Field already taken: uuid
 						// Set the upload status to UpToDate
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-						await DatabaseOperations.UpdateTableObject(tableObject);
-					}else{
+						await DatabaseOperations.SetTableObject(tableObject);
+					} else {
 						console.log(result.message);
 					}
 				}
@@ -311,17 +311,17 @@ export async function SyncPush(){
 				// Update the table object
 				var result = await UpdateTableObjectOnServer(tableObject);
 
-				if(result.ok){
+				if (result.ok) {
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
-               tableObject.Etag = result.message.etag;
-               await DatabaseOperations.UpdateTableObject(tableObject);
-				}else if(result.message){
+					tableObject.Etag = result.message.etag;
+					await DatabaseOperations.SetTableObject(tableObject, false);
+				} else if (result.message) {
 					// Check error codes
 					var messageString = JSON.stringify(result.message);
 
-					if(messageString.includes("2805")){		// Resource does not exist: TableObject
-						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
-					}else{
+					if (messageString.includes("2805")) {		// Resource does not exist: TableObject
+						await DatabaseOperations.RemoveTableObject(tableObject.Uuid);
+					} else {
 						console.log(result.message);
 					}
 				}
@@ -329,10 +329,10 @@ export async function SyncPush(){
 			case TableObjectUploadStatus.Deleted:
 				var result = await DeleteTableObjectOnServer(tableObject);
 
-				if(result.ok){
+				if (result.ok) {
 					// Delete the table object
-					await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
-				}else if(result.message){
+					await DatabaseOperations.RemoveTableObject(tableObject.Uuid);
+				} else if (result.message) {
 					// Check error codes
 					var messageString = JSON.stringify(result.message);
 
@@ -340,8 +340,8 @@ export async function SyncPush(){
 						messageString.includes("2805") ||	// Resource does not exist: TableObject
 						messageString.includes("1102")		// Action not allowed
 					) {
-						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
-					}else{
+						await DatabaseOperations.RemoveTableObject(tableObject.Uuid);
+					} else {
 						console.log(result.message);
 					}
 				}
@@ -351,7 +351,7 @@ export async function SyncPush(){
 
 				if (result.ok) {
 					// Delete the table object
-					await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+					await DatabaseOperations.RemoveTableObject(tableObject.Uuid);
 				} else if (result.message) {
 					// Check error codes
 					var messageString = JSON.stringify(result.message);
@@ -360,8 +360,8 @@ export async function SyncPush(){
 						messageString.includes("2805") ||	// Resource does not exist: TableObject
 						messageString.includes("2819") ||	// Resource does not exist: TableObjectUserAccess
 						messageString.includes("1102")		// Action not allowed
-					) {	
-						await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+					) {
+						await DatabaseOperations.RemoveTableObject(tableObject.Uuid);
 					} else {
 						console.log(result.message);
 					}
@@ -372,55 +372,44 @@ export async function SyncPush(){
 
 	isSyncing = false;
 
-	if(syncAgain){
+	if (syncAgain) {
 		syncAgain = false;
 		await SyncPush();
 	}
 }
 
 // Call this when the app receives a websocket notification of a created or updated table object
-export async function UpdateLocalTableObject(uuid: string){
+export async function UpdateLocalTableObject(uuid: string) {
 	// Get the table object from the server and update it locally
 	var tableObject = await GetTableObjectFromServer(uuid);
-	
-	if(tableObject){
+
+	if (tableObject) {
 		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate;
 
-		// Check if the table object is already saved in the database
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid);
-
-		if(tableObjectFromDatabase){
-			if(tableObjectFromDatabase.IsFile && tableObjectFromDatabase.File){
-				tableObject.File = tableObjectFromDatabase.File
-			}
-
-			await DatabaseOperations.UpdateTableObject(tableObject);
-		}else{
-			await DatabaseOperations.CreateTableObject(tableObject);
-		}
+		await DatabaseOperations.SetTableObject(tableObject, false)
 
 		Dav.callbacks.UpdateTableObject(tableObject);
 	}
 }
 
 // Call this when the app receives a websocket notification of a deleted table object
-export async function DeleteLocalTableObject(uuid: string){
+export async function DeleteLocalTableObject(uuid: string) {
 	// Remove the table object locally
 	var tableObject = await DatabaseOperations.GetTableObject(uuid);
-	if(tableObject){
+	if (tableObject) {
 		await tableObject.DeleteImmediately();
 		Dav.callbacks.DeleteTableObject(tableObject)
 	}
 }
 
-export async function SubscribePushNotifications() : Promise<Boolean>{
-	if(Dav.environment == DavEnvironment.Production && 'serviceWorker' in navigator && ('PushManager' in window)){
+export async function SubscribePushNotifications(): Promise<Boolean> {
+	if (Dav.environment == DavEnvironment.Production && 'serviceWorker' in navigator && ('PushManager' in window)) {
 		// Check if the user is logged in
-		if(!Dav.jwt) return false;
+		if (!Dav.jwt) return false;
 
 		// Check if the user is already subscribed
 		let oldSubscription = await DatabaseOperations.GetSubscription();
-		if(oldSubscription){
+		if (oldSubscription) {
 			switch (oldSubscription.status) {
 				case UploadStatus.New:
 					await UpdateSubscriptionOnServer();
@@ -456,17 +445,17 @@ export async function SubscribePushNotifications() : Promise<Boolean>{
 		});
 		await UpdateSubscriptionOnServer();
 		return true;
-	}else{
+	} else {
 		return false;
 	}
 }
 
-export async function UnsubscribePushNotifications(){
-	if(!Dav.jwt) return;
+export async function UnsubscribePushNotifications() {
+	if (!Dav.jwt) return;
 
 	// Get the uuid from the database
 	let subscription = await DatabaseOperations.GetSubscription();
-	if(!subscription) return;
+	if (!subscription) return;
 
 	// Change the status to Deleted and save it in the database
 	subscription.status = UploadStatus.Deleted;
@@ -474,8 +463,8 @@ export async function UnsubscribePushNotifications(){
 	await UpdateSubscriptionOnServer();
 }
 
-export async function CreateNotification(time: number, interval: number, properties: object) : Promise<string>{
-	if(!Dav.jwt) return;
+export async function CreateNotification(time: number, interval: number, properties: object): Promise<string> {
+	if (!Dav.jwt) return;
 
 	// Save the new notification in the database
 	let notification = new Notification(time, interval, properties, null, UploadStatus.New);
@@ -487,36 +476,36 @@ export async function CreateNotification(time: number, interval: number, propert
 	return notification.Uuid;
 }
 
-export async function GetNotification(uuid: string) : Promise<{time: number, interval: number, properties: object}>{
-	if(!Dav.jwt) return null;
+export async function GetNotification(uuid: string): Promise<{ time: number, interval: number, properties: object }> {
+	if (!Dav.jwt) return null;
 
 	let notification = await DatabaseOperations.GetNotification(uuid);
-	if(notification){
+	if (notification) {
 		return {
 			time: notification.Time,
 			interval: notification.Interval,
 			properties: notification.Properties
 		}
-	}else{
+	} else {
 		return null;
 	}
 }
 
-export async function UpdateNotification(uuid: string, time: number, interval: number, properties: object){
-	if(!Dav.jwt) return;
+export async function UpdateNotification(uuid: string, time: number, interval: number, properties: object) {
+	if (!Dav.jwt) return;
 
 	let notification = await DatabaseOperations.GetNotification(uuid);
-	if(notification.Status == UploadStatus.UpToDate){
+	if (notification.Status == UploadStatus.UpToDate) {
 		notification.Status = UploadStatus.Updated;
 	}
 
-	if(time){
+	if (time) {
 		notification.Time = time;
 	}
-	if(interval){
+	if (interval) {
 		notification.Interval = interval;
 	}
-	if(properties){
+	if (properties) {
 		notification.Properties = properties;
 	}
 
@@ -525,12 +514,12 @@ export async function UpdateNotification(uuid: string, time: number, interval: n
 	Dav.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 }
 
-export async function DeleteNotification(uuid: string){
-	if(!Dav.jwt) return;
+export async function DeleteNotification(uuid: string) {
+	if (!Dav.jwt) return;
 
 	// Set the upload status of the notification to Deleted
 	let notification = await DatabaseOperations.GetNotification(uuid);
-	if(notification){
+	if (notification) {
 		notification.Status = UploadStatus.Deleted;
 		await notification.Save();
 	}
@@ -538,39 +527,41 @@ export async function DeleteNotification(uuid: string){
 	Dav.environment == DavEnvironment.Test ? await SyncPushNotifications() : SyncPushNotifications();
 }
 
-export async function DeleteNotificationImmediately(uuid: string){
+export async function DeleteNotificationImmediately(uuid: string) {
 	// Delete the notification directly from the database
 	await DatabaseOperations.DeleteNotification(uuid);
 }
 
-export async function SyncNotifications(){
-	if(isSyncingNotifications) return;
-	if(!Dav.jwt) return;
+export async function SyncNotifications() {
+	if (isSyncingNotifications) return;
+	if (!Dav.jwt) return;
 	isSyncingNotifications = true;
 
 	// Get all notifications from the database
 	let removedNotifications = await DatabaseOperations.GetAllNotifications();
 
 	// Get all notifications from the database
-	let responseData: Array<{id: number,
-									app_id: number,
-									user_id: number,
-									time: number,
-									interval: number,
-									uuid: string,
-									properties: object }>;
-	try{
+	let responseData: Array<{
+		id: number,
+		app_id: number,
+		user_id: number,
+		time: number,
+		interval: number,
+		uuid: string,
+		properties: object
+	}>;
+	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/apps/notifications?app_id=${Dav.appId}`,
 			headers: { "Authorization": Dav.jwt }
 		});
 		responseData = response.data["notifications"];
-	}catch(error){
+	} catch (error) {
 		return;
 	}
 
-	for(let notification of responseData){
+	for (let notification of responseData) {
 		let uuid = notification.uuid;
 		let time = notification.time;
 		let interval = notification.interval;
@@ -578,11 +569,11 @@ export async function SyncNotifications(){
 
 		let n = await DatabaseOperations.GetNotification(uuid);
 
-		if(!n){
+		if (!n) {
 			// Create a new notification
 			n = new Notification(time, interval, properties, uuid);
 			await n.Save();
-		}else{
+		} else {
 			// Update the old notification
 			n.Time = time;
 			n.Interval = interval;
@@ -592,15 +583,15 @@ export async function SyncNotifications(){
 
 			// Remove the notification from the removedNotifications array
 			let index = removedNotifications.findIndex(n => n.Uuid == uuid);
-			if(index !== -1){
+			if (index !== -1) {
 				removedNotifications.splice(index, 1);
 			}
 		}
 	}
 
 	// Delete the notifications in removedNotifications
-	for(let notification of removedNotifications){
-		if(notification.Status == UploadStatus.UpToDate){
+	for (let notification of removedNotifications) {
+		if (notification.Status == UploadStatus.UpToDate) {
 			await DatabaseOperations.DeleteNotification(notification.Uuid);
 		}
 	}
@@ -609,9 +600,9 @@ export async function SyncNotifications(){
 	await SyncPushNotifications();
 }
 
-export async function SyncPushNotifications(){
-	if(!Dav.jwt) return;
-	if(isSyncingNotifications){
+export async function SyncPushNotifications() {
+	if (!Dav.jwt) return;
+	if (isSyncingNotifications) {
 		syncNotificationsAgain = true;
 		return;
 	}
@@ -624,7 +615,7 @@ export async function SyncPushNotifications(){
 		switch (notification.Status) {
 			case UploadStatus.New:
 				// Create the notification on the server
-				try{
+				try {
 					await axios.default({
 						method: 'post',
 						url: `${Dav.apiBaseUrl}/apps/notification`,
@@ -643,11 +634,11 @@ export async function SyncPushNotifications(){
 
 					notification.Status = UploadStatus.UpToDate;
 					await notification.Save();
-				}catch(error){}
+				} catch (error) { }
 				break;
 			case UploadStatus.Updated:
 				// Update the notification on the server
-				try{
+				try {
 					await axios.default({
 						method: 'put',
 						url: `${Dav.apiBaseUrl}/apps/notification/${notification.Uuid}`,
@@ -664,18 +655,18 @@ export async function SyncPushNotifications(){
 
 					notification.Status = UploadStatus.UpToDate;
 					await notification.Save();
-				}catch(error){
-					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
+				} catch (error) {
+					if (error.response.data.errors[0][0] == "2812") {		// Resource does not exist: Notification
 						// Delete the notification locally
 						await DatabaseOperations.DeleteNotification(notification.Uuid);
-					}else{
+					} else {
 						console.log(error.response.data)
 					}
 				}
 				break;
 			case UploadStatus.Deleted:
 				// Delete the notification on the server
-				try{
+				try {
 					await axios.default({
 						method: 'delete',
 						url: `${Dav.apiBaseUrl}/apps/notification/${notification.Uuid}`,
@@ -684,11 +675,11 @@ export async function SyncPushNotifications(){
 
 					// Remove the notification from the database
 					await DatabaseOperations.DeleteNotification(notification.Uuid);
-				}catch(error){
-					if(error.response.data.errors[0][0] == "2812"){		// Resource does not exist: Notification
+				} catch (error) {
+					if (error.response.data.errors[0][0] == "2812") {		// Resource does not exist: Notification
 						// Delete the notification locally
 						await DatabaseOperations.DeleteNotification(notification.Uuid);
-					}else{
+					} else {
 						console.log(error.response.data)
 					}
 				}
@@ -697,7 +688,7 @@ export async function SyncPushNotifications(){
 	}
 
 	isSyncingNotifications = false;
-	if(syncNotificationsAgain){
+	if (syncNotificationsAgain) {
 		syncNotificationsAgain = false;
 		await SyncPushNotifications();
 	}
@@ -705,18 +696,18 @@ export async function SyncPushNotifications(){
 //#endregion
 
 //#region Api methods
-export async function DownloadUserInformation(jwt: string) : Promise<{success: boolean, logout: boolean, data: any}>{
+export async function DownloadUserInformation(jwt: string): Promise<{ success: boolean, logout: boolean, data: any }> {
 	var url = `${Dav.apiBaseUrl}/auth/user`;
 
-   try{
-      let response = await axios.default({
-         method: 'get',
+	try {
+		let response = await axios.default({
+			method: 'get',
 			url,
 			headers: {
 				"Authorization": jwt
 			}
 		});
-		
+
 		if (response.status == 200) {
 			return {
 				success: true,
@@ -746,20 +737,20 @@ export async function DownloadUserInformation(jwt: string) : Promise<{success: b
 				logout: false,
 				data: null
 			}
-      }
+		}
 	} catch (error) {
 		return {
 			success: false,
 			logout: error.response.status == 404 && error.response.data.errors[0][0] == 2814,	// Session does not exist
 			data: null
 		}
-   }
+	}
 }
 
-export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
-	if(!Dav.jwt) return null;
+export async function GetTableObjectFromServer(uuid: string): Promise<TableObject> {
+	if (!Dav.jwt) return null;
 
-	try{
+	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
@@ -775,85 +766,22 @@ export async function GetTableObjectFromServer(uuid: string): Promise<TableObjec
 		tableObject.Uuid = response.data.uuid;
 
 		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = {value: response.data.properties[key]}
+			tableObject.Properties[key] = { value: response.data.properties[key] }
 		}
 
 		return tableObject;
-	}catch(error){
+	} catch (error) {
 		return null;
 	}
 }
 
-async function CreateTableObjectOnServer(tableObject: TableObject) : Promise<{ok: boolean, message: any}>{		// Return {ok: boolean, message: string}
-   if(!Dav.jwt) return {ok: false, message: null};
-   if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
+async function CreateTableObjectOnServer(tableObject: TableObject): Promise<{ ok: boolean, message: any }> {		// Return {ok: boolean, message: string}
+	if (!Dav.jwt) return { ok: false, message: null };
+	if (tableObject.IsFile && tableObject.File == null) return { ok: false, message: null };
 
-	try{
-      let response;
-      if(tableObject.IsFile){
-			let ext = tableObject.GetPropertyValue('ext');
-			
-			// Get the binary data from the file
-			let readFilePromise: Promise<ProgressEvent> = new Promise((resolve, reject) => {
-				let fileReader = new FileReader();
-				fileReader.onloadend = resolve;
-				fileReader.readAsArrayBuffer(tableObject.File);
-			});
-			var result: ProgressEvent = await readFilePromise;
-
-         response = await axios.default({
-            method: 'post',
-				url: `${Dav.apiBaseUrl}/apps/object`,
-            params: {
-               table_id: tableObject.TableId,
-               app_id: Dav.appId,
-               uuid: tableObject.Uuid,
-               ext: ext
-            },
-            headers: {
-               Authorization: Dav.jwt,
-               'Content-Type': tableObject.File.type
-            },
-				data: result.currentTarget["result"]
-         });
-      }else{
-			let properties = {}
-			for (let key of Object.keys(tableObject.Properties)) {
-				let property = tableObject.Properties[key]
-				if(property.local) continue
-				
-				properties[key] = property.value
-			}
-
-         response = await axios.default({
-            method: 'post',
-				url: `${Dav.apiBaseUrl}/apps/object`,
-            params: {
-               table_id: tableObject.TableId,
-               app_id: Dav.appId,
-               uuid: tableObject.Uuid
-            },
-            headers: {
-               Authorization: Dav.jwt,
-               'Content-Type': 'application/json'
-            },
-            data: JSON.stringify(properties)
-         });
-      }
-
-		return {ok: true, message: response.data};
-	}catch(error){
-		return {ok: false, message: error.response.data};
-	}
-}
-
-async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<{ ok: boolean, message: any }>{
-	if(!Dav.jwt) return {ok: false, message: null};
-	if(tableObject.IsFile && tableObject.File == null) return {ok: false, message: null};
-
-	try{
+	try {
 		let response;
-		if(tableObject.IsFile){
+		if (tableObject.IsFile) {
 			let ext = tableObject.GetPropertyValue('ext');
 
 			// Get the binary data from the file
@@ -865,23 +793,86 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<{ ok
 			var result: ProgressEvent = await readFilePromise;
 
 			response = await axios.default({
-            method: 'put',
-				url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
-            params: {
-               ext: ext
-            },
-            headers: {
-               Authorization: Dav.jwt,
-               'Content-Type': tableObject.File.type
-            },
+				method: 'post',
+				url: `${Dav.apiBaseUrl}/apps/object`,
+				params: {
+					table_id: tableObject.TableId,
+					app_id: Dav.appId,
+					uuid: tableObject.Uuid,
+					ext: ext
+				},
+				headers: {
+					Authorization: Dav.jwt,
+					'Content-Type': tableObject.File.type
+				},
 				data: result.currentTarget["result"]
-         });
-		}else{
+			});
+		} else {
 			let properties = {}
 			for (let key of Object.keys(tableObject.Properties)) {
 				let property = tableObject.Properties[key]
-				if(property.local) continue
-				
+				if (property.local) continue
+
+				properties[key] = property.value
+			}
+
+			response = await axios.default({
+				method: 'post',
+				url: `${Dav.apiBaseUrl}/apps/object`,
+				params: {
+					table_id: tableObject.TableId,
+					app_id: Dav.appId,
+					uuid: tableObject.Uuid
+				},
+				headers: {
+					Authorization: Dav.jwt,
+					'Content-Type': 'application/json'
+				},
+				data: JSON.stringify(properties)
+			});
+		}
+
+		return { ok: true, message: response.data };
+	} catch (error) {
+		return { ok: false, message: error.response.data };
+	}
+}
+
+async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<{ ok: boolean, message: any }> {
+	if (!Dav.jwt) return { ok: false, message: null };
+	if (tableObject.IsFile && tableObject.File == null) return { ok: false, message: null };
+
+	try {
+		let response;
+		if (tableObject.IsFile) {
+			let ext = tableObject.GetPropertyValue('ext');
+
+			// Get the binary data from the file
+			let readFilePromise: Promise<ProgressEvent> = new Promise((resolve, reject) => {
+				let fileReader = new FileReader();
+				fileReader.onloadend = resolve;
+				fileReader.readAsArrayBuffer(tableObject.File);
+			});
+			var result: ProgressEvent = await readFilePromise;
+
+			response = await axios.default({
+				method: 'put',
+				url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
+				params: {
+					ext: ext
+				},
+				headers: {
+					Authorization: Dav.jwt,
+					'Content-Type': tableObject.File.type
+				},
+				data: result.currentTarget["result"]
+			});
+		} else {
+			let properties = {}
+			for (let key of Object.keys(tableObject.Properties)) {
+				let property = tableObject.Properties[key]
+				if (property.local) continue
+
 				properties[key] = property.value
 			}
 
@@ -896,16 +887,16 @@ async function UpdateTableObjectOnServer(tableObject: TableObject): Promise<{ ok
 			});
 		}
 
-		return {ok: true, message: response.data};
-	}catch(error){
-		return {ok: false, message: error.response.data};
+		return { ok: true, message: response.data };
+	} catch (error) {
+		return { ok: false, message: error.response.data };
 	}
 }
 
-async function DeleteTableObjectOnServer(tableObject: TableObject) : Promise<{ok: boolean, message: any}>{
-	if(!Dav.jwt) return {ok: false, message: null};
+async function DeleteTableObjectOnServer(tableObject: TableObject): Promise<{ ok: boolean, message: any }> {
+	if (!Dav.jwt) return { ok: false, message: null };
 
-	try{
+	try {
 		var response = await axios.default({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/apps/object/${tableObject.Uuid}`,
@@ -914,13 +905,13 @@ async function DeleteTableObjectOnServer(tableObject: TableObject) : Promise<{ok
 			}
 		});
 
-		return {ok: true, message: response.data};
-	}catch(error){
-		return {ok: false, message: error.response.data};
+		return { ok: true, message: response.data };
+	} catch (error) {
+		return { ok: false, message: error.response.data };
 	}
 }
 
-async function RemoveTableObjectOnServer(tableObject: TableObject) : Promise<{ ok: boolean, message: any }>{
+async function RemoveTableObjectOnServer(tableObject: TableObject): Promise<{ ok: boolean, message: any }> {
 	if (!Dav.jwt) return { ok: false, message: null };
 
 	try {
@@ -938,22 +929,22 @@ async function RemoveTableObjectOnServer(tableObject: TableObject) : Promise<{ o
 	}
 }
 
-export async function UpdateSubscriptionOnServer(){
+export async function UpdateSubscriptionOnServer() {
 	// Get the subscription and update it on the server
 	let subscription = await DatabaseOperations.GetSubscription();
-	if(!subscription) return;
+	if (!subscription) return;
 
 	switch (subscription.status) {
 		case UploadStatus.New:
 			// Create the subscription on the server
-			try{
+			try {
 				await axios.default({
 					method: 'post',
 					url: `${Dav.apiBaseUrl}/apps/subscription`,
 					params: {
 						uuid: subscription.uuid
 					},
-					headers: { 
+					headers: {
 						'Authorization': Dav.jwt,
 						'Content-Type': "application/json"
 					},
@@ -968,13 +959,13 @@ export async function UpdateSubscriptionOnServer(){
 				subscription.status = UploadStatus.UpToDate;
 				await DatabaseOperations.SetSubscription(subscription);
 				return true;
-			}catch(error){
+			} catch (error) {
 				console.log(error.response.data)
 				return false;
 			}
 		case UploadStatus.Deleted:
 			// Delete the subscription on the server
-			try{
+			try {
 				await axios.default({
 					method: 'delete',
 					url: `${Dav.apiBaseUrl}/apps/subscription/${subscription.uuid}`,
@@ -984,8 +975,8 @@ export async function UpdateSubscriptionOnServer(){
 				// Remove the uuid from the database
 				await DatabaseOperations.RemoveSubscription();
 				return true;
-			}catch(error){
-				if(error.response.data.errors[0][0] == "2813"){		// Resource does not exist: WebPushSubscription
+			} catch (error) {
+				if (error.response.data.errors[0][0] == "2813") {		// Resource does not exist: WebPushSubscription
 					// Delete the subscription locally
 					await DatabaseOperations.RemoveSubscription();
 				}
@@ -994,72 +985,72 @@ export async function UpdateSubscriptionOnServer(){
 	}
 }
 
-export async function Log(apiKey: string, name: string){
-	if(/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
+export async function Log(apiKey: string, name: string) {
+	if (/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
 
 	// Create event log on the server
 	await CreateEventLog(
-		apiKey, 
-		Dav.appId, 
-		name, 
-		platform.os.family, 
-		platform.os.version, 
-		platform.name, 
+		apiKey,
+		Dav.appId,
+		name,
+		platform.os.family,
+		platform.os.version,
+		platform.name,
 		platform.version
 	)
 }
 
-export async function DeleteSessionOnServer(jwt: string){
+export async function DeleteSessionOnServer(jwt: string) {
 	// Return if the jwt is a normal jwt
-	if(!jwt || !jwt.split('.')[3]) return;
+	if (!jwt || !jwt.split('.')[3]) return;
 
-	try{
+	try {
 		await axios.default({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/auth/session`,
-			headers: {'Authorization': jwt}
+			headers: { 'Authorization': jwt }
 		});
-	}catch(error){}
+	} catch (error) { }
 }
 //#endregion
 
-export function SortTableIds(tableIds: Array<number>, parallelTableIds: Array<number>, tableIdPages: Map<number, number>) : Array<number>{
+export function SortTableIds(tableIds: Array<number>, parallelTableIds: Array<number>, tableIdPages: Map<number, number>): Array<number> {
 	var preparedTableIds: Array<number> = [];
 
 	// Remove all table ids in parallelTableIds that do not occur in tableIds
 	let removeParallelTableIds: Array<number> = [];
-	for(let i = 0; i < parallelTableIds.length; i++){
+	for (let i = 0; i < parallelTableIds.length; i++) {
 		let value = parallelTableIds[i];
-		if(tableIds.indexOf(value) == -1){
+		if (tableIds.indexOf(value) == -1) {
 			removeParallelTableIds.push(value);
 		}
 	}
-	
-	for(let tableId of removeParallelTableIds){
+
+	for (let tableId of removeParallelTableIds) {
 		let index = parallelTableIds.indexOf(tableId);
-		if(index !== -1){
+		if (index !== -1) {
 			parallelTableIds.splice(index, 1);
 		}
 	}
-	
+
 	// Prepare pagesOfParallelTable
 	var pagesOfParallelTable: Map<number, number> = new Map<number, number>();
-	for(let [key, value] of tableIdPages){
-		if(parallelTableIds.indexOf(key) !== -1){
+	for (let [key, value] of tableIdPages) {
+		if (parallelTableIds.indexOf(key) !== -1) {
 			pagesOfParallelTable.set(key, value);
 		}
 	}
-	
+
 	// Count the pages
 	let pagesSum = 0;
-	for(let [key, value] of tableIdPages){
+	for (let [key, value] of tableIdPages) {
 		pagesSum += value;
 
-		if(parallelTableIds.indexOf(key) !== -1){
+		if (parallelTableIds.indexOf(key) !== -1) {
 			pagesOfParallelTable.set(key, value - 1);
 		}
 	}
-	
+
 	let index = 0;
 	let currentTableIdIndex = 0;
 	let parallelTableIdsInserted = false;
@@ -1068,13 +1059,13 @@ export function SortTableIds(tableIds: Array<number>, parallelTableIds: Array<nu
 		let currentTableId = tableIds[currentTableIdIndex];
 		let currentTablePages = tableIdPages.get(currentTableId);
 
-		if(parallelTableIds.indexOf(currentTableId) !== -1){
+		if (parallelTableIds.indexOf(currentTableId) !== -1) {
 			// Add the table id once as it belongs to parallel table ids
 			preparedTableIds.push(currentTableId);
 			index++;
-		}else{
+		} else {
 			// Add it for all pages
-			for(let j = 0; j < currentTablePages; j++){
+			for (let j = 0; j < currentTablePages; j++) {
 				preparedTableIds.push(currentTableId);
 				index++;
 			}
@@ -1082,28 +1073,28 @@ export function SortTableIds(tableIds: Array<number>, parallelTableIds: Array<nu
 
 		// Check if all parallel table ids are in prepared table ids
 		let hasAll = true;
-		for(let tableId of parallelTableIds){
-			if(preparedTableIds.indexOf(tableId) == -1){
+		for (let tableId of parallelTableIds) {
+			if (preparedTableIds.indexOf(tableId) == -1) {
 				hasAll = false;
 			}
 		}
 
-		if(hasAll && !parallelTableIdsInserted){
+		if (hasAll && !parallelTableIdsInserted) {
 			parallelTableIdsInserted = true;
 			let pagesOfParallelTableSum = 0;
 
 			// Update pagesOfParallelTableSum
-			for(let [key, value] of pagesOfParallelTable){
+			for (let [key, value] of pagesOfParallelTable) {
 				pagesOfParallelTableSum += value;
 			}
 
 			// Append the parallel table ids in the right order
-			while(pagesOfParallelTableSum > 0){
-				for(let parallelTableId of parallelTableIds){
-					if(pagesOfParallelTable.get(parallelTableId) > 0){
+			while (pagesOfParallelTableSum > 0) {
+				for (let parallelTableId of parallelTableIds) {
+					if (pagesOfParallelTable.get(parallelTableId) > 0) {
 						preparedTableIds.push(parallelTableId);
 						pagesOfParallelTableSum--;
-						
+
 						let oldPages = pagesOfParallelTable.get(parallelTableId);
 						pagesOfParallelTable.set(parallelTableId, oldPages - 1);
 
@@ -1131,8 +1122,8 @@ export enum UploadStatus {
 }
 
 //#region Helper methods
-async function HttpGet(url: string) : Promise<{ ok: boolean, message: object }>{
-	try{
+async function HttpGet(url: string): Promise<{ ok: boolean, message: object }> {
+	try {
 		let response = await axios.default({
 			method: 'get',
 			url: Dav.apiBaseUrl + url,
@@ -1142,23 +1133,23 @@ async function HttpGet(url: string) : Promise<{ ok: boolean, message: object }>{
 		});
 
 		return { ok: true, message: response.data };
-	}catch(error){
+	} catch (error) {
 		return { ok: false, message: error.response ? error.response.data : "" };
 	}
 }
 
 function urlBase64ToUint8Array(base64String) {
-   const padding = '='.repeat((4 - base64String.length % 4) % 4);
-   const base64 = (base64String + padding)
-      .replace(/\-/g, '+')
-      .replace(/_/g, '/');
+	const padding = '='.repeat((4 - base64String.length % 4) % 4);
+	const base64 = (base64String + padding)
+		.replace(/\-/g, '+')
+		.replace(/_/g, '/');
 
-   const rawData = window.atob(base64);
-   const outputArray = new Uint8Array(rawData.length);
+	const rawData = window.atob(base64);
+	const outputArray = new Uint8Array(rawData.length);
 
-   for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-   }
-   return outputArray;
+	for (let i = 0; i < rawData.length; ++i) {
+		outputArray[i] = rawData.charCodeAt(i);
+	}
+	return outputArray;
 }
 //#endregion
