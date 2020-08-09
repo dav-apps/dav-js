@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import * as localforage from "localforage";
 import { extendPrototype } from 'localforage-startswith';
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { Dav, userKey, notificationsKey, getTableObjectsKey, tableObjectsKey, Init } from '../../lib/Dav';
+import { Dav, Init, userKey, notificationsKey } from '../../lib/Dav';
 import { TableObject, TableObjectUploadStatus, generateUUID } from '../../lib/models/TableObject';
 import { Notification } from '../../lib/models/Notification';
 import { UploadStatus } from '../../lib/providers/DataManager';
@@ -11,196 +11,187 @@ import { DavEnvironment } from '../../lib/models/DavUser';
 
 extendPrototype(localforage);
 
+beforeEach(async () => {
+	// Reset global variables
+	Dav.skipSyncPushInTests = true
+	Dav.jwt = null
+
+	// Clear the database
+	await localforage.clear()
+})
+
 describe("SetUser function", () => {
-   it("should save the user object", async () => {
-      // Arrange
-      var user = {
-         email: "testemail@example.com",
-         username: "testuser",
-         jwt: "blabla"
-      }
+	it("should save the user object", async () => {
+		// Arrange
+		var user = {
+			email: "testemail@example.com",
+			username: "testuser",
+			jwt: "blabla"
+		}
 
-      // Act
-      DatabaseOperations.SetUser(user);
+		// Act
+		DatabaseOperations.SetUser(user);
 
-      // Assert
-      var savedUser = await localforage.getItem(userKey);
-      assert.equal(user.email, savedUser["email"]);
-      assert.equal(user.username, savedUser["username"]);
-      assert.equal(user.jwt, savedUser["jwt"]);
-
-      // Tidy up
-      await localforage.clear();
-   });
-});
+		// Assert
+		var savedUser = await localforage.getItem(userKey);
+		assert.equal(user.email, savedUser["email"]);
+		assert.equal(user.username, savedUser["username"]);
+		assert.equal(user.jwt, savedUser["jwt"]);
+	})
+})
 
 describe("GetUser function", () => {
-   it("should return the saved user object", async () => {
-      // Arrange
-      var user = {
-         email: "example@example.com",
-         username: "tester",
-         jwt: "jwtjwt"
-      }
-      await localforage.setItem(userKey, user);
+	it("should return the saved user object", async () => {
+		// Arrange
+		var user = {
+			email: "example@example.com",
+			username: "tester",
+			jwt: "jwtjwt"
+		}
+		await localforage.setItem(userKey, user);
 
-      // Act
-      var savedUser = await DatabaseOperations.GetUser();
+		// Act
+		var savedUser = await DatabaseOperations.GetUser();
 
-      // Assert
-      assert.equal(user.email, savedUser["email"]);
-      assert.equal(user.username, savedUser["username"]);
-      assert.equal(user.jwt, savedUser["jwt"]);
-
-      // Tidy up
-      await localforage.clear();
-   });
-});
+		// Assert
+		assert.equal(user.email, savedUser["email"]);
+		assert.equal(user.username, savedUser["username"]);
+		assert.equal(user.jwt, savedUser["jwt"]);
+	})
+})
 
 describe("RemoveUser function", () => {
-   it("should remove the saved user object", async () => {
-      // Arrange
-      var user = {
-         email: "blabla",
-         username: "blabla",
-         jwt: "blabla"
-      }
+	it("should remove the saved user object", async () => {
+		// Arrange
+		var user = {
+			email: "blabla",
+			username: "blabla",
+			jwt: "blabla"
+		}
 
-      await localforage.setItem(userKey, user);
+		await localforage.setItem(userKey, user);
 
-      // Act
-      await DatabaseOperations.RemoveUser();
+		// Act
+		await DatabaseOperations.RemoveUser();
 
-      // Assert
-      let userFromDatabase = await DatabaseOperations.GetUser();
-      assert.isNull(userFromDatabase);
-   });
-});
+		// Assert
+		let userFromDatabase = await DatabaseOperations.GetUser();
+		assert.isNull(userFromDatabase);
+	})
+})
 
 describe("GetAllNotifications function", () => {
-   it("should return all notifications", async () => {
-      // Arrange
-      let generatedNotifications = GenerateNotifications();
-      for(let notification of generatedNotifications){
-         await DatabaseOperations.SaveNotification(notification);
-      }
+	it("should return all notifications", async () => {
+		// Arrange
+		let generatedNotifications = GenerateNotifications();
+		for (let notification of generatedNotifications) {
+			await DatabaseOperations.SaveNotification(notification);
+		}
 
-      // Act
-      let notifications = await DatabaseOperations.GetAllNotifications();
-      assert.equal(notifications.length, generatedNotifications.length);
+		// Act
+		let notifications = await DatabaseOperations.GetAllNotifications();
+		assert.equal(notifications.length, generatedNotifications.length);
 
-      // Assert
-      let i = 0;
-      for(let notification of notifications){
-         assert.equal(notification.Uuid, generatedNotifications[i].Uuid);
-         assert.equal(notification.Time, generatedNotifications[i].Time);
-         assert.equal(notification.Interval, generatedNotifications[i].Interval);
+		// Assert
+		let i = 0;
+		for (let notification of notifications) {
+			assert.equal(notification.Uuid, generatedNotifications[i].Uuid);
+			assert.equal(notification.Time, generatedNotifications[i].Time);
+			assert.equal(notification.Interval, generatedNotifications[i].Interval);
 
-         assert.equal(notification.Properties["title"], generatedNotifications[i].Properties["title"])
-         assert.equal(notification.Properties["message"], generatedNotifications[i].Properties["message"])
+			assert.equal(notification.Properties["title"], generatedNotifications[i].Properties["title"])
+			assert.equal(notification.Properties["message"], generatedNotifications[i].Properties["message"])
 
-         i++;
-      }
+			i++;
+		}
+	})
 
-      // Tidy up
-      await localforage.clear();
-   });
+	function GenerateNotifications(): Array<Notification> {
+		let notifications: Array<Notification> = [];
 
-   function GenerateNotifications() : Array<Notification>{
-      let notifications: Array<Notification> = [];
+		let notification1Properties = {
+			title: "Hello World",
+			message: "You have a notification"
+		}
+		let notification1 = new Notification(new Date().getTime() / 1000, 0, notification1Properties, null, UploadStatus.UpToDate);
+		let notification2Properties = {
+			title: "Good day",
+			message: "Today is pleasant weather with -20°C"
+		}
+		let notification2 = new Notification(new Date().getTime() / 1200, 0, notification2Properties, null, UploadStatus.UpToDate);
 
-      let notification1Properties = {
-         title: "Hello World",
-         message: "You have a notification"
-      }
-      let notification1 = new Notification(new Date().getTime() / 1000, 0, notification1Properties, null, UploadStatus.UpToDate);
-      let notification2Properties = {
-         title: "Good day",
-         message: "Today is pleasant weather with -20°C"
-      }
-      let notification2 = new Notification(new Date().getTime() / 1200, 0, notification2Properties, null, UploadStatus.UpToDate);
-
-      notifications.push(notification1, notification2);
-      return notifications;
-   }
-});
+		notifications.push(notification1, notification2);
+		return notifications;
+	}
+})
 
 describe("GetNotification function", () => {
-   it("should return the appropriate notification", async () => {
-      // Arrange
-      let uuid = generateUUID();
-      let time = new Date().getTime() / 1000;
-      let interval = 3600
-      let properties = {
-         title: "Hello World",
-         message: "You have a notification!"
-      }
-      let uploadStatus = UploadStatus.UpToDate;
-
-      let notification = new Notification(time, interval, properties, uuid, uploadStatus);
-      await notification.Save();
-
-      // Act
-      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
-
-      // Assert
-      assert.isNotNull(notificationFromDatabase);
-      assert.equal(time, notificationFromDatabase.Time);
-      assert.equal(interval, notificationFromDatabase.Interval);
-      assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
-      assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
-      assert.equal(uploadStatus, notificationFromDatabase.Status);
-
-      // Tidy up
-      await localforage.clear();
-   });
-
-   it("should return null if the notification does not exist", async () => {
-      // Arrange
-      let uuid = generateUUID();
-
-      // Act
-      let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
-
-      // Assert
-      assert.isNull(notificationFromDatabase);
-
-      // Tidy up
-      await localforage.clear();
-   });
-});
-
-describe("SaveNotification function", () => {
-   it("should save the notification in the database", async () => {
+	it("should return the appropriate notification", async () => {
 		// Arrange
 		let uuid = generateUUID();
-      let time = new Date().getTime() / 1000;
-      let interval = 3600;
-      let properties = {
-         title: "Hello World",
-         message: "You have a notification!"
-      }
+		let time = new Date().getTime() / 1000;
+		let interval = 3600
+		let properties = {
+			title: "Hello World",
+			message: "You have a notification!"
+		}
 		let uploadStatus = UploadStatus.UpToDate;
-		
+
 		let notification = new Notification(time, interval, properties, uuid, uploadStatus);
-		
+		await notification.Save();
+
+		// Act
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+
+		// Assert
+		assert.isNotNull(notificationFromDatabase);
+		assert.equal(time, notificationFromDatabase.Time);
+		assert.equal(interval, notificationFromDatabase.Interval);
+		assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
+		assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
+		assert.equal(uploadStatus, notificationFromDatabase.Status);
+	})
+
+	it("should return null if the notification does not exist", async () => {
+		// Arrange
+		let uuid = generateUUID();
+
+		// Act
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
+
+		// Assert
+		assert.isNull(notificationFromDatabase);
+	})
+})
+
+describe("SaveNotification function", () => {
+	it("should save the notification in the database", async () => {
+		// Arrange
+		let uuid = generateUUID();
+		let time = new Date().getTime() / 1000;
+		let interval = 3600;
+		let properties = {
+			title: "Hello World",
+			message: "You have a notification!"
+		}
+		let uploadStatus = UploadStatus.UpToDate;
+
+		let notification = new Notification(time, interval, properties, uuid, uploadStatus);
+
 		// Act
 		await DatabaseOperations.SaveNotification(notification);
 
 		// Assert
 		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
 		assert.isNotNull(notificationFromDatabase);
-      assert.equal(time, notificationFromDatabase.Time);
-      assert.equal(interval, notificationFromDatabase.Interval);
-      assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
-      assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
-      assert.equal(uploadStatus, notificationFromDatabase.Status);
+		assert.equal(time, notificationFromDatabase.Time);
+		assert.equal(interval, notificationFromDatabase.Interval);
+		assert.equal(properties.title, notificationFromDatabase.Properties["title"]);
+		assert.equal(properties.message, notificationFromDatabase.Properties["message"]);
+		assert.equal(uploadStatus, notificationFromDatabase.Status);
+	})
 
-		// Tidy up
-      await localforage.clear();
-   });
-
-   it("should replace the notification with the same uuid in the database", async () => {
+	it("should replace the notification with the same uuid in the database", async () => {
 		// Arrange
 		let uuid = generateUUID();
 		let time = new Date().getTime() / 1000;
@@ -227,16 +218,13 @@ describe("SaveNotification function", () => {
 		// Assert
 		let notificationFromDatabase = await DatabaseOperations.GetNotification(uuid);
 		assert.isNotNull(notificationFromDatabase);
-      assert.equal(newTime, notificationFromDatabase.Time);
-      assert.equal(newInterval, notificationFromDatabase.Interval);
-      assert.equal(newProperties.title, notificationFromDatabase.Properties["title"]);
-      assert.equal(newProperties.message, notificationFromDatabase.Properties["message"]);
+		assert.equal(newTime, notificationFromDatabase.Time);
+		assert.equal(newInterval, notificationFromDatabase.Interval);
+		assert.equal(newProperties.title, notificationFromDatabase.Properties["title"]);
+		assert.equal(newProperties.message, notificationFromDatabase.Properties["message"]);
 		assert.equal(uploadStatus, notificationFromDatabase.Status);
-		
-		// Tidy up
-      await localforage.clear();
-   });
-});
+	})
+})
 
 describe("DeleteNotification function", () => {
 	it("should remove the notification from the database", async () => {
@@ -257,37 +245,34 @@ describe("DeleteNotification function", () => {
 
 		// Assert
 		assert.isNull(await DatabaseOperations.GetNotification(uuid));
-
-		// Tidy up
-      await localforage.clear();
-	});
-});
+	})
+})
 
 describe("RemoveAllNotifications function", () => {
-   it("should remove all notifications from the database", async () => {
-      // Arrange
-      let notifications = [
-         new Notification(1231231, 5000, {
-            title: "Hello World",
-            message: "This is a notification"
-         }),
-         new Notification(121885, 2000, {
-            title: "Notification",
-            message: "Hello World"
-         })
-      ]
+	it("should remove all notifications from the database", async () => {
+		// Arrange
+		let notifications = [
+			new Notification(1231231, 5000, {
+				title: "Hello World",
+				message: "This is a notification"
+			}),
+			new Notification(121885, 2000, {
+				title: "Notification",
+				message: "Hello World"
+			})
+		]
 
 		await localforage.setItem(notificationsKey, notifications);
 		assert.equal(2, (await DatabaseOperations.GetAllNotifications()).length);
 
-      // Act
-      await DatabaseOperations.RemoveAllNotifications();
+		// Act
+		await DatabaseOperations.RemoveAllNotifications();
 
-      // Assert
-      let allNotifications = await DatabaseOperations.GetAllNotifications();
+		// Assert
+		let allNotifications = await DatabaseOperations.GetAllNotifications();
 		assert.equal(0, allNotifications.length);
-   });
-});
+	});
+})
 
 describe("SetSubscription function", () => {
 	it("should save the subscription in the database", async () => {
@@ -316,11 +301,8 @@ describe("SetSubscription function", () => {
 		assert.equal(p256dh, subscriptionFromDatabase.p256dh);
 		assert.equal(auth, subscriptionFromDatabase.auth);
 		assert.equal(status, subscriptionFromDatabase.status);
-
-		// Tidy up
-      await localforage.clear();
-	});
-});
+	})
+})
 
 describe("GetSubscription function", () => {
 	it("should return the subscription", async () => {
@@ -349,11 +331,8 @@ describe("GetSubscription function", () => {
 		assert.equal(p256dh, subscriptionFromDatabase.p256dh);
 		assert.equal(auth, subscriptionFromDatabase.auth);
 		assert.equal(status, subscriptionFromDatabase.status);
-
-		// Tidy up
-      await localforage.clear();
-	});
-});
+	})
+})
 
 describe("RemoveSubscription function", () => {
 	it("should remove the subscription from the database", async () => {
@@ -378,589 +357,1049 @@ describe("RemoveSubscription function", () => {
 
 		// Assert
 		assert.isNull(await DatabaseOperations.GetSubscription());
+	})
+})
 
-		// Tidy up
-      await localforage.clear();
-	});
-});
-
-describe("CreateTableObject function", () => {
-	async function saveTableObjectAndReturnUuidTest(separateKeyStorage: boolean){
+describe("SetTableObject function", () => {
+	it("should save the table object in the database and return the uuid", async () => {
 		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
+		let uuid = generateUUID()
+		let tableId = 13
+		let uploadStatus = TableObjectUploadStatus.Removed
+		let etag = "asdasdasd"
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Hallo Welt"
 
-		var uuid = "2569d0b8-61a2-4cf1-9bcd-682d55f99db9";
-		var tableId = -13;
-      var uploadStatus = TableObjectUploadStatus.Updated;
-      var etag = "13212313qd13coi192cn";
-      var firstPropertyName = "page1";
-      var firstPropertyValue = "Hello World";
-      var secondPropertyName = "page2";
-      var secondPropertyValue = "Hallo Welt";
-
-      var tableObject = new TableObject();
-      tableObject.Uuid = uuid;
-      tableObject.TableId = tableId;
-      tableObject.UploadStatus = uploadStatus;
-      tableObject.Etag = etag;
-      tableObject.Properties = {
-         [firstPropertyName]: {value: firstPropertyValue},
-         [secondPropertyName]: {value: secondPropertyValue}
-      }
-
-      // Act
-		var savedUuid = await DatabaseOperations.CreateTableObject(tableObject);
-
-		// Assert
-      var savedObject = separateKeyStorage ? (await localforage.getItem(getTableObjectsKey(tableObject.TableId, tableObject.Uuid))) : (await localforage.getItem(tableObjectsKey) as object[])[0];
-
-      assert.equal(uuid, savedUuid);
-      assert.equal(uuid, savedObject["Uuid"]);
-      assert.equal(tableId, savedObject["TableId"]);
-      assert.equal(uploadStatus, savedObject["UploadStatus"]);
-      assert.equal(etag, savedObject["Etag"]);
-
-      assert.equal(firstPropertyValue, savedObject["Properties"][firstPropertyName].value);
-      assert.equal(secondPropertyValue, savedObject["Properties"][secondPropertyName].value);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should save the table object and return the uuid", async () => await saveTableObjectAndReturnUuidTest(false));
-	it("should save the table object and return the uuid with separateKeyStorage", async () => await saveTableObjectAndReturnUuidTest(true));
-
-	it("should generate a new uuid if the uuid is already in use", async () => {
-		// Arrange
-		Dav.separateKeyStorage = false;
-
-		var uuid = "3f0b11b9-78b1-4b63-b613-8a82945300eb";
-		var tableId = 1;
-		var firstTableObject = new TableObject();
-		firstTableObject.Uuid = uuid;
-		firstTableObject.TableId = tableId;
-		var oldUuid = await DatabaseOperations.CreateTableObject(firstTableObject);
-		assert.equal(uuid, oldUuid);
-
-		var secondTableObject = new TableObject();
-		secondTableObject.Uuid = uuid;
-		secondTableObject.TableId = tableId;
-		
-		// Act
-		var newUuid = await DatabaseOperations.CreateTableObject(secondTableObject);
-		
-		// Assert
-		assert.notEqual(uuid, newUuid);
-
-		// Tidy up
-		await localforage.clear();
-	});
-});
-
-describe("CreateTableObjects function", () => {
-	async function saveMultipleTableObjectsTest(separateKeyStorage: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-
-		var firstTableObject = new TableObject();
-		var firstUuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
-		var firstTableId = 1;
-      var firstEtag = "asdasdpoasjd0asdaud";
-      
-      firstTableObject.TableId = firstTableId;
-      firstTableObject.Uuid = firstUuid;
-      firstTableObject.Etag = firstEtag;
-
-		var secondTableObject = new TableObject();
-		var secondUuid = "fbf66639-bcca-433c-bd55-34d2717138f3";
-		var secondTableId = 2;
-      var secondEtag = "ad02qewjs";
-
-      secondTableObject.TableId = secondTableId;
-      secondTableObject.Uuid = secondUuid;
-      secondTableObject.Etag = secondEtag;
-
-      var tableObjects = [firstTableObject, secondTableObject];
-
-      // Act
-      var uuids = await DatabaseOperations.CreateTableObjects(tableObjects);
-
-      // Assert
-      assert.equal(tableObjects.length, uuids.length);
-      assert.equal(firstUuid, uuids[0]);
-		assert.equal(secondUuid, uuids[1]);
-
-      var tableObjectsFromDatabase = separateKeyStorage ? await getTableObjects(getTableObjectsKey()) : await localforage.getItem(tableObjectsKey) as object[];
-		
-      assert.equal(firstTableId, tableObjectsFromDatabase[0]["TableId"]);
-      assert.equal(secondTableId, tableObjectsFromDatabase[1]["TableId"]);
-      assert.equal(firstEtag, tableObjectsFromDatabase[0]["Etag"]);
-      assert.equal(secondEtag, tableObjectsFromDatabase[1]["Etag"]);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should save multiple table objects", async () => await saveMultipleTableObjectsTest(false));
-	it("should save multiple table objects with separateKeyStorage", async () => await saveMultipleTableObjectsTest(true));
-
-   it("should generate new uuids for table objects with a uuid that is already in use", async () => {
-		// Arrange
-		Dav.separateKeyStorage = false;
-
-      var firstTableObject = new TableObject();
-		var uuid = "a6408375-1748-4765-96f1-cc4ba86ba3d1";
-		var firstTableId = -123;
-      var firstEtag = "asdasdpoasjd0asdaud";
-      
-      firstTableObject.TableId = firstTableId;
-      firstTableObject.Uuid = uuid;
-      firstTableObject.Etag = firstEtag;
-
-		var secondTableObject = new TableObject();
-		var secondTableId = -212;
-      var secondEtag = "ad02qewjs";
-
-      secondTableObject.TableId = secondTableId;
-      secondTableObject.Uuid = uuid;
-      secondTableObject.Etag = secondEtag;
-
-      var tableObjects = [firstTableObject, secondTableObject];
-
-      // Act
-      var uuids = await DatabaseOperations.CreateTableObjects(tableObjects);
-
-      // Assert
-      assert.notEqual(uuids[0], uuids[1]);
-      assert.equal(uuid, uuids[0]);
-
-      var tableObjectsFromDatabase = await localforage.getItem(tableObjectsKey) as object[];
-
-      assert.equal(firstTableId, tableObjectsFromDatabase[0]["TableId"]);
-      assert.equal(secondTableId, tableObjectsFromDatabase[1]["TableId"]);
-      assert.equal(firstEtag, tableObjectsFromDatabase[0]["Etag"]);
-      assert.equal(secondEtag, tableObjectsFromDatabase[1]["Etag"]);
-
-      // Tidy up
-      await localforage.clear();
-   });
-});
-
-describe("GetTableObject function", () => {
-	async function returnAppropriateTableObjectTest(separateKeyStorage: boolean, withTableId: boolean){
-      // Arrange
-      var tableId = 126;
-
-      Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-			SyncFinished: () => {}
-		});
-
-		var uuid = "ccd8b4d1-5501-4cf9-b05b-17a433fbb042";
-      var etag = "0usadkasdpna";
-      var uploadStatus = TableObjectUploadStatus.NoUpload;
-
-      var firstPropertyName = "page1";
-      var firstPropertyValue = "Hello World";
-      var secondPropertyName = "page2";
-      var secondPropertyValue = "Hallo Welt";
-
-      var tableObject = new TableObject();
-      tableObject.Uuid = uuid;
-      tableObject.TableId = tableId;
-      tableObject.Etag = etag;
-		tableObject.UploadStatus = uploadStatus;
+		let tableObject = new TableObject()
+		tableObject.Uuid = uuid
+		tableObject.TableId = tableId
+		tableObject.UploadStatus = uploadStatus
+		tableObject.Etag = etag
 		tableObject.Properties = {
-			[firstPropertyName]: {value: firstPropertyValue},
-			[secondPropertyName]: {value: secondPropertyValue}
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
 		}
 
-		await DatabaseOperations.CreateTableObject(tableObject)
-
-      // Act
-		var tableObjectFromDatabase = withTableId ? await DatabaseOperations.GetTableObject(uuid, tableObject.TableId) : await DatabaseOperations.GetTableObject(uuid);
-
-      // Assert
-      assert.equal(uuid, tableObjectFromDatabase.Uuid);
-      assert.equal(tableId, tableObjectFromDatabase.TableId);
-      assert.equal(etag, tableObjectFromDatabase.Etag);
-      assert.equal(uploadStatus, tableObjectFromDatabase.UploadStatus);
-      assert.equal(firstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName].value);
-      assert.equal(secondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName].value);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should return the appropriate table object", async () => await returnAppropriateTableObjectTest(false, false));
-	it("should return the appropriate table object with separateKeyStorage", async () => await returnAppropriateTableObjectTest(true, false));
-	it("should return the appropriate table object with separateKeyStorage and tableId", async () => await returnAppropriateTableObjectTest(true, true));
-	
-	async function returnNullIfTableObjectDoesNotExistTest(separateKeyStorage: boolean, withTableId: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-
-		var uuid = "4c4286d8-5acb-49b6-b6ef-b0d3d7de9425";
-
 		// Act
-		var tableObjectFromDatabase = withTableId ? await DatabaseOperations.GetTableObject(uuid, 1) : await DatabaseOperations.GetTableObject(uuid);
+		let createdTableObjectUuid = await DatabaseOperations.SetTableObject(tableObject)
 
 		// Assert
-		assert.isNull(tableObjectFromDatabase);
-	}
+		assert.equal(createdTableObjectUuid, uuid)
 
-	it("should return null if the table object does not exist", async () => await returnNullIfTableObjectDoesNotExistTest(false, false));
-	it("should return null if the table object does not exist with separateKeyStorage", async () => await returnNullIfTableObjectDoesNotExistTest(true, false));
-	it("should return null if the table object does not exist with separateKeyStorage and tableId", async () => await returnNullIfTableObjectDoesNotExistTest(true, true));
-});
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
 
-describe("GetAllTableObjects function", () => {
-	async function returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(separateKeyStorage: boolean){
-		// GetAllTableObjects(2, false);
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+	})
+
+	it("should overwrite existing table object in the database and return the uuid", async () => {
 		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
+		let uuid = generateUUID()
+		let tableId = 42
 
-		var generatedTableObjects = GenerateTableObjects();
-      await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
+		let firstTableObject = new TableObject()
+		firstTableObject.Uuid = uuid
+		firstTableObject.TableId = tableId
+		firstTableObject.UploadStatus = TableObjectUploadStatus.Deleted
+		firstTableObject.Etag = "adsasdasd"
+		firstTableObject.Properties = {
+			"test": { value: "Hallo Welt" }
+		}
 
-      // Act
-      var tableObjects = await DatabaseOperations.GetAllTableObjects(generatedTableObjects.firstTableId, false);  // Should return only the first table object
+		await DatabaseOperations.SetTableObject(firstTableObject)
 
-      // Assert
-      assert.equal(1, tableObjects.length);
+		let uploadStatus = TableObjectUploadStatus.New
+		let etag = "Lorem ipsum dolor sit amet"
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Guten Tag"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Good day"
 
-      assert.equal(generatedTableObjects.firstUuid, tableObjects[0].Uuid);
-      assert.equal(generatedTableObjects.firstTableId, tableObjects[0].TableId);
-      assert.equal(generatedTableObjects.firstEtag, tableObjects[0].Etag);
-      assert.equal(generatedTableObjects.firstUploadStatus, tableObjects[0].UploadStatus);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should return table objects with specified table and without deleted ones", async () => await returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(false));
-	it("should return table objects with specified table and without deleted ones with separateKeyStorage", async () => await returnTableObjectWithSpecifiedTableAndWithoutDeletedOnesTest(true));
-
-	async function returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(separateKeyStorage: boolean){
-		// GetAllTableObjects(-1, true);
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-
-      var generatedTableObjects = GenerateTableObjects();
-      await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
-
-      // Act
-      var tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true);  // Should return all four table objects
-
-      // Assert
-      assert.equal(4, tableObjects.length);
-
-      assert.equal(generatedTableObjects.firstUuid, tableObjects[0].Uuid);
-      assert.equal(generatedTableObjects.firstTableId, tableObjects[0].TableId);
-      assert.equal(generatedTableObjects.firstEtag, tableObjects[0].Etag);
-      assert.equal(generatedTableObjects.firstUploadStatus, tableObjects[0].UploadStatus);
-
-      assert.equal(generatedTableObjects.secondUuid, tableObjects[1].Uuid);
-      assert.equal(generatedTableObjects.secondTableId, tableObjects[1].TableId);
-      assert.equal(generatedTableObjects.secondEtag, tableObjects[1].Etag);
-      assert.equal(generatedTableObjects.secondUploadStatus, tableObjects[1].UploadStatus);
-
-      assert.equal(generatedTableObjects.thirdUuid, tableObjects[2].Uuid);
-      assert.equal(generatedTableObjects.thirdTableId, tableObjects[2].TableId);
-      assert.equal(generatedTableObjects.thirdEtag, tableObjects[2].Etag);
-      assert.equal(generatedTableObjects.thirdUploadStatus, tableObjects[2].UploadStatus);
-
-      assert.equal(generatedTableObjects.fourthUuid, tableObjects[3].Uuid);
-      assert.equal(generatedTableObjects.fourthTableId, tableObjects[3].TableId);
-      assert.equal(generatedTableObjects.fourthEtag, tableObjects[3].Etag);
-      assert.equal(generatedTableObjects.fourthUploadStatus, tableObjects[3].UploadStatus);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should return table objects without specified table and with deleted ones", async () => await returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(false));
-	it("should return table objects without specified table and with deleted ones with separateKeyStorage", async () => await returnTableObjectsWithoutSpecofoedTableAndWithDeletedOnesTest(true));
-
-	async function returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(separateKeyStorage: boolean){
-		// GetAllTableObjects(-1, false);
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-
-      var generatedTableObjects = GenerateTableObjects();
-      await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
-
-      // Act
-      var tableObjects = await DatabaseOperations.GetAllTableObjects(-1, false);    // Should return first and second table object
-      
-      // Assert
-      assert.equal(2, tableObjects.length);
-
-      assert.equal(generatedTableObjects.firstUuid, tableObjects[0].Uuid);
-      assert.equal(generatedTableObjects.firstTableId, tableObjects[0].TableId);
-      assert.equal(generatedTableObjects.firstEtag, tableObjects[0].Etag);
-      assert.equal(generatedTableObjects.firstUploadStatus, tableObjects[0].UploadStatus);
-
-      assert.equal(generatedTableObjects.secondUuid, tableObjects[1].Uuid);
-      assert.equal(generatedTableObjects.secondTableId, tableObjects[1].TableId);
-      assert.equal(generatedTableObjects.secondEtag, tableObjects[1].Etag);
-      assert.equal(generatedTableObjects.secondUploadStatus, tableObjects[1].UploadStatus);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should return table objects without specified table and without deleted ones", async () => await returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(false));
-	it("should return table objects without specified table and without deleted ones with separateKeyStorage", async () => await returnTableObjectsWithoutSpecifiedTableAndWithoutDeletedOnesTest(true));
-
-	async function returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(separateKeyStorage: boolean){
-		// GetAllTableObjects(2, true);
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-
-      var generatedTableObjects = GenerateTableObjects();
-      await DatabaseOperations.CreateTableObjects(generatedTableObjects.tableObjects);
-
-      // Act
-      var tableObjects = await DatabaseOperations.GetAllTableObjects(2, true);   // Should return first and third table object
-
-      // Assert
-      assert.equal(2, tableObjects.length);
-
-      assert.equal(generatedTableObjects.firstUuid, tableObjects[0].Uuid);
-      assert.equal(generatedTableObjects.firstTableId, tableObjects[0].TableId);
-      assert.equal(generatedTableObjects.firstEtag, tableObjects[0].Etag);
-      assert.equal(generatedTableObjects.firstUploadStatus, tableObjects[0].UploadStatus);
-
-      assert.equal(generatedTableObjects.thirdUuid, tableObjects[1].Uuid);
-      assert.equal(generatedTableObjects.thirdTableId, tableObjects[1].TableId);
-      assert.equal(generatedTableObjects.thirdEtag, tableObjects[1].Etag);
-      assert.equal(generatedTableObjects.thirdUploadStatus, tableObjects[1].UploadStatus);
-	}
-
-	it("should return table objects with specified table and with deleted ones", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(false));
-	it("should return table objects with specified table and with deleted ones with separateKeyStorage", async () => await returnTableObjectsWithSpecifiedTableAndWithDeletedOnesTest(true));
-
-   function GenerateTableObjects(): {tableObjects: TableObject[],
-                                    firstUuid: string,
-                                    secondUuid: string,
-                                    thirdUuid: string,
-                                    fourthUuid: string,
-                                    firstTableId: number,
-                                    secondTableId: number,
-                                    thirdTableId: number,
-                                    fourthTableId: number,
-                                    firstEtag: string,
-                                    secondEtag: string,
-                                    thirdEtag: string,
-                                    fourthEtag: string,
-                                    firstUploadStatus: TableObjectUploadStatus,
-                                    secondUploadStatus: TableObjectUploadStatus,
-                                    thirdUploadStatus: TableObjectUploadStatus,
-                                    fourthUploadStatus: TableObjectUploadStatus}{
-      /*
-      *  
-      *  1. tableId: 2     deleted: false
-      *  2. tableId: 4     deleted: false
-      *  3. tableId: 2     deleted: true
-      *  4. tableId: 4     deleted: true
-      * 
-      */
-      var firstUuid = generateUUID();
-      var firstTableId = 2;
-      var firstEtag = "asdas0dads";
-      var firstUploadStatus = TableObjectUploadStatus.UpToDate;
-      
-      var firstTableObject = new TableObject();
-      firstTableObject.Uuid = firstUuid;
-      firstTableObject.TableId = firstTableId;
-      firstTableObject.Etag = firstEtag;
-      firstTableObject.UploadStatus = firstUploadStatus;
-
-      var secondUuid = generateUUID();
-      var secondTableId = 4;
-      var secondEtag = "aswojerdjasdj3";
-      var secondUploadStatus = TableObjectUploadStatus.UpToDate;
-
-      var secondTableObject = new TableObject();
-      secondTableObject.Uuid = secondUuid;
-      secondTableObject.TableId = secondTableId;
-      secondTableObject.Etag = secondEtag;
-      secondTableObject.UploadStatus = secondUploadStatus;
-
-      var thirdUuid = generateUUID();
-      var thirdTableId = firstTableId;
-      var thirdEtag = "asd0h923ajnksd";
-      var thirdUploadStatus = TableObjectUploadStatus.Deleted;
-
-      var thirdTableObject = new TableObject();
-      thirdTableObject.Uuid = thirdUuid;
-      thirdTableObject.TableId = thirdTableId;
-      thirdTableObject.Etag = thirdEtag;
-      thirdTableObject.UploadStatus = thirdUploadStatus;
-
-      var fourthUuid = generateUUID();
-      var fourthTableId = secondTableId;
-      var fourthEtag = "asodnasdasnd";
-      var fourthUploadStatus = TableObjectUploadStatus.Deleted;
-
-      var fourthTableObject = new TableObject();
-      fourthTableObject.Uuid = fourthUuid;
-      fourthTableObject.TableId = fourthTableId;
-      fourthTableObject.Etag = fourthEtag;
-      fourthTableObject.UploadStatus = fourthUploadStatus;
-
-      return {
-         tableObjects: [firstTableObject, secondTableObject, thirdTableObject, fourthTableObject],
-         firstUuid,
-         secondUuid,
-         thirdUuid,
-         fourthUuid,
-         firstTableId,
-         secondTableId,
-         thirdTableId,
-         fourthTableId,
-         firstEtag,
-         secondEtag,
-         thirdEtag,
-         fourthEtag,
-         firstUploadStatus,
-         secondUploadStatus,
-         thirdUploadStatus,
-         fourthUploadStatus
-      }
-   }
-});
-
-describe("TableObjectExists function", () => {
-	async function returnTrueIfTheTableObjectExistsTest(separateKeyStorage: boolean, withTableId: boolean){
-		// Arrange
-		let tableId = 2;
-
-		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-			SyncFinished: () => {}
-		});
-
-		var tableObject = new TableObject();
-		tableObject.TableId = tableId;
-      await DatabaseOperations.CreateTableObject(tableObject);
-
-      // Act
-      var exists = withTableId ? await DatabaseOperations.TableObjectExists(tableObject.Uuid, tableObject.TableId) : await DatabaseOperations.TableObjectExists(tableObject.Uuid)
-
-      // Assert
-      assert.isTrue(exists);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should return true if the table object exists", async () => await returnTrueIfTheTableObjectExistsTest(false, false));
-	it("should return true if the table object exists with separateKeyStorage", async () => await returnTrueIfTheTableObjectExistsTest(true, false));
-	it("should return true if the table object exists with separateKeyStorage and tableId", async () => await returnTrueIfTheTableObjectExistsTest(true, true));
-
-	async function returnFalseIfTheTableObjectDoesNotExistTest(separateKeyStorage: boolean, withTableId: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      var uuid = generateUUID();
-
-      // Act
-      var exists = withTableId ? await DatabaseOperations.TableObjectExists(uuid, 1) : await DatabaseOperations.TableObjectExists(uuid);
-
-      // Assert
-      assert.isFalse(exists);
-
-      // Tidy up
-      await localforage.clear();
-	}
-
-	it("should return false if the table object does not exist", async () => await returnFalseIfTheTableObjectDoesNotExistTest(false, false));
-	it("should return false if the table object does not exist with separateKeyStorage", async () => await returnFalseIfTheTableObjectDoesNotExistTest(true, false));
-	it("should return false if the table object does not exist with separateKeyStorage and tableId", async () => await returnFalseIfTheTableObjectDoesNotExistTest(true, true));
-});
-
-describe("UpdateTableObject function", () => {
-	async function updateTheTableObjectTest(separateKeyStorage: boolean){
-		// Arrange
-		Dav.separateKeyStorage = separateKeyStorage;
-      var firstPropertyName = "page1";
-      var firstPropertyValue = "Guten Tag";
-      var secondPropertyName = "page2";
-      var secondPropertyValue = "Good day";
-      var updatedFirstPropertyValue = "Hello World";
-      var updatedSecondPropertyValue = "Hallo Welt";
-      var tableId = 123;
-      
-      var tableObject = new TableObject();
-      tableObject.TableId = tableId;
-      tableObject.Properties = {
-         [firstPropertyName]: {value: firstPropertyName},
-         [secondPropertyName]: {value: secondPropertyValue}
-      }
-      await DatabaseOperations.CreateTableObject(tableObject);
-
-      tableObject.Properties[firstPropertyName].value = updatedFirstPropertyValue;
-      tableObject.Properties[secondPropertyName].value = updatedSecondPropertyValue;
-
-      // Act
-      await DatabaseOperations.UpdateTableObject(tableObject);
-
-      // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-      assert.equal(tableId, tableObjectFromDatabase.TableId);
-      assert.equal(updatedFirstPropertyValue, tableObjectFromDatabase.Properties[firstPropertyName].value);
-      assert.equal(updatedSecondPropertyValue, tableObjectFromDatabase.Properties[secondPropertyName].value);
-
-      // Tidy up
-      await localforage.clear();
-	}
-	
-	it("should update the table object", async () => await updateTheTableObjectTest(false));
-	it("should update the table object with separateKeyStorage", async () => await updateTheTableObjectTest(true));
-});
-
-describe("DeleteTableObjectImmediately function", () => {
-	async function removeTheTableObjectFromTheDatabaseTest(separateKeyStorage: boolean, withTableId: boolean){
-		// Arrange
-		let tableId = 5;
-
-		Init(DavEnvironment.Test, 1, [tableId], [], separateKeyStorage, {icon: "", badge: ""}, {
-			UpdateAllOfTable: () => {},
-			UpdateTableObject: () => {},
-			DeleteTableObject: () => {},
-			UserDownloadFinished: () => {},
-			SyncFinished: () => {}
-		});
-
-		var tableObject = new TableObject();
-		tableObject.TableId = tableId;
-      await DatabaseOperations.CreateTableObject(tableObject);
+		let secondTableObject = new TableObject()
+		secondTableObject.Uuid = uuid
+		secondTableObject.TableId = tableId
+		secondTableObject.UploadStatus = uploadStatus
+		secondTableObject.Etag = etag
+		secondTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
 
 		// Act
-		if(withTableId) await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid, tableObject.TableId);
-		else await DatabaseOperations.DeleteTableObjectImmediately(tableObject.Uuid);
+		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(secondTableObject)
 
-      // Assert
-      var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId);
-      assert.isNull(tableObjectFromDatabase);
+		// Assert
+		assert.equal(updatedTableObjectUuid, uuid)
 
-      // Tidy up
-      await localforage.clear();
-	}
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
 
-	it("should remove the table object from the database", async () => await removeTheTableObjectFromTheDatabaseTest(false, false));
-	it("should remove the table object from the database with separateKeyStorage", async () => await removeTheTableObjectFromTheDatabaseTest(true, false));
-	it("should remove the table object from the database with separateKeyStorage and tableId", async () => await removeTheTableObjectFromTheDatabaseTest(true, true));
-});
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+	})
 
-async function getTableObjects(key: string) : Promise<object[]>{
-	let result = await localforage.startsWith(key);
-	return Object.keys(result).map(key => result[key]);
-}
+	it("should adopt local properties of the existing table object, overwrite the table object in the database and return the uuid", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 42
+
+		let firstLocalPropertyName = "local1"
+		let firstLocalPropertyValue = "Hello World"
+		let secondLocalPropertyName = "local2"
+		let secondLocalPropertyValue = "Hallo Welt"
+
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Good day"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Guten Tag"
+
+		let uploadStatus = TableObjectUploadStatus.NoUpload
+		let etag = "Lorem ipsum dolor sit amet"
+
+		let firstTableObject = new TableObject()
+		firstTableObject.Uuid = uuid
+		firstTableObject.TableId = tableId
+		firstTableObject.UploadStatus = TableObjectUploadStatus.Deleted
+		firstTableObject.Etag = "adsasdasd"
+		firstTableObject.Properties = {
+			[firstLocalPropertyName]: { value: firstLocalPropertyValue, local: true },
+			[firstPropertyName]: { value: "asdadsasd" },
+			[secondLocalPropertyName]: { value: secondLocalPropertyValue, local: true },
+			[secondPropertyName]: { value: "iaosfobags" }
+		}
+
+		await DatabaseOperations.SetTableObject(firstTableObject)
+
+		let secondTableObject = new TableObject()
+		secondTableObject.Uuid = uuid
+		secondTableObject.TableId = tableId
+		secondTableObject.UploadStatus = uploadStatus
+		secondTableObject.Etag = etag
+		secondTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		// Act
+		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(secondTableObject, false)
+
+		// Assert
+		assert.equal(updatedTableObjectUuid, uuid)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
+
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 4)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[firstLocalPropertyName].value, firstLocalPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondLocalPropertyName].value, secondLocalPropertyValue)
+		assert.isTrue(tableObjectFromDatabase.Properties[firstLocalPropertyName].local)
+		assert.isTrue(tableObjectFromDatabase.Properties[secondLocalPropertyName].local)
+	})
+})
+
+describe("SetTableObjects function", () => {
+	it("should save the table objects in the database and return the uuids", async () => {
+		// Arrange
+		let uuid1 = generateUUID()
+		let uuid2 = generateUUID()
+		let uuid3 = generateUUID()
+		let tableId1 = 14
+		let tableId2 = 23
+		let tableId3 = 124
+		let uploadStatus1 = TableObjectUploadStatus.New
+		let uploadStatus2 = TableObjectUploadStatus.NoUpload
+		let uploadStatus3 = TableObjectUploadStatus.UpToDate
+		let etag1 = "asdasd"
+		let etag2 = "werwerwer"
+		let etag3 = "ojsdfnsdfons"
+
+		let firstPropertyName1 = "page1"
+		let firstPropertyValue1 = "Hello World"
+		let firstPropertyName2 = "test1"
+		let firstPropertyValue2 = "Lorem ipsum"
+		let firstPropertyName3 = "bla1"
+		let firstPropertyValue3 = "asdasdasd"
+
+		let secondPropertyName1 = "page2"
+		let secondPropertyValue1 = "Hallo Welt"
+		let secondPropertyName2 = "test2"
+		let secondPropertyValue2 = "dolor sit amet"
+		let secondPropertyName3 = "bla2"
+		let secondPropertyValue3 = "pgondognodg"
+
+		let firstTableObject = new TableObject()
+		firstTableObject.Uuid = uuid1
+		firstTableObject.TableId = tableId1
+		firstTableObject.UploadStatus = uploadStatus1
+		firstTableObject.Etag = etag1
+		firstTableObject.Properties = {
+			[firstPropertyName1]: { value: firstPropertyValue1 },
+			[secondPropertyName1]: { value: secondPropertyValue1 }
+		}
+
+		let secondTableObject = new TableObject()
+		secondTableObject.Uuid = uuid2
+		secondTableObject.TableId = tableId2
+		secondTableObject.UploadStatus = uploadStatus2
+		secondTableObject.Etag = etag2
+		secondTableObject.Properties = {
+			[firstPropertyName2]: { value: firstPropertyValue2 },
+			[secondPropertyName2]: { value: secondPropertyValue2 }
+		}
+
+		let thirdTableObject = new TableObject()
+		thirdTableObject.Uuid = uuid3
+		thirdTableObject.TableId = tableId3
+		thirdTableObject.UploadStatus = uploadStatus3
+		thirdTableObject.Etag = etag3
+		thirdTableObject.Properties = {
+			[firstPropertyName3]: { value: firstPropertyValue3 },
+			[secondPropertyName3]: { value: secondPropertyValue3 }
+		}
+
+		// Act
+		let createdTableObjectUuids = await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject
+		])
+
+		// Assert
+		assert.equal(createdTableObjectUuids.length, 3)
+		assert.equal(createdTableObjectUuids[0], uuid1)
+		assert.equal(createdTableObjectUuids[1], uuid2)
+		assert.equal(createdTableObjectUuids[2], uuid3)
+
+		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		assert.isNotNull(firstTableObjectFromDatabase)
+		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
+		assert.equal(firstTableObjectFromDatabase.UploadStatus, uploadStatus1)
+		assert.equal(firstTableObjectFromDatabase.Etag, etag1)
+
+		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
+		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
+		assert.equal(firstTableObjectFromDatabase.Properties[secondPropertyName1].value, secondPropertyValue1)
+
+		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		assert.isNotNull(secondTableObjectFromDatabase)
+		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
+		assert.equal(secondTableObjectFromDatabase.UploadStatus, uploadStatus2)
+		assert.equal(secondTableObjectFromDatabase.Etag, etag2)
+
+		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
+		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
+		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName2].value, secondPropertyValue2)
+
+		let thirdTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid3, tableId3)
+		assert.isNotNull(thirdTableObjectFromDatabase)
+		assert.equal(thirdTableObjectFromDatabase.TableId, tableId3)
+		assert.equal(thirdTableObjectFromDatabase.UploadStatus, uploadStatus3)
+		assert.equal(thirdTableObjectFromDatabase.Etag, etag3)
+
+		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 2)
+		assert.equal(thirdTableObjectFromDatabase.Properties[firstPropertyName3].value, firstPropertyValue3)
+		assert.equal(thirdTableObjectFromDatabase.Properties[secondPropertyName3].value, secondPropertyValue3)
+	})
+
+	it("should overwrite existing table objects in the database and return the uuids", async () => {
+		// Arrange
+		let uuid1 = generateUUID()
+		let uuid2 = generateUUID()
+		let tableId1 = 13
+		let tableId2 = 42
+
+		let tableObject1 = new TableObject()
+		tableObject1.Uuid = uuid1
+		tableObject1.TableId = tableId1
+		tableObject1.UploadStatus = TableObjectUploadStatus.Updated
+		tableObject1.Etag = "asdasdasd"
+		tableObject1.Properties = {
+			"test": { value: "Hello World" }
+		}
+
+		let tableObject2 = new TableObject()
+		tableObject2.Uuid = uuid2
+		tableObject2.TableId = tableId2
+		tableObject2.UploadStatus = TableObjectUploadStatus.UpToDate
+		tableObject2.Etag = "sdofndgsdg"
+		tableObject2.Properties = {
+			"bla": { value: "Lorem ipsum dolor sit amet" }
+		}
+
+		await DatabaseOperations.SetTableObjects([
+			tableObject1,
+			tableObject2
+		])
+
+		let newUploadStatus1 = TableObjectUploadStatus.New
+		let newUploadStatus2 = TableObjectUploadStatus.Deleted
+		let newEtag1 = "oijsegioasf"
+		let newEtag2 = "oinsdgjdsoknsdf"
+		let firstNewPropertyName1 = "page1"
+		let firstNewPropertyValue1 = "Good day"
+		let firstNewPropertyName2 = "test1"
+		let firstNewPropertyValue2 = "Hallo Welt"
+		let secondNewPropertyName1 = "page2"
+		let secondNewPropertyValue1 = "Guten Tag"
+		let secondNewPropertyName2 = "test2"
+		let secondNewPropertyValue2 = "Hello World"
+
+		let newTableObject1 = new TableObject()
+		newTableObject1.Uuid = uuid1
+		newTableObject1.TableId = tableId1
+		newTableObject1.UploadStatus = newUploadStatus1
+		newTableObject1.Etag = newEtag1
+		newTableObject1.Properties = {
+			[firstNewPropertyName1]: { value: firstNewPropertyValue1 },
+			[secondNewPropertyName1]: { value: secondNewPropertyValue1 }
+		}
+
+		let newTableObject2 = new TableObject()
+		newTableObject2.Uuid = uuid2
+		newTableObject2.TableId = tableId2
+		newTableObject2.UploadStatus = newUploadStatus2
+		newTableObject2.Etag = newEtag2
+		newTableObject2.Properties = {
+			[firstNewPropertyName2]: { value: firstNewPropertyValue2 },
+			[secondNewPropertyName2]: { value: secondNewPropertyValue2 }
+		}
+
+		// Act
+		let updatedTableObjectUuids = await DatabaseOperations.SetTableObjects([
+			newTableObject1,
+			newTableObject2
+		])
+
+		// Assert
+		assert.equal(updatedTableObjectUuids.length, 2)
+		assert.equal(updatedTableObjectUuids[0], uuid1)
+		assert.equal(updatedTableObjectUuids[1], uuid2)
+
+		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		assert.isNotNull(firstTableObjectFromDatabase)
+		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
+		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
+		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
+
+		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
+		assert.equal(firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value, firstNewPropertyValue1)
+		assert.equal(firstTableObjectFromDatabase.Properties[secondNewPropertyName1].value, secondNewPropertyValue1)
+
+		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		assert.isNotNull(secondTableObjectFromDatabase)
+		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
+		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
+		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
+
+		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
+		assert.equal(secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value, firstNewPropertyValue2)
+		assert.equal(secondTableObjectFromDatabase.Properties[secondNewPropertyName2].value, secondNewPropertyValue2)
+	})
+
+	it("should adopt local properties of the existing table objects, overwrite the table objects in the database and return the uuids", async () => {
+		// Arrange
+		// Arrange
+		let uuid1 = generateUUID()
+		let uuid2 = generateUUID()
+		let tableId1 = 13
+		let tableId2 = 42
+
+		let newUploadStatus1 = TableObjectUploadStatus.New
+		let newUploadStatus2 = TableObjectUploadStatus.Deleted
+		let newEtag1 = "oijsegioasf"
+		let newEtag2 = "oinsdgjdsoknsdf"
+
+		let firstLocalPropertyName1 = "local1"
+		let firstLocalPropertyValue1 = "Hello World"
+		let firstLocalPropertyName2 = "page1"
+		let firstLocalPropertyValue2 = "Good day"
+
+		let secondLocalPropertyName1 = "local2"
+		let secondLocalPropertyValue1 = "Hallo Welt"
+		let secondLocalPropertyName2 = "page2"
+		let secondLocalPropertyValue2 = "Guten Tag"
+
+		let firstPropertyName1 = "bla1"
+		let firstPropertyValue1 = "asdasdasd"
+		let firstPropertyName2 = "test1"
+		let firstPropertyValue2 = "Lorem ipsum"
+
+		let secondPropertyName1 = "bla2"
+		let secondPropertyValue1 = "googjogpjae"
+		let secondPropertyName2 = "test2"
+		let secondPropertyValue2 = "dolor sit amet"
+
+		let tableObject1 = new TableObject()
+		tableObject1.Uuid = uuid1
+		tableObject1.TableId = tableId1
+		tableObject1.UploadStatus = TableObjectUploadStatus.UpToDate
+		tableObject1.Etag = "oijhrsguisadfo"
+		tableObject1.Properties = {
+			[firstLocalPropertyName1]: { value: firstLocalPropertyValue1, local: true },
+			[firstPropertyName1]: { value: "asasdasd" },
+			[secondLocalPropertyName1]: { value: secondLocalPropertyValue1, local: true },
+			[secondPropertyName1]: { value: "ibdasibdgsibsdgo" }
+		}
+
+		let tableObject2 = new TableObject()
+		tableObject2.Uuid = uuid2
+		tableObject2.TableId = tableId2
+		tableObject2.UploadStatus = TableObjectUploadStatus.UpToDate
+		tableObject2.Etag = "oihsg9asdpmasd"
+		tableObject2.Properties = {
+			[firstLocalPropertyName2]: { value: firstLocalPropertyValue2, local: true },
+			[firstPropertyName2]: { value: "asdasdasdp" },
+			[secondLocalPropertyName2]: { value: secondLocalPropertyValue2, local: true },
+			[secondPropertyName2]: { value: "aobadj asa3" }
+		}
+
+		await DatabaseOperations.SetTableObjects([
+			tableObject1,
+			tableObject2
+		])
+
+		let newTableObject1 = new TableObject()
+		newTableObject1.Uuid = uuid1
+		newTableObject1.TableId = tableId1
+		newTableObject1.UploadStatus = newUploadStatus1
+		newTableObject1.Etag = newEtag1
+		newTableObject1.Properties = {
+			[firstPropertyName1]: { value: firstPropertyValue1 },
+			[secondPropertyName1]: { value: secondPropertyValue1 }
+		}
+
+		let newTableObject2 = new TableObject()
+		newTableObject2.Uuid = uuid2
+		newTableObject2.TableId = tableId2
+		newTableObject2.UploadStatus = newUploadStatus2
+		newTableObject2.Etag = newEtag2
+		newTableObject2.Properties = {
+			[firstPropertyName2]: { value: firstPropertyValue2 },
+			[secondPropertyName2]: { value: secondPropertyValue2 }
+		}
+
+		// Act
+		let updatedTableObjectUuids = await DatabaseOperations.SetTableObjects([
+			newTableObject1,
+			newTableObject2
+		], false)
+
+		// Assert
+		assert.equal(updatedTableObjectUuids.length, 2)
+		assert.equal(updatedTableObjectUuids[0], uuid1)
+		assert.equal(updatedTableObjectUuids[1], uuid2)
+
+		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		assert.isNotNull(firstTableObjectFromDatabase)
+		assert.equal(firstTableObjectFromDatabase.Uuid, uuid1)
+		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
+		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
+		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
+
+		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 4)
+		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
+		assert.equal(firstTableObjectFromDatabase.Properties[secondPropertyName1].value, secondPropertyValue1)
+		assert.equal(firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].value, firstLocalPropertyValue1)
+		assert.equal(firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].value, secondLocalPropertyValue1)
+		assert.isTrue(firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].local)
+		assert.isTrue(firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].local)
+
+		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		assert.isNotNull(secondTableObjectFromDatabase)
+		assert.equal(secondTableObjectFromDatabase.Uuid, uuid2)
+		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
+		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
+		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
+
+		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 4)
+		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
+		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName2].value, secondPropertyValue2)
+		assert.equal(secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].value, firstLocalPropertyValue2)
+		assert.equal(secondTableObjectFromDatabase.Properties[secondLocalPropertyName2].value, secondLocalPropertyValue2)
+		assert.isTrue(secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].local)
+		assert.isTrue(secondTableObjectFromDatabase.Properties[secondLocalPropertyName2].local)
+	})
+})
+
+describe("GetAllTableObjects function", () => {
+	it("should return table objects that are not deleted", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects()
+		assert.equal(tableObjects.length, 2)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, thirdUuid)
+		assert.equal(tableObjects[1].TableId, thirdTableId)
+		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
+	})
+
+	it("should return all table objects", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(-1, true)
+		assert.equal(tableObjects.length, 4)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, secondUuid)
+		assert.equal(tableObjects[1].TableId, secondTableId)
+		assert.equal(tableObjects[1].UploadStatus, secondUploadStatus)
+		assert.equal(tableObjects[1].Etag, secondEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[secondPropertyName].value, secondPropertyValue)
+
+		assert.equal(tableObjects[2].Uuid, thirdUuid)
+		assert.equal(tableObjects[2].TableId, thirdTableId)
+		assert.equal(tableObjects[2].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[2].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
+		assert.equal(tableObjects[2].Properties[thirdPropertyName].value, thirdPropertyValue)
+
+		assert.equal(tableObjects[3].Uuid, fourthUuid)
+		assert.equal(tableObjects[3].TableId, fourthTableId)
+		assert.equal(tableObjects[3].UploadStatus, fourthUploadStatus)
+		assert.equal(tableObjects[3].Etag, fourthEtag)
+		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
+		assert.equal(tableObjects[3].Properties[fourthPropertyName].value, fourthPropertyValue)
+	})
+
+	it("should return all table objects of a table that are not deleted", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(firstTableId)
+		assert.equal(tableObjects.length, 1)
+
+		assert.equal(tableObjects[0].Uuid, firstUuid)
+		assert.equal(tableObjects[0].TableId, firstTableId)
+		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
+		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+	})
+
+	it("should return all table objects of a table", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		let fourthUuid = generateUUID()
+		let fourthTableId = thirdTableId
+		let fourthUploadStatus = TableObjectUploadStatus.Deleted
+		let fourthEtag = "9oqiweqwue091231"
+		let fourthPropertyName = "test4"
+		let fourthPropertyValue = "asdjiohsdgu2q98h"
+
+		let fourthTableObject = new TableObject(fourthUuid)
+		fourthTableObject.TableId = fourthTableId
+		fourthTableObject.UploadStatus = fourthUploadStatus
+		fourthTableObject.Etag = fourthEtag
+		fourthTableObject.Properties = {
+			[fourthPropertyName]: { value: fourthPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObjects([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject,
+			fourthTableObject
+		])
+
+		// Act
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(thirdTableId, true)
+		assert.equal(tableObjects.length, 2)
+
+		assert.equal(tableObjects[0].Uuid, thirdUuid)
+		assert.equal(tableObjects[0].TableId, thirdTableId)
+		assert.equal(tableObjects[0].UploadStatus, thirdUploadStatus)
+		assert.equal(tableObjects[0].Etag, thirdEtag)
+		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
+		assert.equal(tableObjects[0].Properties[thirdPropertyName].value, thirdPropertyValue)
+
+		assert.equal(tableObjects[1].Uuid, fourthUuid)
+		assert.equal(tableObjects[1].TableId, fourthTableId)
+		assert.equal(tableObjects[1].UploadStatus, fourthUploadStatus)
+		assert.equal(tableObjects[1].Etag, fourthEtag)
+		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
+		assert.equal(tableObjects[1].Properties[fourthPropertyName].value, fourthPropertyValue)
+	})
+})
+
+describe("GetTableObject function", () => {
+	it("should return the table object", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 14
+		let uploadStatus = TableObjectUploadStatus.NoUpload
+		let etag = "asdonsdgonasdpnasd"
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.UploadStatus = uploadStatus
+		tableObject.Etag = etag
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+
+		// Assert
+		assert.isNotNull(tableObjectFromDatabase)
+
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
+	})
+
+	it("should return the table object without tableId", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 14
+		let uploadStatus = TableObjectUploadStatus.NoUpload
+		let etag = "asdonsdgonasdpnasd"
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.UploadStatus = uploadStatus
+		tableObject.Etag = etag
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+
+		// Assert
+		assert.isNotNull(tableObjectFromDatabase)
+
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
+		assert.equal(tableObjectFromDatabase.Etag, etag)
+	})
+
+	it("should return null if the table object does not exist", async () => {
+		// Arrange
+		let uuid = generateUUID()
+
+		// Act
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+
+		// Assert
+		assert.isNull(tableObjectFromDatabase)
+	})
+})
+
+describe("TableObjectExists function", () => {
+	it("should return true if the table object exists2", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 123
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid, tableId)
+
+		// Assert
+		assert.isTrue(tableObjectExists)
+	})
+
+	it("should return true if the table object exists without tableId", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let tableId = 123
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid)
+
+		// Assert
+		assert.isTrue(tableObjectExists)
+	})
+
+	it("should return false if the table object does not exist", async () => {
+		// Arrange
+		let uuid = generateUUID()
+
+		// Act
+		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid)
+
+		// Assert
+		assert.isFalse(tableObjectExists)
+	})
+})
+
+describe("RemoveTableObject function", () => {
+	it("should remove the table object from the database", async () => {
+		// Arrage
+		let uuid = generateUUID()
+		let tableId = 13
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Properties = {
+			"test": { value: "blablabla" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await DatabaseOperations.RemoveTableObject(uuid, tableId)
+
+		// Assert
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		assert.isNull(tableObjectFromDatabase)
+	})
+
+	it("should remove the table object from the database without tableId", async () => {
+		// Arrage
+		let uuid = generateUUID()
+		let tableId = 13
+
+		Init(DavEnvironment.Test, 1, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => { },
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Properties = {
+			"test": { value: "blablabla" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await DatabaseOperations.RemoveTableObject(uuid)
+
+		// Assert
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		assert.isNull(tableObjectFromDatabase)
+	})
+})
