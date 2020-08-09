@@ -14,22 +14,22 @@ export const subscriptionKey = "subscription";
 export const extPropertyName = "ext";
 export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ";
 
-export interface ApiResponse<T>{
+export interface ApiResponse<T> {
 	status: number;
 	data: T;
 }
 
-export interface ApiErrorResponse{
+export interface ApiErrorResponse {
 	status: number;
 	errors: ApiResponseError[];
 }
 
-export interface ApiResponseError{
+export interface ApiResponseError {
 	code: number,
 	message: string
 }
 
-export class Dav{
+export class Dav {
 	static apiBaseUrl: string = apiBaseUrlDevelopment;
 	static websiteUrl: string = websiteUrlDevelopment;
 	static jwt: string = null;
@@ -37,43 +37,41 @@ export class Dav{
 	static appId: number = -1;
 	static tableIds: number[] = [];
 	static parallelTableIds: number[] = [];
-	static separateKeyStorage: boolean = false;
-	static notificationOptions: {icon: string, badge: string} = {icon: "", badge: ""};
+	static notificationOptions: { icon: string, badge: string } = { icon: "", badge: "" };
 	static callbacks: {
-		UpdateAllOfTable: Function, 
-		UpdateTableObject: Function, 
+		UpdateAllOfTable: Function,
+		UpdateTableObject: Function,
 		DeleteTableObject: Function,
 		UserDownloadFinished: Function,
 		SyncFinished: Function
 	} = {
-		UpdateAllOfTable: (tableId: number, changed: boolean) => {},
-		UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => {},
-		DeleteTableObject: (tableObject: TableObject) => {},
-		UserDownloadFinished: () => {},
-		SyncFinished: () => {}
-	}
+			UpdateAllOfTable: (tableId: number, changed: boolean) => { },
+			UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => { },
+			DeleteTableObject: (tableObject: TableObject) => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		}
+	static skipSyncPushInTests: boolean = true
 }
 
 export function Init(
-	environment: DavEnvironment, 
-	appId: number, 
-	tableIds: Array<number>, 
-	parallelTableIds: Array<number>, 
-	separateKeyStorage: boolean, 
-	notificationOptions: {icon: string, badge: string}, 
-	callbacks: { 
-		UpdateAllOfTable: Function, 
-		UpdateTableObject: Function, 
-		DeleteTableObject: Function, 
+	environment: DavEnvironment,
+	appId: number,
+	tableIds: Array<number>,
+	parallelTableIds: Array<number>,
+	notificationOptions: { icon: string, badge: string },
+	callbacks: {
+		UpdateAllOfTable: Function,
+		UpdateTableObject: Function,
+		DeleteTableObject: Function,
 		UserDownloadFinished: Function,
-		SyncFinished: Function 
+		SyncFinished: Function
 	}
-){
+) {
 	Dav.environment = environment;
 	Dav.appId = appId;
 	Dav.tableIds = tableIds;
 	Dav.parallelTableIds = parallelTableIds;
-	Dav.separateKeyStorage = separateKeyStorage;
 	Dav.notificationOptions = notificationOptions;
 	Dav.callbacks = callbacks;
 
@@ -82,7 +80,7 @@ export function Init(
 	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
 }
 
-export function InitStatic(environment: DavEnvironment){
+export function InitStatic(environment: DavEnvironment) {
 	Dav.environment = environment;
 
 	// Set the urls
@@ -90,20 +88,20 @@ export function InitStatic(environment: DavEnvironment){
 	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
 }
 
-export function getTableObjectsKey(tableId?: number, uuid?: string){
-	if(!tableId && !uuid){
-		return "tableObjects:";
-	}else if(tableId && !uuid){
-		return `tableObjects:${tableId}/`;
-	}else if(tableId && uuid){
-		return `tableObjects:${tableId}/${uuid}`;
-	}else{
+export function getTableObjectKey(tableId?: number, uuid?: string) {
+	if ((!tableId || tableId == -1) && !uuid) {
+		return "tableObject:";
+	} else if (tableId && !uuid) {
+		return `tableObject:${tableId}/`;
+	} else if (tableId && uuid) {
+		return `tableObject:${tableId}/${uuid}`;
+	} else {
 		return null;
 	}
 }
 
-export function startWebSocketConnection(channelName = "TableObjectUpdateChannel"){
-   if(!Dav.jwt || !Dav.appId || !Dav.apiBaseUrl || Dav.environment == DavEnvironment.Test) return;
+export function startWebSocketConnection(channelName = "TableObjectUpdateChannel") {
+	if (!Dav.jwt || !Dav.appId || !Dav.apiBaseUrl || Dav.environment == DavEnvironment.Test) return;
 
 	let baseUrl = Dav.apiBaseUrl.replace("http", "ws");
 	var webSocket = new WebSocket(`${baseUrl}/cable?app_id=${Dav.appId}&jwt=${Dav.jwt}`);
@@ -116,62 +114,62 @@ export function startWebSocketConnection(channelName = "TableObjectUpdateChannel
 		webSocket.send(json)
 	}
 
-	webSocket.onmessage = function(e){
-      var json = JSON.parse(e.data);
-      if(json["type"]){
-         if(json["type"] == "reject_subscription"){
-            webSocket.close();
-         }else if(json["type"] == "ping"){
+	webSocket.onmessage = function (e) {
+		var json = JSON.parse(e.data);
+		if (json["type"]) {
+			if (json["type"] == "reject_subscription") {
+				webSocket.close();
+			} else if (json["type"] == "ping") {
 				return;
 			}
-      }
-      
-      // Notify the app of the changes
-      if(json["message"]){
-         var uuid = json["message"]["uuid"]
+		}
+
+		// Notify the app of the changes
+		if (json["message"]) {
+			var uuid = json["message"]["uuid"]
 			var change = json["message"]["change"]
 			var sessionId = json["message"]["session_id"]
 
-			if(!uuid || !change || !sessionId) return;
+			if (!uuid || !change || !sessionId) return;
 
 			// Don't notify the app if the session is the current session or 0
-			if(sessionId == 0) return;
+			if (sessionId == 0) return;
 
 			let currentSessionId = Dav.jwt.split('.')[3];
-			if(currentSessionId && currentSessionId == sessionId) return;
-			
-			if(change == 0 || change == 1){
+			if (currentSessionId && currentSessionId == sessionId) return;
+
+			if (change == 0 || change == 1) {
 				DataManager.UpdateLocalTableObject(uuid);
-			}else if(change == 2){
+			} else if (change == 2) {
 				DataManager.DeleteLocalTableObject(uuid);
 			}
-      }
-   }
+		}
+	}
 }
 
-export function startPushNotificationSubscription(){
-	if('serviceWorker' in navigator && Dav.environment == DavEnvironment.Production){
-      // Wait for availability of the service worker
-      const p = new Promise(r => {
-         if (navigator.serviceWorker.controller) return r();
-         navigator.serviceWorker.addEventListener('controllerchange', e => r());
-      });
-      p.then(() => {
-         // Initialize the service worker
-         navigator.serviceWorker.controller.postMessage({
-            icon: Dav.notificationOptions.icon,
-            badge: Dav.notificationOptions.badge
-         });
-      });
-   }
+export function startPushNotificationSubscription() {
+	if ('serviceWorker' in navigator && Dav.environment == DavEnvironment.Production) {
+		// Wait for availability of the service worker
+		const p = new Promise(r => {
+			if (navigator.serviceWorker.controller) return r();
+			navigator.serviceWorker.addEventListener('controllerchange', e => r());
+		});
+		p.then(() => {
+			// Initialize the service worker
+			navigator.serviceWorker.controller.postMessage({
+				icon: Dav.notificationOptions.icon,
+				badge: Dav.notificationOptions.badge
+			});
+		});
+	}
 }
 
-export function ConvertHttpResponseToErrorResponse(response: axios.AxiosResponse) : ApiErrorResponse{
+export function ConvertHttpResponseToErrorResponse(response: axios.AxiosResponse): ApiErrorResponse {
 	let status = response.status;
 	let responseErrors: any[] = response.data.errors;
 	let errors: ApiResponseError[] = [];
 
-	for(let i = 0; i < responseErrors.length; i++){
+	for (let i = 0; i < responseErrors.length; i++) {
 		errors.push({
 			code: responseErrors[i][0],
 			message: responseErrors[i][1]
