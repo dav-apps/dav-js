@@ -8,12 +8,13 @@ import {
 	Init,
 	userKey,
 	notificationsKey,
-	tableObjectsKey
+	getTableObjectKey
 } from '../../lib/Dav'
 import {
 	TableObject,
 	TableObjectUploadStatus,
-	generateUUID
+	generateUUID,
+	DatabaseTableObject
 } from '../../lib/models/TableObject'
 import { Notification } from '../../lib/models/Notification'
 import { UploadStatus } from '../../lib/providers/DataManager'
@@ -2418,5 +2419,99 @@ describe("RemoveTableObject function", () => {
 		assert.equal(tableObjects[1].Etag, thirdEtag)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
+	})
+})
+
+describe("ConvertDatabaseFormat function", () => {
+	it("should save all table objects from tableObjectsArray as separateKeyStorage and remove the tableObjectsArray", async () => {
+		// Arrange
+		let firstUuid = generateUUID()
+		let firstTableId = 13
+		let firstUploadStatus = TableObjectUploadStatus.New
+		let firstEtag = "asdasdasdasd"
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "jaodnaosd"
+
+		let firstTableObject = new TableObject(firstUuid)
+		firstTableObject.TableId = firstTableId
+		firstTableObject.UploadStatus = firstUploadStatus
+		firstTableObject.Etag = firstEtag
+		firstTableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue }
+		}
+
+		let secondUuid = generateUUID()
+		let secondTableId = firstTableId
+		let secondUploadStatus = TableObjectUploadStatus.Deleted
+		let secondEtag = "j0s0dghsidf"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "0werhoeifndck"
+
+		let secondTableObject = new TableObject(secondUuid)
+		secondTableObject.TableId = secondTableId
+		secondTableObject.UploadStatus = secondUploadStatus
+		secondTableObject.Etag = secondEtag
+		secondTableObject.Properties = {
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let thirdUuid = generateUUID()
+		let thirdTableId = 25
+		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
+		let thirdEtag = "ionsdgjbsdf"
+		let thirdPropertyName = "test3"
+		let thirdPropertyValue = "asdobagobasf"
+
+		let thirdTableObject = new TableObject(thirdUuid)
+		thirdTableObject.TableId = thirdTableId
+		thirdTableObject.UploadStatus = thirdUploadStatus
+		thirdTableObject.Etag = thirdEtag
+		thirdTableObject.Properties = {
+			[thirdPropertyName]: { value: thirdPropertyValue }
+		}
+
+		// Save the table objects in tableObjectsArray
+		await SetTableObjectsArray([
+			firstTableObject,
+			secondTableObject,
+			thirdTableObject
+		])
+
+		// Act
+		await DatabaseOperations.ConvertDatabaseFormat()
+
+		// Assert
+		let firstDatabaseTableObjectFromDatabase = await localforage.getItem(getTableObjectKey(firstTableId, firstUuid)) as DatabaseTableObject
+		assert.isNotNull(firstDatabaseTableObjectFromDatabase)
+
+		let firstTableObjectFromDatabase = DatabaseOperations.ConvertDatabaseTableObjectToTableObject(firstDatabaseTableObjectFromDatabase)
+		assert.equal(firstTableObjectFromDatabase.Uuid, firstUuid)
+		assert.equal(firstTableObjectFromDatabase.TableId, firstTableId)
+		assert.equal(firstTableObjectFromDatabase.UploadStatus, firstUploadStatus)
+		assert.equal(firstTableObjectFromDatabase.Etag, firstEtag)
+		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 1)
+		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+
+		let secondDatabaseTableObjectFromDatabase = await localforage.getItem(getTableObjectKey(secondTableId, secondUuid)) as DatabaseTableObject
+		assert.isNotNull(secondDatabaseTableObjectFromDatabase)
+
+		let secondTableObjectFromDatabase = DatabaseOperations.ConvertDatabaseTableObjectToTableObject(secondDatabaseTableObjectFromDatabase)
+		assert.equal(secondTableObjectFromDatabase.Uuid, secondUuid)
+		assert.equal(secondTableObjectFromDatabase.TableId, secondTableId)
+		assert.equal(secondTableObjectFromDatabase.UploadStatus, secondUploadStatus)
+		assert.equal(secondTableObjectFromDatabase.Etag, secondEtag)
+		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 1)
+		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+
+		let thirdDatabaseTableObjectFromDatabase = await localforage.getItem(getTableObjectKey(thirdTableId, thirdUuid)) as DatabaseTableObject
+		assert.isNotNull(thirdDatabaseTableObjectFromDatabase)
+
+		let thirdTableObjectFromDatabase = DatabaseOperations.ConvertDatabaseTableObjectToTableObject(thirdDatabaseTableObjectFromDatabase)
+		assert.equal(thirdTableObjectFromDatabase.Uuid, thirdUuid)
+		assert.equal(thirdTableObjectFromDatabase.TableId, thirdTableId)
+		assert.equal(thirdTableObjectFromDatabase.UploadStatus, thirdUploadStatus)
+		assert.equal(thirdTableObjectFromDatabase.Etag, thirdEtag)
+		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 1)
+		assert.equal(thirdTableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
 	})
 })

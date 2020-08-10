@@ -20,7 +20,7 @@ import { UploadStatus } from './DataManager';
 
 extendPrototype(localforage);
 
-//#region User methods
+//#region User functions
 export async function SetUser(user: object) {
 	await localforage.setItem(userKey, user);
 }
@@ -34,7 +34,7 @@ export async function RemoveUser() {
 }
 //#endregion
 
-//#region Notification methods
+//#region Notification functions
 async function SetNotificationsArray(notifications: Array<Notification>) {
 	// Convert the notifications to objects
 	let notificationObjects: Array<{ uuid: string, time: number, interval: number, properties: object, status: number }> = [];
@@ -107,7 +107,7 @@ export async function RemoveAllNotifications() {
 }
 //#endregion
 
-//#region Subscription methods
+//#region Subscription functions
 export async function SetSubscription(subscription: { uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus }) {
 	await localforage.setItem(subscriptionKey, {
 		uuid: subscription.uuid,
@@ -127,8 +127,10 @@ export async function RemoveSubscription() {
 }
 //#endregion
 
-//#region TableObject methods
+//#region TableObject functions
 export async function SetTableObject(tableObject: TableObject, overwrite: boolean = true): Promise<string> {
+	await ConvertDatabaseFormat()
+
 	try {
 		if (!tableObject.Uuid) tableObject.Uuid = generateUUID()
 		else if (!overwrite) {
@@ -167,26 +169,18 @@ export async function SetTableObjects(tableObjects: TableObject[], overwrite: bo
 }
 
 export async function GetAllTableObjects(tableId: number = -1, deleted: boolean = false): Promise<TableObject[]> {
+	await ConvertDatabaseFormat()
+
 	// Get all table objects from separateKeyStorage
-	let tableObjects = await GetAllTableObjectsFromSeparateKeyStorage(tableId, deleted)
-
-	// Get all table objects from the table objects array
-	for (let obj of await GetAllTableObjectsFromTableObjectsArray(tableId, deleted)) {
-		tableObjects.push(obj)
-	}
-
-	return tableObjects
+	return await GetAllTableObjectsFromSeparateKeyStorage(tableId, deleted)
 }
 
 export async function GetTableObject(uuid: string, tableId?: number): Promise<TableObject> {
+	await ConvertDatabaseFormat()
+
 	// Database -> DatabaseTableObject -(ConvertObjectToTableObject)> TableObject
 	// Try to get the table object from separateKeyStorage
-	let tableObject = await GetTableObjectFromSeparateKeyStorage(uuid, tableId)
-	if (tableObject != null) return tableObject
-
-	// Try to get the table object from the tableObjects array
-	tableObject = await GetTableObjectFromTableObjectsArray(uuid)
-	return tableObject
+	return await GetTableObjectFromSeparateKeyStorage(uuid, tableId)
 }
 
 export async function TableObjectExists(uuid: string, tableId?: number): Promise<boolean> {
@@ -194,8 +188,7 @@ export async function TableObjectExists(uuid: string, tableId?: number): Promise
 }
 
 export async function RemoveTableObject(uuid: string, tableId?: number) {
-	// Try to remove the table object from tableObjectsArray
-	if (await RemoveTableObjectFromTableObjectsArray(uuid)) return
+	await ConvertDatabaseFormat()
 
 	// Try to remove the table object from separateKeyStorage
 	try {
@@ -217,86 +210,6 @@ export async function RemoveTableObject(uuid: string, tableId?: number) {
 		console.log(error)
 	}
 }
-
-//#region Private tableObjectsArray functions
-async function GetTableObjectFromTableObjectsArray(uuid: string): Promise<TableObject> {
-	// Try to get the table objects array
-	try {
-		var tableObjects = await localforage.getItem(tableObjectsKey) as DatabaseTableObject[]
-		if (!tableObjects) return null
-	} catch (error) {
-		console.log(error)
-		return null
-	}
-
-	for (let obj of tableObjects) {
-		if (obj.Uuid != uuid) continue
-		return ConvertDatabaseTableObjectToTableObject(obj)
-	}
-
-	return null
-}
-
-async function GetAllTableObjectsFromTableObjectsArray(tableId: number = -1, deleted: boolean = false): Promise<TableObject[]> {
-	// Try to get the table objects array
-	try {
-		var tableObjects = await localforage.getItem(tableObjectsKey) as DatabaseTableObject[]
-		if (!tableObjects) return []
-	} catch (error) {
-		console.log(error)
-		return []
-	}
-
-	let selectedDatabaseTableObjects = deleted ?
-		tableObjects
-		: tableObjects.filter(obj => (
-			obj.UploadStatus != TableObjectUploadStatus.Deleted
-			&& obj.UploadStatus != TableObjectUploadStatus.Removed
-		))
-
-	let selectedTableObjects = []
-	for (let obj of selectedDatabaseTableObjects) {
-		if(tableId != -1 && obj.TableId != tableId) continue
-		selectedTableObjects.push(ConvertDatabaseTableObjectToTableObject(obj))
-	}
-
-	return selectedTableObjects
-}
-
-async function RemoveTableObjectFromTableObjectsArray(uuid: string): Promise<boolean> {
-	// Try to get the table objects array
-	try {
-		var tableObjects = await localforage.getItem(tableObjectsKey) as DatabaseTableObject[]
-		if (!tableObjects) return false
-	} catch (error) {
-		console.log(error)
-		return false
-	}
-
-	// Remove the table object from the array
-	let i = tableObjects.findIndex(obj => obj.Uuid == uuid)
-	if (i == -1) return false
-	tableObjects.splice(i, 1)
-
-	// Save the remaining table objects using separateKeyStorage
-	for (let obj of tableObjects) {
-		try {
-			await localforage.setItem(getTableObjectKey(obj.TableId, obj.Uuid), obj)
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
-	// Remove the tableObjectsArray
-	try {
-		await localforage.removeItem(tableObjectsKey)
-	} catch (error) {
-		console.log(error)
-	}
-
-	return true
-}
-//#endregion
 
 //#region Private separateKeyStorage functions
 async function GetTableObjectFromSeparateKeyStorage(uuid: string, tableId?: number): Promise<TableObject> {
@@ -351,7 +264,40 @@ async function GetAllTableObjectsFromSeparateKeyStorage(tableId: number = -1, de
 }
 //#endregion
 
-function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject): TableObject {
+export async function ConvertDatabaseFormat() {
+	// Get the table objects array
+	try {
+		var tableObjects = await localforage.getItem(tableObjectsKey) as DatabaseTableObject[]
+		if(!tableObjects) return
+	} catch (error) {
+		console.log(error)
+		return
+	}
+
+	// Save each table object as separateKeyStorage
+	for (let tableObject of tableObjects) {
+		try {
+			// Check if the table object is already saved as separateKeyStorage
+			let key = getTableObjectKey(tableObject.TableId, tableObject.Uuid)
+			
+			let existingItem = await localforage.getItem(key)
+			if(existingItem) continue
+
+			await localforage.setItem(key, tableObject)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	// Remove the tableObjectsArray
+	try {
+		await localforage.removeItem(tableObjectsKey)
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+export function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject): TableObject {
 	if (obj == null) return null
 
 	let tableObject = new TableObject()
