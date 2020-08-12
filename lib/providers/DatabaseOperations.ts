@@ -141,7 +141,7 @@ export async function SetTableObject(tableObject: TableObject, overwrite: boolea
 				// Add all local properties from the existing table object
 				for (let key of Object.keys(existingTableObject.Properties)) {
 					if (tableObject.Properties[key]) continue
-					if (typeof (existingTableObject.Properties[key]) == "string") continue
+					if (typeof (existingTableObject.Properties[key]) != "object") continue
 					if (!(existingTableObject.Properties as TableObjectProperties)[key].local) continue
 
 					// Add the property to the new table object
@@ -311,12 +311,12 @@ export function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject
 	for (let key of Object.keys(obj.Properties)) {
 		let value = obj.Properties[key]
 
-		if (typeof value == "string") {
-			// value is of type OldTableObjectProperties
-			tableObject.Properties[key] = { value }
-		} else {
+		if (typeof value == "object") {
 			// value is of type TableObjectProperties
 			tableObject.Properties[key] = value
+		} else {
+			// value is of type OldTableObjectProperties
+			tableObject.Properties[key] = { value }
 		}
 	}
 

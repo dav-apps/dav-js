@@ -78,7 +78,7 @@ export class TableObject {
 		return true
 	}
 
-	GetPropertyValue(name: string): string {
+	GetPropertyValue(name: string): string | boolean | number {
 		var property = this.Properties[name];
 		return property ? property.value : null;
 	}
@@ -211,13 +211,13 @@ export type OldTableObjectProperties = {
 }
 
 export interface TableObjectProperty {
-	value: string,
+	value: string | boolean | number,
 	local?: boolean	// default: false
 }
 
 export interface Property {
-	name: string;
-	value: string;
+	name: string
+	value: string | boolean | number
 	options?: {
 		local: boolean
 	}
