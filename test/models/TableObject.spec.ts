@@ -91,6 +91,34 @@ describe("SetPropertyValue function", () => {
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
 	})
 
+	it("should set the property value of the table object with different value types and save it in the database if the property does not exist", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = 123
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObject.Properties[propertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
+	})
+
 	it("should set the property value of the table object and save it in the database if the property already exists", async () => {
 		// Arrange
 		let propertyName = "test"
@@ -100,6 +128,37 @@ describe("SetPropertyValue function", () => {
 		tableObject.TableId = 13
 		tableObject.Properties = {
 			[propertyName]: { value: "Hello World" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObject.Properties[propertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
+	})
+
+	it("should set the property value of the table object with different value types and save it in the database if the property already exists", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: false }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -154,6 +213,38 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
 	})
 
+	it("should set the property value of the table object with options and with different value types and save it in the database if the property does not exist", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = 8264
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue,
+			options: {
+				local
+			}
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObject.Properties[propertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+	})
+
 	it("should set the property value of the table object with options and save it in the database if the property already exists", async () => {
 		// Arrange
 		let propertyName = "test"
@@ -164,6 +255,41 @@ describe("SetPropertyValue function", () => {
 		tableObject.TableId = 13
 		tableObject.Properties = {
 			[propertyName]: { value: "Hello World", local: !local }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValue({
+			name: propertyName,
+			value: propertyValue,
+			options: {
+				local
+			}
+		})
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 1)
+		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObject.Properties[propertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+	})
+
+	it("should set the property value of the table object with options and with different value types and save it in the database if the property already exists", async () => {
+		// Arrange
+		let propertyName = "test"
+		let propertyValue = false
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[propertyName]: { value: true, local: !local }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -241,6 +367,56 @@ describe("SetPropertyValues function", () => {
 		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
 	})
 
+	it("should set the property values of the table object with different value types and save it in the database if the properties do not exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 123
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = false
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+	})
+
 	it("should set the property values of the table object and save it in the database if the properties already exist", async () => {
 		// Arrange
 		let firstPropertyName = "page1"
@@ -255,6 +431,61 @@ describe("SetPropertyValues function", () => {
 		tableObject.Properties = {
 			[firstPropertyName]: { value: "test test" },
 			[secondPropertyName]: { value: "bla bla" },
+			[thirdPropertyName]: { value: "Lorem ipsum" }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
+		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+	})
+
+	it("should set the property value of the table object with different value types and save it in the database if the properties already exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = 123
+		let secondPropertyName = "page2"
+		let secondPropertyValue = true
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = "Bonjour le monde"
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[firstPropertyName]: { value: 93753 },
+			[secondPropertyName]: { value: false },
 			[thirdPropertyName]: { value: "Lorem ipsum" }
 		}
 
@@ -356,6 +587,66 @@ describe("SetPropertyValues function", () => {
 		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
 	})
 
+	it("should set the property value of the table object with options and with different value types and save it in the database if the properties do not exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = 38382.23
+		let secondPropertyName = "page2"
+		let secondPropertyValue = "Hallo Welt"
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = false
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue,
+				options: {
+					local
+				}
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObject.Properties[firstPropertyName].local, local)
+		assert.equal(tableObject.Properties[secondPropertyName].local, local)
+		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+	})
+
 	it("should set the property values of the table object with options and save it in the database if the properties already exist", async () => {
 		// Arrange
 		let firstPropertyName = "page1"
@@ -371,6 +662,71 @@ describe("SetPropertyValues function", () => {
 		tableObject.Properties = {
 			[firstPropertyName]: { value: "test test", local: !local },
 			[secondPropertyName]: { value: "bla bla", local: !local },
+			[thirdPropertyName]: { value: "Lorem ipsum", local: !local }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Act
+		await tableObject.SetPropertyValues([
+			{
+				name: firstPropertyName,
+				value: firstPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: secondPropertyName,
+				value: secondPropertyValue,
+				options: {
+					local
+				}
+			},
+			{
+				name: thirdPropertyName,
+				value: thirdPropertyValue,
+				options: {
+					local
+				}
+			}
+		])
+
+		// Assert
+		assert.equal(Object.keys(tableObject.Properties).length, 3)
+		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObject.Properties[firstPropertyName].local, local)
+		assert.equal(tableObject.Properties[secondPropertyName].local, local)
+		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
+		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+	})
+
+	it("should set the property value of the table object with options and with different value types and save it in the database if the properties already exist", async () => {
+		// Arrange
+		let firstPropertyName = "page1"
+		let firstPropertyValue = 123.456
+		let secondPropertyName = "page2"
+		let secondPropertyValue = true
+		let thirdPropertyName = "page3"
+		let thirdPropertyValue = "Bonjour le monde"
+		let local = true
+
+		let tableObject = new TableObject()
+		tableObject.TableId = 13
+		tableObject.Properties = {
+			[firstPropertyName]: { value: 789.123, local: !local },
+			[secondPropertyName]: { value: false, local: !local },
 			[thirdPropertyName]: { value: "Lorem ipsum", local: !local }
 		}
 
