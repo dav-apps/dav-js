@@ -254,3 +254,30 @@ export async function CreateTable(jwt: string, appId: number, name: string) : Pr
 		}
 	}
 }
+
+export async function DeleteTable(jwt: string, id: number): Promise<ApiResponse<void> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/apps/table/${id}`
+
+	try {
+		let response = await axios.default({
+			method: 'delete',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		})
+
+		return {
+			status: response.status,
+			data: null
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}

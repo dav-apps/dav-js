@@ -5,7 +5,7 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
-import { CreateApp, GetApp, GetActiveAppUsers, GetAllApps, UpdateApp, CreateTable, GetActiveAppUsersResponseData } from '../../lib/providers/AppsController';
+import { CreateApp, GetApp, GetActiveAppUsers, GetAllApps, UpdateApp, CreateTable, GetActiveAppUsersResponseData, DeleteTable } from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 import { Api } from '../../lib/models/Api';
@@ -747,3 +747,79 @@ describe("CreateTable function", () => {
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message);
 	});
 });
+
+describe("DeleteTable function", () => {
+	it("should call deleteTable endpoint", async () => {
+		// Arrange
+		let tableId = 12
+		let url = `${Dav.apiBaseUrl}/apps/table/${tableId}`
+		let jwt = "asdoahsfohbasfsd"
+
+		let expectedResult: ApiResponse<void> = {
+			status: 200,
+			data: null
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await DeleteTable(jwt, tableId) as ApiResponse<void>
+		
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.isNull(result.data)
+	})
+
+	it("should call deleteTable endpoint with error", async () => {
+		// Arrange
+		let tableId = 12
+		let url = `${Dav.apiBaseUrl}/apps/table/${tableId}`
+		let jwt = "asdoahsfohbasfsd"
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await DeleteTable(jwt, tableId) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
