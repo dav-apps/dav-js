@@ -5,10 +5,21 @@ import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
 import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
-import { CreateApp, GetApp, GetActiveAppUsers, GetAllApps, UpdateApp, CreateTable, GetActiveAppUsersResponseData, DeleteTable } from '../../lib/providers/AppsController';
+import {
+	GetTableObject,
+	CreateApp,
+	GetApp,
+	GetActiveAppUsers,
+	GetAllApps,
+	UpdateApp,
+	CreateTable,
+	GetActiveAppUsersResponseData,
+	DeleteTable
+} from '../../lib/providers/AppsController';
 import { Table } from '../../lib/models/Table';
 import { Event } from '../../lib/models/Event';
 import { Api } from '../../lib/models/Api';
+import { generateUUID, TableObject } from '../../lib/models/TableObject';
 
 beforeEach(() => {
 	moxios.install();
@@ -22,6 +33,114 @@ afterEach(() => {
 const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
 const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
 const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
+
+describe("GetTableObject function", () => {
+	it("should call getTableObject endpoint", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
+		let jwt = "asdasfljaksfad"
+
+		let tableId = 123
+		let etag = "asdasdasdasfga"
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 123
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Etag = etag
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let expectedResult: ApiResponse<TableObject> = {
+			status: 201,
+			data: tableObject
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+			
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					uuid,
+					table_id: tableId,
+					file: false,
+					etag,
+					properties: {
+						[firstPropertyName]: firstPropertyValue,
+						[secondPropertyName]: secondPropertyValue
+					}
+				}
+			})
+		})
+
+		// Act
+		let result = await GetTableObject(jwt, uuid) as ApiResponse<TableObject>
+
+		// Assert
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
+		assert.equal(result.data.TableId, expectedResult.data.TableId)
+		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.File, expectedResult.data.File)
+		assert.equal(result.data.UploadStatus, expectedResult.data.UploadStatus)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(Object.keys(result.data.Properties).length, 2)
+		assert.equal(result.data.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(result.data.Properties[secondPropertyName].value, secondPropertyValue)
+	})
+
+	it("should call getTableObject endpoint with error", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
+		let jwt = "asdasfljaksfad"
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+			
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetTableObject(jwt, uuid) as ApiErrorResponse
+
+		// Assert
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
 
 describe("CreateApp function", () => {
 	it("should call createApp endpoint", async () => {

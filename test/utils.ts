@@ -26,32 +26,6 @@ export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	}
 }
 
-export async function GetTableObjectFromServer(uuid: string): Promise<TableObject>{
-   try{
-		var response = await axios.default({
-			method: 'get',
-			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
-			headers: {
-				'Authorization': davClassLibraryTestUserXTestUserJwt
-			}
-		});
-
-      var tableObject = new TableObject();
-      tableObject.TableId = response.data.table_id;
-      tableObject.IsFile = response.data.file;
-      tableObject.Etag = response.data.etag;
-      tableObject.Uuid = response.data.uuid;
-		
-		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = {value: response.data.properties[key]}
-		}
-
-      return tableObject;
-   }catch(error){
-      return null;
-   }
-}
-
 export async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
    try{
 		var response = await axios.default({

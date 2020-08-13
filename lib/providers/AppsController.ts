@@ -5,6 +5,46 @@ import { App, ConvertObjectArrayToApps } from '../models/App';
 import { Table, ConvertObjectArrayToTables } from '../models/Table';
 import { ConvertObjectArrayToEvents } from '../models/Event';
 import { ConvertObjectArrayToApis } from '../models/Api';
+import { TableObject } from '../models/TableObject';
+
+export async function GetTableObject(
+	jwt: string,
+	uuid: string
+): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+	let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
+
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		})
+
+		let tableObject = new TableObject(response.data.uuid)
+		tableObject.TableId = response.data.table_id
+		tableObject.IsFile = response.data.file
+		tableObject.Etag = response.data.etag
+
+		for (let key of Object.keys(response.data.properties)) {
+			tableObject.Properties[key] = { value: response.data.properties[key] }
+		}
+
+		return {
+			status: response.status,
+			data: tableObject
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
 
 export async function CreateApp(
 	jwt: string, 
