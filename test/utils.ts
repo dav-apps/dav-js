@@ -26,22 +26,6 @@ export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	}
 }
 
-export async function DeleteTableObjectFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
-   try{
-		var response = await axios.default({
-			method: 'delete',
-			url: `${Dav.apiBaseUrl}/apps/object/${uuid}`,
-			headers: {
-				'Authorization': davClassLibraryTestUserXTestUserJwt
-			}
-		});
-
-      return {ok: true, message: response.data};
-   }catch(error){
-      return {ok: false, message: error.response.data};
-   }
-}
-
 export async function GetSubscriptionFromServer(uuid: string) : Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string }>{
    try{
 		var response = await axios.default({
