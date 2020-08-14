@@ -48,6 +48,47 @@ export async function GetTableObject(
 	}
 }
 
+export async function UpdateTableObject(
+	jwt: string,
+	uuid: string,
+	properties: { [name: string]: string | boolean | number }
+): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+	let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
+
+	try {
+		let response = await axios.default({
+			method: 'put',
+			url,
+			headers: {
+				Authorization: jwt
+			},
+			data: properties
+		})
+
+		let tableObject = new TableObject(response.data.uuid)
+		tableObject.TableId = response.data.table_id
+		tableObject.IsFile = response.data.file
+		tableObject.Etag = response.data.etag
+
+		for (let key of Object.keys(response.data.properties)) {
+			tableObject.Properties[key] = { value: response.data.properties[key] }
+		}
+
+		return {
+			status: response.status,
+			data: tableObject
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
 export async function DeleteTableObject(jwt: string, uuid: string): Promise<ApiResponse<{}> | ApiErrorResponse>{
 	let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
 

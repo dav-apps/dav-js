@@ -7,6 +7,7 @@ import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 import {
 	GetTableObject,
+	UpdateTableObject,
 	DeleteTableObject,
 	CreateApp,
 	GetApp,
@@ -28,13 +29,13 @@ import { generateUUID, TableObject } from '../../lib/models/TableObject'
 import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
 
 beforeEach(() => {
-	moxios.install();
-	InitStatic(DavEnvironment.Test);
-});
+	moxios.install()
+	InitStatic(DavEnvironment.Test)
+})
 
 afterEach(() => {
-	moxios.uninstall();
-});
+	moxios.uninstall()
+})
 
 const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
 const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
@@ -93,7 +94,7 @@ describe("GetTableObject function", () => {
 		// Act
 		let result = await GetTableObject(jwt, uuid) as ApiResponse<TableObject>
 
-		// Assert
+		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
@@ -141,7 +142,126 @@ describe("GetTableObject function", () => {
 		// Act
 		let result = await GetTableObject(jwt, uuid) as ApiErrorResponse
 
-		// Assert
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("UpdateTableObject function", () => {
+	it("should call updateTableObject endpoint", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
+		let jwt = "asodhasogiasf"
+
+		let tableId = 12
+		let etag = "osdbgsodjfsd"
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Etag = etag
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyName },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let expectedResult: ApiResponse<TableObject> = {
+			status: 200,
+			data: tableObject
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					uuid,
+					table_id: tableId,
+					file: false,
+					etag,
+					properties: {
+						[firstPropertyName]: firstPropertyValue,
+						[secondPropertyName]: secondPropertyValue
+					}
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateTableObject(jwt, uuid, {
+			[firstPropertyName]: firstPropertyValue,
+			[secondPropertyName]: secondPropertyValue
+		}) as ApiResponse<TableObject>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
+		assert.equal(result.data.TableId, expectedResult.data.TableId)
+		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.File, expectedResult.data.File)
+		assert.equal(result.data.UploadStatus, expectedResult.data.UploadStatus)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(Object.keys(result.data.Properties).length, 2)
+		assert.equal(result.data.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(result.data.Properties[secondPropertyName].value, secondPropertyValue)
+	})
+
+	it("should call updateTableObject endpoint with error", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/object/${uuid}`
+		let jwt = "asodhasogiasf"
+
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, jwt)
+			
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateTableObject(jwt, uuid, {
+			[firstPropertyName]: firstPropertyValue,
+			[secondPropertyName]: secondPropertyValue
+		}) as ApiErrorResponse
+
+		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
@@ -177,7 +297,7 @@ describe("DeleteTableObject function", () => {
 		// Act
 		let result = await DeleteTableObject(jwt, uuid) as ApiResponse<{}>
 
-		// Assert
+		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(Object.keys(result.data).length, 0)
 	})
@@ -217,7 +337,7 @@ describe("DeleteTableObject function", () => {
 		// Act
 		let result = await DeleteTableObject(jwt, uuid) as ApiErrorResponse
 
-		// Assert
+		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
