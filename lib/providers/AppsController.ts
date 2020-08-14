@@ -1,12 +1,13 @@
-import * as axios from 'axios';
-import { Dav, ApiResponse, ApiErrorResponse, ConvertHttpResponseToErrorResponse } from '../Dav';
-import { Auth } from '../models/Auth';
-import { App, ConvertObjectArrayToApps } from '../models/App';
-import { Table, ConvertObjectArrayToTables } from '../models/Table';
-import { ConvertObjectArrayToEvents } from '../models/Event';
-import { ConvertObjectArrayToApis } from '../models/Api';
-import { TableObject } from '../models/TableObject';
-import { WebPushSubscription } from '../models/WebPushSubscription';
+import * as axios from 'axios'
+import { Dav, ApiResponse, ApiErrorResponse, ConvertHttpResponseToErrorResponse } from '../Dav'
+import { Auth } from '../models/Auth'
+import { App, ConvertObjectArrayToApps } from '../models/App'
+import { Table, ConvertObjectArrayToTables } from '../models/Table'
+import { ConvertObjectArrayToEvents } from '../models/Event'
+import { ConvertObjectArrayToApis } from '../models/Api'
+import { Notification } from '../models/Notification'
+import { TableObject } from '../models/TableObject'
+import { WebPushSubscription } from '../models/WebPushSubscription'
 
 export async function GetTableObject(
 	jwt: string,
@@ -369,6 +370,38 @@ export async function GetSubscription(jwt: string, uuid: string): Promise<ApiRes
 				response.data.endpoint,
 				response.data.p256dh,
 				response.data.auth
+			)
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
+export async function GetNotification(jwt: string, uuid: string): Promise<ApiResponse<Notification> | ApiErrorResponse> {
+	let url = `${Dav.apiBaseUrl}/apps/notification/${uuid}`
+
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		})
+
+		return {
+			status: response.status,
+			data: new Notification(
+				response.data.time,
+				response.data.interval,
+				response.data.properties,
+				response.data.uuid
 			)
 		}
 	} catch (error) {

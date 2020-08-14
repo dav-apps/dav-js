@@ -16,11 +16,13 @@ import {
 	CreateTable,
 	GetActiveAppUsersResponseData,
 	DeleteTable,
-	GetSubscription
+	GetSubscription,
+	GetNotification
 } from '../../lib/providers/AppsController'
 import { Table } from '../../lib/models/Table'
 import { Event } from '../../lib/models/Event'
 import { Api } from '../../lib/models/Api'
+import { Notification } from '../../lib/models/Notification'
 import { generateUUID, TableObject } from '../../lib/models/TableObject'
 import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
 
@@ -1107,6 +1109,106 @@ describe("GetSubscription function", () => {
 
 		// Act
 		let result = await GetSubscription(jwt, uuid) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("GetNotification function", () => {
+	it("should call getNotification endpoint", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/notification/${uuid}`
+		let jwt = "asdobagaibsfasjd"
+
+		let time = 1312313123
+		let interval = 212
+		let firstPropertyName = "test1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "test2"
+		let secondPropertyValue = "Hallo Welt"
+
+		let expectedResult: ApiResponse<Notification> = {
+			status: 200,
+			data: new Notification(
+				time,
+				interval,
+				{
+					[firstPropertyName]: firstPropertyValue,
+					[secondPropertyName]: secondPropertyValue
+				},
+				uuid
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					time: expectedResult.data.Time,
+					interval: expectedResult.data.Interval,
+					uuid: expectedResult.data.Uuid,
+					properties: expectedResult.data.Properties
+				}
+			})
+		})
+
+		// Act
+		let result = await GetNotification(jwt, uuid) as ApiResponse<Notification>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Time, expectedResult.data.Time)
+		assert.equal(result.data.Interval, expectedResult.data.Interval)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
+		assert.equal(result.data.Properties[firstPropertyName], expectedResult.data.Properties[firstPropertyName])
+		assert.equal(result.data.Properties[secondPropertyName], expectedResult.data.Properties[secondPropertyName])
+	})
+
+	it("should call getNotification endpoint with error", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/notification/${uuid}`
+		let jwt = "asdobagaibsfasjd"
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetNotification(jwt, uuid) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

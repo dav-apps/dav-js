@@ -26,27 +26,6 @@ export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	}
 }
 
-export async function GetNotificationFromServer(uuid: string) : Promise<{ uuid: string, time: number, interval: number, properties: object }>{
-   try{
-		var response = await axios.default({
-			method: 'get',
-			url: `${Dav.apiBaseUrl}/apps/notification/${uuid}`,
-			headers: {
-				'Authorization': davClassLibraryTestUserXTestUserJwt
-			}
-		});
-
-      return {
-         uuid: response.data.uuid,
-         time: response.data.time,
-         interval: response.data.interval,
-         properties: response.data.properties
-      }
-   }catch(error){
-      return null;
-   }
-}
-
 export async function DeleteNotificationFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
    try{
 		var response = await axios.default({
