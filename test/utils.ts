@@ -26,27 +26,6 @@ export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	}
 }
 
-export async function GetSubscriptionFromServer(uuid: string) : Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string }>{
-   try{
-		var response = await axios.default({
-			method: 'get',
-			url: `${Dav.apiBaseUrl}/apps/subscription/${uuid}`,
-			headers: {
-				'Authorization': davClassLibraryTestUserXTestUserJwt
-			}
-		});
-
-      return {
-         uuid: response.data.uuid,
-         endpoint: response.data.endpoint,
-         p256dh: response.data.p256dh,
-         auth: response.data.auth
-      }
-   }catch(error){
-      return null;
-   }
-}
-
 export async function GetNotificationFromServer(uuid: string) : Promise<{ uuid: string, time: number, interval: number, properties: object }>{
    try{
 		var response = await axios.default({

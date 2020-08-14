@@ -6,6 +6,7 @@ import { Table, ConvertObjectArrayToTables } from '../models/Table';
 import { ConvertObjectArrayToEvents } from '../models/Event';
 import { ConvertObjectArrayToApis } from '../models/Api';
 import { TableObject } from '../models/TableObject';
+import { WebPushSubscription } from '../models/WebPushSubscription';
 
 export async function GetTableObject(
 	jwt: string,
@@ -337,6 +338,38 @@ export async function DeleteTable(jwt: string, id: number): Promise<ApiResponse<
 		return {
 			status: response.status,
 			data: {}
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
+export async function GetSubscription(jwt: string, uuid: string): Promise<ApiResponse<WebPushSubscription> | ApiErrorResponse> {
+	let url = `${Dav.apiBaseUrl}/apps/subscription/${uuid}`
+
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		})
+
+		return {
+			status: response.status,
+			data: new WebPushSubscription(
+				response.data.uuid,
+				response.data.endpoint,
+				response.data.p256dh,
+				response.data.auth
+			)
 		}
 	} catch (error) {
 		if(error.response){
