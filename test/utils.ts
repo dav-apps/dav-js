@@ -1,8 +1,6 @@
-import * as axios from 'axios'
 import * as localforage from 'localforage'
-import { Dav, tableObjectsKey } from '../lib/Dav'
+import { tableObjectsKey } from '../lib/Dav'
 import { TableObject } from '../lib/models/TableObject'
-import { davClassLibraryTestUserXTestUserJwt } from './Constants'
 
 export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	try{
@@ -24,20 +22,4 @@ export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 	}catch(error){
 		console.log(error)
 	}
-}
-
-export async function DeleteNotificationFromServer(uuid: string) : Promise<{ ok: Boolean, message: string }>{
-   try{
-		var response = await axios.default({
-			method: 'delete',
-			url: `${Dav.apiBaseUrl}/apps/notification/${uuid}`,
-			headers: {
-				'Authorization': davClassLibraryTestUserXTestUserJwt
-			}
-		});
-		
-      return {ok: true, message: response.data};
-   }catch(error){
-      return {ok: false, message: error.response.data};
-   }
 }

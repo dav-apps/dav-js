@@ -414,3 +414,30 @@ export async function GetNotification(jwt: string, uuid: string): Promise<ApiRes
 		}
 	}
 }
+
+export async function DeleteNotification(jwt: string, uuid: string): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	let url = `${Dav.apiBaseUrl}/apps/notification/${uuid}`
+
+	try {
+		let response = await axios.default({
+			method: 'delete',
+			url,
+			headers: {
+				Authorization: jwt
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}

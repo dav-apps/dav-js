@@ -17,7 +17,8 @@ import {
 	GetActiveAppUsersResponseData,
 	DeleteTable,
 	GetSubscription,
-	GetNotification
+	GetNotification,
+	DeleteNotification
 } from '../../lib/providers/AppsController'
 import { Table } from '../../lib/models/Table'
 import { Event } from '../../lib/models/Event'
@@ -1209,6 +1210,82 @@ describe("GetNotification function", () => {
 
 		// Act
 		let result = await GetNotification(jwt, uuid) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("DeleteNotification endpoint", () => {
+	it("should call deleteNotification endpoint", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/notification/${uuid}`
+		let jwt = "aosdaogbsadjasda"
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 200,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await DeleteNotification(jwt, uuid) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(Object.keys(result.data).length, 0)
+	})
+
+	it("should call deleteNotification endpoint with error", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/notification/${uuid}`
+		let jwt = "aosdaogbsadjasda"
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await DeleteNotification(jwt, uuid) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
