@@ -6,6 +6,7 @@ import { DavEnvironment } from '../../lib/models/DavUser';
 import { Auth } from '../../lib/models/Auth';
 import { App } from '../../lib/models/App';
 import {
+	CreateTableObject,
 	GetTableObject,
 	UpdateTableObject,
 	DeleteTableObject,
@@ -40,6 +41,130 @@ afterEach(() => {
 const devApiKey = "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm";
 const devSecretKey = "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ";
 const devUuid = "d133e303-9dbb-47db-9531-008b20e5aae8";
+
+describe("CreateTableObject function", () => {
+	it("should call createTableObject endpoint", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/apps/object`
+		let uuid = generateUUID()
+		let jwt = "asodhasogiasf"
+
+		let tableId = 12
+		let appId = 6
+		let etag = "osdbgsodjfsd"
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Etag = etag
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyName },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		let expectedResult: ApiResponse<TableObject> = {
+			status: 200,
+			data: tableObject
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], 'application/json')
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					uuid,
+					table_id: tableId,
+					file: false,
+					etag,
+					properties: {
+						[firstPropertyName]: firstPropertyValue,
+						[secondPropertyName]: secondPropertyValue
+					}
+				}
+			})
+		})
+
+		// Act
+		let result = await CreateTableObject(jwt, uuid, tableId, appId, {
+			[firstPropertyName]: firstPropertyValue,
+			[secondPropertyName]: secondPropertyValue
+		}) as ApiResponse<TableObject>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
+		assert.equal(result.data.TableId, expectedResult.data.TableId)
+		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.File, expectedResult.data.File)
+		assert.equal(result.data.UploadStatus, expectedResult.data.UploadStatus)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(Object.keys(result.data.Properties).length, 2)
+		assert.equal(result.data.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(result.data.Properties[secondPropertyName].value, secondPropertyValue)
+	})
+
+	it("should call createTableObject endpoint with error", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/apps/object`
+		let uuid = generateUUID()
+		let jwt = "asodhasogiasf"
+		
+		let tableId = 12
+		let appId = 6
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], 'application/json')
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await CreateTableObject(jwt, uuid, tableId, appId, {
+			[firstPropertyName]: firstPropertyValue,
+			[secondPropertyName]: secondPropertyValue
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
 
 describe("GetTableObject function", () => {
 	it("should call getTableObject endpoint", async () => {
@@ -183,6 +308,7 @@ describe("UpdateTableObject function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
 			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], 'application/json')
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -244,6 +370,7 @@ describe("UpdateTableObject function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
 			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], 'application/json')
 			
 			request.respondWith({
 				status: expectedResult.status,
