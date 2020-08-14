@@ -15,12 +15,14 @@ import {
 	UpdateApp,
 	CreateTable,
 	GetActiveAppUsersResponseData,
-	DeleteTable
-} from '../../lib/providers/AppsController';
-import { Table } from '../../lib/models/Table';
-import { Event } from '../../lib/models/Event';
-import { Api } from '../../lib/models/Api';
-import { generateUUID, TableObject } from '../../lib/models/TableObject';
+	DeleteTable,
+	GetSubscription
+} from '../../lib/providers/AppsController'
+import { Table } from '../../lib/models/Table'
+import { Event } from '../../lib/models/Event'
+import { Api } from '../../lib/models/Api'
+import { generateUUID, TableObject } from '../../lib/models/TableObject'
+import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
 
 beforeEach(() => {
 	moxios.install();
@@ -1012,6 +1014,99 @@ describe("DeleteTable function", () => {
 
 		// Act
 		let result = await DeleteTable(jwt, tableId) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("GetSubscription function", () => {
+	it("should call getSubscription endpoint", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/subscription/${uuid}`
+		let jwt = "phsidoshfdsdsdfsdf"
+
+		let endpoint = "https://example.com"
+		let p256dh = "asdasd"
+		let auth = "asodagiasda"
+
+		let expectedResult: ApiResponse<WebPushSubscription> = {
+			status: 200,
+			data: new WebPushSubscription(
+				uuid,
+				endpoint,
+				p256dh,
+				auth
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					uuid,
+					endpoint,
+					p256dh,
+					auth
+				}
+			})
+		})
+
+		// Act
+		let result = await GetSubscription(jwt, uuid) as ApiResponse<WebPushSubscription>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
+		assert.equal(result.data.Endpoint, expectedResult.data.Endpoint)
+		assert.equal(result.data.P256dh, expectedResult.data.P256dh)
+		assert.equal(result.data.Auth, expectedResult.data.Auth)
+	})
+
+	it("should call getSubscription endpoint with error", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/subscription/${uuid}`
+		let jwt = "phsidoshfdsdsdfsdf"
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetSubscription(jwt, uuid) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
