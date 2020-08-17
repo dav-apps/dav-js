@@ -1,15 +1,16 @@
-import 'mocha';
-import { assert } from 'chai';
-import * as moxios from 'moxios';
-import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav';
-import { DavEnvironment } from '../../lib/models/DavUser';
-import { Auth } from '../../lib/models/Auth';
-import { App } from '../../lib/models/App';
+import 'mocha'
+import { assert } from 'chai'
+import * as moxios from 'moxios'
+import { Dav, InitStatic, ApiResponse, ApiErrorResponse } from '../../lib/Dav'
+import { DavEnvironment } from '../../lib/models/DavUser'
+import { Auth } from '../../lib/models/Auth'
+import { App } from '../../lib/models/App'
 import {
 	CreateTableObject,
 	GetTableObject,
 	UpdateTableObject,
 	DeleteTableObject,
+	AddTableObject,
 	CreateApp,
 	GetApp,
 	GetActiveAppUsers,
@@ -28,6 +29,7 @@ import { Api } from '../../lib/models/Api'
 import { Notification } from '../../lib/models/Notification'
 import { generateUUID, TableObject } from '../../lib/models/TableObject'
 import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
+import { TableObjectUserAccess } from '../../lib/models/TableObjectUserAccess'
 
 beforeEach(() => {
 	moxios.install()
@@ -463,6 +465,101 @@ describe("DeleteTableObject function", () => {
 
 		// Act
 		let result = await DeleteTableObject(jwt, uuid) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("AddTableObject function", async () => {
+	it("should call addTableObject endpoint", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/object/${uuid}/access`
+		let jwt = "saobagasdkansgfpasbdaojbda"
+
+		let id = 12
+		let tableObjectId = 245
+		let userId = 141
+		let tableAlias = 54
+
+		let expectedResult: ApiResponse<TableObjectUserAccess> = {
+			status: 200,
+			data: new TableObjectUserAccess(
+				id,
+				tableObjectId,
+				userId,
+				tableAlias
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					table_object_id: tableObjectId,
+					user_id: userId,
+					table_alias: tableAlias
+				}
+			})
+		})
+
+		// Act
+		let result = await AddTableObject(jwt, uuid, tableAlias) as ApiResponse<TableObjectUserAccess>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
+		assert.equal(result.data.UserId, expectedResult.data.UserId)
+		assert.equal(result.data.TableAlias, expectedResult.data.TableAlias)
+	})
+
+	it("should call addTableObject endpoint with error", async () => {
+		// Arrange
+		let uuid = generateUUID()
+		let url = `${Dav.apiBaseUrl}/apps/object/${uuid}/access`
+		let jwt = "saobagasdkansgfpasbdaojbda"
+		let tableAlias = 54
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1102,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [
+						[expectedResult.errors[0].code, expectedResult.errors[0].message]
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await AddTableObject(jwt, uuid, tableAlias) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

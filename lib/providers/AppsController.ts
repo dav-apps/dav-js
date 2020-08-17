@@ -8,6 +8,7 @@ import { ConvertObjectArrayToApis } from '../models/Api'
 import { Notification } from '../models/Notification'
 import { TableObject } from '../models/TableObject'
 import { WebPushSubscription } from '../models/WebPushSubscription'
+import { TableObjectUserAccess } from '../models/TableObjectUserAccess'
 
 export async function CreateTableObject(
 	jwt: string,
@@ -154,6 +155,41 @@ export async function DeleteTableObject(jwt: string, uuid: string): Promise<ApiR
 		return {
 			status: response.status,
 			data: {}
+		}
+	} catch (error) {
+		if(error.response){
+			// Api error
+			return ConvertHttpResponseToErrorResponse(error.response);
+		}else{
+			// Javascript error
+			return {status: -1, errors: []};
+		}
+	}
+}
+
+export async function AddTableObject(jwt: string, uuid: string, tableAlias?: number): Promise<ApiResponse<TableObjectUserAccess> | ApiErrorResponse>{
+	let url = `${Dav.apiBaseUrl}/apps/object/${uuid}/access`
+
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: jwt
+			},
+			params: {
+				table_alias: tableAlias
+			}
+		})
+
+		return {
+			status: response.status,
+			data: new TableObjectUserAccess(
+				response.data.id,
+				response.data.table_object_id,
+				response.data.user_id,
+				response.data.table_alias
+			)
 		}
 	} catch (error) {
 		if(error.response){
