@@ -2,10 +2,14 @@ import { TableObject } from '../lib/models/TableObject';
 import { Notification } from '../lib/models/Notification';
 import { UploadStatus } from '../lib/providers/DataManager';
 
-export const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJfaWQiOjUsImRldl9pZCI6MiwiZXhwIjozNzU2MTA1MDAyMn0.jZpdLre_ZMWGN2VNbZOn2Xg51RLAT6ocGnyM38jljHI.1";
-export const davClassLibraryTestAppId = 3;
-export const davClassLibraryTestUserId = 5;
-export const testDataTableId = 3;
+export const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJfaWQiOjUsImRldl9pZCI6MiwiZXhwIjozNzU2MTA1MDAyMn0.jZpdLre_ZMWGN2VNbZOn2Xg51RLAT6ocGnyM38jljHI.1"
+export const testUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwidXNlcl9pZCI6MiwiZGV2X2lkIjoyLCJleHAiOjM3NTk3MzI4Mjg2fQ.GZgXpshF77CEiYrsypCqAg8B4LXjbZzMSmaxvAssXA4"
+export const testUserXdavJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwidXNlcl9pZCI6MiwiZGV2X2lkIjoxLCJleHAiOjM3NTk3MzMxMTM2fQ.XaT3EL9cSrdNnRUri2yk2FJRipOsCq_l1KVHl8K83hs"
+export const davXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdkBkYXYtYXBwcy50ZWNoIiwidXNlcm5hbWUiOiJEYXYiLCJ1c2VyX2lkIjoxLCJkZXZfaWQiOjIsImV4cCI6Mzc1OTc2NjU3MjJ9.c-JWhngQZXg7Ya6Fo-zjNHROFZf6KCVcs5PxeeS54Ak"
+
+export const davClassLibraryTestAppId = 3
+export const davClassLibraryTestUserId = 5
+export const testDataTableId = 3
 
 export const firstPropertyName = "page1";
 export const secondPropertyName = "page2";
