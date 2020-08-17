@@ -14,9 +14,6 @@ import {
 	testUserXdavJwt,
 	davClassLibraryTestAppId,
 	testDataTableId,
-	firstPropertyName,
-	secondPropertyName,
-	firstTestDataTableObject,
 	firstTestNotification,
 	secondTestNotification,
 	firstNotificationPropertyName,
@@ -1060,107 +1057,298 @@ describe("SyncPush function", () => {
 
 describe("DownloadTableObject function", () => {
 	it("should download table object", async () => {
-		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+		let createTableResult = await AppsController.CreateTable(testUserXTestUserJwt, davClassLibraryTestAppId, generateUUID())
+		if (createTableResult.status != 201) {
+			assert.fail("Error in creating a test table")
+		}
+
+		let tableId = (createTableResult as ApiResponse<Table>).data.Id
+		tables.push(tableId)
+
+		let updateTableObjectCallbackCalled = false
+
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [tableId], [], { icon: "", badge: "" }, {
 			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
+			UpdateTableObject: () => {
+				updateTableObjectCallbackCalled = true
+			},
 			DeleteTableObject: () => { },
 			UserDownloadFinished: () => { },
 			SyncFinished: () => { }
 		})
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt
 
-		// Act
-		await DataManager.DownloadTableObject(firstTestDataTableObject.Uuid)
-
-		// Assert
-		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid, firstTestDataTableObject.TableId)
-		assert.isNotNull(tableObjectFromDatabase)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstTestDataTableObject.Properties[firstPropertyName].value)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, firstTestDataTableObject.Properties[secondPropertyName].value)
-	})
-
-	it("should not download table object that does not exist", async () => {
-		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		})
-		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+		// Create a table object on the server
 		let uuid = generateUUID()
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		await AppsController.CreateTableObject(
+			davClassLibraryTestUserXTestUserJwt,
+			uuid,
+			tableId,
+			davClassLibraryTestAppId,
+			{
+				[firstPropertyName]: firstPropertyValue,
+				[secondPropertyName]: secondPropertyValue
+			}
+		)
 
 		// Act
 		await DataManager.DownloadTableObject(uuid)
 
 		// Assert
-		var tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
-		assert.isNull(tableObjectFromDatabase)
+		assert.isTrue(updateTableObjectCallbackCalled)
+
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
 	})
 })
 
 describe("UpdateLocalTableObject function", () => {
-	it("should get the table object from the server and update it locally", async () => {
+	it("should update the local table object", async () => {
 		// Arrange
-		// Get all table objects from the server
-		let callbackCalled = false
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+		let createTableResult = await AppsController.CreateTable(testUserXTestUserJwt, davClassLibraryTestAppId, generateUUID())
+		if (createTableResult.status != 201) {
+			assert.fail("Error in creating a test table")
+		}
+
+		let tableId = (createTableResult as ApiResponse<Table>).data.Id
+		tables.push(tableId)
+
+		let updateTableObjectCallbackCalled = false
+
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [tableId], [], { icon: "", badge: "" }, {
 			UpdateAllOfTable: () => { },
 			UpdateTableObject: () => {
-				callbackCalled = true
+				updateTableObjectCallbackCalled = true
 			},
 			DeleteTableObject: () => { },
 			UserDownloadFinished: () => { },
 			SyncFinished: () => { }
 		})
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+
+		// Create a table object in the database and upload it
+		let uuid = generateUUID()
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
 		await DataManager.Sync()
 
-		// Update the table object in the database
-		let tableObject = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid, firstTestDataTableObject.TableId)
-		tableObject.Properties[firstPropertyName].value = "blabla"
-		tableObject.Properties[secondPropertyName].value = "testtest"
-		await DatabaseOperations.SetTableObject(tableObject)
+		// Assert (1)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+
+		// Update the table object on the server
+		let firstPropertyValueUpdated = "Hallo Welt"
+		let secondPropertyValueUpdated = 5678
+
+		await AppsController.UpdateTableObject(
+			davClassLibraryTestUserXTestUserJwt,
+			uuid,
+			{
+				[firstPropertyName]: firstPropertyValueUpdated,
+				[secondPropertyName]: secondPropertyValueUpdated
+			}
+		)
 
 		// Act
-		await DataManager.UpdateLocalTableObject(firstTestDataTableObject.Uuid)
+		await DataManager.UpdateLocalTableObject(uuid)
 
-		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid, firstTestDataTableObject.TableId)
+		// Assert (2)
+		assert.isTrue(updateTableObjectCallbackCalled)
 
-		// The table object should be the same as before
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstTestDataTableObject.Properties[firstPropertyName].value)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, firstTestDataTableObject.Properties[secondPropertyName].value)
-		assert.isTrue(callbackCalled)
+		let tableObjectFromDatabase2 = await DatabaseOperations.GetTableObject(uuid)
+		assert.isNotNull(tableObjectFromDatabase2)
+		assert.equal(tableObjectFromDatabase2.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase2.TableId, tableId)
+		assert.equal(tableObjectFromDatabase2.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(Object.keys(tableObjectFromDatabase2.Properties).length, 2)
+		assert.equal(tableObjectFromDatabase2.Properties[firstPropertyName].value, firstPropertyValueUpdated)
+		assert.equal(tableObjectFromDatabase2.Properties[secondPropertyName].value, secondPropertyValueUpdated)
+	})
+
+	it("should update the local table object without removing local properties", async () => {
+		// Arrange
+		let createTableResult = await AppsController.CreateTable(testUserXTestUserJwt, davClassLibraryTestAppId, generateUUID())
+		if (createTableResult.status != 201) {
+			assert.fail("Error in creating a test table")
+		}
+
+		let tableId = (createTableResult as ApiResponse<Table>).data.Id
+		tables.push(tableId)
+
+		let updateTableObjectCallbackCalled = false
+
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [tableId], [], { icon: "", badge: "" }, {
+			UpdateAllOfTable: () => { },
+			UpdateTableObject: () => {
+				updateTableObjectCallbackCalled = true
+			},
+			DeleteTableObject: () => { },
+			UserDownloadFinished: () => { },
+			SyncFinished: () => { }
+		})
+		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+
+		// Create a table object with local properties in the database and upload it
+		let uuid = generateUUID()
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+		let firstLocalPropertyName = "local1"
+		let firstLocalPropertyValue = 123
+		let secondLocalPropertyName = "local2"
+		let secondLocalPropertyValue = false
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue },
+			[firstLocalPropertyName]: { value: firstLocalPropertyValue },
+			[secondLocalPropertyName]: { value: secondLocalPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+		await DataManager.Sync()
+
+		// Assert (1)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 4)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[firstLocalPropertyName].value, firstLocalPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondLocalPropertyName].value, secondLocalPropertyValue)
+
+		// Update the table object on the server
+		let firstPropertyValueUpdated = "Hallo Welt"
+		let secondPropertyValueUpdated = 5678
+
+		await AppsController.UpdateTableObject(
+			davClassLibraryTestUserXTestUserJwt,
+			uuid,
+			{
+				[firstPropertyName]: firstPropertyValueUpdated,
+				[secondPropertyName]: secondPropertyValueUpdated
+			}
+		)
+
+		// Act
+		await DataManager.UpdateLocalTableObject(uuid)
+
+		// Assert (2)
+		assert.isTrue(updateTableObjectCallbackCalled)
+
+		let tableObjectFromDatabase2 = await DatabaseOperations.GetTableObject(uuid)
+		assert.isNotNull(tableObjectFromDatabase2)
+		assert.equal(tableObjectFromDatabase2.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase2.TableId, tableId)
+		assert.equal(tableObjectFromDatabase2.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(Object.keys(tableObjectFromDatabase2.Properties).length, 4)
+		assert.equal(tableObjectFromDatabase2.Properties[firstPropertyName].value, firstPropertyValueUpdated)
+		assert.equal(tableObjectFromDatabase2.Properties[secondPropertyName].value, secondPropertyValueUpdated)
+		assert.equal(tableObjectFromDatabase2.Properties[firstLocalPropertyName].value, firstLocalPropertyValue)
+		assert.equal(tableObjectFromDatabase2.Properties[secondLocalPropertyName].value, secondLocalPropertyValue)
 	})
 })
 
 describe("DeleteLocalTableObject function", () => {
-	it("should delete the table object locally", async () => {
-		// Assert
-		// Get all table objects from the server
-		let callbackCalled = false
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
+	it("should remove the table object from the database", async () => {
+		// Arrange
+		let createTableResult = await AppsController.CreateTable(testUserXTestUserJwt, davClassLibraryTestAppId, generateUUID())
+		if (createTableResult.status != 201) {
+			assert.fail("Error in creating a test table")
+		}
+
+		let tableId = (createTableResult as ApiResponse<Table>).data.Id
+		tables.push(tableId)
+
+		let deleteTableObjectCallbackCalled = false
+
+		Init(DavEnvironment.Test, davClassLibraryTestAppId, [tableId], [], { icon: "", badge: "" }, {
 			UpdateAllOfTable: () => { },
 			UpdateTableObject: () => { },
 			DeleteTableObject: () => {
-				callbackCalled = true
+				deleteTableObjectCallbackCalled = true
 			},
 			UserDownloadFinished: () => { },
 			SyncFinished: () => { }
 		})
 		Dav.jwt = davClassLibraryTestUserXTestUserJwt
-		await DataManager.Sync()
+
+		// Create a table object in the database and upload it
+		let uuid = generateUUID()
+		let firstPropertyName = "page1"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "page2"
+		let secondPropertyValue = 1234
+
+		let tableObject = new TableObject(uuid)
+		tableObject.TableId = tableId
+		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
+		tableObject.Properties = {
+			[firstPropertyName]: { value: firstPropertyValue },
+			[secondPropertyName]: { value: secondPropertyValue }
+		}
+
+		await DatabaseOperations.SetTableObject(tableObject)
+
+		// Assert (1)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+		assert.isNotNull(tableObjectFromDatabase)
+		assert.equal(tableObjectFromDatabase.Uuid, uuid)
+		assert.equal(tableObjectFromDatabase.TableId, tableId)
+		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
+		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
 
 		// Act
-		await DataManager.DeleteLocalTableObject(firstTestDataTableObject.Uuid)
+		await DataManager.DeleteLocalTableObject(uuid)
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTestDataTableObject.Uuid, firstTestDataTableObject.TableId)
-		assert.isNull(tableObjectFromDatabase)
-		assert.isTrue(callbackCalled)
+		assert.isTrue(deleteTableObjectCallbackCalled)
+
+		let tableObjectFromDatabase2 = await DatabaseOperations.GetTableObject(uuid)
+		assert.isNull(tableObjectFromDatabase2)
 	})
 })
 
