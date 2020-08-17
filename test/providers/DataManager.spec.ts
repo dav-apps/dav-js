@@ -1385,8 +1385,8 @@ describe("UnsubscribePushNotifications function", () => {
 		let subscriptionFromDatabase = await DatabaseOperations.GetSubscription()
 		assert.isNull(subscriptionFromDatabase)
 
-		let subscriptionFromServer = await AppsController.GetSubscription(davClassLibraryTestUserXTestUserJwt, uuid)
-		assert.isNull(subscriptionFromServer)
+		let subscriptionFromServerResponse = await AppsController.GetSubscription(davClassLibraryTestUserXTestUserJwt, uuid)
+		assert.equal(subscriptionFromServerResponse.status, 404)
 	})
 })
 
@@ -1569,8 +1569,8 @@ describe("DeleteNotificationImmediately function", () => {
 		// Assert
 		let notificationFromDatabase2 = await DatabaseOperations.GetNotification(uuid)
 		assert.isNull(notificationFromDatabase2)
-	});
-});
+	})
+})
 
 describe("SyncNotifications function", () => {
 	it("should download all notifications from the server", async () => {
