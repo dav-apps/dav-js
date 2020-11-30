@@ -161,3 +161,17 @@ export function ShowLoginPage(apiKey: string, callbackUrl: string){
 export function ShowSignupPage(apiKey: string, callbackUrl: string){
 	window.location.href = `${Dav.websiteUrl}/signup?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
 }
+
+export function ShowUserPage(anker: string = "", newTab: boolean = false) {
+	let url = GetUserPageLink(anker)
+
+	if (newTab) {
+		window.open(url, "blank")
+	} else {
+		window.location.href = url
+	}
+}
+
+export function GetUserPageLink(anker: string = "") {
+	return `${Dav.websiteUrl}/login?redirect=user${anker ? encodeURIComponent(`#${anker}`) : ''}`
+}

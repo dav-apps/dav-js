@@ -6,9 +6,11 @@ export {
 	ApiResponseError
 } from "./lib/Dav";
 export { 
-	DavUser, 
-	ShowLoginPage, 
-	ShowSignupPage, 
+	DavUser,
+	ShowLoginPage,
+	ShowSignupPage,
+	ShowUserPage,
+	GetUserPageLink,
 	DavEnvironment,
 	DavSubscriptionStatus
 } from "./lib/models/DavUser";
