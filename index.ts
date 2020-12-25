@@ -36,7 +36,6 @@ export {
 } from './lib/providers/DatabaseOperations';
 export {
 	DownloadTableObject,
-	Log,
 	SubscribePushNotifications,
 	UnsubscribePushNotifications,
 	CreateNotification,

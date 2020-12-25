@@ -1,62 +1,60 @@
-import * as axios from 'axios';
-import * as platform from 'platform';
-import { Dav, startWebSocketConnection, webPushPublicKey } from '../Dav';
-import { TableObject, TableObjectUploadStatus, generateUUID } from '../models/TableObject';
-import { Notification } from '../models/Notification';
-import * as DatabaseOperations from './DatabaseOperations';
-import { DavEnvironment } from '../models/DavUser';
-import { CreateEventLog } from './AnalyticsController';
+import * as axios from 'axios'
+import { Dav, startWebSocketConnection, webPushPublicKey } from '../Dav'
+import { TableObject, TableObjectUploadStatus, generateUUID } from '../models/TableObject'
+import { Notification } from '../models/Notification'
+import * as DatabaseOperations from './DatabaseOperations'
+import { DavEnvironment } from '../models/DavUser'
 
-var isSyncing = false;
-var syncAgain = true;
+var isSyncing = false
+var syncAgain = true
 
-var isSyncingNotifications = false;
-var syncNotificationsAgain = false;
+var isSyncingNotifications = false
+var syncNotificationsAgain = false
 
-const maxFileDownloads = 2;								// The max count of files being downloaded simultaneously
-var fileDownloads: Array<{ tableObject: TableObject, etag: string }> = [];			// This stores the tableObjects to download and the corresponding new etag
-export var downloadingFiles: Array<string> = [];	// Contains the uuids of the TableObjects whose files are currently downloading
-var fileDownloadsIntervalId: NodeJS.Timer;
+const maxFileDownloads = 2									// The max count of files being downloaded simultaneously
+var fileDownloads: Array<{ tableObject: TableObject, etag: string }> = []			// This stores the tableObjects to download and the corresponding new etag
+export var downloadingFiles: Array<string> = []		// Contains the uuids of the TableObjects whose files are currently downloading
+var fileDownloadsIntervalId: NodeJS.Timer
 
 //#region Data methods
 export async function Sync() {
-	if (isSyncing) return;
+	if (isSyncing) return
 
-	if (!Dav.jwt) return;
-	isSyncing = true;
+	if (!Dav.jwt) return
+	isSyncing = true
 
 	// Holds the table ids, e.g. 1, 2, 3, 4
-	var tableIds = Dav.tableIds;
+	var tableIds = Dav.tableIds
 	// Holds the parallel table ids, e.g. 2, 3
-	var parallelTableIds = Dav.parallelTableIds;
+	var parallelTableIds = Dav.parallelTableIds
 	// Holds the order of the table ids, sorted by the pages and the parallel table ids, e.g. 1, 2, 3, 2, 3, 4
-	var sortedTableIds: Array<number> = [];
+	var sortedTableIds: Array<number> = []
 	// Holds the pages of the table; in the format <tableId, pages>
-	var tablePages: Map<number, number> = new Map<number, number>();
+	var tablePages: Map<number, number> = new Map<number, number>()
 	// Holds the last downloaded page; in the format <tableId, pages>
-	var currentTablePages: Map<number, number> = new Map<number, number>();
+	var currentTablePages: Map<number, number> = new Map<number, number>()
 	// Holds the latest table result; in the format <tableId, tableData>
-	var tableResults: Map<number, object> = new Map<number, object>();
+	var tableResults: Map<number, object> = new Map<number, object>()
 	// Holds the uuids of the table objects that were removed on the server but not locally; in the format <tableId, Array<string>>
-	var removedTableObjectUuids: Map<number, Array<string>> = new Map<number, Array<string>>();
+	var removedTableObjectUuids: Map<number, Array<string>> = new Map<number, Array<string>>()
 	// Is true if all http calls of the specified table are successful; in the format <tableId, Boolean>
-	var tableGetResultsOkay: Map<number, boolean> = new Map<number, boolean>();
+	var tableGetResultsOkay: Map<number, boolean> = new Map<number, boolean>()
 
-	if (!tableIds || !parallelTableIds) return;
+	if (!tableIds || !parallelTableIds) return
 
 	// Populate removedTableObjectUuids
 	for (let tableId of tableIds) {
-		removedTableObjectUuids.set(tableId, []);
+		removedTableObjectUuids.set(tableId, [])
 
 		for (let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)) {
-			removedTableObjectUuids.get(tableId).push(tableObject.Uuid);
+			removedTableObjectUuids.get(tableId).push(tableObject.Uuid)
 		}
 	}
 
 	// Get the first page of each table and generate the sorted tableIds list
 	for (let tableId of tableIds) {
 		// Get the first page of the table
-		let tableGetResult = await HttpGet(`/apps/table/${tableId}?page=1`);
+		let tableGetResult = await HttpGet(`/apps/table/${tableId}?page=1`)
 
 		tableGetResultsOkay.set(tableId, tableGetResult.ok);
 		if (!tableGetResult.ok) continue;
@@ -983,21 +981,6 @@ export async function UpdateSubscriptionOnServer() {
 				return false;
 			}
 	}
-}
-
-export async function Log(apiKey: string, name: string) {
-	if (/bot|crawler|spider|crawling/i.test(navigator.userAgent)) return;
-
-	// Create event log on the server
-	await CreateEventLog(
-		apiKey,
-		Dav.appId,
-		name,
-		platform.os.family,
-		platform.os.version,
-		platform.name,
-		platform.version
-	)
 }
 
 export async function DeleteSessionOnServer(jwt: string) {

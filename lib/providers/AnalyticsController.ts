@@ -15,59 +15,6 @@ export interface EventLogResponseData{
 	country: string;
 }
 
-export async function CreateEventLog(
-	apiKey: string, 
-	appId: number, 
-	name: string, 
-	osName: string,
-	osVersion: string,
-	browserName: string,
-	browserVersion: string,
-	country?: string
-) : Promise<ApiResponse<EventLogResponseData> | ApiErrorResponse>{
-	let url = `${Dav.apiBaseUrl}/analytics/event`;
-
-	try{
-		let response = await axios.default({
-			method: 'post',
-			url,
-			data: {
-				api_key: apiKey,
-				app_id: appId,
-				name,
-				os_name: osName,
-				os_version: osVersion,
-				browser_name: browserName,
-				browser_version: browserVersion,
-				country
-			}
-		});
-
-		return {
-			status: response.status,
-			data: {
-				id: response.data.id,
-				eventId: response.data.event_id,
-				createdAt: response.data.created_at,
-				processed: response.data.processed,
-				osName: response.data.os_name,
-				osVersion: response.data.os_version,
-				browserName: response.data.browser_name,
-				browserVersion: response.data.browser_version,
-				country: response.data.country
-			}
-		}
-	}catch(error){
-		if(error.response){
-			// Api error
-			return ConvertHttpResponseToErrorResponse(error.response);
-		}else{
-			// Javascript error
-			return {status: -1, errors: []};
-		}
-	}
-}
-
 export async function GetEventByName(
 	jwt: string, 
 	name: string, 
