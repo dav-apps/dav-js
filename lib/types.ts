@@ -4,6 +4,17 @@ export enum Environment{
 	Test,
 	Production
 }
+
+export enum GenericUploadStatus {
+	// The object was created on the server
+	UpToDate = 0,
+	// The object was created, but it's still not saved on the server
+	New = 1,
+	// The object was created on the server, but some values changed
+	Updated = 2,
+	// The object in on the server, but it was deleted locally and has to be deleted on the server
+	Deleted = 3
+}
 //#endregion
 
 //#region Response types
@@ -20,6 +31,19 @@ export interface ApiErrorResponse {
 export interface ApiResponseError {
 	code: number
 	message: string
+}
+//#endregion
+
+//#region User types
+export enum Plan{
+	Free = 0,
+	Plus = 1,
+	Pro = 2
+}
+
+export enum SubscriptionStatus{
+	Active = 0,
+	Ending = 1
 }
 //#endregion
 
@@ -63,17 +87,6 @@ export enum TableObjectUploadStatus {
 	Removed = 4
 }
 
-export enum UploadStatus {
-	// The object was created on the server
-	UpToDate = 0,
-	// The object was created, but it's still not saved on the server
-	New = 1,
-	// The object was created on the server, but some values changed
-	Updated = 2,
-	// The object in on the server, but it was deleted locally and has to be deleted on the server
-	Deleted = 3
-}
-
 export enum TableObjectFileDownloadStatus {
 	NoFileOrNotLoggedIn = 0,
 	NotDownloaded = 1,
@@ -82,15 +95,9 @@ export enum TableObjectFileDownloadStatus {
 }
 //#endregion
 
-//#region User types
-export enum Plan{
-	Free = 0,
-	Plus = 1,
-	Pro = 2
-}
-
-export enum SubscriptionStatus{
-	Active = 0,
-	Ending = 1
+//#region Notification types
+export interface NotificationOptions{
+	icon: string,
+	badge: string
 }
 //#endregion
