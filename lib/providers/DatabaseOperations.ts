@@ -1,36 +1,47 @@
-import * as localforage from 'localforage';
-import { extendPrototype } from 'localforage-startswith';
+import * as localforage from 'localforage'
+import { extendPrototype } from 'localforage-startswith'
 import {
-	Dav,
+	GenericUploadStatus,
+	TableObjectUploadStatus,
+	TableObjectProperties,
+	DatabaseTableObject
+} from '../types'
+import {
 	userKey,
+	jwtKey,
 	notificationsKey,
 	subscriptionKey,
-	tableObjectsKey,
-	getTableObjectKey
-} from '../Dav';
-import {
-	TableObject,
-	DatabaseTableObject,
-	TableObjectUploadStatus,
-	generateUUID,
-	TableObjectProperties
-} from '../models/TableObject';
-import { Notification } from '../models/Notification';
-import { UploadStatus } from './DataManager';
+	tableObjectsKey
+} from '../constants'
+import { generateUuid, getTableObjectKey } from '../utils'
+import { Dav } from '../Dav'
+import { User } from '../models/User'
+import { TableObject } from '../models/TableObject'
+import { Notification } from '../models/Notification'
 
-extendPrototype(localforage);
+extendPrototype(localforage)
 
-//#region User functions
-export async function SetUser(user: object) {
-	await localforage.setItem(userKey, user);
+//#region Jwt functions
+export async function SetJwt(jwt: string) {
+	await localforage.setItem(jwtKey, jwt)
 }
 
-export async function GetUser(): Promise<object> {
-	return await localforage.getItem(userKey) as object;
+export async function GetJwt() {
+	return await localforage.getItem(jwtKey) as string
+}
+//#endregion
+
+//#region User functions
+export async function SetUser(user: User) {
+	await localforage.setItem(userKey, user)
+}
+
+export async function GetUser(): Promise<User> {
+	return await localforage.getItem(userKey) as User
 }
 
 export async function RemoveUser() {
-	await localforage.removeItem(userKey);
+	await localforage.removeItem(userKey)
 }
 //#endregion
 
@@ -108,7 +119,7 @@ export async function RemoveAllNotifications() {
 //#endregion
 
 //#region Subscription functions
-export async function SetSubscription(subscription: { uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus }) {
+export async function SetSubscription(subscription: { uuid: string, endpoint: string, p256dh: string, auth: string, status: GenericUploadStatus }) {
 	await localforage.setItem(subscriptionKey, {
 		uuid: subscription.uuid,
 		endpoint: subscription.endpoint,
@@ -118,8 +129,8 @@ export async function SetSubscription(subscription: { uuid: string, endpoint: st
 	});
 }
 
-export async function GetSubscription(): Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus }> {
-	return await localforage.getItem(subscriptionKey) as { uuid: string, endpoint: string, p256dh: string, auth: string, status: UploadStatus };
+export async function GetSubscription(): Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string, status: GenericUploadStatus }> {
+	return await localforage.getItem(subscriptionKey) as { uuid: string, endpoint: string, p256dh: string, auth: string, status: GenericUploadStatus };
 }
 
 export async function RemoveSubscription() {
@@ -132,7 +143,7 @@ export async function SetTableObject(tableObject: TableObject, overwrite: boolea
 	await ConvertDatabaseFormat()
 
 	try {
-		if (!tableObject.Uuid) tableObject.Uuid = generateUUID()
+		if (!tableObject.Uuid) tableObject.Uuid = generateUuid()
 		else if (!overwrite) {
 			// Check if the table object already exists
 			let existingTableObject = await localforage.getItem(getTableObjectKey(tableObject.TableId, tableObject.Uuid)) as DatabaseTableObject
