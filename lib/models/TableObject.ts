@@ -1,23 +1,30 @@
-import * as axios from 'axios';
-import * as DataManager from '../providers/DataManager';
-import * as DatabaseOperations from '../providers/DatabaseOperations';
-import { Dav } from '../Dav';
-import { DavEnvironment } from './DavUser';
+import * as axios from 'axios'
+import { Dav } from '../Dav'
+import {
+	Environment,
+	TableObjectProperties,
+	TableObjectUploadStatus,
+	TableObjectFileDownloadStatus,
+	Property
+} from '../types'
+import { generateUuid } from '../utils'
+import * as DataManager from '../providers/DataManager'
+import * as DatabaseOperations from '../providers/DatabaseOperations'
 
 export class TableObject {
-	public Uuid: string;
-	public TableId: number;
-	public IsFile: boolean = false;
-	public File: Blob;
-	public Properties: TableObjectProperties = {};
-	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New;
-	public Etag: string;
+	public Uuid: string
+	public TableId: number
+	public IsFile: boolean = false
+	public File: Blob
+	public Properties: TableObjectProperties = {}
+	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New
+	public Etag: string
 
 	constructor(uuid?: string) {
 		if (uuid) {
-			this.Uuid = uuid;
+			this.Uuid = uuid
 		} else {
-			this.Uuid = generateUUID();
+			this.Uuid = generateUuid()
 		}
 	}
 
@@ -93,11 +100,11 @@ export class TableObject {
 			this.Properties[name].value = null;
 		}
 
-		await this.Save(Dav.environment == DavEnvironment.Test);
+		await this.Save(Dav.environment == Environment.Test);
 	}
 
 	async Delete(): Promise<void> {
-		if (Dav.jwt) {
+		if (Dav.jwt != null) {
 			this.UploadStatus = TableObjectUploadStatus.Deleted;
 			await this.Save();
 		} else {
@@ -179,64 +186,17 @@ export class TableObject {
 			&& this.UploadStatus == TableObjectUploadStatus.UpToDate
 			&& triggerSyncPush
 		) {
-			this.UploadStatus = TableObjectUploadStatus.Updated;
+			this.UploadStatus = TableObjectUploadStatus.Updated
 		}
 
 		await DatabaseOperations.SetTableObject(this)
 
-		if (Dav.environment == DavEnvironment.Test && triggerSyncPush && !Dav.skipSyncPushInTests) {
-			await DataManager.SyncPush();
-		} else if (Dav.environment != DavEnvironment.Test && triggerSyncPush) {
-			DataManager.SyncPush();
+		if (Dav.environment == Environment.Test && triggerSyncPush && !Dav.skipSyncPushInTests) {
+			await DataManager.SyncPush()
+		} else if (Dav.environment != Environment.Test && triggerSyncPush) {
+			DataManager.SyncPush()
 		}
 	}
-}
-
-export type DatabaseTableObject = {
-	Uuid: string,
-	TableId: number,
-	IsFile: boolean,
-	File: Blob,
-	Properties: TableObjectProperties | OldTableObjectProperties,
-	UploadStatus: number,
-	Etag: string
-}
-
-export type TableObjectProperties = {
-	[name: string]: TableObjectProperty
-}
-
-export type OldTableObjectProperties = {
-	[name: string]: string
-}
-
-export interface TableObjectProperty {
-	value: string | boolean | number,
-	local?: boolean	// default: false
-}
-
-export interface Property {
-	name: string
-	value: string | boolean | number
-	options?: {
-		local: boolean
-	}
-}
-
-export enum TableObjectUploadStatus {
-	UpToDate = 0,
-	New = 1,
-	Updated = 2,
-	Deleted = 3,
-	Removed = 4,
-	NoUpload = 5
-}
-
-export enum TableObjectFileDownloadStatus {
-	NoFileOrNotLoggedIn = 0,
-	NotDownloaded = 1,
-	Downloading = 2,
-	Downloaded = 3
 }
 
 export function ConvertObjectToTableObject(
@@ -257,17 +217,4 @@ export function ConvertObjectToTableObject(
 	tableObject.Etag = obj.Etag;
 	tableObject.Properties = obj.Properties;
 	return tableObject;
-}
-
-// https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-export function generateUUID() { // Public Domain/MIT
-	var d = new Date().getTime();
-	if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-		d += performance.now(); //use high-precision timer if available
-	}
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		var r = (d + Math.random() * 16) % 16 | 0;
-		d = Math.floor(d / 16);
-		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-	});
 }
