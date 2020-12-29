@@ -8,6 +8,7 @@ import {
 	Property
 } from '../types'
 import { generateUuid } from '../utils'
+import * as SyncManager from '../providers/SyncManager'
 import * as DataManager from '../providers/DataManager'
 import * as DatabaseOperations from '../providers/DatabaseOperations'
 
@@ -137,24 +138,26 @@ export class TableObject {
 		await this.SetPropertyValue({ name: "ext", value: fileExt });
 	}
 
-	GetFileDownloadStatus(): TableObjectFileDownloadStatus {
-		if (!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
-		if (this.File) return TableObjectFileDownloadStatus.Downloaded;
-		if (!Dav.jwt) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn;
+	GetFileDownloadStatus() : TableObjectFileDownloadStatus {
+		if (!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
+		if (this.File != null) return TableObjectFileDownloadStatus.Downloaded
+		if (Dav.jwt == null) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
 
-		var i = DataManager.downloadingFiles.findIndex(uuid => uuid == this.Uuid);
-		if (i !== -1) {
-			return TableObjectFileDownloadStatus.Downloading;
-		}
-		return TableObjectFileDownloadStatus.NotDownloaded;
+		if (SyncManager.downloadingFileUuid == this.Uuid) return TableObjectFileDownloadStatus.Downloading
+		return TableObjectFileDownloadStatus.NotDownloaded
 	}
 
 	async DownloadFile(): Promise<boolean> {
-		var downloadStatus = this.GetFileDownloadStatus();
+		var downloadStatus = this.GetFileDownloadStatus()
 
-		if (downloadStatus == TableObjectFileDownloadStatus.Downloading ||
-			downloadStatus == TableObjectFileDownloadStatus.Downloaded ||
-			!Dav.jwt) return false;
+		if (
+			Dav.jwt == null
+			|| downloadStatus == TableObjectFileDownloadStatus.Downloading
+			|| downloadStatus == TableObjectFileDownloadStatus.Downloaded
+		) return false
+
+		if (SyncManager.downloadingFileUuid != null) return false
+		SyncManager.setDownloadingFileUuid(this.Uuid)
 
 		try {
 			let response = await axios.default({
@@ -167,16 +170,18 @@ export class TableObject {
 				headers: {
 					'Authorization': Dav.jwt
 				}
-			});
+			})
 
 			if (response && response.data) {
-				this.File = response.data as Blob;
-				await this.Save(false);
-				return true;
+				this.File = response.data as Blob
+				await this.Save(false)
+
+				SyncManager.setDownloadingFileUuid(null)
+				return true
 			}
 		} catch (error) {
-			console.log(error);
-			return false;
+			SyncManager.setDownloadingFileUuid(null)
+			return false
 		}
 	}
 
