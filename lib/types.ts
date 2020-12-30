@@ -100,4 +100,9 @@ export interface NotificationOptions{
 	icon: string,
 	badge: string
 }
+
+export enum WebPushSubscriptionUploadStatus{
+	UpToDate = 0,
+	New = 1
+}
 //#endregion

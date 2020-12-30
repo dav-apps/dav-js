@@ -1,4 +1,4 @@
-import { GenericUploadStatus } from "../types"
+import { WebPushSubscriptionUploadStatus } from "../types"
 
 export class WebPushSubscription {
 	constructor(
@@ -6,6 +6,6 @@ export class WebPushSubscription {
 		public Endpoint: string,
 		public P256dh: string,
 		public Auth: string,
-		public UploadStatus: GenericUploadStatus = GenericUploadStatus.New
+		public UploadStatus: WebPushSubscriptionUploadStatus = WebPushSubscriptionUploadStatus.New
 	) { }
 }
