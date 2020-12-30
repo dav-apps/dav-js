@@ -10,7 +10,7 @@ import {
 	userKey,
 	jwtKey,
 	notificationsKey,
-	subscriptionKey,
+	webPushSubscriptionKey,
 	tableObjectsKey
 } from '../constants'
 import { generateUuid, getTableObjectKey } from '../utils'
@@ -18,6 +18,7 @@ import { Dav } from '../Dav'
 import { User } from '../models/User'
 import { TableObject } from '../models/TableObject'
 import { Notification } from '../models/Notification'
+import { WebPushSubscription } from '../models/WebPushSubscription'
 
 extendPrototype(localforage)
 
@@ -118,23 +119,17 @@ export async function RemoveAllNotifications() {
 }
 //#endregion
 
-//#region Subscription functions
-export async function SetSubscription(subscription: { uuid: string, endpoint: string, p256dh: string, auth: string, status: GenericUploadStatus }) {
-	await localforage.setItem(subscriptionKey, {
-		uuid: subscription.uuid,
-		endpoint: subscription.endpoint,
-		p256dh: subscription.p256dh,
-		auth: subscription.auth,
-		status: subscription.status
-	});
+//#region WebPushSubscription functions
+export async function SetWebPushSubscription(subscription: WebPushSubscription) {
+	await localforage.setItem(webPushSubscriptionKey, subscription)
 }
 
-export async function GetSubscription(): Promise<{ uuid: string, endpoint: string, p256dh: string, auth: string, status: GenericUploadStatus }> {
-	return await localforage.getItem(subscriptionKey) as { uuid: string, endpoint: string, p256dh: string, auth: string, status: GenericUploadStatus };
+export async function GetWebPushSubscription(): Promise<WebPushSubscription>{
+	return await localforage.getItem(webPushSubscriptionKey) as WebPushSubscription
 }
 
-export async function RemoveSubscription() {
-	await localforage.removeItem(subscriptionKey);
+export async function RemoveWebPushSubscription() {
+	await localforage.removeItem(webPushSubscriptionKey)
 }
 //#endregion
 
