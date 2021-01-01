@@ -1,24 +1,32 @@
-import { generateUUID } from "./TableObject";
-import * as DatabaseOperations from "../providers/DatabaseOperations";
-import { UploadStatus } from '../providers/DataManager';
+import { GenericUploadStatus } from '../types'
+import { generateUuid } from '../utils'
+import * as DatabaseOperations from '../providers/DatabaseOperations'
 
-export class Notification{
-   public Uuid: string;
-   public Time: number;
-   public Interval: number = 0;
-   public Properties: object = {};
-   public Status: UploadStatus;
+export class Notification {
+	public Uuid: string
+	public Time: number
+	public Interval: number
+	public Title: string
+	public Body: string
+	public UploadStatus: GenericUploadStatus
 
-   constructor(time: number, interval: number, properties: object, uuid: string = null, status: UploadStatus = UploadStatus.UpToDate){
-      if(!uuid) uuid = generateUUID();
-      this.Uuid = uuid;
-      this.Time = time;
-      this.Interval = interval;
-      this.Properties = properties;
-      this.Status = status;
-   }
+	constructor(params: {
+		Uuid?: string,
+		Time: number,
+		Interval: number,
+		Title: string,
+		Body: string,
+		UploadStatus?: GenericUploadStatus
+	}) {
+		this.Uuid = params.Uuid == null ? generateUuid() : params.Uuid
+		this.Time = params.Time
+		this.Interval = params.Interval
+		this.Title = params.Title
+		this.Body = params.Body
+		this.UploadStatus = params.UploadStatus == null ? GenericUploadStatus.New : params.UploadStatus
+	}
 
-   async Save(){
-      await DatabaseOperations.SaveNotification(this);
-   }
+	async Save() {
+		await DatabaseOperations.SetNotification(this)
+	}
 }
