@@ -70,6 +70,10 @@ export async function GetNotification(uuid: string): Promise<Notification> {
 	return await localforage.getItem(getNotificationKey(uuid)) as Notification
 }
 
+export async function NotificationExists(uuid: string): Promise<boolean>{
+	return await GetNotification(uuid) != null
+}
+
 export async function RemoveNotification(uuid: string) {
 	await localforage.removeItem(getNotificationKey(uuid))
 }
