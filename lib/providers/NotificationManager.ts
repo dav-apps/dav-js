@@ -6,7 +6,8 @@ import {
 	ApiResponse,
 	ApiErrorResponse,
 	Environment,
-	WebPushSubscriptionUploadStatus
+	WebPushSubscriptionUploadStatus,
+	GenericUploadStatus
 } from '../types'
 import {
 	generateUuid,
@@ -14,11 +15,15 @@ import {
 	requestNotificationPermission
 } from '../utils'
 import * as ErrorCodes from '../errorCodes'
-import { WebPushSubscription } from '../models/WebPushSubscription'
 import * as DatabaseOperations from './DatabaseOperations'
+import { WebPushSubscription } from '../models/WebPushSubscription'
+import { Notification } from '../models/Notification'
 import { CreateWebPushSubscription } from '../controllers/WebPushSubscriptionsController'
+import { CreateNotification, DeleteNotification, UpdateNotification } from '../controllers/NotificationsController'
 
 var isSyncingWebPushSubscription = false
+var isSyncingNotifications = false
+var syncNotificationsAgain = false
 
 export async function SetupWebPushSubscription(): Promise<boolean> {
 	if (
@@ -93,6 +98,112 @@ export async function WebPushSubscriptionSyncPush() {
 	isSyncingWebPushSubscription = false
 }
 
+export async function NotificationSyncPush() {
+	if (Dav.jwt == null) return
+
+	if (isSyncingNotifications) {
+		syncNotificationsAgain = true
+		return
+	}
+	isSyncingNotifications = true
+
+	let notifications = await DatabaseOperations.GetAllNotifications()
+
+	for (let notification of notifications) {
+		switch (notification.UploadStatus) {
+			case GenericUploadStatus.New:
+				// Create the notification on the server
+				let createResult = await CreateNotificationOnServer(notification)
+
+				if (createResult.success) {
+					notification.UploadStatus = GenericUploadStatus.UpToDate
+					await DatabaseOperations.SetNotification(notification)
+				} else if (createResult.message != null) {
+					// Check the errors
+					let errors = (createResult.message as ApiErrorResponse).errors
+
+					// Check if the notification already exists
+					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyTaken)
+					if (i != -1) {
+						// Set the UploadStatus to UpToDate
+						notification.UploadStatus = GenericUploadStatus.UpToDate
+						await DatabaseOperations.SetNotification(notification)
+					}
+
+					// Check if the session does not exist
+					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
+					if (i != -1) {
+						// Log the user out
+						await Dav.Logout()
+					}
+				}
+				break
+			case GenericUploadStatus.Updated:
+				// Update the notification on the server
+				let updateResult = await UpdateNotificationOnServer(notification)
+
+				if (updateResult.success) {
+					notification.UploadStatus = GenericUploadStatus.UpToDate
+					await DatabaseOperations.SetNotification(notification)
+				} else if (updateResult.message != null) {
+					// Check the errors
+					let errors = (updateResult.message as ApiErrorResponse).errors
+
+					// Check if the notification does not exist
+					let i = errors.findIndex(error => error.code == ErrorCodes.NotificationDoesNotExist)
+					if (i != -1) {
+						// Delete the notification
+						await DatabaseOperations.RemoveNotification(notification.Uuid)
+					}
+
+					// Check if the session does not exist
+					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
+					if (i != -1) {
+						// Log the user out
+						await Dav.Logout()
+					}
+				}
+				break
+			case GenericUploadStatus.Deleted:
+				// Delete the notification on the server
+				let deleteResult = await DeleteNotificationOnServer(notification)
+
+				if (deleteResult.success) {
+					// Delete the table object
+					await DatabaseOperations.RemoveNotification(notification.Uuid)
+				} else if (deleteResult.message != null) {
+					// Check the errors
+					let errors = (updateResult.message as ApiErrorResponse).errors
+
+					// Check if the notification does not exist
+					let i = errors.findIndex(error =>
+						error.code == ErrorCodes.NotificationDoesNotExist
+						|| error.code == ErrorCodes.ActionNotAllowed
+					)
+					if (i != -1) {
+						// Delete the notification
+						await DatabaseOperations.RemoveNotification(notification.Uuid)
+					}
+
+					// Check if the session does not exist
+					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
+					if (i != -1) {
+						// Log the user out
+						await Dav.Logout()
+					}
+				}
+				break
+		}
+	}
+
+	isSyncingNotifications = false
+
+	if (syncNotificationsAgain) {
+		syncNotificationsAgain = false
+		await NotificationSyncPush()
+	}
+}
+
 //#region Utility functions
 async function CreateWebPushSubscriptionOnServer(
 	webPushSubscription: WebPushSubscription
@@ -116,6 +227,83 @@ async function CreateWebPushSubscriptionOnServer(
 		return {
 			success: false,
 			message: createWebPushSubscriptionResponse as ApiErrorResponse
+		}
+	}
+}
+
+async function CreateNotificationOnServer(
+	notification: Notification
+): Promise<{success: boolean, message: Notification | ApiErrorResponse}> {
+	if (Dav.jwt == null) return { success: false, message: null }
+	
+	let createNotificationResponse = await CreateNotification({
+		jwt: Dav.jwt,
+		uuid: notification.Uuid,
+		time: notification.Time,
+		interval: notification.Interval,
+		title: notification.Title,
+		body: notification.Body
+	})
+
+	if (createNotificationResponse.status == 201) {
+		return {
+			success: true,
+			message: (createNotificationResponse as ApiResponse<Notification>).data
+		}
+	} else {
+		return {
+			success: false,
+			message: createNotificationResponse as ApiErrorResponse
+		}
+	}
+}
+
+async function UpdateNotificationOnServer(
+	notification: Notification
+): Promise<{ success: boolean, message: Notification | ApiErrorResponse }>{
+	if (Dav.jwt == null) return { success: false, message: null }
+
+	let updateNotificationResponse = await UpdateNotification({
+		jwt: Dav.jwt,
+		uuid: notification.Uuid,
+		time: notification.Time,
+		interval: notification.Interval,
+		title: notification.Title,
+		body: notification.Body
+	})
+
+	if (updateNotificationResponse.status == 200) {
+		return {
+			success: true,
+			message: (updateNotificationResponse as ApiResponse<Notification>).data
+		}
+	} else {
+		return {
+			success: false,
+			message: updateNotificationResponse as ApiErrorResponse
+		}
+	}
+}
+
+async function DeleteNotificationOnServer(
+	notification: Notification
+): Promise<{ success: boolean, message: {} | ApiErrorResponse}>{
+	if (Dav.jwt == null) return { success: false, message: null }
+
+	let deleteNotificationResponse = await DeleteNotification({
+		jwt: Dav.jwt,
+		uuid: notification.Uuid
+	})
+
+	if (deleteNotificationResponse.status == 204) {
+		return {
+			success: true,
+			message: {}
+		}
+	} else {
+		return {
+			success: false,
+			message: deleteNotificationResponse as ApiErrorResponse
 		}
 	}
 }
