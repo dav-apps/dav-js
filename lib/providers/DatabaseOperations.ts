@@ -1,7 +1,6 @@
 import * as localforage from 'localforage'
 import { extendPrototype } from 'localforage-startswith'
 import {
-	GenericUploadStatus,
 	TableObjectUploadStatus,
 	TableObjectProperties,
 	DatabaseTableObject
@@ -9,11 +8,14 @@ import {
 import {
 	userKey,
 	jwtKey,
-	notificationsKey,
 	webPushSubscriptionKey,
 	tableObjectsKey
 } from '../constants'
-import { generateUuid, getTableObjectKey } from '../utils'
+import {
+	generateUuid,
+	getTableObjectKey,
+	getNotificationKey
+} from '../utils'
 import { Dav } from '../Dav'
 import { User } from '../models/User'
 import { TableObject } from '../models/TableObject'
@@ -47,75 +49,37 @@ export async function RemoveUser() {
 //#endregion
 
 //#region Notification functions
-async function SetNotificationsArray(notifications: Array<Notification>) {
-	// Convert the notifications to objects
-	let notificationObjects: Array<{ uuid: string, time: number, interval: number, properties: object, status: number }> = [];
-	for (let notification of notifications) {
-		notificationObjects.push({
-			uuid: notification.Uuid,
-			time: notification.Time,
-			interval: notification.Interval,
-			properties: notification.Properties,
-			status: notification.Status
-		});
-	}
-
-	await localforage.setItem(notificationsKey, notificationObjects);
+export async function SetNotification(notification: Notification) {
+	await localforage.setItem(getNotificationKey(notification.Uuid), notification)
 }
 
-export async function GetAllNotifications(): Promise<Array<Notification>> {
-	let notificationObjects = await localforage.getItem(notificationsKey) as Array<{ uuid: string, time: number, interval: number, properties: object, status: number }>;
-	if (!notificationObjects) return [];
+export async function GetAllNotifications(): Promise<Notification[]> {
+	let key = getNotificationKey()
 
-	// Convert the objects to Notifications
-	let notifications: Array<Notification> = [];
-	for (let obj of notificationObjects) {
-		notifications.push(new Notification(obj.time, obj.interval, obj.properties, obj.uuid, obj.status));
+	try {
+		var notificationsObject = await localforage.startsWith(key) as { [key: string]: Notification }
+	} catch (error) {
+		console.log(error)
+		return []
 	}
 
-	return notifications;
+	return Object.values(notificationsObject)
 }
 
 export async function GetNotification(uuid: string): Promise<Notification> {
-	let notifications = await GetAllNotifications();
-
-	let index = notifications.findIndex(n => n.Uuid == uuid);
-	if (index !== -1) {
-		return notifications[index];
-	} else {
-		return null;
-	}
+	return await localforage.getItem(getNotificationKey(uuid)) as Notification
 }
 
-export async function SaveNotification(notification: Notification) {
-	let notifications = await GetAllNotifications();
-
-	// Check if the notification already exists
-	let index = notifications.findIndex(n => n.Uuid == notification.Uuid);
-	if (index !== -1) {
-		// Replace the old notification
-		notifications[index] = notification;
-	} else {
-		// Add the new notification
-		notifications.push(notification);
-	}
-
-	await SetNotificationsArray(notifications);
-}
-
-export async function DeleteNotification(uuid: string) {
-	let notifications = await GetAllNotifications();
-
-	let index = notifications.findIndex(n => n.Uuid == uuid);
-	if (index !== -1) {
-		// Remove the notification
-		notifications.splice(index, 1);
-		await SetNotificationsArray(notifications);
-	}
+export async function RemoveNotification(uuid: string) {
+	await localforage.removeItem(getNotificationKey(uuid))
 }
 
 export async function RemoveAllNotifications() {
-	await localforage.removeItem(notificationsKey);
+	const keys = await localforage.keysStartingWith(getNotificationKey())
+
+	for (let key of keys) {
+		await localforage.removeItem(key)
+	}
 }
 //#endregion
 

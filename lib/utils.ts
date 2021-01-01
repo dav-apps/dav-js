@@ -37,6 +37,14 @@ export function getTableObjectKey(tableId?: number, uuid?: string) {
 	}
 }
 
+export function getNotificationKey(uuid?: string) {
+	if (uuid != null) {
+		return `notification:${uuid}`
+	} else {
+		return "notification:"
+	}
+}
+
 export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
 	if (error.response) {
 		// API error
