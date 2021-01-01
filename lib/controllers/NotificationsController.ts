@@ -2,7 +2,7 @@ import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types'
 import { ConvertErrorToApiErrorResponse } from '../utils'
-import { Notification } from '../models/Notification'
+import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification'
 
 export async function CreateNotification(params: {
 	jwt: string,
@@ -40,6 +40,27 @@ export async function CreateNotification(params: {
 				Body: response.data.body,
 				UploadStatus: GenericUploadStatus.UpToDate
 			})
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
+export async function GetNotifications(params: {
+	jwt: string
+}): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/notifications`,
+			headers: {
+				Authorization: params.jwt
+			}
+		})
+
+		return {
+			status: response.status,
+			data: ConvertObjectArrayToNotifications(response.data.notifications)
 		}
 	} catch (error) {
 		return ConvertErrorToApiErrorResponse(error)

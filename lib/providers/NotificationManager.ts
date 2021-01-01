@@ -19,7 +19,12 @@ import * as DatabaseOperations from './DatabaseOperations'
 import { WebPushSubscription } from '../models/WebPushSubscription'
 import { Notification } from '../models/Notification'
 import { CreateWebPushSubscription } from '../controllers/WebPushSubscriptionsController'
-import { CreateNotification, DeleteNotification, UpdateNotification } from '../controllers/NotificationsController'
+import {
+	CreateNotification,
+	GetNotifications,
+	DeleteNotification,
+	UpdateNotification
+} from '../controllers/NotificationsController'
 
 var isSyncingWebPushSubscription = false
 var isSyncingNotifications = false
@@ -98,9 +103,46 @@ export async function WebPushSubscriptionSyncPush() {
 	isSyncingWebPushSubscription = false
 }
 
+export async function NotificationSync() {
+	if (Dav.jwt == null || isSyncingNotifications) return
+	isSyncingNotifications = true
+
+	let removedNotifications = await DatabaseOperations.GetAllNotifications()
+
+	// Get all notifications from the server
+	let getNotificationsResponse = await GetNotifications({ jwt: Dav.jwt })
+	if (getNotificationsResponse.status != 200) return
+	let notifications = (getNotificationsResponse as ApiResponse<Notification[]>).data
+	
+	for (let notification of notifications) {
+		// Remove the notification from removedNotifications
+		let i = removedNotifications.findIndex(n => n.Uuid == notification.Uuid)
+		if(i != -1) removedNotifications.splice(i, 1)
+
+		let currentNotification = await DatabaseOperations.GetNotification(notification.Uuid)
+
+		if (currentNotification != null) {
+			if (currentNotification.UploadStatus == GenericUploadStatus.UpToDate) {
+				// Replace the old notification
+				await DatabaseOperations.SetNotification(notification)
+			}
+		} else {
+			// Save the notification
+			await DatabaseOperations.SetNotification(notification)
+		}
+	}
+
+	// Delete the notifications in removedNotifications
+	for (let notification of removedNotifications) {
+		if (notification.UploadStatus == GenericUploadStatus.New) continue
+		await DatabaseOperations.RemoveNotification(notification.Uuid)
+	}
+
+	isSyncingNotifications = false
+}
+
 export async function NotificationSyncPush() {
 	if (Dav.jwt == null) return
-
 	if (isSyncingNotifications) {
 		syncNotificationsAgain = true
 		return
