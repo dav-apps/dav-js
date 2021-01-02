@@ -15,6 +15,16 @@ export enum GenericUploadStatus {
 	// The object in on the server, but it was deleted locally and has to be deleted on the server
 	Deleted = 3
 }
+
+export enum SessionUploadStatus{
+	UpToDate = 0,
+	Deleted = 1
+}
+
+export interface DatabaseSession{
+	Jwt: string
+	UploadStatus: SessionUploadStatus
+}
 //#endregion
 
 //#region Response types

@@ -3,11 +3,14 @@ import {
 	ApiErrorResponse,
 	ApiResponse,
 	Environment,
+	SessionUploadStatus,
 	TableObjectUploadStatus
 } from '../types'
 import { SortTableIds } from '../utils'
 import { extPropertyName, tableObjectUpdateChannelName } from '../constants'
 import * as ErrorCodes from '../errorCodes'
+import { TableObject } from '../models/TableObject'
+import { User } from '../models/User'
 import * as DatabaseOperations from './DatabaseOperations'
 import { GetUser } from '../controllers/UsersController'
 import { GetTable, GetTableResponseData } from '../controllers/TablesController'
@@ -20,8 +23,7 @@ import {
 	RemoveTableObject
 } from '../controllers/TableObjectsController'
 import { CreateWebsocketConnection, WebsocketConnectionResponseData } from '../controllers/WebsocketConnectionsController'
-import { TableObject } from '../models/TableObject'
-import { User } from '../models/User'
+import { DeleteSession } from '../controllers/SessionsController'
 
 var isSyncing = false
 var syncAgain = false
@@ -30,6 +32,39 @@ var syncAgain = false
 var fileDownloads: Array<{ tableObject: TableObject, etag: string }> = []
 var downloadingFiles: boolean = false
 export var downloadingFileUuid: string
+
+export async function InitServiceWorker() {
+	if (
+		!('serviceWorker' in navigator)
+		|| Dav.environment != Environment.Production
+	) return
+
+	await navigator.serviceWorker.ready
+	navigator.serviceWorker.controller.postMessage(Dav.notificationOptions)
+}
+
+export async function SessionSyncPush() {
+	let session = await DatabaseOperations.GetSession()
+
+	if (
+		session.Jwt == null
+		|| session.UploadStatus == SessionUploadStatus.UpToDate
+	) return
+	
+	// Delete the session on the server
+	let deleteResponse = await DeleteSession({ jwt: session.Jwt })
+	
+	if (deleteResponse.status == 204) {
+		// Remove the session
+		await DatabaseOperations.RemoveSession()
+
+		// Remove the web push subscription
+		await DatabaseOperations.RemoveWebPushSubscription()
+
+		// Remove the notifications
+		await DatabaseOperations.RemoveAllNotifications()
+	}
+}
 
 export async function SyncUser() : Promise<boolean> {
 	if (Dav.jwt == null) return false

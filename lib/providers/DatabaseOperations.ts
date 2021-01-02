@@ -3,7 +3,8 @@ import { extendPrototype } from 'localforage-startswith'
 import {
 	TableObjectUploadStatus,
 	TableObjectProperties,
-	DatabaseTableObject
+	DatabaseTableObject,
+	DatabaseSession
 } from '../types'
 import {
 	userKey,
@@ -24,13 +25,17 @@ import { WebPushSubscription } from '../models/WebPushSubscription'
 
 extendPrototype(localforage)
 
-//#region Jwt functions
-export async function SetJwt(jwt: string) {
-	await localforage.setItem(jwtKey, jwt)
+//#region Session functions
+export async function SetSession(session: DatabaseSession) {
+	await localforage.setItem("session", session)
 }
 
-export async function GetJwt() {
-	return await localforage.getItem(jwtKey) as string
+export async function GetSession(): Promise<DatabaseSession> {
+	return await localforage.getItem("session") as DatabaseSession
+}
+
+export async function RemoveSession() {
+	await localforage.removeItem("session")
 }
 //#endregion
 
