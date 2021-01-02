@@ -1,183 +1,122 @@
-import * as axios from 'axios';
-import { TableObject } from "./models/TableObject";
-import * as DataManager from "./providers/DataManager";
-import { DavEnvironment } from "./models/DavUser";
-
-export const apiBaseUrlDevelopment = "http://localhost:3111/v1";
-export const apiBaseUrlProduction = "https://dav-backend.herokuapp.com/v1";
-export const websiteUrlDevelopment = "http://localhost:3000";
-export const websiteUrlProduction = "https://dav-apps.tech";
-export const userKey = "user";
-export const tableObjectsKey = "tableObjects";
-export const notificationsKey = "notifications";
-export const subscriptionKey = "subscription";
-export const extPropertyName = "ext";
-export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ";
-
-export interface ApiResponse<T> {
-	status: number;
-	data: T;
-}
-
-export interface ApiErrorResponse {
-	status: number;
-	errors: ApiResponseError[];
-}
-
-export interface ApiResponseError {
-	code: number,
-	message: string
-}
+import { Environment, NotificationOptions, SessionUploadStatus } from './types'
+import {
+	apiBaseUrlDevelopment,
+	apiBaseUrlProduction,
+	websiteUrlDevelopment,
+	websiteUrlProduction
+} from './constants'
+import * as DatabaseOperations from './providers/DatabaseOperations'
+import * as SyncManager from './providers/SyncManager'
+import * as NotificationManager from './providers/NotificationManager'
 
 export class Dav {
-	static apiBaseUrl: string = apiBaseUrlDevelopment;
-	static websiteUrl: string = websiteUrlDevelopment;
-	static jwt: string = null;
-	static environment: DavEnvironment = DavEnvironment.Development;
-	static appId: number = -1;
-	static tableIds: number[] = [];
-	static parallelTableIds: number[] = [];
-	static notificationOptions: { icon: string, badge: string } = { icon: "", badge: "" };
+	static environment: Environment = Environment.Development
+	static appId: number = 0
+	static tableIds: number[] = []
+	static parallelTableIds: number[] = []
+	static notificationOptions: NotificationOptions = { icon: null, badge: null }
 	static callbacks: {
-		UpdateAllOfTable: Function,
-		UpdateTableObject: Function,
-		DeleteTableObject: Function,
-		UserDownloadFinished: Function,
-		SyncFinished: Function
-	} = {
-			UpdateAllOfTable: (tableId: number, changed: boolean) => { },
-			UpdateTableObject: (tableObject: TableObject, fileDownloaded: boolean = false) => { },
-			DeleteTableObject: (tableObject: TableObject) => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		}
+		UpdateAllOfTable?: Function,
+		UpdateTableObject?: Function,
+		DeleteTableObject?: Function,
+		UserDownloadFinished?: Function,
+		SyncFinished?: Function
+	} = {}
+
+	static apiBaseUrl: string = apiBaseUrlDevelopment
+	static websiteUrl: string = websiteUrlDevelopment
+	static jwt: string
 	static skipSyncPushInTests: boolean = true
-}
 
-export function Init(
-	environment: DavEnvironment,
-	appId: number,
-	tableIds: Array<number>,
-	parallelTableIds: Array<number>,
-	notificationOptions: { icon: string, badge: string },
-	callbacks: {
-		UpdateAllOfTable: Function,
-		UpdateTableObject: Function,
-		DeleteTableObject: Function,
-		UserDownloadFinished: Function,
-		SyncFinished: Function
-	}
-) {
-	Dav.environment = environment;
-	Dav.appId = appId;
-	Dav.tableIds = tableIds;
-	Dav.parallelTableIds = parallelTableIds;
-	Dav.notificationOptions = notificationOptions;
-	Dav.callbacks = callbacks;
+	private static isSyncing = false
 
-	// Set the urls
-	Dav.apiBaseUrl = environment == DavEnvironment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment;
-	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
-}
-
-export function InitStatic(environment: DavEnvironment) {
-	Dav.environment = environment;
-
-	// Set the urls
-	Dav.apiBaseUrl = environment == DavEnvironment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment;
-	Dav.websiteUrl = environment == DavEnvironment.Production ? websiteUrlProduction : websiteUrlDevelopment;
-}
-
-export function getTableObjectKey(tableId?: number, uuid?: string) {
-	if ((!tableId || tableId == -1) && !uuid) {
-		return "tableObject:";
-	} else if (tableId && !uuid) {
-		return `tableObject:${tableId}/`;
-	} else if (tableId && uuid) {
-		return `tableObject:${tableId}/${uuid}`;
-	} else {
-		return null;
-	}
-}
-
-export function startWebSocketConnection(channelName = "TableObjectUpdateChannel") {
-	if (!Dav.jwt || !Dav.appId || !Dav.apiBaseUrl || Dav.environment == DavEnvironment.Test) return;
-
-	let baseUrl = Dav.apiBaseUrl.replace("http", "ws");
-	var webSocket = new WebSocket(`${baseUrl}/cable?app_id=${Dav.appId}&jwt=${Dav.jwt}`);
-
-	webSocket.onopen = function (e) {
-		var json = JSON.stringify({
-			command: "subscribe",
-			identifier: '{"channel": "' + channelName + '"}'
-		});
-		webSocket.send(json)
-	}
-
-	webSocket.onmessage = function (e) {
-		var json = JSON.parse(e.data);
-		if (json["type"]) {
-			if (json["type"] == "reject_subscription") {
-				webSocket.close();
-			} else if (json["type"] == "ping") {
-				return;
-			}
+	constructor(params?: {
+		environment?: Environment,
+		appId?: number,
+		tableIds?: number[],
+		parallelTableIds?: number[],
+		notificationOptions?: NotificationOptions,
+		callbacks?: {
+			UpdateAllOfTable?: Function,
+			UpdateTableObject?: Function,
+			DeleteTableObject?: Function,
+			UserDownloadFinished?: Function,
+			SyncFinished?: Function
+		}
+	}) {
+		if (params != null) {
+			if (params.environment != null) Dav.environment = params.environment
+			if (params.appId != null) Dav.appId = params.appId
+			if (params.tableIds != null) Dav.tableIds = params.tableIds
+			if (params.parallelTableIds != null) Dav.parallelTableIds = params.parallelTableIds
+			if (params.notificationOptions != null) Dav.notificationOptions = params.notificationOptions
+			if (params.callbacks != null) Dav.callbacks = params.callbacks
 		}
 
-		// Notify the app of the changes
-		if (json["message"]) {
-			var uuid = json["message"]["uuid"]
-			var change = json["message"]["change"]
-			var sessionId = json["message"]["session_id"]
+		// Set the other static variables
+		Dav.apiBaseUrl = Dav.environment == Environment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment
+		Dav.websiteUrl = Dav.environment == Environment.Production ? websiteUrlProduction : websiteUrlDevelopment
 
-			if (!uuid || !change || !sessionId) return;
+		// Init the service worker
+		SyncManager.InitServiceWorker()
 
-			// Don't notify the app if the session is the current session or 0
-			if (sessionId == 0) return;
+		Dav.StartSync()
+	}
 
-			let currentSessionId = Dav.jwt.split('.')[3];
-			if (currentSessionId && currentSessionId == sessionId) return;
+	private static async StartSync() {
+		if (this.isSyncing) return
+		this.isSyncing = true
 
-			if (change == 0 || change == 1) {
-				DataManager.UpdateLocalTableObject(uuid);
-			} else if (change == 2) {
-				DataManager.DeleteLocalTableObject(uuid);
-			}
+		// Get the jwt from the database
+		let session = await DatabaseOperations.GetSession()
+		if (session.Jwt == null || session.UploadStatus == SessionUploadStatus.Deleted) {
+			SyncManager.SessionSyncPush()
+			this.isSyncing = false
+			return
 		}
-	}
-}
+		Dav.jwt = session.Jwt
 
-export function startPushNotificationSubscription() {
-	if ('serviceWorker' in navigator && Dav.environment == DavEnvironment.Production) {
-		// Wait for availability of the service worker
-		const p = new Promise(r => {
-			if (navigator.serviceWorker.controller) return r();
-			navigator.serviceWorker.addEventListener('controllerchange', e => r());
-		});
-		p.then(() => {
-			// Initialize the service worker
-			navigator.serviceWorker.controller.postMessage({
-				icon: Dav.notificationOptions.icon,
-				badge: Dav.notificationOptions.badge
-			});
-		});
-	}
-}
+		// Sync the user
+		if (!await SyncManager.SyncUser()) {
+			this.isSyncing = false
+			return
+		}
 
-export function ConvertHttpResponseToErrorResponse(response: axios.AxiosResponse): ApiErrorResponse {
-	let status = response.status;
-	let responseErrors: any[] = response.data.errors;
-	let errors: ApiResponseError[] = [];
+		// Sync the table objects
+		let syncSuccess = await SyncManager.Sync()
+		let syncPushSuccess = await SyncManager.SyncPush()
+		if (!syncSuccess || !syncPushSuccess) {
+			this.isSyncing = false
+			return
+		}
 
-	for (let i = 0; i < responseErrors.length; i++) {
-		errors.push({
-			code: responseErrors[i][0],
-			message: responseErrors[i][1]
-		});
+		await SyncManager.StartWebsocketConnection()
+		SyncManager.DownloadFiles()
+
+		// Sync the web push subscription and notifications
+		await NotificationManager.WebPushSubscriptionSyncPush()
+		await NotificationManager.NotificationSync()
+		await NotificationManager.NotificationSyncPush()
+
+		Dav.callbacks.SyncFinished()
+		this.isSyncing = false
 	}
 
-	return {
-		status,
-		errors
+	static async Login(jwt: string) {
+		// Save the jwt in the database
+		await DatabaseOperations.SetSession({Jwt: jwt, UploadStatus: SessionUploadStatus.UpToDate})
+		this.StartSync()
+	}
+
+	static async Logout() {
+		Dav.jwt = null
+
+		// Set the session UploadStatus to Deleted
+		let session = await DatabaseOperations.GetSession()
+		session.UploadStatus = SessionUploadStatus.Deleted
+		await DatabaseOperations.SetSession(session)
+
+		// Start deleting the session on the server
+		SyncManager.SessionSyncPush()
 	}
 }
