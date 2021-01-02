@@ -9,7 +9,6 @@ import {
 } from '../types'
 import { generateUuid } from '../utils'
 import * as SyncManager from '../providers/SyncManager'
-import * as DataManager from '../providers/DataManager'
 import * as DatabaseOperations from '../providers/DatabaseOperations'
 
 export class TableObject {
@@ -187,9 +186,9 @@ export class TableObject {
 
 	private async Save(triggerSyncPush: boolean = true) {
 		if (
-			await DatabaseOperations.TableObjectExists(this.Uuid)
-			&& this.UploadStatus == TableObjectUploadStatus.UpToDate
+			this.UploadStatus == TableObjectUploadStatus.UpToDate
 			&& triggerSyncPush
+			&& await DatabaseOperations.TableObjectExists(this.Uuid)
 		) {
 			this.UploadStatus = TableObjectUploadStatus.Updated
 		}
@@ -197,9 +196,9 @@ export class TableObject {
 		await DatabaseOperations.SetTableObject(this)
 
 		if (Dav.environment == Environment.Test && triggerSyncPush && !Dav.skipSyncPushInTests) {
-			await DataManager.SyncPush()
+			await SyncManager.SyncPush()
 		} else if (Dav.environment != Environment.Test && triggerSyncPush) {
-			DataManager.SyncPush()
+			SyncManager.SyncPush()
 		}
 	}
 }

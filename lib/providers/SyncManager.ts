@@ -117,7 +117,7 @@ export async function Sync() : Promise<boolean> {
 			// Is the table object in the database?
 			let currentTableObject = await DatabaseOperations.GetTableObject(obj.uuid)
 			
-			if (currentTableObject == null) {
+			if (currentTableObject != null) {
 				// Is the etag correct?
 				if (obj.etag == currentTableObject.Etag) {
 					// Is it a file?
@@ -196,12 +196,7 @@ export async function Sync() : Promise<boolean> {
 
 		for (let uuid of removedTableObjects) {
 			let obj = await DatabaseOperations.GetTableObject(uuid)
-			if (obj == null) continue
-			
-			if (
-				obj.UploadStatus == TableObjectUploadStatus.New
-				|| obj.UploadStatus == TableObjectUploadStatus.Deleted
-			) continue
+			if (obj == null || obj.UploadStatus == TableObjectUploadStatus.New) continue
 
 			await obj.DeleteImmediately()
 			Dav.callbacks.DeleteTableObject(obj)

@@ -1,6 +1,6 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
-import { ApiErrorResponse, ApiResponse } from '../types'
+import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types'
 import { ConvertErrorToApiErrorResponse } from '../utils'
 import { TableObject } from '../models/TableObject'
 
@@ -30,6 +30,7 @@ export async function CreateTableObject(params: {
 		tableObject.TableId = response.data.table_id
 		tableObject.IsFile = response.data.file
 		tableObject.Etag = response.data.etag
+		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
 
 		return {
 			status: response.status,
