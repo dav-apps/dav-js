@@ -52,8 +52,8 @@ export async function GetTable(params: {
 }) : Promise<ApiResponse<GetTableResponseData> | ApiErrorResponse> {
 	try {
 		let urlParams = {}
-		if (params.count != null) params["count"] = params.count
-		if (params.page != null) params["page"] = params.page
+		if (params.count != null) urlParams["count"] = params.count
+		if (params.page != null) urlParams["page"] = params.page
 
 		let response = await axios.default({
 			method: 'get',
