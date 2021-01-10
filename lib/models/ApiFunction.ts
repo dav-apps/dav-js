@@ -1,25 +1,25 @@
-export class ApiFunction{
+export class ApiFunction {
 	constructor(
 		public Id: number,
 		public Name: string,
 		public Params: string[],
 		public Commands: string
-	){}
+	) { }
 }
 
-export function ConvertObjectArrayToApiFunctions(objArray: any[]) : ApiFunction[]{
-	let functions: ApiFunction[] = [];
+export function ConvertObjectArrayToApiFunctions(objArray: any[]): ApiFunction[] {
+	let functions: ApiFunction[] = []
 
-	if(objArray){
-		for(let obj of objArray){
+	if (objArray != null) {
+		for (let obj of objArray) {
 			functions.push(new ApiFunction(
 				obj.id,
 				obj.name,
 				obj.params ? (obj.params as string).split(',') : [],
 				obj.commands
-			));
+			))
 		}
 	}
 
-	return functions;
+	return functions
 }
