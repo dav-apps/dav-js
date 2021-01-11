@@ -1,6 +1,7 @@
-import { TableObject } from '../lib/models/TableObject';
-import { Notification } from '../lib/models/Notification';
-import { UploadStatus } from '../lib/providers/DataManager';
+import { GenericUploadStatus } from '../lib/types'
+import { TableObject } from '../lib/models/TableObject'
+import { Notification } from '../lib/models/Notification'
+import { Auth } from '../lib/models/Auth'
 
 export const davClassLibraryTestUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdmNsYXNzbGlicmFyeXRlc3RAZGF2LWFwcHMudGVjaCIsInVzZXJfaWQiOjUsImRldl9pZCI6MiwiZXhwIjozNzU2MTA1MDAyMn0.jZpdLre_ZMWGN2VNbZOn2Xg51RLAT6ocGnyM38jljHI.1"
 export const testUserXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwidXNlcl9pZCI6MiwiZGV2X2lkIjoyLCJleHAiOjM3NTk3MzI4Mjg2fQ.GZgXpshF77CEiYrsypCqAg8B4LXjbZzMSmaxvAssXA4"
@@ -10,6 +11,12 @@ export const davXTestUserJwt = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRhdkBkYXYtYXB
 export const davClassLibraryTestAppId = 3
 export const davClassLibraryTestUserId = 5
 export const testDataTableId = 3
+
+export const davDevAuth = new Auth({
+	apiKey: "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm",
+	secretKey: "Stac8pRhqH0CSO5o9Rxqjhu7vyVp4PINEMJumqlpvRQai4hScADamQ",
+	uuid: "d133e303-9dbb-47db-9531-008b20e5aae8"
+})
 
 export const firstPropertyName = "page1";
 export const secondPropertyName = "page2";
@@ -30,12 +37,20 @@ secondTestDataTableObject.Properties = {
 	[secondPropertyName]: {value: "Tabelle"}
 }
 
-export var firstTestNotification = new Notification(1863541331, 3600, {
-   title: "Hello World",
-   message: "You have an appointment"
-}, "0289e7ab-5497-45dc-a6ad-d5d49143b17b", UploadStatus.UpToDate);
+export var firstTestNotification = new Notification({
+	Uuid: "0289e7ab-5497-45dc-a6ad-d5d49143b17b",
+	Time: 1863541331,
+	Interval: 3600,
+	Title: "Hello World",
+	Body: "You have an appointment",
+	UploadStatus: GenericUploadStatus.UpToDate
+})
 
-export var secondTestNotification = new Notification(1806755643, 864000, {
-   title: "Your daily summary",
-   message: "You have 2 appointments and one Todo for today"
-}, "4590db9d-f154-42bc-aaa9-c222e3b82487", UploadStatus.UpToDate);
+export var secondTestNotification = new Notification({
+	Uuid: "4590db9d-f154-42bc-aaa9-c222e3b82487",
+	Time: 1806755643,
+	Interval: 864000,
+	Title: "Your daily summary",
+	Body: "You have 2 appointments and one Todo for today",
+	UploadStatus: GenericUploadStatus.UpToDate
+})
