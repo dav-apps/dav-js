@@ -49,6 +49,45 @@ export async function CreateSession(params: {
 	}
 }
 
+export async function CreateSessionFromJwt(params: {
+	auth: Auth,
+	jwt: string,
+	appId: number,
+	apiKey: string,
+	deviceName?: string,
+	deviceType?: string,
+	deviceOs?: string
+}): Promise<ApiResponse<CreateSessionResponseData> | ApiErrorResponse>{
+	try {
+		let data = {
+			jwt: params.jwt,
+			app_id: params.appId,
+			api_key: params.apiKey
+		}
+		if (params.deviceName != null) data["device_name"] = params.deviceName
+		if (params.deviceType != null) data["device_type"] = params.deviceType
+		if (params.deviceOs != null) data["device_os"] = params.deviceOs
+
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/session/jwt`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			data
+		})
+
+		return {
+			status: response.status,
+			data: {
+				jwt: response.data.jwt
+			}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
 export async function DeleteSession(params: {
 	jwt: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
