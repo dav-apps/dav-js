@@ -3,7 +3,7 @@ import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
 import { App } from '../../lib/models/App'
-import { GetApp } from '../../lib/controllers/AppsController'
+import { GetApp, UpdateApp } from '../../lib/controllers/AppsController'
 import { Table } from '../../lib/models/Table'
 import { Api } from '../../lib/models/Api'
 
@@ -156,6 +156,155 @@ describe("GetApp function", () => {
 		let result = await GetApp({
 			jwt,
 			id
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("UpdateApp function", () => {
+	it("should call updateApp endpoint", async () => {
+		// Arrange
+		let id = 42
+		let name = "Updated name"
+		let description = "Updated description"
+		let published = true
+		let webLink = "https://cards.dav-apps.tech"
+		let googlePlayLink = "https://play.google.com/cards"
+		let microsoftStoreLink = "https://store.microsoft.com/cards"
+
+		let jwt = "ishdf0heh942893gurowfe"
+		let url = `${Dav.apiBaseUrl}/app/${id}`
+
+		let expectedResult: ApiResponse<App> = {
+			status: 200,
+			data: new App(
+				id,
+				name,
+				description,
+				published,
+				webLink,
+				googlePlayLink,
+				microsoftStoreLink
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+			assert.equal(data.published, published)
+			assert.equal(data.web_link, webLink)
+			assert.equal(data.google_play_link, googlePlayLink)
+			assert.equal(data.microsoft_store_link, microsoftStoreLink)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					name,
+					description,
+					published,
+					web_link: webLink,
+					google_play_link: googlePlayLink,
+					microsoft_store_link: microsoftStoreLink
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateApp({
+			jwt,
+			id,
+			name,
+			description,
+			published,
+			webLink,
+			googlePlayLink,
+			microsoftStoreLink
+		}) as ApiResponse<App>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Name, expectedResult.data.Name)
+		assert.equal(result.data.Description, expectedResult.data.Description)
+		assert.equal(result.data.Published, expectedResult.data.Published)
+		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
+		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
+		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+	})
+
+	it("should call updateApp endpoint with error", async () => {
+		// Arrange
+		let id = 42
+		let name = "Updated name"
+		let description = "Updated description"
+		let published = true
+		let webLink = "https://cards.dav-apps.tech"
+		let googlePlayLink = "https://play.google.com/cards"
+		let microsoftStoreLink = "https://store.microsoft.com/cards"
+
+		let jwt = "ishdf0heh942893gurowfe"
+		let url = `${Dav.apiBaseUrl}/app/${id}`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+			assert.equal(data.published, published)
+			assert.equal(data.web_link, webLink)
+			assert.equal(data.google_play_link, googlePlayLink)
+			assert.equal(data.microsoft_store_link, microsoftStoreLink)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateApp({
+			jwt,
+			id,
+			name,
+			description,
+			published,
+			webLink,
+			googlePlayLink,
+			microsoftStoreLink
 		}) as ApiErrorResponse
 
 		// Assert for the response
