@@ -2,10 +2,16 @@ import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse, SubscriptionStatus } from '../../lib/types'
-import { User } from '../../lib/models/User'
-import { GetUser, Signup, SignupResponseData } from '../../lib/controllers/UsersController'
 import { davDevAuth } from '../constants'
+import { User } from '../../lib/models/User'
 import { App } from '../../lib/models/App'
+import {
+	Signup,
+	GetUsers,
+	GetUser,
+	GetUsersResponseData,
+	SignupResponseData
+} from '../../lib/controllers/UsersController'
 
 beforeEach(() => {
 	moxios.install()
@@ -186,6 +192,142 @@ describe("Signup function", () => {
 			deviceName,
 			deviceType,
 			deviceOs
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("GetUsers function", () => {
+	it("should call getUsers endpoint", async () => {
+		// Arrange
+		let firstUserId = 1
+		let firstUserConfirmed = true
+		let firstUserLastActive = new Date("2020-12-10T00:00:00.000Z")
+		let firstUserPlan = 1
+		let firstUserCreatedAt = new Date("2018-08-12T00:00:00.000Z")
+		let secondUserId = 2
+		let secondUserConfirmed = false
+		let secondUserLastActive = null
+		let secondUserPlan = 0
+		let secondUserCreatedAt = new Date("2019-10-29T00:00:00.000Z")
+
+		let jwt = "jjzmjkimzjh8ef9guwegwerg73"
+		let url = `${Dav.apiBaseUrl}/users`
+
+		let expectedResult: ApiResponse<GetUsersResponseData> = {
+			status: 200,
+			data: {
+				users: [
+					{
+						id: firstUserId,
+						confirmed: firstUserConfirmed,
+						lastActive: firstUserLastActive,
+						plan: firstUserPlan,
+						createdAt: firstUserCreatedAt
+					},
+					{
+						id: secondUserId,
+						confirmed: secondUserConfirmed,
+						lastActive: secondUserLastActive,
+						plan: secondUserPlan,
+						createdAt: secondUserCreatedAt
+					}
+				]
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					users: [
+						{
+							id: firstUserId,
+							confirmed: firstUserConfirmed,
+							last_active: firstUserLastActive,
+							plan: firstUserPlan,
+							created_at: firstUserCreatedAt
+						},
+						{
+							id: secondUserId,
+							confirmed: secondUserConfirmed,
+							last_active: secondUserLastActive,
+							plan: secondUserPlan,
+							created_at: secondUserCreatedAt
+						}
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetUsers({
+			jwt
+		}) as ApiResponse<GetUsersResponseData>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.users.length, expectedResult.data.users.length)
+
+		assert.equal(result.data.users[0].id, expectedResult.data.users[0].id)
+		assert.equal(result.data.users[0].confirmed, expectedResult.data.users[0].confirmed)
+		assert.equal(result.data.users[0].lastActive?.toString(), expectedResult.data.users[0].lastActive?.toString())
+		assert.equal(result.data.users[0].plan, expectedResult.data.users[0].plan)
+		assert.equal(result.data.users[0].createdAt.toString(), expectedResult.data.users[0].createdAt.toString())
+
+		assert.equal(result.data.users[1].id, expectedResult.data.users[1].id)
+		assert.equal(result.data.users[1].confirmed, expectedResult.data.users[1].confirmed)
+		assert.equal(result.data.users[1].lastActive?.toString(), expectedResult.data.users[1].lastActive?.toString())
+		assert.equal(result.data.users[1].plan, expectedResult.data.users[1].plan)
+		assert.equal(result.data.users[1].createdAt.toString(), expectedResult.data.users[1].createdAt.toString())
+	})
+
+	it("should call getUsers endpoint with error", async () => {
+		// Arrange
+		let jwt = "jjzmjkimzjh8ef9guwegwerg73"
+		let url = `${Dav.apiBaseUrl}/users`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, jwt)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetUsers({
+			jwt
 		}) as ApiErrorResponse
 
 		// Assert for the response

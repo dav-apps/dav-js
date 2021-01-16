@@ -12,6 +12,18 @@ export interface SignupResponseData{
 	websiteJwt?: string
 }
 
+export interface GetUsersResponseData{
+	users: GetUsersResponseDataUser[]
+}
+
+export interface GetUsersResponseDataUser{
+	id: number,
+	confirmed: boolean,
+	lastActive?: Date,
+	plan: number,
+	createdAt: Date
+}
+
 export async function Signup(params: {
 	auth: Auth,
 	email: string,
@@ -64,6 +76,40 @@ export async function Signup(params: {
 				),
 				jwt: response.data.jwt,
 				websiteJwt: response.data.website_jwt
+			}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
+export async function GetUsers(params: {
+	jwt: string
+}): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse>{
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/users`,
+			headers: {
+				Authorization: params.jwt
+			}
+		})
+
+		let users: GetUsersResponseDataUser[] = []
+		for (let user of response.data.users) {
+			users.push({
+				id: user.id,
+				confirmed: user.confirmed,
+				lastActive: user.last_active == null ? null : new Date(user.last_active),
+				plan: user.plan,
+				createdAt: new Date(user.created_at)
+			})
+		}
+
+		return {
+			status: response.status,
+			data: {
+				users
 			}
 		}
 	} catch (error) {
