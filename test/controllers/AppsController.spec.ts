@@ -3,7 +3,7 @@ import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
 import { App } from '../../lib/models/App'
-import { GetApp, UpdateApp } from '../../lib/controllers/AppsController'
+import { GetApps, GetApp, UpdateApp } from '../../lib/controllers/AppsController'
 import { Table } from '../../lib/models/Table'
 import { Api } from '../../lib/models/Api'
 
@@ -13,6 +13,152 @@ beforeEach(() => {
 
 afterEach(() => {
 	moxios.uninstall()
+})
+
+describe("GetApps function", () => {
+	it("should call getApps endpoint", async () => {
+		// Arrange
+		let firstAppId = 12
+		let firstAppDevId = 1
+		let firstAppName = "TestApp"
+		let firstAppDescription = "TestApp description"
+		let firstAppPublished = true
+		let firstAppWebLink = "https://testapp.dav-apps.tech"
+		let firstAppGooglePlayLink = null
+		let firstAppMicrosoftStoreLink = null
+		let secondAppId = 14
+		let secondAppDevId = 2
+		let secondAppName = "SecondTestApp"
+		let secondAppDescription = "This is the second test app"
+		let secondAppPublished = true
+		let secondAppWebLink = null
+		let secondAppGooglePlayLink = "https://play.google.com/store/apps/bla"
+		let secondAppMicrosoftStoreLink = "https://store.microsoft.com/bla"
+
+		let url = `${Dav.apiBaseUrl}/apps`
+
+		let expectedResult: ApiResponse<App[]> = {
+			status: 200,
+			data: [
+				new App(
+					firstAppId,
+					firstAppName,
+					firstAppDescription,
+					firstAppPublished,
+					firstAppWebLink,
+					firstAppGooglePlayLink,
+					firstAppMicrosoftStoreLink
+				),
+				new App(
+					secondAppId,
+					secondAppName,
+					secondAppDescription,
+					secondAppPublished,
+					secondAppWebLink,
+					secondAppGooglePlayLink,
+					secondAppMicrosoftStoreLink
+				)
+			]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					apps: [
+						{
+							id: firstAppId,
+							dev_id: firstAppDevId,
+							name: firstAppName,
+							description: firstAppDescription,
+							published: firstAppPublished,
+							web_link: firstAppWebLink,
+							google_play_link: firstAppGooglePlayLink,
+							microsoft_store_link: firstAppMicrosoftStoreLink
+						},
+						{
+							id: secondAppId,
+							dev_id: secondAppDevId,
+							name: secondAppName,
+							description: secondAppDescription,
+							published: secondAppPublished,
+							web_link: secondAppWebLink,
+							google_play_link: secondAppGooglePlayLink,
+							microsoft_store_link: secondAppMicrosoftStoreLink
+						}
+					]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetApps() as ApiResponse<App[]>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.length, expectedResult.data.length)
+
+		assert.equal(result.data[0].Id, expectedResult.data[0].Id)
+		assert.equal(result.data[0].Name, expectedResult.data[0].Name)
+		assert.equal(result.data[0].Description, expectedResult.data[0].Description)
+		assert.equal(result.data[0].Published, expectedResult.data[0].Published)
+		assert.equal(result.data[0].WebLink, expectedResult.data[0].WebLink)
+		assert.equal(result.data[0].GooglePlayLink, expectedResult.data[0].GooglePlayLink)
+		assert.equal(result.data[0].MicrosoftStoreLink, expectedResult.data[0].MicrosoftStoreLink)
+
+		assert.equal(result.data[1].Id, expectedResult.data[1].Id)
+		assert.equal(result.data[1].Name, expectedResult.data[1].Name)
+		assert.equal(result.data[1].Description, expectedResult.data[1].Description)
+		assert.equal(result.data[1].Published, expectedResult.data[1].Published)
+		assert.equal(result.data[1].WebLink, expectedResult.data[1].WebLink)
+		assert.equal(result.data[1].GooglePlayLink, expectedResult.data[1].GooglePlayLink)
+		assert.equal(result.data[1].MicrosoftStoreLink, expectedResult.data[1].MicrosoftStoreLink)
+	})
+
+	it("should call getApps endpoint with error", async () => {
+		// Arrange
+		let url = `${Dav.apiBaseUrl}/apps`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetApps() as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
 })
 
 describe("GetApp function", () => {

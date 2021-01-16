@@ -3,8 +3,25 @@ import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
 import { ConvertErrorToApiErrorResponse } from '../utils'
 import { App } from '../models/App'
+import { ConvertObjectArrayToApps } from '../models/App'
 import { ConvertObjectArrayToTables } from '../models/Table'
 import { ConvertObjectArrayToApis } from '../models/Api'
+
+export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/apps`
+		})
+
+		return {
+			status: response.status,
+			data: ConvertObjectArrayToApps(response.data.apps)
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
 
 export async function GetApp(params: {
 	jwt: string,

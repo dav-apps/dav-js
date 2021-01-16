@@ -19,7 +19,7 @@ export class App {
 export function ConvertObjectArrayToApps(objArray: any[]): App[] {
 	let apps: App[] = []
 
-	if (objArray) {
+	if (objArray != null) {
 		for (let obj of objArray) {
 			apps.push(new App(
 				obj.id,
@@ -28,7 +28,7 @@ export function ConvertObjectArrayToApps(objArray: any[]): App[] {
 				obj.published,
 				obj.web_link,
 				obj.google_play_link,
-				obj.microsft_store_link,
+				obj.microsoft_store_link,
 				obj.used_storage,
 				ConvertObjectArrayToTables(obj.tables),
 				ConvertObjectArrayToApis(obj.apis)
