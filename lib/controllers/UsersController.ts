@@ -6,17 +6,17 @@ import { Auth } from '../models/Auth'
 import { User } from '../models/User'
 import { ConvertObjectArrayToApps } from '../models/App'
 
-export interface SignupResponseData{
+export interface SignupResponseData {
 	user: User,
 	jwt: string,
 	websiteJwt?: string
 }
 
-export interface GetUsersResponseData{
+export interface GetUsersResponseData {
 	users: GetUsersResponseDataUser[]
 }
 
-export interface GetUsersResponseDataUser{
+export interface GetUsersResponseDataUser {
 	id: number,
 	confirmed: boolean,
 	lastActive?: Date,
@@ -34,7 +34,7 @@ export async function Signup(params: {
 	deviceName?: string,
 	deviceType?: string,
 	deviceOs?: string
-}): Promise<ApiResponse<SignupResponseData> | ApiErrorResponse>{
+}): Promise<ApiResponse<SignupResponseData> | ApiErrorResponse> {
 	try {
 		let data = {
 			email: params.email,
@@ -85,7 +85,7 @@ export async function Signup(params: {
 
 export async function GetUsers(params: {
 	jwt: string
-}): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse>{
+}): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
@@ -119,7 +119,7 @@ export async function GetUsers(params: {
 
 export async function GetUser(params: {
 	jwt: string
-}): Promise<ApiResponse<User> | ApiErrorResponse>{
+}): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
@@ -146,6 +146,32 @@ export async function GetUser(params: {
 				response.data.provider,
 				ConvertObjectArrayToApps(response.data.apps)
 			)
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
+export async function ConfirmUser(params: {
+	auth: Auth,
+	id: number,
+	emailConfirmationToken: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/confirm`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			data: {
+				email_confirmation_token: params.emailConfirmationToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
 		}
 	} catch (error) {
 		return ConvertErrorToApiErrorResponse(error)

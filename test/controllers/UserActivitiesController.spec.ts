@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
