@@ -3,7 +3,7 @@ import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
 import { App } from '../../lib/models/App'
-import { GetApps, GetApp, UpdateApp } from '../../lib/controllers/AppsController'
+import { CreateApp, GetApps, GetApp, UpdateApp } from '../../lib/controllers/AppsController'
 import { Table } from '../../lib/models/Table'
 import { Api } from '../../lib/models/Api'
 
@@ -13,6 +13,128 @@ beforeEach(() => {
 
 afterEach(() => {
 	moxios.uninstall()
+})
+
+describe("CreateApp function", () => {
+	it("should call createApp endpoint", async () => {
+		// Arrange
+		let id = 23
+		let name = "TestApp"
+		let description = "This is a test app"
+		
+		let jwt = "sodfnosgdbjsgdjsdgosgd"
+		let url = `${Dav.apiBaseUrl}/app`
+
+		let expectedResult: ApiResponse<App> = {
+			status: 201,
+			data: new App(
+				id,
+				name,
+				description,
+				false,
+				null,
+				null,
+				null
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					name,
+					description,
+					published: false,
+					web_link: null,
+					google_play_link: null,
+					microsoft_store_link: null
+				}
+			})
+		})
+
+		// Act
+		let result = await CreateApp({
+			jwt,
+			name,
+			description
+		}) as ApiResponse<App>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Name, expectedResult.data.Name)
+		assert.equal(result.data.Description, expectedResult.data.Description)
+		assert.equal(result.data.Published, expectedResult.data.Published)
+		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
+		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
+		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+	})
+
+	it("should call createApp function with error", async () => {
+		// Arrange
+		let name = "TestApp"
+		let description = "This is a test app"
+
+		let jwt = "sodfnosgdbjsgdjsdgosgd"
+		let url = `${Dav.apiBaseUrl}/app`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await CreateApp({
+			jwt,
+			name,
+			description
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
 })
 
 describe("GetApps function", () => {

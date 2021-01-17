@@ -7,6 +7,41 @@ import { ConvertObjectArrayToApps } from '../models/App'
 import { ConvertObjectArrayToTables } from '../models/Table'
 import { ConvertObjectArrayToApis } from '../models/Api'
 
+export async function CreateApp(params: {
+	jwt: string,
+	name: string,
+	description: string
+}): Promise<ApiResponse<App> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/app`,
+			headers: {
+				Authorization: params.jwt
+			},
+			data: {
+				name: params.name,
+				description: params.description
+			}
+		})
+
+		return {
+			status: response.status,
+			data: new App(
+				response.data.id,
+				response.data.name,
+				response.data.description,
+				response.data.published,
+				response.data.web_link,
+				response.data.google_play_link,
+				response.data.microsoft_store_link
+			)
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
 export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
