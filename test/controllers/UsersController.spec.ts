@@ -9,6 +9,7 @@ import {
 	Signup,
 	GetUsers,
 	GetUser,
+	UpdateUser,
 	ConfirmUser,
 	SignupResponseData,
 	GetUsersResponseData
@@ -494,6 +495,160 @@ describe("GetUser function", () => {
 		// Act
 		let result = await GetUser({
 			jwt
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("UpdateUser function", () => {
+	it("should call updateUser endpoint", async () => {
+		// Arrange
+		let id = 23
+		let email = "test@example.com"
+		let confirmed = true
+		let totalStorage = 100000000000
+		let usedStorage = 2073424982
+		let stripeCustomerId = "09u243ioasdasd"
+		let plan = 1
+		let subscriptionStatus = SubscriptionStatus.Active
+		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
+		let dev = false
+		let provider = false
+
+		let newFirstName = "UpdatedTestUser"
+		let newEmail = "updatedemail@example.com"
+		let password = "64534231"
+
+		let jwt = "hdsfigtw9gueiwefhued"
+		let url = `${Dav.apiBaseUrl}/user`
+
+		let expectedResult: ApiResponse<User> = {
+			status: 200,
+			data: new User(
+				id,
+				email,
+				newFirstName,
+				confirmed,
+				totalStorage,
+				usedStorage,
+				stripeCustomerId,
+				plan,
+				subscriptionStatus,
+				periodEnd,
+				dev,
+				provider
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.email, newEmail)
+			assert.equal(data.first_name, newFirstName)
+			assert.equal(data.password, password)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					email,
+					first_name: newFirstName,
+					confirmed,
+					total_storage: totalStorage,
+					used_storage: usedStorage,
+					stripe_customer_id: stripeCustomerId,
+					plan,
+					subscription_status: subscriptionStatus,
+					period_end: periodEnd,
+					dev,
+					provider
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateUser({
+			jwt,
+			email: newEmail,
+			firstName: newFirstName,
+			password
+		}) as ApiResponse<User>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Email, expectedResult.data.Email)
+		assert.equal(result.data.FirstName, expectedResult.data.FirstName)
+		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
+		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
+		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
+		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(result.data.Plan, expectedResult.data.Plan)
+		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
+		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(result.data.Dev, expectedResult.data.Dev)
+		assert.equal(result.data.Provider, expectedResult.data.Provider)
+	})
+
+	it("should call updateUser endpoint with error", async () => {
+		// Arrange
+		let newFirstName = "UpdatedTestUser"
+		let newEmail = "updatedemail@example.com"
+		let password = "64534231"
+
+		let jwt = "hdsfigtw9gueiwefhued"
+		let url = `${Dav.apiBaseUrl}/user`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, jwt)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.email, newEmail)
+			assert.equal(data.first_name, newFirstName)
+			assert.equal(data.password, password)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateUser({
+			jwt,
+			email: newEmail,
+			firstName: newFirstName,
+			password
 		}) as ApiErrorResponse
 
 		// Assert for the response

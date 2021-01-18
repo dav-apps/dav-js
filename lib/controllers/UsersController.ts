@@ -152,6 +152,50 @@ export async function GetUser(params: {
 	}
 }
 
+export async function UpdateUser(params: {
+	jwt: string,
+	email?: string,
+	firstName?: string,
+	password?: string
+}): Promise<ApiResponse<User> | ApiErrorResponse>{
+	try {
+		let data = {}
+		if (params.email != null) data["email"] = params.email
+		if (params.firstName != null) data["first_name"] = params.firstName
+		if (params.password != null) data["password"] = params.password
+
+		let response = await axios.default({
+			method: 'put',
+			url: `${Dav.apiBaseUrl}/user`,
+			headers: {
+				Authorization: params.jwt
+			},
+			data
+		})
+
+		return {
+			status: response.status,
+			data: new User(
+				response.data.id,
+				response.data.email,
+				response.data.first_name,
+				response.data.confirmed,
+				response.data.total_storage,
+				response.data.used_storage,
+				response.data.stripe_customer_id,
+				response.data.plan,
+				response.data.subscription_status,
+				response.data.period_end == null ? null : new Date(response.data.period_end),
+				response.data.dev,
+				response.data.provider,
+				[]
+			)
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
 export async function ConfirmUser(params: {
 	auth: Auth,
 	id: number,

@@ -1,7 +1,7 @@
 import { Plan, SubscriptionStatus } from '../types'
 import { App } from './App'
 
-export class User{
+export class User {
 	constructor(
 		public Id: number,
 		public Email: string,
@@ -15,6 +15,6 @@ export class User{
 		public PeriodEnd: Date,
 		public Dev: boolean,
 		public Provider: boolean,
-		public Apps: App[]
-	){}
+		public Apps: App[] = []
+	) { }
 }
