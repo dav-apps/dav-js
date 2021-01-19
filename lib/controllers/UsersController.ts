@@ -221,3 +221,29 @@ export async function ConfirmUser(params: {
 		return ConvertErrorToApiErrorResponse(error)
 	}
 }
+
+export async function SaveNewEmail(params: {
+	auth: Auth,
+	id: number,
+	emailConfirmationToken: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_email`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			data: {
+				email_confirmation_token: params.emailConfirmationToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
