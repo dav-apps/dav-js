@@ -12,6 +12,7 @@ import {
 	UpdateUser,
 	ConfirmUser,
 	SaveNewEmail,
+	SaveNewPassword,
 	SignupResponseData,
 	GetUsersResponseData
 } from '../../lib/controllers/UsersController'
@@ -838,6 +839,100 @@ describe("SaveNewEmail function", () => {
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("SaveNewPassword function", () => {
+	it("should call saveNewPassword endpoint", async () => {
+		// Arrange
+		let id = 41
+		let passwordConfirmationToken = "hf0hq20üqfü9agw8308wg7ar"
+
+		let url = `${Dav.apiBaseUrl}/user/${id}/save_new_password`
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await SaveNewPassword({
+			auth: davDevAuth,
+			id,
+			passwordConfirmationToken
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+	})
+
+	it("should call saveNewPassword endpoint with error", async () => {
+		// Arrange
+		let id = 41
+		let passwordConfirmationToken = "hf0hq20üqfü9agw8308wg7ar"
+
+		let url = `${Dav.apiBaseUrl}/user/${id}/save_new_password`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await SaveNewPassword({
+			auth: davDevAuth,
+			id,
+			passwordConfirmationToken
 		}) as ApiErrorResponse
 
 		// Assert for the response

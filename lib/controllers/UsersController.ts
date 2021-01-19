@@ -247,3 +247,29 @@ export async function SaveNewEmail(params: {
 		return ConvertErrorToApiErrorResponse(error)
 	}
 }
+
+export async function SaveNewPassword(params: {
+	auth: Auth,
+	id: number,
+	passwordConfirmationToken: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_password`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			data: {
+				password_confirmation_token: params.passwordConfirmationToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
