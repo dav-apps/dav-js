@@ -157,7 +157,7 @@ export async function UpdateUser(params: {
 	email?: string,
 	firstName?: string,
 	password?: string
-}): Promise<ApiResponse<User> | ApiErrorResponse>{
+}): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let data = {}
 		if (params.email != null) data["email"] = params.email
@@ -262,6 +262,32 @@ export async function SaveNewPassword(params: {
 			},
 			data: {
 				password_confirmation_token: params.passwordConfirmationToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
+export async function ResetEmail(params: {
+	auth: Auth,
+	id: number,
+	emailConfirmationToken: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/reset_email`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			data: {
+				email_confirmation_token: params.emailConfirmationToken
 			}
 		})
 

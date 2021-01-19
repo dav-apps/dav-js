@@ -13,6 +13,7 @@ import {
 	ConfirmUser,
 	SaveNewEmail,
 	SaveNewPassword,
+	ResetEmail,
 	SignupResponseData,
 	GetUsersResponseData
 } from '../../lib/controllers/UsersController'
@@ -933,6 +934,100 @@ describe("SaveNewPassword function", () => {
 			auth: davDevAuth,
 			id,
 			passwordConfirmationToken
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("ResetEmail function", () => {
+	it("should call resetEmail endpoint", async () => {
+		// Arrange
+		let id = 234
+		let emailConfirmationToken = "asdasdasdasdasdasd"
+
+		let url = `${Dav.apiBaseUrl}/user/${id}/reset_email`
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.email_confirmation_token, emailConfirmationToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await ResetEmail({
+			auth: davDevAuth,
+			id,
+			emailConfirmationToken
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+	})
+
+	it("should call resetEmail endpoint with error", async () => {
+		// Arrange
+		let id = 234
+		let emailConfirmationToken = "asdasdasdasdasdasd"
+
+		let url = `${Dav.apiBaseUrl}/user/${id}/reset_email`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.email_confirmation_token, emailConfirmationToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await ResetEmail({
+			auth: davDevAuth,
+			id,
+			emailConfirmationToken
 		}) as ApiErrorResponse
 
 		// Assert for the response
