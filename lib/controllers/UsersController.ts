@@ -196,6 +196,28 @@ export async function UpdateUser(params: {
 	}
 }
 
+export async function SendConfirmationEmail(params: {
+	auth: Auth,
+	id: number
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/send_confirmation_email`,
+			headers: {
+				Authorization: params.auth.token
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
 export async function ConfirmUser(params: {
 	auth: Auth,
 	id: number,
