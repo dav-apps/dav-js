@@ -343,3 +343,31 @@ export async function ResetEmail(params: {
 		return ConvertErrorToApiErrorResponse(error)
 	}
 }
+
+export async function SetPassword(params: {
+	auth: Auth,
+	id: number,
+	password: string,
+	passwordConfirmationToken: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'put',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/password`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			data: {
+				password: params.password,
+				password_confirmation_token: params.passwordConfirmationToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}

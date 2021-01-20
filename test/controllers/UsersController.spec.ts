@@ -16,6 +16,7 @@ import {
 	SaveNewEmail,
 	SaveNewPassword,
 	ResetEmail,
+	SetPassword,
 	SignupResponseData,
 	GetUsersResponseData
 } from '../../lib/controllers/UsersController'
@@ -1194,6 +1195,106 @@ describe("ResetEmail function", () => {
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("SetPassword function", () => {
+	it("should call setPassword endpoint", async () => {
+		// Arrange
+		let id = 2
+		let password = "123456"
+		let passwordConfirmationToken = "asdasdasasdasdasd"
+
+		let url = `${Dav.apiBaseUrl}/user/${id}/password`
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.password, password)
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await SetPassword({
+			auth: davDevAuth,
+			id,
+			password,
+			passwordConfirmationToken
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+	})
+
+	it("should call setPassword endpoint with error", async () => {
+		// Arrange
+		let id = 2
+		let password = "123456"
+		let passwordConfirmationToken = "asdasdasasdasdasd"
+
+		let url = `${Dav.apiBaseUrl}/user/${id}/password`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.password, password)
+			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await SetPassword({
+			auth: davDevAuth,
+			id,
+			password,
+			passwordConfirmationToken
 		}) as ApiErrorResponse
 
 		// Assert for the response
