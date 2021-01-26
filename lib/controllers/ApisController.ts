@@ -8,7 +8,7 @@ import { ConvertObjectArrayToApiFunctions } from '../models/ApiFunction'
 import { ConvertObjectArrayToApiErrors } from '../models/ApiError'
 
 export async function CreateApi(params: {
-	jwt: string,
+	accessToken: string,
 	appId: number,
 	name: string
 }): Promise<ApiResponse<Api> | ApiErrorResponse> {
@@ -17,7 +17,7 @@ export async function CreateApi(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/api`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data: {
 				app_id: params.appId,
@@ -41,7 +41,7 @@ export async function CreateApi(params: {
 }
 
 export async function GetApi(params: {
-	jwt: string,
+	accessToken: string,
 	id: number
 }): Promise<ApiResponse<Api> | ApiErrorResponse>{
 	try {
@@ -49,7 +49,7 @@ export async function GetApi(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/api/${params.id}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 

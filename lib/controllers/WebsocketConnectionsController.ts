@@ -8,14 +8,14 @@ export interface WebsocketConnectionResponseData{
 }
 
 export async function CreateWebsocketConnection(params: {
-	jwt: string
+	accessToken: string
 }): Promise<ApiResponse<WebsocketConnectionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/websocket_connection`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 

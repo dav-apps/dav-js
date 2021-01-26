@@ -10,14 +10,14 @@ export interface GetDevResponseData{
 }
 
 export async function GetDev(params: {
-	jwt: string
+	accessToken: string
 }): Promise<ApiResponse<GetDevResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/dev`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 

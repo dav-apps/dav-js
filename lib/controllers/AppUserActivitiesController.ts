@@ -15,7 +15,7 @@ export interface AppUserActivityDay{
 }
 
 export async function GetAppUserActivities(params: {
-	jwt: string,
+	accessToken: string,
 	id: number,
 	start?: number,
 	end?: number
@@ -29,7 +29,7 @@ export async function GetAppUserActivities(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}/user_activities`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			params
 		})

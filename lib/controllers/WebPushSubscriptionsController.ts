@@ -5,7 +5,7 @@ import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '
 import { ConvertErrorToApiErrorResponse } from '../utils'
 
 export async function CreateWebPushSubscription(params: {
-	jwt: string,
+	accessToken: string,
 	uuid?: string,
 	endpoint: string,
 	p256dh: string,
@@ -23,7 +23,7 @@ export async function CreateWebPushSubscription(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/web_push_subscription`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data
 		})

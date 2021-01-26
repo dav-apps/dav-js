@@ -279,7 +279,7 @@ describe("CreateSessionFromJwt function", () => {
 describe("DeleteSession function", () => {
 	it("should call deleteSession endpoint", async () => {
 		// Arrange
-		let jwt = "asdkgdajbodfasud"
+		let accessToken = "asdkgdajbodfasud"
 		let url = `${Dav.apiBaseUrl}/session`
 
 		let expectedResult: ApiResponse<{}> = {
@@ -293,7 +293,7 @@ describe("DeleteSession function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'delete')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -303,7 +303,7 @@ describe("DeleteSession function", () => {
 
 		// Act
 		let result = await DeleteSession({
-			jwt
+			accessToken
 		}) as ApiResponse<{}>
 
 		// Assert for the response
@@ -312,7 +312,7 @@ describe("DeleteSession function", () => {
 
 	it("should call deleteSession endpoint with error", async () => {
 		// Arrange
-		let jwt = "asdkgdajbodfasud"
+		let accessToken = "asdkgdajbodfasud"
 		let url = `${Dav.apiBaseUrl}/session`
 
 		let expectedResult: ApiErrorResponse = {
@@ -329,7 +329,7 @@ describe("DeleteSession function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'delete')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -344,7 +344,7 @@ describe("DeleteSession function", () => {
 
 		// Act
 		let result = await DeleteSession({
-			jwt
+			accessToken
 		}) as ApiErrorResponse
 
 		// Assert for the response

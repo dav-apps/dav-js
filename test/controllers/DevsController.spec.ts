@@ -32,7 +32,7 @@ describe("GetDev function", () => {
 		let secondAppGooglePlayLink = "https://play.google.com/store/apps/bla"
 		let secondAppMicrosoftStoreLink = "https://store.microsoft.com/bla"
 
-		let jwt = "9ßdf0thhsdffoth"
+		let accessToken = "9ßdf0thhsdffoth"
 		let url = `${Dav.apiBaseUrl}/dev`
 
 		let expectedResult: ApiResponse<GetDevResponseData> = {
@@ -68,7 +68,7 @@ describe("GetDev function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -100,7 +100,7 @@ describe("GetDev function", () => {
 
 		// Act
 		let result = await GetDev({
-			jwt
+			accessToken
 		}) as ApiResponse<GetDevResponseData>
 
 		// Assert for the response
@@ -127,7 +127,7 @@ describe("GetDev function", () => {
 
 	it("should call getDev endpoint with error", async () => {
 		// Arrange
-		let jwt = "9ßdf0thhsdffoth"
+		let accessToken = "9ßdf0thhsdffoth"
 		let url = `${Dav.apiBaseUrl}/dev`
 
 		let expectedResult: ApiErrorResponse = {
@@ -144,7 +144,7 @@ describe("GetDev function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -159,7 +159,7 @@ describe("GetDev function", () => {
 
 		// Act
 		let result = await GetDev({
-			jwt
+			accessToken
 		}) as ApiErrorResponse
 
 		// Assert for the response

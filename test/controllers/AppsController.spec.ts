@@ -22,7 +22,7 @@ describe("CreateApp function", () => {
 		let name = "TestApp"
 		let description = "This is a test app"
 		
-		let jwt = "sodfnosgdbjsgdjsdgosgd"
+		let accessToken = "sodfnosgdbjsgdjsdgosgd"
 		let url = `${Dav.apiBaseUrl}/app`
 
 		let expectedResult: ApiResponse<App> = {
@@ -44,7 +44,7 @@ describe("CreateApp function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -67,7 +67,7 @@ describe("CreateApp function", () => {
 
 		// Act
 		let result = await CreateApp({
-			jwt,
+			accessToken,
 			name,
 			description
 		}) as ApiResponse<App>
@@ -88,7 +88,7 @@ describe("CreateApp function", () => {
 		let name = "TestApp"
 		let description = "This is a test app"
 
-		let jwt = "sodfnosgdbjsgdjsdgosgd"
+		let accessToken = "sodfnosgdbjsgdjsdgosgd"
 		let url = `${Dav.apiBaseUrl}/app`
 
 		let expectedResult: ApiErrorResponse = {
@@ -105,7 +105,7 @@ describe("CreateApp function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -125,7 +125,7 @@ describe("CreateApp function", () => {
 
 		// Act
 		let result = await CreateApp({
-			jwt,
+			accessToken,
 			name,
 			description
 		}) as ApiErrorResponse
@@ -298,7 +298,7 @@ describe("GetApp function", () => {
 		let apiId = 2
 		let apiName = "TestApi"
 
-		let jwt = "ioasdwhehwt08r3q0feh0"
+		let accessToken = "ioasdwhehwt08r3q0feh0"
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiResponse<App> = {
@@ -337,7 +337,7 @@ describe("GetApp function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -363,7 +363,7 @@ describe("GetApp function", () => {
 
 		// Act
 		let result = await GetApp({
-			jwt,
+			accessToken,
 			id
 		}) as ApiResponse<App>
 
@@ -390,7 +390,7 @@ describe("GetApp function", () => {
 		// Arrange
 		let id = 53
 
-		let jwt = "ioasdwhehwt08r3q0feh0"
+		let accessToken = "ioasdwhehwt08r3q0feh0"
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiErrorResponse = {
@@ -407,7 +407,7 @@ describe("GetApp function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -422,7 +422,7 @@ describe("GetApp function", () => {
 
 		// Act
 		let result = await GetApp({
-			jwt,
+			accessToken,
 			id
 		}) as ApiErrorResponse
 
@@ -444,7 +444,7 @@ describe("UpdateApp function", () => {
 		let googlePlayLink = "https://play.google.com/cards"
 		let microsoftStoreLink = "https://store.microsoft.com/cards"
 
-		let jwt = "ishdf0heh942893gurowfe"
+		let accessToken = "ishdf0heh942893gurowfe"
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiResponse<App> = {
@@ -466,7 +466,7 @@ describe("UpdateApp function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -493,7 +493,7 @@ describe("UpdateApp function", () => {
 
 		// Act
 		let result = await UpdateApp({
-			jwt,
+			accessToken,
 			id,
 			name,
 			description,
@@ -524,7 +524,7 @@ describe("UpdateApp function", () => {
 		let googlePlayLink = "https://play.google.com/cards"
 		let microsoftStoreLink = "https://store.microsoft.com/cards"
 
-		let jwt = "ishdf0heh942893gurowfe"
+		let accessToken = "ishdf0heh942893gurowfe"
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiErrorResponse = {
@@ -541,7 +541,7 @@ describe("UpdateApp function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -565,7 +565,7 @@ describe("UpdateApp function", () => {
 
 		// Act
 		let result = await UpdateApp({
-			jwt,
+			accessToken,
 			id,
 			name,
 			description,

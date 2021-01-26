@@ -24,7 +24,7 @@ describe("CreateTable function", () => {
 		let appId = 35
 		let name = "TestTable"
 
-		let jwt = "asoidaogiasdiuasd"
+		let accessToken = "asoidaogiasdiuasd"
 		let url = `${Dav.apiBaseUrl}/table`
 
 		let expectedResult: ApiResponse<Table> = {
@@ -38,7 +38,7 @@ describe("CreateTable function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -57,7 +57,7 @@ describe("CreateTable function", () => {
 
 		// Act
 		let result = await CreateTable({
-			jwt,
+			accessToken,
 			appId,
 			name
 		}) as ApiResponse<Table>
@@ -74,7 +74,7 @@ describe("CreateTable function", () => {
 		let appId = 35
 		let name = "TestTable"
 
-		let jwt = "asoidaogiasdiuasd"
+		let accessToken = "asoidaogiasdiuasd"
 		let url = `${Dav.apiBaseUrl}/table`
 
 		let expectedResult: ApiErrorResponse = {
@@ -91,7 +91,7 @@ describe("CreateTable function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -111,7 +111,7 @@ describe("CreateTable function", () => {
 
 		// Act
 		let result = await CreateTable({
-			jwt,
+			accessToken,
 			appId,
 			name
 		}) as ApiErrorResponse
@@ -135,7 +135,7 @@ describe("GetTable function", () => {
 		let secondTableObjectUuid = "hisdiogjw349hoihefnfkwq"
 		let secondTableObjectEtag = "oiajsdaksjdasd"
 
-		let jwt = "aihoasodihaisfu"
+		let accessToken = "aihoasodihaisfu"
 		let url = `${Dav.apiBaseUrl}/table/${id}`
 		let count = 4
 		let page = 1
@@ -164,7 +164,7 @@ describe("GetTable function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(request.config.params.count, count)
 			assert.equal(request.config.params.page, page)
@@ -192,7 +192,7 @@ describe("GetTable function", () => {
 
 		// Act
 		let result = await GetTable({
-			jwt,
+			accessToken,
 			id,
 			count,
 			page
@@ -215,7 +215,7 @@ describe("GetTable function", () => {
 		// Arrange
 		let id = 234
 
-		let jwt = "aihoasodihaisfu"
+		let accessToken = "aihoasodihaisfu"
 		let url = `${Dav.apiBaseUrl}/table/${id}`
 		let count = 4
 		let page = 1
@@ -234,7 +234,7 @@ describe("GetTable function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(request.config.params.count, count)
 			assert.equal(request.config.params.page, page)
@@ -252,7 +252,7 @@ describe("GetTable function", () => {
 
 		// Act
 		let result = await GetTable({
-			jwt,
+			accessToken,
 			id,
 			count,
 			page

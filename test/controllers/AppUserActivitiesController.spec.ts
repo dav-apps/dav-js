@@ -27,7 +27,7 @@ describe("GetAppUserActivities function", () => {
 		let secondUserActivityCountMonthly = 11
 		let secondUserActivityCountYearly = 22
 
-		let jwt = "iohafduwe98hh9fesbodc"
+		let accessToken = "iohafduwe98hh9fesbodc"
 		let url = `${Dav.apiBaseUrl}/app/${id}/user_activities`
 
 		let expectedResult: ApiResponse<GetAppUserActivitiesResponseData> = {
@@ -56,7 +56,7 @@ describe("GetAppUserActivities function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(start, request.config.params.start)
 			assert.equal(end, request.config.params.end)
@@ -84,7 +84,7 @@ describe("GetAppUserActivities function", () => {
 
 		// Act
 		let result = await GetAppUserActivities({
-			jwt,
+			accessToken,
 			id,
 			start,
 			end
@@ -111,7 +111,7 @@ describe("GetAppUserActivities function", () => {
 		let start = 111111111
 		let end = 222222222
 
-		let jwt = "iohafduwe98hh9fesbodc"
+		let accessToken = "iohafduwe98hh9fesbodc"
 		let url = `${Dav.apiBaseUrl}/app/${id}/user_activities`
 
 		let expectedResult: ApiErrorResponse = {
@@ -128,7 +128,7 @@ describe("GetAppUserActivities function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(start, request.config.params.start)
 			assert.equal(end, request.config.params.end)
@@ -146,7 +146,7 @@ describe("GetAppUserActivities function", () => {
 
 		// Act
 		let result = await GetAppUserActivities({
-			jwt,
+			accessToken,
 			id,
 			start,
 			end

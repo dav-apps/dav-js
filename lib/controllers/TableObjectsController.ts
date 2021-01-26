@@ -5,7 +5,7 @@ import { ConvertErrorToApiErrorResponse } from '../utils'
 import { TableObject } from '../models/TableObject'
 
 export async function CreateTableObject(params: {
-	jwt: string,
+	accessToken: string,
 	uuid?: string,
 	tableId: number,
 	file?: boolean,
@@ -21,7 +21,7 @@ export async function CreateTableObject(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table_object`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data
 		})
@@ -42,7 +42,7 @@ export async function CreateTableObject(params: {
 }
 
 export async function GetTableObject(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string
 }) : Promise<ApiResponse<TableObject> | ApiErrorResponse>{
 	try {
@@ -50,7 +50,7 @@ export async function GetTableObject(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -73,7 +73,7 @@ export async function GetTableObject(params: {
 }
 
 export async function UpdateTableObject(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string,
 	properties: {[name: string]: string | boolean | number}
 }) {
@@ -82,7 +82,7 @@ export async function UpdateTableObject(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -105,7 +105,7 @@ export async function UpdateTableObject(params: {
 }
 
 export async function DeleteTableObject(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
@@ -113,7 +113,7 @@ export async function DeleteTableObject(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -127,7 +127,7 @@ export async function DeleteTableObject(params: {
 }
 
 export async function SetTableObjectFile(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string,
 	file: Blob
 }) : Promise<ApiResponse<TableObject> | ApiErrorResponse> {
@@ -145,7 +145,7 @@ export async function SetTableObjectFile(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
-				Authorization: params.jwt,
+				Authorization: params.accessToken,
 				'Content-Type': params.file.type
 			},
 			data
@@ -170,7 +170,7 @@ export async function SetTableObjectFile(params: {
 }
 
 export async function RemoveTableObject(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
@@ -178,7 +178,7 @@ export async function RemoveTableObject(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/access`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 

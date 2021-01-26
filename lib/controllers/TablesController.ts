@@ -5,7 +5,7 @@ import { ConvertErrorToApiErrorResponse } from '../utils'
 import { Table } from '../models/Table'
 
 export async function CreateTable(params: {
-	jwt: string,
+	accessToken: string,
 	appId: number,
 	name: string
 }) : Promise<ApiResponse<Table> | ApiErrorResponse> {
@@ -14,7 +14,7 @@ export async function CreateTable(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data: {
 				app_id: params.appId,
@@ -45,7 +45,7 @@ export interface GetTableResponseData{
 }
 
 export async function GetTable(params: {
-	jwt: string,
+	accessToken: string,
 	id: number,
 	count?: number,
 	page?: number
@@ -59,7 +59,7 @@ export async function GetTable(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table/${params.id}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			params: urlParams
 		})

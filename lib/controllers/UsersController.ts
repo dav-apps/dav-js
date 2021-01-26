@@ -8,8 +8,8 @@ import { ConvertObjectArrayToApps } from '../models/App'
 
 export interface SignupResponseData {
 	user: User,
-	jwt: string,
-	websiteJwt?: string
+	accessToken: string,
+	websiteAccessToken?: string
 }
 
 export interface GetUsersResponseData {
@@ -74,8 +74,8 @@ export async function Signup(params: {
 					false,
 					[]
 				),
-				jwt: response.data.jwt,
-				websiteJwt: response.data.website_jwt
+				accessToken: response.data.access_token,
+				websiteAccessToken: response.data.website_access_token
 			}
 		}
 	} catch (error) {
@@ -84,14 +84,14 @@ export async function Signup(params: {
 }
 
 export async function GetUsers(params: {
-	jwt: string
+	accessToken: string
 }): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/users`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -118,14 +118,14 @@ export async function GetUsers(params: {
 }
 
 export async function GetUser(params: {
-	jwt: string
+	accessToken: string
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -153,7 +153,7 @@ export async function GetUser(params: {
 }
 
 export async function UpdateUser(params: {
-	jwt: string,
+	accessToken: string,
 	email?: string,
 	firstName?: string,
 	password?: string
@@ -168,7 +168,7 @@ export async function UpdateUser(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data
 		})

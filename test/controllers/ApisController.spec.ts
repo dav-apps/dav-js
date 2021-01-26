@@ -23,7 +23,7 @@ describe("CreateApi function", () => {
 		let appId = 252
 		let name = "TestApi"
 
-		let jwt = "asjbgdsbjsfjsdfsdof"
+		let accessToken = "asjbgdsbjsfjsdfsdof"
 		let url = `${Dav.apiBaseUrl}/api`
 
 		let expectedResult: ApiResponse<Api> = {
@@ -43,7 +43,7 @@ describe("CreateApi function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -65,7 +65,7 @@ describe("CreateApi function", () => {
 
 		// Act
 		let result = await CreateApi({
-			jwt,
+			accessToken,
 			appId,
 			name
 		}) as ApiResponse<Api>
@@ -84,7 +84,7 @@ describe("CreateApi function", () => {
 		let appId = 252
 		let name = "TestApi"
 
-		let jwt = "asjbgdsbjsfjsdfsdof"
+		let accessToken = "asjbgdsbjsfjsdfsdof"
 		let url = `${Dav.apiBaseUrl}/api`
 
 		let expectedResult: ApiErrorResponse = {
@@ -101,7 +101,7 @@ describe("CreateApi function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -121,7 +121,7 @@ describe("CreateApi function", () => {
 
 		// Act
 		let result = await CreateApi({
-			jwt,
+			accessToken,
 			appId,
 			name
 		}) as ApiErrorResponse
@@ -150,7 +150,7 @@ describe("GetApi function", () => {
 		let apiErrorCode = 1111
 		let apiErrorMessage = "Test ErrorMessage"
 
-		let jwt = "idshfhif9w8h39f24hfw"
+		let accessToken = "idshfhif9w8h39f24hfw"
 		let url = `${Dav.apiBaseUrl}/api/${id}`
 
 		let expectedResult: ApiResponse<Api> = {
@@ -191,7 +191,7 @@ describe("GetApi function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -221,7 +221,7 @@ describe("GetApi function", () => {
 
 		// Act
 		let result = await GetApi({
-			jwt,
+			accessToken,
 			id
 		}) as ApiResponse<Api>
 
@@ -253,7 +253,7 @@ describe("GetApi function", () => {
 		// Arrange
 		let id = 12
 
-		let jwt = "idshfhif9w8h39f24hfw"
+		let accessToken = "idshfhif9w8h39f24hfw"
 		let url = `${Dav.apiBaseUrl}/api/${id}`
 
 		let expectedResult: ApiErrorResponse = {
@@ -270,7 +270,7 @@ describe("GetApi function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -285,7 +285,7 @@ describe("GetApi function", () => {
 
 		// Act
 		let result = await GetApi({
-			jwt,
+			accessToken,
 			id
 		}) as ApiErrorResponse
 

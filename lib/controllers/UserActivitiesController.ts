@@ -15,7 +15,7 @@ export interface UserActivityDay{
 }
 
 export async function GetUserActivities(params: {
-	jwt: string,
+	accessToken: string,
 	start?: number,
 	end?: number
 }): Promise<ApiResponse<GetUserActivitiesResponseData> | ApiErrorResponse> {
@@ -28,7 +28,7 @@ export async function GetUserActivities(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user_activities`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			params
 		})

@@ -5,7 +5,7 @@ import { ConvertErrorToApiErrorResponse } from '../utils'
 import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification'
 
 export async function CreateNotification(params: {
-	jwt: string,
+	accessToken: string,
 	uuid?: string,
 	time: number,
 	interval: number,
@@ -25,7 +25,7 @@ export async function CreateNotification(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/notification`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data
 		})
@@ -47,14 +47,14 @@ export async function CreateNotification(params: {
 }
 
 export async function GetNotifications(params: {
-	jwt: string
+	accessToken: string
 }): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/notifications`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -68,7 +68,7 @@ export async function GetNotifications(params: {
 }
 
 export async function UpdateNotification(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string,
 	time?: number,
 	interval?: number,
@@ -86,7 +86,7 @@ export async function UpdateNotification(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data
 		})
@@ -108,7 +108,7 @@ export async function UpdateNotification(params: {
 }
 
 export async function DeleteNotification(params: {
-	jwt: string,
+	accessToken: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse>{
 	try {
@@ -116,7 +116,7 @@ export async function DeleteNotification(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 

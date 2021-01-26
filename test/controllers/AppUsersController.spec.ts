@@ -21,7 +21,7 @@ describe("GetAppUsers function", () => {
 		let secondAppUserUserId = 2
 		let secondAppUserCreatedAt = new Date("2021-01-16 23:00:00 UTC")
 
-		let jwt = "0sdfofui239qjß0p23r"
+		let accessToken = "0sdfofui239qjß0p23r"
 		let url = `${Dav.apiBaseUrl}/app/${id}/users`
 
 		let expectedResult: ApiResponse<GetAppUsersResponseData> = {
@@ -46,7 +46,7 @@ describe("GetAppUsers function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -67,7 +67,7 @@ describe("GetAppUsers function", () => {
 
 		// Act
 		let result = await GetAppUsers({
-			jwt,
+			accessToken,
 			id
 		}) as ApiResponse<GetAppUsersResponseData>
 
@@ -86,7 +86,7 @@ describe("GetAppUsers function", () => {
 		// Arrange
 		let id = 93
 
-		let jwt = "0sdfofui239qjß0p23r"
+		let accessToken = "0sdfofui239qjß0p23r"
 		let url = `${Dav.apiBaseUrl}/app/${id}/users`
 
 		let expectedResult: ApiErrorResponse = {
@@ -103,7 +103,7 @@ describe("GetAppUsers function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -118,7 +118,7 @@ describe("GetAppUsers function", () => {
 
 		// Act
 		let result = await GetAppUsers({
-			jwt,
+			accessToken,
 			id
 		}) as ApiErrorResponse
 

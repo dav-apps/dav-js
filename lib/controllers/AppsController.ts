@@ -8,7 +8,7 @@ import { ConvertObjectArrayToTables } from '../models/Table'
 import { ConvertObjectArrayToApis } from '../models/Api'
 
 export async function CreateApp(params: {
-	jwt: string,
+	accessToken: string,
 	name: string,
 	description: string
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
@@ -17,7 +17,7 @@ export async function CreateApp(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/app`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data: {
 				name: params.name,
@@ -59,7 +59,7 @@ export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> 
 }
 
 export async function GetApp(params: {
-	jwt: string,
+	accessToken: string,
 	id: number
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
@@ -67,7 +67,7 @@ export async function GetApp(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
@@ -92,7 +92,7 @@ export async function GetApp(params: {
 }
 
 export async function UpdateApp(params: {
-	jwt: string,
+	accessToken: string,
 	id: number,
 	name?: string,
 	description?: string,
@@ -114,7 +114,7 @@ export async function UpdateApp(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			},
 			data
 		})

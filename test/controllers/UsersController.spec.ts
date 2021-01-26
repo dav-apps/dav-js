@@ -46,8 +46,8 @@ describe("Signup function", () => {
 		let totalStorage = 100000000
 		let usedStorage = 2080234
 		let plan = 0
-		let jwt = "iasdho9h393iuasbad"
-		let websiteJwt = "0hef9oh8risohfwg8r39rzq3"
+		let accessToken = "iasdho9h393iuasbad"
+		let websiteAccessToken = "0hef9oh8risohfwg8r39rzq3"
 
 		let url = `${Dav.apiBaseUrl}/signup`
 
@@ -69,8 +69,8 @@ describe("Signup function", () => {
 					false,
 					[]
 				),
-				jwt,
-				websiteJwt
+				accessToken,
+				websiteAccessToken
 			}
 		}
 
@@ -105,8 +105,8 @@ describe("Signup function", () => {
 						used_storage: usedStorage,
 						plan
 					},
-					jwt,
-					website_jwt: websiteJwt
+					access_token: accessToken,
+					website_access_token: websiteAccessToken
 				}
 			})
 		})
@@ -133,8 +133,8 @@ describe("Signup function", () => {
 		assert.equal(result.data.user.TotalStorage, expectedResult.data.user.TotalStorage)
 		assert.equal(result.data.user.UsedStorage, expectedResult.data.user.UsedStorage)
 		assert.equal(result.data.user.Plan, expectedResult.data.user.Plan)
-		assert.equal(result.data.jwt, expectedResult.data.jwt)
-		assert.equal(result.data.websiteJwt, expectedResult.data.websiteJwt)
+		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
+		assert.equal(result.data.websiteAccessToken, expectedResult.data.websiteAccessToken)
 	})
 
 	it("should call signup endpoint with error", async () => {
@@ -223,7 +223,7 @@ describe("GetUsers function", () => {
 		let secondUserPlan = 0
 		let secondUserCreatedAt = new Date("2019-10-29T00:00:00.000Z")
 
-		let jwt = "jjzmjkimzjh8ef9guwegwerg73"
+		let accessToken = "jjzmjkimzjh8ef9guwegwerg73"
 		let url = `${Dav.apiBaseUrl}/users`
 
 		let expectedResult: ApiResponse<GetUsersResponseData> = {
@@ -254,7 +254,7 @@ describe("GetUsers function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -281,7 +281,7 @@ describe("GetUsers function", () => {
 
 		// Act
 		let result = await GetUsers({
-			jwt
+			accessToken
 		}) as ApiResponse<GetUsersResponseData>
 
 		// Assert for the response
@@ -303,7 +303,7 @@ describe("GetUsers function", () => {
 
 	it("should call getUsers endpoint with error", async () => {
 		// Arrange
-		let jwt = "jjzmjkimzjh8ef9guwegwerg73"
+		let accessToken = "jjzmjkimzjh8ef9guwegwerg73"
 		let url = `${Dav.apiBaseUrl}/users`
 
 		let expectedResult: ApiErrorResponse = {
@@ -320,7 +320,7 @@ describe("GetUsers function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -335,7 +335,7 @@ describe("GetUsers function", () => {
 
 		// Act
 		let result = await GetUsers({
-			jwt
+			accessToken
 		}) as ApiErrorResponse
 
 		// Assert for the response
@@ -368,7 +368,7 @@ describe("GetUser function", () => {
 		let appGooglePlayLink = null
 		let appMicrosoftStoreLink = null
 
-		let jwt = "hdsfigtw9gueiwefhued"
+		let accessToken = "hdsfigtw9gueiwefhued"
 		let url = `${Dav.apiBaseUrl}/user`
 
 		let expectedResult: ApiResponse<User> = {
@@ -406,7 +406,7 @@ describe("GetUser function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -438,7 +438,7 @@ describe("GetUser function", () => {
 
 		// Act
 		let result = await GetUser({
-			jwt
+			accessToken
 		}) as ApiResponse<User>
 
 		// Assert for the response
@@ -468,7 +468,7 @@ describe("GetUser function", () => {
 
 	it("should call getUser endpoint with error", async () => {
 		// Arrange
-		let jwt = "hdsfigtw9gueiwefhued"
+		let accessToken = "hdsfigtw9gueiwefhued"
 		let url = `${Dav.apiBaseUrl}/user`
 
 		let expectedResult: ApiErrorResponse = {
@@ -485,7 +485,7 @@ describe("GetUser function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'get')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -500,7 +500,7 @@ describe("GetUser function", () => {
 
 		// Act
 		let result = await GetUser({
-			jwt
+			accessToken
 		}) as ApiErrorResponse
 
 		// Assert for the response
@@ -529,7 +529,7 @@ describe("UpdateUser function", () => {
 		let newEmail = "updatedemail@example.com"
 		let password = "64534231"
 
-		let jwt = "hdsfigtw9gueiwefhued"
+		let accessToken = "hdsfigtw9gueiwefhued"
 		let url = `${Dav.apiBaseUrl}/user`
 
 		let expectedResult: ApiResponse<User> = {
@@ -556,7 +556,7 @@ describe("UpdateUser function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -585,7 +585,7 @@ describe("UpdateUser function", () => {
 
 		// Act
 		let result = await UpdateUser({
-			jwt,
+			accessToken,
 			email: newEmail,
 			firstName: newFirstName,
 			password
@@ -613,7 +613,7 @@ describe("UpdateUser function", () => {
 		let newEmail = "updatedemail@example.com"
 		let password = "64534231"
 
-		let jwt = "hdsfigtw9gueiwefhued"
+		let accessToken = "hdsfigtw9gueiwefhued"
 		let url = `${Dav.apiBaseUrl}/user`
 
 		let expectedResult: ApiErrorResponse = {
@@ -630,7 +630,7 @@ describe("UpdateUser function", () => {
 			// Assert for the request
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
-			assert.equal(request.config.headers.Authorization, jwt)
+			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
@@ -651,7 +651,7 @@ describe("UpdateUser function", () => {
 
 		// Act
 		let result = await UpdateUser({
-			jwt,
+			accessToken,
 			email: newEmail,
 			firstName: newFirstName,
 			password

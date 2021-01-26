@@ -13,7 +13,7 @@ export interface AppUser{
 }
 
 export async function GetAppUsers(params: {
-	jwt: string,
+	accessToken: string,
 	id: number
 }): Promise<ApiResponse<GetAppUsersResponseData> | ApiErrorResponse> {
 	try {
@@ -21,7 +21,7 @@ export async function GetAppUsers(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}/users`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 

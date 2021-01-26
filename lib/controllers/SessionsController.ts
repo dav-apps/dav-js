@@ -89,14 +89,14 @@ export async function CreateSessionFromJwt(params: {
 }
 
 export async function DeleteSession(params: {
-	jwt: string
+	accessToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/session`,
 			headers: {
-				Authorization: params.jwt
+				Authorization: params.accessToken
 			}
 		})
 
