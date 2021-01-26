@@ -5,7 +5,7 @@ import { ApiErrorResponse, ApiResponse } from '../types'
 import { ConvertErrorToApiErrorResponse } from '../utils'
 
 export interface CreateSessionResponseData{
-	jwt: string
+	accessToken: string
 }
 
 export async function CreateSession(params: {
@@ -41,7 +41,7 @@ export async function CreateSession(params: {
 		return {
 			status: response.status,
 			data: {
-				jwt: response.data.jwt
+				accessToken: response.data.access_token
 			}
 		}
 	} catch (error) {
@@ -49,9 +49,9 @@ export async function CreateSession(params: {
 	}
 }
 
-export async function CreateSessionFromJwt(params: {
+export async function CreateSessionFromAccessToken(params: {
 	auth: Auth,
-	jwt: string,
+	accessToken: string,
 	appId: number,
 	apiKey: string,
 	deviceName?: string,
@@ -60,7 +60,7 @@ export async function CreateSessionFromJwt(params: {
 }): Promise<ApiResponse<CreateSessionResponseData> | ApiErrorResponse>{
 	try {
 		let data = {
-			jwt: params.jwt,
+			access_token: params.accessToken,
 			app_id: params.appId,
 			api_key: params.apiKey
 		}
@@ -70,7 +70,7 @@ export async function CreateSessionFromJwt(params: {
 
 		let response = await axios.default({
 			method: 'post',
-			url: `${Dav.apiBaseUrl}/session/jwt`,
+			url: `${Dav.apiBaseUrl}/session/access_token`,
 			headers: {
 				Authorization: params.auth.token
 			},
@@ -80,7 +80,7 @@ export async function CreateSessionFromJwt(params: {
 		return {
 			status: response.status,
 			data: {
-				jwt: response.data.jwt
+				accessToken: response.data.access_token
 			}
 		}
 	} catch (error) {

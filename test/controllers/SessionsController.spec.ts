@@ -5,7 +5,7 @@ import { ApiResponse, ApiErrorResponse } from '../../lib/types'
 import { davDevAuth } from '../constants'
 import {
 	CreateSession,
-	CreateSessionFromJwt,
+	CreateSessionFromAccessToken,
 	DeleteSession,
 	CreateSessionResponseData
 } from '../../lib/controllers/SessionsController'
@@ -28,14 +28,14 @@ describe("CreateSession function", () => {
 		let deviceName = "TestDevice"
 		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
-		let jwt = "hiuhfeiugasdasd"
+		let accessToken = "hiuhfeiugasdasd"
 		
 		let url = `${Dav.apiBaseUrl}/session`
 
 		let expectedResult: ApiResponse<CreateSessionResponseData> = {
 			status: 201,
 			data: {
-				jwt
+				accessToken
 			}
 		}
 
@@ -60,7 +60,7 @@ describe("CreateSession function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					jwt
+					access_token: accessToken
 				}
 			})
 		})
@@ -79,7 +79,7 @@ describe("CreateSession function", () => {
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.jwt, expectedResult.data.jwt)
+		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
 	})
 
 	it("should call createSession endpoint with error", async () => {
@@ -153,20 +153,20 @@ describe("CreateSession function", () => {
 describe("CreateSessionFromJwt function", () => {
 	it("should call createSessionFromJwt endpoint", async () => {
 		// Arrange
-		let jwt = "asdasdasdasdasd"
+		let accessToken = "asdasdasdasdasd"
 		let appId = 83
 		let apiKey = "sndksfndsdfsdfsdf"
 		let deviceName = "TestDevice"
 		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 		
-		let responseJwt = "oihdfibsdfig93q"
-		let url = `${Dav.apiBaseUrl}/session/jwt`
+		let responseAccessToken = "oihdfibsdfig93q"
+		let url = `${Dav.apiBaseUrl}/session/access_token`
 
 		let expectedResult: ApiResponse<CreateSessionResponseData> = {
 			status: 201,
 			data: {
-				jwt: responseJwt
+				accessToken: responseAccessToken
 			}
 		}
 
@@ -180,7 +180,7 @@ describe("CreateSessionFromJwt function", () => {
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
-			assert.equal(data.jwt, jwt)
+			assert.equal(data.access_token, accessToken)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
@@ -190,15 +190,15 @@ describe("CreateSessionFromJwt function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					jwt: responseJwt
+					access_token: responseAccessToken
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateSessionFromJwt({
+		let result = await CreateSessionFromAccessToken({
 			auth: davDevAuth,
-			jwt,
+			accessToken,
 			appId,
 			apiKey,
 			deviceName,
@@ -208,19 +208,19 @@ describe("CreateSessionFromJwt function", () => {
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.jwt, expectedResult.data.jwt)
+		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
 	})
 
 	it("should call createSessionFromJwt endpoint with error", async () => {
 		// Arrange
-		let jwt = "asdasdasdasdasd"
+		let accessToken = "asdasdasdasdasd"
 		let appId = 83
 		let apiKey = "sndksfndsdfsdfsdf"
 		let deviceName = "TestDevice"
 		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 
-		let url = `${Dav.apiBaseUrl}/session/jwt`
+		let url = `${Dav.apiBaseUrl}/session/access_token`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -240,7 +240,7 @@ describe("CreateSessionFromJwt function", () => {
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
-			assert.equal(data.jwt, jwt)
+			assert.equal(data.access_token, accessToken)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
@@ -259,9 +259,9 @@ describe("CreateSessionFromJwt function", () => {
 		})
 
 		// Act
-		let result = await CreateSessionFromJwt({
+		let result = await CreateSessionFromAccessToken({
 			auth: davDevAuth,
-			jwt,
+			accessToken,
 			appId,
 			apiKey,
 			deviceName,
