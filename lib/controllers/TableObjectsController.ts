@@ -9,10 +9,12 @@ export async function CreateTableObject(params: {
 	uuid?: string,
 	tableId: number,
 	file?: boolean,
-	properties?: {[name: string]: string | boolean | number}
-}) : Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+	properties?: { [name: string]: string | boolean | number }
+}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	try {
-		let data = {}
+		let data = {
+			table_id: params.tableId
+		}
 		if (params.uuid != null) data["uuid"] = params.uuid
 		if (params.file != null) data["file"] = params.file
 		if (params.properties != null) data["properties"] = params.properties
@@ -32,6 +34,10 @@ export async function CreateTableObject(params: {
 		tableObject.Etag = response.data.etag
 		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
 
+		for (let key of Object.keys(response.data.properties)) {
+			tableObject.Properties[key] = { value: response.data.properties[key] }
+		}
+		
 		return {
 			status: response.status,
 			data: tableObject
@@ -44,7 +50,7 @@ export async function CreateTableObject(params: {
 export async function GetTableObject(params: {
 	accessToken: string,
 	uuid: string
-}) : Promise<ApiResponse<TableObject> | ApiErrorResponse>{
+}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
@@ -60,7 +66,7 @@ export async function GetTableObject(params: {
 		tableObject.Etag = response.data.etag
 
 		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = {value: response.data.properties[key]}
+			tableObject.Properties[key] = { value: response.data.properties[key] }
 		}
 
 		return {
@@ -75,14 +81,17 @@ export async function GetTableObject(params: {
 export async function UpdateTableObject(params: {
 	accessToken: string,
 	uuid: string,
-	properties: {[name: string]: string | boolean | number}
-}) {
+	properties: { [name: string]: string | boolean | number }
+}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
 				Authorization: params.accessToken
+			},
+			data: {
+				properties: params.properties
 			}
 		})
 
@@ -92,7 +101,7 @@ export async function UpdateTableObject(params: {
 		tableObject.Etag = response.data.etag
 
 		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = {value: response.data.properties[key]}
+			tableObject.Properties[key] = { value: response.data.properties[key] }
 		}
 
 		return {
@@ -130,7 +139,7 @@ export async function SetTableObjectFile(params: {
 	accessToken: string,
 	uuid: string,
 	file: Blob
-}) : Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	// Read the blob
 	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
 		let fileReader = new FileReader()
@@ -157,7 +166,7 @@ export async function SetTableObjectFile(params: {
 		tableObject.Etag = response.data.etag
 
 		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = {value: response.data.properties[key]}
+			tableObject.Properties[key] = { value: response.data.properties[key] }
 		}
 
 		return {

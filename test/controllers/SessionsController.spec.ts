@@ -150,8 +150,8 @@ describe("CreateSession function", () => {
 	})
 })
 
-describe("CreateSessionFromJwt function", () => {
-	it("should call createSessionFromJwt endpoint", async () => {
+describe("CreateSessionFromAccessToken function", () => {
+	it("should call createSessionFromAccessToken endpoint", async () => {
 		// Arrange
 		let accessToken = "asdasdasdasdasd"
 		let appId = 83
@@ -211,7 +211,7 @@ describe("CreateSessionFromJwt function", () => {
 		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
 	})
 
-	it("should call createSessionFromJwt endpoint with error", async () => {
+	it("should call createSessionFromAccessToken endpoint with error", async () => {
 		// Arrange
 		let accessToken = "asdasdasdasdasd"
 		let appId = 83
