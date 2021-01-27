@@ -1,4 +1,8 @@
-import { ApiErrorResponse } from './types'
+import { Dav } from './Dav'
+import { ApiResponse, ApiErrorResponse } from './types'
+import * as ErrorCodes from './errorCodes'
+import * as DatabaseOperations from './providers/DatabaseOperations'
+import { RenewSession, SessionResponseData } from './controllers/SessionsController'
 
 export function generateUuid() {
 	var d = new Date().getTime()
@@ -45,6 +49,31 @@ export function getNotificationKey(uuid?: string) {
 	}
 }
 
+export async function HandleApiError(error: any): Promise<string | ApiErrorResponse> {
+	let errorResponse = ConvertErrorToApiErrorResponse(error)
+
+	if (
+		errorResponse.errors.length > 0
+		&& errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
+	) {
+		let renewSessionResult = await RenewSession({ accessToken: Dav.accessToken })
+		
+		if (renewSessionResult.status == 200) {
+			let accessToken = (renewSessionResult as ApiResponse<SessionResponseData>).data.accessToken
+
+			// Save the new access token in the database
+			await SetAccessToken(accessToken)
+
+			// Return the access token
+			return accessToken
+		} else {
+			return renewSessionResult as ApiErrorResponse
+		}
+	} else {
+		return errorResponse
+	}
+}
+
 export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
 	if (error.response) {
 		// API error
@@ -54,8 +83,19 @@ export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
 		}
 	} else {
 		// JavaScript error
-		return {status: -1, errors: []};
+		return {status: -1, errors: []}
 	}
+}
+
+export async function SetAccessToken(accessToken: string) {
+	Dav.accessToken = accessToken
+
+	// Save the access token in the database
+	let session = await DatabaseOperations.GetSession()
+	if(session == null) return
+
+	session.AccessToken = accessToken
+	await DatabaseOperations.SetSession(session)
 }
 
 export function SortTableIds(
