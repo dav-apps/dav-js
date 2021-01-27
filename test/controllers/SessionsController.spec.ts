@@ -6,8 +6,9 @@ import { davDevAuth } from '../constants'
 import {
 	CreateSession,
 	CreateSessionFromAccessToken,
+	RenewSession,
 	DeleteSession,
-	CreateSessionResponseData
+	SessionResponseData
 } from '../../lib/controllers/SessionsController'
 
 beforeEach(() => {
@@ -32,7 +33,7 @@ describe("CreateSession function", () => {
 		
 		let url = `${Dav.apiBaseUrl}/session`
 
-		let expectedResult: ApiResponse<CreateSessionResponseData> = {
+		let expectedResult: ApiResponse<SessionResponseData> = {
 			status: 201,
 			data: {
 				accessToken
@@ -75,7 +76,7 @@ describe("CreateSession function", () => {
 			deviceName,
 			deviceType,
 			deviceOs
-		}) as ApiResponse<CreateSessionResponseData>
+		}) as ApiResponse<SessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -163,7 +164,7 @@ describe("CreateSessionFromAccessToken function", () => {
 		let responseAccessToken = "oihdfibsdfig93q"
 		let url = `${Dav.apiBaseUrl}/session/access_token`
 
-		let expectedResult: ApiResponse<CreateSessionResponseData> = {
+		let expectedResult: ApiResponse<SessionResponseData> = {
 			status: 201,
 			data: {
 				accessToken: responseAccessToken
@@ -204,7 +205,7 @@ describe("CreateSessionFromAccessToken function", () => {
 			deviceName,
 			deviceOs,
 			deviceType
-		}) as ApiResponse<CreateSessionResponseData>
+		}) as ApiResponse<SessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -267,6 +268,91 @@ describe("CreateSessionFromAccessToken function", () => {
 			deviceName,
 			deviceOs,
 			deviceType
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+})
+
+describe("RenewSession function", () => {
+	it("should call renewSession endpoint", async () => {
+		// Arrange
+		let accessToken = "snjdgosndgosgd"
+		let newAccessToken = "siodgsodghsdg"
+		let url = `${Dav.apiBaseUrl}/session/renew`
+
+		let expectedResult: ApiResponse<SessionResponseData> = {
+			status: 200,
+			data: {
+				accessToken: newAccessToken
+			}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Act
+		let result = await RenewSession({
+			accessToken
+		}) as ApiResponse<SessionResponseData>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
+	})
+
+	it("should call renewSession endpoint with error", async () => {
+		// Arrange
+		let accessToken = "snjdgosndgosgd"
+		let newAccessToken = "siodgsodghsdg"
+		let url = `${Dav.apiBaseUrl}/session/renew`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await RenewSession({
+			accessToken
 		}) as ApiErrorResponse
 
 		// Assert for the response

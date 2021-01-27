@@ -4,7 +4,7 @@ import { Auth } from '../models/Auth'
 import { ApiErrorResponse, ApiResponse } from '../types'
 import { ConvertErrorToApiErrorResponse } from '../utils'
 
-export interface CreateSessionResponseData{
+export interface SessionResponseData {
 	accessToken: string
 }
 
@@ -17,7 +17,7 @@ export async function CreateSession(params: {
 	deviceName?: string,
 	deviceType?: string,
 	deviceOs?: string
-}): Promise<ApiResponse<CreateSessionResponseData> | ApiErrorResponse>{
+}): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
 		let data = {
 			email: params.email,
@@ -57,7 +57,7 @@ export async function CreateSessionFromAccessToken(params: {
 	deviceName?: string,
 	deviceType?: string,
 	deviceOs?: string
-}): Promise<ApiResponse<CreateSessionResponseData> | ApiErrorResponse>{
+}): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
 		let data = {
 			access_token: params.accessToken,
@@ -75,6 +75,29 @@ export async function CreateSessionFromAccessToken(params: {
 				Authorization: params.auth.token
 			},
 			data
+		})
+
+		return {
+			status: response.status,
+			data: {
+				accessToken: response.data.access_token
+			}
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
+export async function RenewSession(params: {
+	accessToken: string
+}): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'put',
+			url: `${Dav.apiBaseUrl}/session/renew`,
+			headers: {
+				Authorization: params.accessToken
+			}
 		})
 
 		return {
