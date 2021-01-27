@@ -1,11 +1,10 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError } from '../utils'
 import { Table } from '../models/Table'
 
 export async function CreateTable(params: {
-	accessToken: string,
 	appId: number,
 	name: string
 }) : Promise<ApiResponse<Table> | ApiErrorResponse> {
@@ -14,7 +13,7 @@ export async function CreateTable(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data: {
 				app_id: params.appId,
@@ -31,7 +30,13 @@ export async function CreateTable(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CreateTable(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
@@ -45,7 +50,6 @@ export interface GetTableResponseData{
 }
 
 export async function GetTable(params: {
-	accessToken: string,
 	id: number,
 	count?: number,
 	page?: number
@@ -59,7 +63,7 @@ export async function GetTable(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table/${params.id}`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			params: urlParams
 		})
@@ -77,6 +81,12 @@ export async function GetTable(params: {
 			}
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetTable(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
