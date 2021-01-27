@@ -1,7 +1,7 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError } from '../utils'
 
 export interface GetAppUsersResponseData{
 	appUsers: AppUser[]
@@ -13,7 +13,6 @@ export interface AppUser{
 }
 
 export async function GetAppUsers(params: {
-	accessToken: string,
 	id: number
 }): Promise<ApiResponse<GetAppUsersResponseData> | ApiErrorResponse> {
 	try {
@@ -21,7 +20,7 @@ export async function GetAppUsers(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}/users`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -41,6 +40,12 @@ export async function GetAppUsers(params: {
 			}
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetAppUsers(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
