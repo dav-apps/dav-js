@@ -1,7 +1,7 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError } from '../utils'
 import { App, ConvertObjectArrayToApps } from '../models/App'
 
 export interface GetDevResponseData{
@@ -9,15 +9,13 @@ export interface GetDevResponseData{
 	apps: App[]
 }
 
-export async function GetDev(params: {
-	accessToken: string
-}): Promise<ApiResponse<GetDevResponseData> | ApiErrorResponse> {
+export async function GetDev(): Promise<ApiResponse<GetDevResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/dev`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -29,6 +27,12 @@ export async function GetDev(params: {
 			}
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetDev()
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
