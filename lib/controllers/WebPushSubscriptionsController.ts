@@ -2,10 +2,9 @@ import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { WebPushSubscription } from '../models/WebPushSubscription'
 import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError } from '../utils'
 
 export async function CreateWebPushSubscription(params: {
-	accessToken: string,
 	uuid?: string,
 	endpoint: string,
 	p256dh: string,
@@ -23,7 +22,7 @@ export async function CreateWebPushSubscription(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/web_push_subscription`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data
 		})
@@ -39,6 +38,12 @@ export async function CreateWebPushSubscription(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CreateWebPushSubscription(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
