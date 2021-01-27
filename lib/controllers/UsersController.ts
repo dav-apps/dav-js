@@ -1,7 +1,7 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse, SubscriptionStatus } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError, ConvertErrorToApiErrorResponse } from '../utils'
 import { Auth } from '../models/Auth'
 import { User } from '../models/User'
 import { ConvertObjectArrayToApps } from '../models/App'
@@ -83,15 +83,13 @@ export async function Signup(params: {
 	}
 }
 
-export async function GetUsers(params: {
-	accessToken: string
-}): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
+export async function GetUsers(): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/users`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -113,19 +111,23 @@ export async function GetUsers(params: {
 			}
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetUsers()
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
-export async function GetUser(params: {
-	accessToken: string
-}): Promise<ApiResponse<User> | ApiErrorResponse> {
+export async function GetUser(): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -148,12 +150,17 @@ export async function GetUser(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetUser()
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
 export async function UpdateUser(params: {
-	accessToken: string,
 	email?: string,
 	firstName?: string,
 	password?: string
@@ -168,7 +175,7 @@ export async function UpdateUser(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data
 		})
@@ -192,7 +199,13 @@ export async function UpdateUser(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await UpdateUser(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
