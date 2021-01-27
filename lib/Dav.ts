@@ -25,7 +25,7 @@ export class Dav {
 
 	static apiBaseUrl: string = apiBaseUrlDevelopment
 	static websiteUrl: string = websiteUrlDevelopment
-	static jwt: string
+	static accessToken: string
 	static skipSyncPushInTests: boolean = true
 
 	private static isSyncing = false
@@ -67,14 +67,14 @@ export class Dav {
 		if (this.isSyncing) return
 		this.isSyncing = true
 
-		// Get the jwt from the database
+		// Get the access token from the database
 		let session = await DatabaseOperations.GetSession()
-		if (session.Jwt == null || session.UploadStatus == SessionUploadStatus.Deleted) {
+		if (session.AccessToken == null || session.UploadStatus == SessionUploadStatus.Deleted) {
 			SyncManager.SessionSyncPush()
 			this.isSyncing = false
 			return
 		}
-		Dav.jwt = session.Jwt
+		Dav.accessToken = session.AccessToken
 
 		// Sync the user
 		if (!await SyncManager.SyncUser()) {
@@ -102,14 +102,14 @@ export class Dav {
 		this.isSyncing = false
 	}
 
-	static async Login(jwt: string) {
-		// Save the jwt in the database
-		await DatabaseOperations.SetSession({Jwt: jwt, UploadStatus: SessionUploadStatus.UpToDate})
+	static async Login(accessToken: string) {
+		// Save the access token in the database
+		await DatabaseOperations.SetSession({ AccessToken: accessToken, UploadStatus: SessionUploadStatus.UpToDate })
 		this.StartSync()
 	}
 
 	static async Logout() {
-		Dav.jwt = null
+		Dav.accessToken = null
 
 		// Set the session UploadStatus to Deleted
 		let session = await DatabaseOperations.GetSession()
@@ -118,5 +118,27 @@ export class Dav {
 
 		// Start deleting the session on the server
 		SyncManager.SessionSyncPush()
+	}
+
+	static ShowLoginPage(apiKey: string, callbackUrl: string) {
+		window.location.href = `${Dav.websiteUrl}/login?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+	}
+
+	static ShowSignupPage(apiKey: string, callbackUrl: string) {
+		window.location.href = `${Dav.websiteUrl}/signup?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+	}
+
+	static ShowUserPage(anker: string = "", newTab: boolean = false) {
+		let url = Dav.GetUserPageLink(anker)
+
+		if (newTab) {
+			window.open(url, "blank")
+		} else {
+			window.location.href = url
+		}
+	}
+
+	static GetUserPageLink(anker: string = "") {
+		return `${Dav.websiteUrl}/login?redirect=user${anker ? encodeURIComponent(`#${anker}`) : ''}`
 	}
 }

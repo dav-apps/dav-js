@@ -22,7 +22,7 @@ export enum SessionUploadStatus{
 }
 
 export interface DatabaseSession{
-	Jwt: string
+	AccessToken: string
 	UploadStatus: SessionUploadStatus
 }
 //#endregion

@@ -8,7 +8,6 @@ import {
 } from '../types'
 import {
 	userKey,
-	jwtKey,
 	webPushSubscriptionKey,
 	tableObjectsKey
 } from '../constants'
