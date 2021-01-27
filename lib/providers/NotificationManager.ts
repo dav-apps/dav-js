@@ -32,7 +32,7 @@ var syncNotificationsAgain = false
 
 export async function SetupWebPushSubscription(): Promise<boolean> {
 	if (
-		Dav.jwt == null
+		Dav.accessToken == null
 		|| Dav.environment != Environment.Production
 		|| !('serviceWorker' in navigator)
 		|| !('PushManager' in window)
@@ -71,7 +71,7 @@ export async function SetupWebPushSubscription(): Promise<boolean> {
 }
 
 export async function WebPushSubscriptionSyncPush() {
-	if (Dav.jwt == null || isSyncingWebPushSubscription) return
+	if (Dav.accessToken == null || isSyncingWebPushSubscription) return
 	isSyncingWebPushSubscription = true
 
 	// Get the WebPushSubscription from the database
@@ -104,13 +104,13 @@ export async function WebPushSubscriptionSyncPush() {
 }
 
 export async function NotificationSync() {
-	if (Dav.jwt == null || isSyncingNotifications) return
+	if (Dav.accessToken == null || isSyncingNotifications) return
 	isSyncingNotifications = true
 
 	let removedNotifications = await DatabaseOperations.GetAllNotifications()
 
 	// Get all notifications from the server
-	let getNotificationsResponse = await GetNotifications({ jwt: Dav.jwt })
+	let getNotificationsResponse = await GetNotifications()
 	if (getNotificationsResponse.status != 200) return
 	let notifications = (getNotificationsResponse as ApiResponse<Notification[]>).data
 	
@@ -142,7 +142,7 @@ export async function NotificationSync() {
 }
 
 export async function NotificationSyncPush() {
-	if (Dav.jwt == null) return
+	if (Dav.accessToken == null) return
 	if (isSyncingNotifications) {
 		syncNotificationsAgain = true
 		return
@@ -250,10 +250,9 @@ export async function NotificationSyncPush() {
 async function CreateWebPushSubscriptionOnServer(
 	webPushSubscription: WebPushSubscription
 ): Promise<{success: boolean, message: WebPushSubscription | ApiErrorResponse}> {
-	if (Dav.jwt == null) return { success: false, message: null }
+	if (Dav.accessToken == null) return { success: false, message: null }
 	
 	const createWebPushSubscriptionResponse = await CreateWebPushSubscription({
-		jwt: Dav.jwt,
 		uuid: webPushSubscription.Uuid,
 		endpoint: webPushSubscription.Endpoint,
 		p256dh: webPushSubscription.P256dh,
@@ -276,10 +275,9 @@ async function CreateWebPushSubscriptionOnServer(
 async function CreateNotificationOnServer(
 	notification: Notification
 ): Promise<{success: boolean, message: Notification | ApiErrorResponse}> {
-	if (Dav.jwt == null) return { success: false, message: null }
+	if (Dav.accessToken == null) return { success: false, message: null }
 	
 	let createNotificationResponse = await CreateNotification({
-		jwt: Dav.jwt,
 		uuid: notification.Uuid,
 		time: notification.Time,
 		interval: notification.Interval,
@@ -303,10 +301,9 @@ async function CreateNotificationOnServer(
 async function UpdateNotificationOnServer(
 	notification: Notification
 ): Promise<{ success: boolean, message: Notification | ApiErrorResponse }>{
-	if (Dav.jwt == null) return { success: false, message: null }
+	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let updateNotificationResponse = await UpdateNotification({
-		jwt: Dav.jwt,
 		uuid: notification.Uuid,
 		time: notification.Time,
 		interval: notification.Interval,
@@ -330,10 +327,9 @@ async function UpdateNotificationOnServer(
 async function DeleteNotificationOnServer(
 	notification: Notification
 ): Promise<{ success: boolean, message: {} | ApiErrorResponse}>{
-	if (Dav.jwt == null) return { success: false, message: null }
+	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let deleteNotificationResponse = await DeleteNotification({
-		jwt: Dav.jwt,
 		uuid: notification.Uuid
 	})
 
