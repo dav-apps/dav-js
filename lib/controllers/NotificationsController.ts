@@ -1,11 +1,10 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError } from '../utils'
 import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification'
 
 export async function CreateNotification(params: {
-	accessToken: string,
 	uuid?: string,
 	time: number,
 	interval: number,
@@ -25,7 +24,7 @@ export async function CreateNotification(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/notification`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data
 		})
@@ -42,19 +41,23 @@ export async function CreateNotification(params: {
 			})
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CreateNotification(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
-export async function GetNotifications(params: {
-	accessToken: string
-}): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
+export async function GetNotifications(): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/notifications`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -63,12 +66,17 @@ export async function GetNotifications(params: {
 			data: ConvertObjectArrayToNotifications(response.data.notifications)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetNotifications()
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
 export async function UpdateNotification(params: {
-	accessToken: string,
 	uuid: string,
 	time?: number,
 	interval?: number,
@@ -86,7 +94,7 @@ export async function UpdateNotification(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data
 		})
@@ -103,12 +111,17 @@ export async function UpdateNotification(params: {
 			})
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await UpdateNotification(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
 export async function DeleteNotification(params: {
-	accessToken: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse>{
 	try {
@@ -116,7 +129,7 @@ export async function DeleteNotification(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -125,6 +138,12 @@ export async function DeleteNotification(params: {
 			data: {}
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await DeleteNotification(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
