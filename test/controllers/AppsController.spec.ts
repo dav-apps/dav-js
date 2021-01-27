@@ -23,6 +23,7 @@ describe("CreateApp function", () => {
 		let description = "This is a test app"
 		
 		let accessToken = "sodfnosgdbjsgdjsdgosgd"
+		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app`
 
 		let expectedResult: ApiResponse<App> = {
@@ -67,7 +68,6 @@ describe("CreateApp function", () => {
 
 		// Act
 		let result = await CreateApp({
-			accessToken,
 			name,
 			description
 		}) as ApiResponse<App>
@@ -89,6 +89,7 @@ describe("CreateApp function", () => {
 		let description = "This is a test app"
 
 		let accessToken = "sodfnosgdbjsgdjsdgosgd"
+		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app`
 
 		let expectedResult: ApiErrorResponse = {
@@ -125,7 +126,6 @@ describe("CreateApp function", () => {
 
 		// Act
 		let result = await CreateApp({
-			accessToken,
 			name,
 			description
 		}) as ApiErrorResponse
@@ -134,6 +134,117 @@ describe("CreateApp function", () => {
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+
+	it("should call createApp endpoint and renew the session", async () => {
+		// Arrange
+		let id = 23
+		let name = "TestApp"
+		let description = "This is a test app"
+		
+		let accessToken = "sodfnosgdbjsgdjsdgosgd"
+		let newAccessToken = "psfjiojsdgiosgdsgid"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/app`
+
+		let expectedResult: ApiResponse<App> = {
+			status: 201,
+			data: new App(
+				id,
+				name,
+				description,
+				false,
+				null,
+				null,
+				null
+			)
+		}
+
+		// First createApp request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+
+			request.respondWith({
+				status: 403,
+				response: {
+					errors: [{
+						code: 1602,
+						message: "Action not allowed"
+					}]
+				}
+			})
+		})
+
+		// renewSession request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 200,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Second createApp request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.headers.Authorization, newAccessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					name,
+					description,
+					published: false,
+					web_link: null,
+					google_play_link: null,
+					microsoft_store_link: null
+				}
+			})
+		})
+
+		// Act
+		let result = await CreateApp({
+			name,
+			description
+		}) as ApiResponse<App>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Name, expectedResult.data.Name)
+		assert.equal(result.data.Description, expectedResult.data.Description)
+		assert.equal(result.data.Published, expectedResult.data.Published)
+		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
+		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
+		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
 	})
 })
 
@@ -299,6 +410,7 @@ describe("GetApp function", () => {
 		let apiName = "TestApi"
 
 		let accessToken = "ioasdwhehwt08r3q0feh0"
+		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiResponse<App> = {
@@ -363,7 +475,6 @@ describe("GetApp function", () => {
 
 		// Act
 		let result = await GetApp({
-			accessToken,
 			id
 		}) as ApiResponse<App>
 
@@ -391,6 +502,7 @@ describe("GetApp function", () => {
 		let id = 53
 
 		let accessToken = "ioasdwhehwt08r3q0feh0"
+		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiErrorResponse = {
@@ -422,7 +534,6 @@ describe("GetApp function", () => {
 
 		// Act
 		let result = await GetApp({
-			accessToken,
 			id
 		}) as ApiErrorResponse
 
@@ -430,6 +541,147 @@ describe("GetApp function", () => {
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+
+	it("should call getApp endpoint and renew the session", async () => {
+		// Arrange
+		let id = 53
+		let name = "TestApp"
+		let description = "A test app"
+		let published = true
+		let webLink = "https://test.example.com"
+		let googlePlayLink = "https://play.google.com/asdasdasd"
+		let microsoftStoreLink = null
+		let tableId = 12
+		let tableName = "TestTable"
+		let apiId = 2
+		let apiName = "TestApi"
+
+		let accessToken = "ioasdwhehwt08r3q0feh0"
+		let newAccessToken = "sgksgkodsgkodsdfn"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/app/${id}`
+
+		let expectedResult: ApiResponse<App> = {
+			status: 200,
+			data: new App(
+				id,
+				name,
+				description,
+				published,
+				webLink,
+				googlePlayLink,
+				microsoftStoreLink,
+				null,
+				[
+					new Table(
+						tableId,
+						id,
+						tableName
+					)
+				],
+				[
+					new Api(
+						apiId,
+						apiName,
+						[],
+						[],
+						[]
+					)
+				]
+			)
+		}
+
+		// First getApp request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 403,
+				response: {
+					errors: [{
+						code: 1602,
+						message: "Action not allowed"
+					}]
+				}
+			})
+		})
+
+		// renewSession request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 200,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Second getApp request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, newAccessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					name,
+					description,
+					published,
+					web_link: webLink,
+					google_play_link: googlePlayLink,
+					microsoft_store_link: microsoftStoreLink,
+					tables: [{
+						id: tableId,
+						name: tableName
+					}],
+					apis: [{
+						id: apiId,
+						name: apiName
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetApp({
+			id
+		}) as ApiResponse<App>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Name, expectedResult.data.Name)
+		assert.equal(result.data.Description, expectedResult.data.Description)
+		assert.equal(result.data.Published, expectedResult.data.Published)
+		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
+		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
+		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+		
+		assert.equal(result.data.Tables.length, 1)
+		assert.equal(result.data.Tables[0].Id, expectedResult.data.Tables[0].Id)
+		assert.equal(result.data.Tables[0].Name, expectedResult.data.Tables[0].Name)
+
+		assert.equal(result.data.Apis.length, 1)
+		assert.equal(result.data.Apis[0].Id, expectedResult.data.Apis[0].Id)
+		assert.equal(result.data.Apis[0].Name, expectedResult.data.Apis[0].Name)
 	})
 })
 
@@ -445,6 +697,7 @@ describe("UpdateApp function", () => {
 		let microsoftStoreLink = "https://store.microsoft.com/cards"
 
 		let accessToken = "ishdf0heh942893gurowfe"
+		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiResponse<App> = {
@@ -493,7 +746,6 @@ describe("UpdateApp function", () => {
 
 		// Act
 		let result = await UpdateApp({
-			accessToken,
 			id,
 			name,
 			description,
@@ -525,6 +777,7 @@ describe("UpdateApp function", () => {
 		let microsoftStoreLink = "https://store.microsoft.com/cards"
 
 		let accessToken = "ishdf0heh942893gurowfe"
+		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app/${id}`
 
 		let expectedResult: ApiErrorResponse = {
@@ -565,7 +818,6 @@ describe("UpdateApp function", () => {
 
 		// Act
 		let result = await UpdateApp({
-			accessToken,
 			id,
 			name,
 			description,
@@ -579,5 +831,133 @@ describe("UpdateApp function", () => {
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+
+	it("should call updateApp endpoint and renew the session", async () => {
+		// Arrange
+		let id = 42
+		let name = "Updated name"
+		let description = "Updated description"
+		let published = true
+		let webLink = "https://cards.dav-apps.tech"
+		let googlePlayLink = "https://play.google.com/cards"
+		let microsoftStoreLink = "https://store.microsoft.com/cards"
+
+		let accessToken = "ishdf0heh942893gurowfe"
+		let newAccessToken = "sodgosdghsdghshdg"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/app/${id}`
+
+		let expectedResult: ApiResponse<App> = {
+			status: 200,
+			data: new App(
+				id,
+				name,
+				description,
+				published,
+				webLink,
+				googlePlayLink,
+				microsoftStoreLink
+			)
+		}
+
+		// First updateApp request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+			assert.equal(data.published, published)
+			assert.equal(data.web_link, webLink)
+			assert.equal(data.google_play_link, googlePlayLink)
+			assert.equal(data.microsoft_store_link, microsoftStoreLink)
+
+			request.respondWith({
+				status: 403,
+				response: {
+					errors: [{
+						code: 1602,
+						message: "Action not allowed"
+					}]
+				}
+			})
+		})
+
+		// renewSession request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 200,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Second updateApp request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, newAccessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.name, name)
+			assert.equal(data.description, description)
+			assert.equal(data.published, published)
+			assert.equal(data.web_link, webLink)
+			assert.equal(data.google_play_link, googlePlayLink)
+			assert.equal(data.microsoft_store_link, microsoftStoreLink)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					name,
+					description,
+					published,
+					web_link: webLink,
+					google_play_link: googlePlayLink,
+					microsoft_store_link: microsoftStoreLink
+				}
+			})
+		})
+
+		// Act
+		let result = await UpdateApp({
+			id,
+			name,
+			description,
+			published,
+			webLink,
+			googlePlayLink,
+			microsoftStoreLink
+		}) as ApiResponse<App>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Name, expectedResult.data.Name)
+		assert.equal(result.data.Description, expectedResult.data.Description)
+		assert.equal(result.data.Published, expectedResult.data.Published)
+		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
+		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
+		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
 	})
 })

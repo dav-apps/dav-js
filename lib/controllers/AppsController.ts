@@ -1,14 +1,13 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError, ConvertErrorToApiErrorResponse } from '../utils'
 import { App } from '../models/App'
 import { ConvertObjectArrayToApps } from '../models/App'
 import { ConvertObjectArrayToTables } from '../models/Table'
 import { ConvertObjectArrayToApis } from '../models/Api'
 
 export async function CreateApp(params: {
-	accessToken: string,
 	name: string,
 	description: string
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
@@ -17,7 +16,7 @@ export async function CreateApp(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/app`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data: {
 				name: params.name,
@@ -38,7 +37,13 @@ export async function CreateApp(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CreateApp(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
@@ -59,7 +64,6 @@ export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> 
 }
 
 export async function GetApp(params: {
-	accessToken: string,
 	id: number
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
@@ -67,7 +71,7 @@ export async function GetApp(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -87,12 +91,17 @@ export async function GetApp(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetApp(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
 export async function UpdateApp(params: {
-	accessToken: string,
 	id: number,
 	name?: string,
 	description?: string,
@@ -114,7 +123,7 @@ export async function UpdateApp(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data
 		})
@@ -132,6 +141,12 @@ export async function UpdateApp(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await UpdateApp(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
