@@ -1,14 +1,13 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { HandleApiError } from '../utils'
 import { Api } from '../models/Api'
 import { ConvertObjectArrayToApiEndpoints } from '../models/ApiEndpoint'
 import { ConvertObjectArrayToApiFunctions } from '../models/ApiFunction'
 import { ConvertObjectArrayToApiErrors } from '../models/ApiError'
 
 export async function CreateApi(params: {
-	accessToken: string,
 	appId: number,
 	name: string
 }): Promise<ApiResponse<Api> | ApiErrorResponse> {
@@ -17,7 +16,7 @@ export async function CreateApi(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/api`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			},
 			data: {
 				app_id: params.appId,
@@ -36,12 +35,17 @@ export async function CreateApi(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CreateApi(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
 
 export async function GetApi(params: {
-	accessToken: string,
 	id: number
 }): Promise<ApiResponse<Api> | ApiErrorResponse>{
 	try {
@@ -49,7 +53,7 @@ export async function GetApi(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/api/${params.id}`,
 			headers: {
-				Authorization: params.accessToken
+				Authorization: Dav.accessToken
 			}
 		})
 
@@ -64,6 +68,12 @@ export async function GetApi(params: {
 			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetApi(params)
+		} else {
+			return result as ApiErrorResponse
+		}
 	}
 }
