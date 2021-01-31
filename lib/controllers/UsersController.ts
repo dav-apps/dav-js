@@ -209,6 +209,58 @@ export async function UpdateUser(params: {
 	}
 }
 
+export async function SetProfileImageOfUser(params: {
+	file: Blob
+}): Promise<ApiResponse<User> | ApiErrorResponse> {
+	// Read the blob
+	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
+		let fileReader = new FileReader()
+		fileReader.onloadend = resolve
+		fileReader.readAsArrayBuffer(params.file)
+	})
+	let readFileResult: ProgressEvent = await readFilePromise
+	let data = readFileResult.currentTarget["result"]
+
+	try {
+		let response = await axios.default({
+			method: 'put',
+			url: `${Dav.apiBaseUrl}/user/profile_image`,
+			headers: {
+				Authorization: Dav.accessToken,
+				'Content-Type': params.file.type
+			},
+			data
+		})
+
+		return {
+			status: response.status,
+			data: new User(
+				response.data.id,
+				response.data.email,
+				response.data.first_name,
+				response.data.confirmed,
+				response.data.total_storage,
+				response.data.used_storage,
+				response.data.stripe_customer_id,
+				response.data.plan,
+				response.data.subscription_status,
+				response.data.period_end == null ? null : new Date(response.data.period_end),
+				response.data.dev,
+				response.data.provider,
+				[]
+			)
+		}
+	} catch (error) {
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await SetProfileImageOfUser(params)
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
+
 export async function SendConfirmationEmail(params: {
 	auth: Auth,
 	id: number

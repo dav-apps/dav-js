@@ -4,6 +4,15 @@ import { ApiResponse, ApiErrorResponse } from '../types'
 import { HandleApiError } from '../utils'
 import { Table } from '../models/Table'
 
+export interface GetTableResponseData{
+	table: Table
+	pages: number
+	tableObjects: {
+		uuid: string
+		etag: string
+	}[]
+}
+
 export async function CreateTable(params: {
 	appId: number,
 	name: string
@@ -38,15 +47,6 @@ export async function CreateTable(params: {
 			return result as ApiErrorResponse
 		}
 	}
-}
-
-export interface GetTableResponseData{
-	table: Table
-	pages: number
-	tableObjects: {
-		uuid: string
-		etag: string
-	}[]
 }
 
 export async function GetTable(params: {
