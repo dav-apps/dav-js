@@ -42,3 +42,32 @@ export async function CreateProvider(params: {
 		}
 	}
 }
+
+export async function GetProvider(): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/provider`,
+			headers: {
+				Authorization: Dav.accessToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {
+				id: response.data.id,
+				userId: response.data.user_id,
+				stripeAccountId: response.data.stripe_account_id
+			}
+		}
+	} catch (error) {
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetProvider()
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
