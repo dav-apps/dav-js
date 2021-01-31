@@ -199,7 +199,7 @@ describe("CreateNotification function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -464,7 +464,7 @@ describe("GetNotifications function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -724,7 +724,7 @@ describe("UpdateNotification function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -908,7 +908,7 @@ describe("DeleteNotification function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})

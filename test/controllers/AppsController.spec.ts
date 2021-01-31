@@ -179,7 +179,7 @@ describe("CreateApp function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -606,7 +606,7 @@ describe("GetApp function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -884,7 +884,7 @@ describe("UpdateApp function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})

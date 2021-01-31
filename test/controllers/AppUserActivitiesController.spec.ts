@@ -214,7 +214,7 @@ describe("GetAppUserActivities function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})

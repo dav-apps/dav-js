@@ -3,9 +3,9 @@ import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
 import {
-	CreateWebsocketConnection,
-	WebsocketConnectionResponseData
-} from '../../lib/controllers/WebsocketConnectionsController'
+	CreateProvider,
+	ProviderResponseData
+} from '../../lib/controllers/ProvidersController'
 
 beforeEach(() => {
 	moxios.install()
@@ -15,19 +15,24 @@ afterEach(() => {
 	moxios.uninstall()
 })
 
-describe("CreateWebsocketConnection function", () => {
-	it("should call createWebsocketConnection endpoint", async () => {
+describe("CreateProvider function", () => {
+	it("should call createProvider endpoint", async () => {
 		// Arrange
-		let token = "shodghosdgs"
+		let id = 23
+		let userId = 23
+		let stripeAccountId = "sjdghsdfhosdfjiosfd"
+		let country = "DE"
 
-		let accessToken = "asdhioagdioasg"
+		let accessToken = "jdfjsdghisdgsfid"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/websocket_connection`
+		let url = `${Dav.apiBaseUrl}/provider`
 
-		let expectedResult: ApiResponse<WebsocketConnectionResponseData> = {
+		let expectedResult: ApiResponse<ProviderResponseData> = {
 			status: 201,
 			data: {
-				token
+				id,
+				userId,
+				stripeAccountId
 			}
 		}
 
@@ -38,28 +43,40 @@ describe("CreateWebsocketConnection function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
 			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.country, country)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					token
+					id,
+					user_id: userId,
+					stripe_account_id: stripeAccountId
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateWebsocketConnection() as ApiResponse<WebsocketConnectionResponseData>
+		let result = await CreateProvider({
+			country
+		}) as ApiResponse<ProviderResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.token, expectedResult.data.token)
+		assert.equal(result.data.id, expectedResult.data.id)
+		assert.equal(result.data.userId, expectedResult.data.userId)
+		assert.equal(result.data.stripeAccountId, expectedResult.data.stripeAccountId)
 	})
 
-	it("should call createWebsocketConnection endpoint with error", async () => {
+	it("should call createProvider endpoint with error", async () => {
 		// Arrange
-		let accessToken = "asdhioagdioasg"
+		let country = "DE"
+
+		let accessToken = "jdfjsdghisdgsfid"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/websocket_connection`
+		let url = `${Dav.apiBaseUrl}/provider`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -76,6 +93,10 @@ describe("CreateWebsocketConnection function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
 			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.country, country)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -89,7 +110,9 @@ describe("CreateWebsocketConnection function", () => {
 		})
 
 		// Act
-		let result = await CreateWebsocketConnection() as ApiErrorResponse
+		let result = await CreateProvider({
+			country
+		}) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -97,23 +120,28 @@ describe("CreateWebsocketConnection function", () => {
 		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
 	})
 
-	it("should call createWebsocketConnection endpoint and renew the session", async () => {
+	it("should call createProvider endpoint and renew the session", async () => {
 		// Arrange
-		let token = "shodghosdgs"
+		let id = 23
+		let userId = 23
+		let stripeAccountId = "sjdghsdfhosdfjiosfd"
+		let country = "DE"
 
-		let accessToken = "asdhioagdioasg"
-		let newAccessToken = "shiodghiosdhiosdg"
+		let accessToken = "jdfjsdghisdgsfid"
+		let newAccessToken = "iohsdfhiosdfoihsdf"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/websocket_connection`
+		let url = `${Dav.apiBaseUrl}/provider`
 
-		let expectedResult: ApiResponse<WebsocketConnectionResponseData> = {
+		let expectedResult: ApiResponse<ProviderResponseData> = {
 			status: 201,
 			data: {
-				token
+				id,
+				userId,
+				stripeAccountId
 			}
 		}
 
-		// First createWebsocketConnection request
+		// First createProvider request
 		moxios.wait(() => {
 			let request = moxios.requests.mostRecent()
 
@@ -121,6 +149,10 @@ describe("CreateWebsocketConnection function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
 			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.country, country)
 
 			request.respondWith({
 				status: 403,
@@ -150,7 +182,7 @@ describe("CreateWebsocketConnection function", () => {
 			})
 		})
 
-		// Second createWebsocketConnection request
+		// Second createProvider request
 		moxios.wait(() => {
 			let request = moxios.requests.mostRecent()
 
@@ -158,20 +190,30 @@ describe("CreateWebsocketConnection function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'post')
 			assert.equal(request.config.headers.Authorization, newAccessToken)
+			assert.include(request.config.headers["Content-Type"], "application/json")
+
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.country, country)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					token
+					id,
+					user_id: userId,
+					stripe_account_id: stripeAccountId
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateWebsocketConnection() as ApiResponse<WebsocketConnectionResponseData>
+		let result = await CreateProvider({
+			country
+		}) as ApiResponse<ProviderResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.token, expectedResult.data.token)
+		assert.equal(result.data.id, expectedResult.data.id)
+		assert.equal(result.data.userId, expectedResult.data.userId)
+		assert.equal(result.data.stripeAccountId, expectedResult.data.stripeAccountId)
 	})
 })

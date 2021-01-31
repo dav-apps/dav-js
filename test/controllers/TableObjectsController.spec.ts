@@ -217,7 +217,7 @@ describe("CreateTableObject function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -452,7 +452,7 @@ describe("GetTableObject function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -700,7 +700,7 @@ describe("UpdateTableObject function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -885,7 +885,7 @@ describe("DeleteTableObject function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -1044,7 +1044,7 @@ describe("RemoveTableObject function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})

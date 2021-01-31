@@ -396,7 +396,7 @@ describe("GetUsers function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -704,7 +704,7 @@ describe("GetUser function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
@@ -1007,7 +1007,7 @@ describe("UpdateUser function", () => {
 				response: {
 					errors: [{
 						code: 1602,
-						message: "Action not allowed"
+						message: "Access token must be renewed"
 					}]
 				}
 			})
