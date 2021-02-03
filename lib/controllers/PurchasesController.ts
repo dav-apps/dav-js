@@ -93,3 +93,42 @@ export async function GetPurchase(params: {
 		}
 	}
 }
+
+export async function CompletePurchase(params: {
+	id: number
+}): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/purchase/${params.id}/complete`,
+			headers: {
+				Authorization: Dav.accessToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {
+				Id: response.data.id,
+				UserId: response.data.user_id,
+				TableObjectId: response.data.table_object_id,
+				PaymentIntentId: response.data.payment_intent_id,
+				ProviderName: response.data.provider_name,
+				ProviderImage: response.data.provider_image,
+				ProductName: response.data.product_name,
+				ProductImage: response.data.product_image,
+				Price: response.data.price,
+				Currency: response.data.currency,
+				Completed: response.data.completed
+			}
+		}
+	} catch (error) {
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CompletePurchase(params)
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
