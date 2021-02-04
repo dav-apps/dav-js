@@ -20,7 +20,8 @@ import {
 	ResetEmail,
 	SetPassword,
 	SignupResponseData,
-	GetUsersResponseData
+	GetUsersResponseData,
+	CreateStripeCustomerForUserResponseData
 } from '../../lib/controllers/UsersController'
 
 beforeEach(() => {
@@ -1254,14 +1255,17 @@ describe("UpdateUser function", () => {
 describe("CreateStripeCustomerForUser function", () => {
 	it("should call createStripeCustomerForUser endpoint", async () => {
 		// Arrange
+		let stripeCustomerId = "sogdosdfiodsfd"
+
 		let accessToken = "shiodfhosdghiosdg"
 		Dav.accessToken = accessToken
-
 		let url = `${Dav.apiBaseUrl}/user/stripe`
 
-		let expectedResult: ApiResponse<{}> = {
-			status: 204,
-			data: {}
+		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> = {
+			status: 201,
+			data: {
+				stripeCustomerId
+			}
 		}
 
 		moxios.wait(() => {
@@ -1274,22 +1278,24 @@ describe("CreateStripeCustomerForUser function", () => {
 
 			request.respondWith({
 				status: expectedResult.status,
-				response: {}
+				response: {
+					stripe_customer_id: stripeCustomerId
+				}
 			})
 		})
 
 		// Act
-		let result = await CreateStripeCustomerForUser() as ApiResponse<{}>
+		let result = await CreateStripeCustomerForUser() as ApiResponse<CreateStripeCustomerForUserResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.stripeCustomerId, expectedResult.data.stripeCustomerId)
 	})
 
 	it("should call createStripeCustomerForUser endpoint with error", async () => {
 		// Arrange
 		let accessToken = "shiodfhosdghiosdg"
 		Dav.accessToken = accessToken
-
 		let url = `${Dav.apiBaseUrl}/user/stripe`
 
 		let expectedResult: ApiErrorResponse = {
@@ -1330,15 +1336,18 @@ describe("CreateStripeCustomerForUser function", () => {
 
 	it("should call createStripeCustomerForUser endpoint and renew the session", async () => {
 		// Arrange
+		let stripeCustomerId = "sogdosdfiodsfd"
+
 		let accessToken = "shiodfhosdghiosdg"
 		let newAccessToken = "iohfgosdfiohsdf"
 		Dav.accessToken = accessToken
-
 		let url = `${Dav.apiBaseUrl}/user/stripe`
 
-		let expectedResult: ApiResponse<{}> = {
-			status: 204,
-			data: {}
+		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> = {
+			status: 201,
+			data: {
+				stripeCustomerId
+			}
 		}
 
 		// First createStripeCustomerForUser request
@@ -1389,15 +1398,18 @@ describe("CreateStripeCustomerForUser function", () => {
 
 			request.respondWith({
 				status: expectedResult.status,
-				response: {}
+				response: {
+					stripe_customer_id: stripeCustomerId
+				}
 			})
 		})
 
 		// Act
-		let result = await CreateStripeCustomerForUser() as ApiResponse<{}>
+		let result = await CreateStripeCustomerForUser() as ApiResponse<CreateStripeCustomerForUserResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.stripeCustomerId, expectedResult.data.stripeCustomerId)
 	})
 })
 

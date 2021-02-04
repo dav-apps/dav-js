@@ -24,6 +24,10 @@ export interface GetUsersResponseDataUser {
 	createdAt: Date
 }
 
+export interface CreateStripeCustomerForUserResponseData{
+	stripeCustomerId: string
+}
+
 export async function Signup(params: {
 	auth: Auth,
 	email: string,
@@ -297,7 +301,7 @@ export async function SetProfileImageOfUser(params: {
 	}
 }
 
-export async function CreateStripeCustomerForUser(): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function CreateStripeCustomerForUser(): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
@@ -309,7 +313,9 @@ export async function CreateStripeCustomerForUser(): Promise<ApiResponse<{}> | A
 
 		return {
 			status: response.status,
-			data: {}
+			data: {
+				stripeCustomerId: response.data.stripe_customer_id
+			}
 		}
 	} catch (error) {
 		let result = await HandleApiError(error)
