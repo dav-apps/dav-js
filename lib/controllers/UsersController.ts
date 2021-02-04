@@ -297,6 +297,31 @@ export async function SetProfileImageOfUser(params: {
 	}
 }
 
+export async function CreateStripeCustomerForUser(): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'post',
+			url: `${Dav.apiBaseUrl}/user/stripe`,
+			headers: {
+				Authorization: Dav.accessToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await CreateStripeCustomerForUser()
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
+
 export async function SendConfirmationEmail(params: {
 	auth: Auth,
 	id: number
