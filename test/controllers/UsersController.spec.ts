@@ -9,6 +9,7 @@ import {
 	Signup,
 	GetUsers,
 	GetUser,
+	GetUserById,
 	UpdateUser,
 	SendConfirmationEmail,
 	SendPasswordResetEmail,
@@ -790,6 +791,167 @@ describe("GetUser function", () => {
 		assert.equal(result.data.Apps[0].WebLink, expectedResult.data.Apps[0].WebLink)
 		assert.equal(result.data.Apps[0].GooglePlayLink, expectedResult.data.Apps[0].GooglePlayLink)
 		assert.equal(result.data.Apps[0].MicrosoftStoreLink, expectedResult.data.Apps[0].MicrosoftStoreLink)
+	})
+})
+
+describe("GetUserById function", () => {
+	it("should call getUserById endpoint", async () => {
+		// Arrange
+		let id = 34
+		let email = "test@example.com"
+		let firstName = "TestUser"
+		let confirmed = true
+		let totalStorage = 100000000000
+		let usedStorage = 2073424982
+		let stripeCustomerId = "09u243ioasdasd"
+		let plan = 1
+		let subscriptionStatus = SubscriptionStatus.Active
+		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
+		let dev = false
+		let provider = false
+		let appId = 23
+		let appName = "TestApp"
+		let appDescription = "Test app description"
+		let appPublished = true
+		let appWebLink = "https://testapp.dav-apps.tech"
+		let appGooglePlayLink = null
+		let appMicrosoftStoreLink = null
+
+		let url = `${Dav.apiBaseUrl}/user/${id}`
+
+		let expectedResult: ApiResponse<User> = {
+			status: 200,
+			data: new User(
+				id,
+				email,
+				firstName,
+				confirmed,
+				totalStorage,
+				usedStorage,
+				stripeCustomerId,
+				plan,
+				subscriptionStatus,
+				periodEnd,
+				dev,
+				provider,
+				[
+					new App(
+						appId,
+						appName,
+						appDescription,
+						appPublished,
+						appWebLink,
+						appGooglePlayLink,
+						appMicrosoftStoreLink
+					)
+				]
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					email,
+					first_name: firstName,
+					confirmed,
+					total_storage: totalStorage,
+					used_storage: usedStorage,
+					stripe_customer_id: stripeCustomerId,
+					plan,
+					subscription_status: subscriptionStatus,
+					period_end: periodEnd,
+					dev,
+					provider,
+					apps: [{
+						id: appId,
+						name: appName,
+						description: appDescription,
+						published: appPublished,
+						web_link: appWebLink,
+						google_play_link: appGooglePlayLink,
+						microsoft_store_link: appMicrosoftStoreLink
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetUserById({ auth: davDevAuth, id }) as ApiResponse<User>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Email, expectedResult.data.Email)
+		assert.equal(result.data.FirstName, expectedResult.data.FirstName)
+		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
+		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
+		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
+		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(result.data.Plan, expectedResult.data.Plan)
+		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
+		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(result.data.Dev, expectedResult.data.Dev)
+		assert.equal(result.data.Provider, expectedResult.data.Provider)
+
+		assert.equal(result.data.Apps.length, 1)
+		assert.equal(result.data.Apps[0].Id, expectedResult.data.Apps[0].Id)
+		assert.equal(result.data.Apps[0].Name, expectedResult.data.Apps[0].Name)
+		assert.equal(result.data.Apps[0].Description, expectedResult.data.Apps[0].Description)
+		assert.equal(result.data.Apps[0].Published, expectedResult.data.Apps[0].Published)
+		assert.equal(result.data.Apps[0].WebLink, expectedResult.data.Apps[0].WebLink)
+		assert.equal(result.data.Apps[0].GooglePlayLink, expectedResult.data.Apps[0].GooglePlayLink)
+		assert.equal(result.data.Apps[0].MicrosoftStoreLink, expectedResult.data.Apps[0].MicrosoftStoreLink)
+	})
+
+	it("should call getUserById endpoint with error", async () => {
+		// Arrange
+		let id = 34
+
+		let url = `${Dav.apiBaseUrl}/user/${id}`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: 1103,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await GetUserById({ auth: davDevAuth, id }) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
 	})
 })
 
