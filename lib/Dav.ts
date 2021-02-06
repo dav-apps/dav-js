@@ -11,6 +11,7 @@ import * as NotificationManager from './providers/NotificationManager'
 
 export class Dav {
 	static environment: Environment = Environment.Development
+	static server: boolean = false
 	static appId: number = 0
 	static tableIds: number[] = []
 	static parallelTableIds: number[] = []
@@ -32,6 +33,7 @@ export class Dav {
 
 	constructor(params?: {
 		environment?: Environment,
+		server?: boolean,
 		appId?: number,
 		tableIds?: number[],
 		parallelTableIds?: number[],
@@ -46,6 +48,7 @@ export class Dav {
 	}) {
 		if (params != null) {
 			if (params.environment != null) Dav.environment = params.environment
+			if (params.server != null) Dav.server = params.server
 			if (params.appId != null) Dav.appId = params.appId
 			if (params.tableIds != null) Dav.tableIds = params.tableIds
 			if (params.parallelTableIds != null) Dav.parallelTableIds = params.parallelTableIds
@@ -56,6 +59,7 @@ export class Dav {
 		// Set the other static variables
 		Dav.apiBaseUrl = Dav.environment == Environment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment
 		Dav.websiteUrl = Dav.environment == Environment.Production ? websiteUrlProduction : websiteUrlDevelopment
+		if(Dav.server) return
 
 		// Init the service worker
 		SyncManager.InitServiceWorker()
@@ -69,8 +73,13 @@ export class Dav {
 
 		// Get the access token from the database
 		let session = await DatabaseOperations.GetSession()
-		if (session.AccessToken == null || session.UploadStatus == SessionUploadStatus.Deleted) {
-			SyncManager.SessionSyncPush()
+
+		if (
+			session == null
+			|| session.AccessToken == null
+			|| session.UploadStatus == SessionUploadStatus.Deleted
+		) {
+			await SyncManager.SessionSyncPush()
 			this.isSyncing = false
 			return
 		}
@@ -111,6 +120,9 @@ export class Dav {
 	static async Logout() {
 		Dav.accessToken = null
 
+		// Remove the user
+		await DatabaseOperations.RemoveUser()
+
 		// Set the session UploadStatus to Deleted
 		let session = await DatabaseOperations.GetSession()
 		session.UploadStatus = SessionUploadStatus.Deleted
@@ -121,11 +133,11 @@ export class Dav {
 	}
 
 	static ShowLoginPage(apiKey: string, callbackUrl: string) {
-		window.location.href = `${Dav.websiteUrl}/login?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+		window.location.href = `${Dav.websiteUrl}/login?type=session&apiKey=${apiKey}&appId=${Dav.appId}&redirectUrl=${encodeURIComponent(callbackUrl)}`
 	}
 
 	static ShowSignupPage(apiKey: string, callbackUrl: string) {
-		window.location.href = `${Dav.websiteUrl}/signup?type=session&api_key=${apiKey}&app_id=${Dav.appId}&redirect_url=${encodeURIComponent(callbackUrl)}`
+		window.location.href = `${Dav.websiteUrl}/signup?type=session&apiKey=${apiKey}&appId=${Dav.appId}&redirectUrl=${encodeURIComponent(callbackUrl)}`
 	}
 
 	static ShowUserPage(anker: string = "", newTab: boolean = false) {
