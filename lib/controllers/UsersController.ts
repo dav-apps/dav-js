@@ -1,6 +1,6 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse, SubscriptionStatus } from '../types'
+import { ApiResponse, ApiErrorResponse } from '../types'
 import { HandleApiError, ConvertErrorToApiErrorResponse } from '../utils'
 import { Auth } from '../models/Auth'
 import { User } from '../models/User'
@@ -70,12 +70,13 @@ export async function Signup(params: {
 					response.data.user.confirmed,
 					response.data.user.total_storage,
 					response.data.user.used_storage,
-					null,
+					response.data.user.stripe_customer_id,
 					response.data.user.plan,
-					SubscriptionStatus.Active,
+					response.data.user.subscription_status,
 					null,
-					false,
-					false,
+					response.data.user.dev,
+					response.data.user.provider,
+					response.data.user.profile_image_etag,
 					[]
 				),
 				accessToken: response.data.access_token,
@@ -150,6 +151,7 @@ export async function GetUser(): Promise<ApiResponse<User> | ApiErrorResponse> {
 				response.data.period_end == null ? null : new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image_etag,
 				ConvertObjectArrayToApps(response.data.apps)
 			)
 		}
@@ -192,6 +194,7 @@ export async function GetUserById(params: {
 				response.data.period_end,
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image_etag,
 				ConvertObjectArrayToApps(response.data.apps)
 			)
 		}
@@ -235,6 +238,7 @@ export async function UpdateUser(params: {
 				response.data.period_end == null ? null : new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image_etag,
 				[]
 			)
 		}
@@ -287,6 +291,7 @@ export async function SetProfileImageOfUser(params: {
 				response.data.period_end == null ? null : new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image_etag,
 				[]
 			)
 		}
