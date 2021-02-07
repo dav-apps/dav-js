@@ -1,3 +1,5 @@
+import { App } from './models/App'
+
 //#region General types
 export enum Environment{
 	Development,
@@ -55,10 +57,28 @@ export enum SubscriptionStatus{
 	Active = 0,
 	Ending = 1
 }
+
+export interface DatabaseUser {
+	Id: number
+	Email: string
+	FirstName: string
+	Confirmed: boolean
+	TotalStorage: number
+	UsedStorage: number
+	StripeCustomerId: string
+	Plan: Plan
+	SubscriptionStatus: SubscriptionStatus
+	PeriodEnd: Date
+	Dev: boolean
+	Provider: boolean
+	ProfileImage: Blob
+	ProfileImageEtag: string
+	Apps: App[]
+}
 //#endregion
 
 //#region TableObject & Property types
-export type DatabaseTableObject = {
+export interface DatabaseTableObject {
 	Uuid: string
 	TableId: number
 	IsFile: boolean
@@ -68,11 +88,11 @@ export type DatabaseTableObject = {
 	Etag: string
 }
 
-export type TableObjectProperties = {
+export interface TableObjectProperties {
 	[name: string]: TableObjectProperty
 }
 
-export type OldTableObjectProperties = {
+export interface OldTableObjectProperties {
 	[name: string]: string
 }
 

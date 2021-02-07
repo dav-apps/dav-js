@@ -1,13 +1,17 @@
 import * as localforage from 'localforage'
 import { extendPrototype } from 'localforage-startswith'
 import {
+	SessionUploadStatus,
 	TableObjectUploadStatus,
 	TableObjectProperties,
 	DatabaseTableObject,
-	DatabaseSession
+	DatabaseSession,
+	DatabaseUser
 } from '../types'
 import {
+	sessionKey,
 	userKey,
+	oldUserKey,
 	webPushSubscriptionKey,
 	tableObjectsKey
 } from '../constants'
@@ -17,34 +21,69 @@ import {
 	getNotificationKey
 } from '../utils'
 import { Dav } from '../Dav'
-import { User } from '../models/User'
 import { TableObject } from '../models/TableObject'
 import { Notification } from '../models/Notification'
 import { WebPushSubscription } from '../models/WebPushSubscription'
+import { ConvertObjectArrayToApps } from '../models/App'
 
 extendPrototype(localforage)
 
 //#region Session functions
 export async function SetSession(session: DatabaseSession) {
-	await localforage.setItem("session", session)
+	await localforage.setItem(sessionKey, session)
 }
 
 export async function GetSession(): Promise<DatabaseSession> {
-	return await localforage.getItem("session") as DatabaseSession
+	// Check if there is already an old session from the previous version
+	let oldUser = await localforage.getItem(oldUserKey) as object
+
+	if (oldUser != null) {
+		let user: DatabaseUser = {
+			Id: oldUser["id"],
+			Email: oldUser["email"],
+			FirstName: oldUser["username"],
+			Confirmed: oldUser["confirmed"],
+			TotalStorage: oldUser["totalStorage"],
+			UsedStorage: oldUser["usedStorage"],
+			StripeCustomerId: oldUser["stripeCustomerId"],
+			Plan: oldUser["plan"],
+			SubscriptionStatus: oldUser["subscriptionStatus"],
+			PeriodEnd: oldUser["periodEnd"],
+			Dev: oldUser["dev"],
+			Provider: oldUser["provider"],
+			ProfileImage: null,
+			ProfileImageEtag: null,
+			Apps: ConvertObjectArrayToApps(oldUser["apps"])
+		}
+
+		// Save the new user
+		await SetUser(user)
+
+		// Save the new session with the jwt as access token
+		await SetSession({
+			AccessToken: oldUser["jwt"],
+			UploadStatus: SessionUploadStatus.UpToDate
+		})
+
+		// Remove the old user from the database
+		await localforage.removeItem(oldUserKey)
+	} else {
+		return await localforage.getItem(sessionKey) as DatabaseSession
+	}
 }
 
 export async function RemoveSession() {
-	await localforage.removeItem("session")
+	await localforage.removeItem(sessionKey)
 }
 //#endregion
 
 //#region User functions
-export async function SetUser(user: User) {
+export async function SetUser(user: DatabaseUser) {
 	await localforage.setItem(userKey, user)
 }
 
-export async function GetUser(): Promise<User> {
-	return await localforage.getItem(userKey) as User
+export async function GetUser(): Promise<DatabaseUser> {
+	return await localforage.getItem(userKey) as DatabaseUser
 }
 
 export async function RemoveUser() {
