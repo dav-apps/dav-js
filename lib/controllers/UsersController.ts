@@ -306,6 +306,32 @@ export async function SetProfileImageOfUser(params: {
 	}
 }
 
+export async function GetProfileImageOfUser(): Promise<ApiResponse<Blob> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/user/profile_image`,
+			headers: {
+				Authorization: Dav.accessToken
+			},
+			responseType: 'blob'
+		})
+
+		return {
+			status: response.status,
+			data: response.data as Blob
+		}
+	} catch (error) {
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetProfileImageOfUser()
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
+
 export async function CreateStripeCustomerForUser(): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
