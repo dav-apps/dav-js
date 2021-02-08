@@ -203,6 +203,34 @@ export async function SetTableObjectFile(params: {
 	}
 }
 
+export async function GetTableObjectFile(params: {
+	uuid: string
+}): Promise<ApiResponse<Blob> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
+			headers: {
+				Authorization: Dav.accessToken
+			},
+			responseType: 'blob'
+		})
+
+		return {
+			status: response.status,
+			data: response.data as Blob
+		}
+	} catch (error) {
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await GetTableObjectFile(params)
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
+
 export async function RemoveTableObject(params: {
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
