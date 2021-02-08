@@ -1,4 +1,10 @@
-import { Environment, NotificationOptions, SessionUploadStatus } from './types'
+import {
+	Environment,
+	NotificationOptions,
+	SessionUploadStatus,
+	Plan,
+	SubscriptionStatus
+} from './types'
 import {
 	apiBaseUrlDevelopment,
 	apiBaseUrlProduction,
@@ -8,8 +14,42 @@ import {
 import * as DatabaseOperations from './providers/DatabaseOperations'
 import * as SyncManager from './providers/SyncManager'
 import * as NotificationManager from './providers/NotificationManager'
+import { App } from './models/App'
 
 export class Dav {
+	static isLoggedIn: boolean = false
+	static user: {
+		Id: number,
+		Email: string,
+		FirstName: string,
+		Confirmed: boolean,
+		TotalStorage: number,
+		UsedStorage: number,
+		StripeCustomerId: string,
+		Plan: Plan,
+		SubscriptionStatus: SubscriptionStatus,
+		PeriodEnd: Date,
+		Dev: boolean,
+		Provider: boolean,
+		ProfileImage: string,
+		Apps: App[]
+	} = {
+			Id: 0,
+			Email: "",
+			FirstName: "",
+			Confirmed: false,
+			TotalStorage: 0,
+			UsedStorage: 0,
+			StripeCustomerId: null,
+			Plan: Plan.Free,
+			SubscriptionStatus: SubscriptionStatus.Active,
+			PeriodEnd: null,
+			Dev: false,
+			Provider: false,
+			ProfileImage: "",
+			Apps: []
+		}
+
 	static environment: Environment = Environment.Development
 	static server: boolean = false
 	static appId: number = 0
@@ -20,7 +60,8 @@ export class Dav {
 		UpdateAllOfTable?: Function,
 		UpdateTableObject?: Function,
 		DeleteTableObject?: Function,
-		UserDownloadFinished?: Function,
+		UserLoaded?: Function,
+		UserDownloaded?: Function,
 		SyncFinished?: Function
 	} = {}
 
@@ -42,7 +83,8 @@ export class Dav {
 			UpdateAllOfTable?: Function,
 			UpdateTableObject?: Function,
 			DeleteTableObject?: Function,
-			UserDownloadFinished?: Function,
+			UserLoaded?: Function,
+			UserDownloaded?: Function,
 			SyncFinished?: Function
 		}
 	}) {
@@ -59,7 +101,7 @@ export class Dav {
 		// Set the other static variables
 		Dav.apiBaseUrl = Dav.environment == Environment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment
 		Dav.websiteUrl = Dav.environment == Environment.Production ? websiteUrlProduction : websiteUrlDevelopment
-		if(Dav.server) return
+		if (Dav.server) return
 
 		// Init the service worker
 		SyncManager.InitServiceWorker()
@@ -83,7 +125,11 @@ export class Dav {
 			this.isSyncing = false
 			return
 		}
+		Dav.isLoggedIn = true
 		Dav.accessToken = session.AccessToken
+
+		// Load the user
+		await SyncManager.LoadUser()
 
 		// Sync the user
 		if (!await SyncManager.SyncUser()) {
@@ -107,7 +153,7 @@ export class Dav {
 		await NotificationManager.NotificationSync()
 		await NotificationManager.NotificationSyncPush()
 
-		Dav.callbacks.SyncFinished()
+		if (Dav.callbacks.SyncFinished) Dav.callbacks.SyncFinished()
 		this.isSyncing = false
 	}
 
@@ -119,6 +165,7 @@ export class Dav {
 
 	static async Logout() {
 		Dav.accessToken = null
+		Dav.isLoggedIn = false
 
 		// Remove the user
 		await DatabaseOperations.RemoveUser()
