@@ -1,6 +1,6 @@
-import * as axios from 'axios'
 import { Dav } from '../Dav'
 import {
+	ApiResponse,
 	Environment,
 	TableObjectProperties,
 	TableObjectUploadStatus,
@@ -10,6 +10,7 @@ import {
 import { generateUuid } from '../utils'
 import * as SyncManager from '../providers/SyncManager'
 import * as DatabaseOperations from '../providers/DatabaseOperations'
+import { GetTableObjectFile } from '../controllers/TableObjectsController'
 
 export class TableObject {
 	public Uuid: string
@@ -93,35 +94,35 @@ export class TableObject {
 	async RemoveProperty(name: string): Promise<void> {
 		if (this.Properties[name] == null) return
 
-		if (!Dav.jwt || this.Properties[name].local) {
-			delete this.Properties[name];
+		if (Dav.accessToken == null || this.Properties[name].local) {
+			delete this.Properties[name]
 		} else {
 			// Set the value to empty string if the user is logged in
-			this.Properties[name].value = null;
+			this.Properties[name].value = null
 		}
 
-		await this.Save(Dav.environment == Environment.Test);
+		await this.Save(Dav.environment == Environment.Test)
 	}
 
 	async Delete(): Promise<void> {
-		if (Dav.jwt != null) {
-			this.UploadStatus = TableObjectUploadStatus.Deleted;
-			await this.Save();
+		if (Dav.accessToken != null) {
+			this.UploadStatus = TableObjectUploadStatus.Deleted
+			await this.Save()
 		} else {
-			await this.DeleteImmediately();
+			await this.DeleteImmediately()
 		}
 	}
 
 	async DeleteImmediately(): Promise<void> {
-		await DatabaseOperations.RemoveTableObject(this.Uuid, this.TableId);
+		await DatabaseOperations.RemoveTableObject(this.Uuid, this.TableId)
 	}
 
 	async Remove(): Promise<void> {
-		if (Dav.jwt) {
-			this.UploadStatus = TableObjectUploadStatus.Removed;
-			await this.Save();
+		if (Dav.accessToken != null) {
+			this.UploadStatus = TableObjectUploadStatus.Removed
+			await this.Save()
 		} else {
-			await this.DeleteImmediately();
+			await this.DeleteImmediately()
 		}
 	}
 
@@ -137,10 +138,10 @@ export class TableObject {
 		await this.SetPropertyValue({ name: "ext", value: fileExt });
 	}
 
-	GetFileDownloadStatus() : TableObjectFileDownloadStatus {
+	GetFileDownloadStatus(): TableObjectFileDownloadStatus {
 		if (!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
 		if (this.File != null) return TableObjectFileDownloadStatus.Downloaded
-		if (Dav.jwt == null) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
+		if (Dav.accessToken == null) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
 
 		if (SyncManager.downloadingFileUuid == this.Uuid) return TableObjectFileDownloadStatus.Downloading
 		return TableObjectFileDownloadStatus.NotDownloaded
@@ -150,7 +151,7 @@ export class TableObject {
 		var downloadStatus = this.GetFileDownloadStatus()
 
 		if (
-			Dav.jwt == null
+			Dav.accessToken == null
 			|| downloadStatus == TableObjectFileDownloadStatus.Downloading
 			|| downloadStatus == TableObjectFileDownloadStatus.Downloaded
 		) return false
@@ -158,27 +159,15 @@ export class TableObject {
 		if (SyncManager.downloadingFileUuid != null) return false
 		SyncManager.setDownloadingFileUuid(this.Uuid)
 
-		try {
-			let response = await axios.default({
-				method: 'get',
-				url: `${Dav.apiBaseUrl}/apps/object/${this.Uuid}`,
-				responseType: 'blob',
-				params: {
-					file: true
-				},
-				headers: {
-					'Authorization': Dav.jwt
-				}
-			})
+		let response = await GetTableObjectFile({ uuid: this.Uuid })
 
-			if (response && response.data) {
-				this.File = response.data as Blob
-				await this.Save(false)
+		if (response.status == 200) {
+			this.File = (response as ApiResponse<Blob>).data
+			await this.Save(false)
 
-				SyncManager.setDownloadingFileUuid(null)
-				return true
-			}
-		} catch (error) {
+			SyncManager.setDownloadingFileUuid(null)
+			return true
+		} else {
 			SyncManager.setDownloadingFileUuid(null)
 			return false
 		}
@@ -212,13 +201,14 @@ export function ConvertObjectToTableObject(
 		Properties: TableObjectProperties,
 		UploadStatus: number,
 		Etag: string
-	}): TableObject {
-	let tableObject = new TableObject(obj.Uuid);
-	tableObject.TableId = obj.TableId;
-	tableObject.UploadStatus = obj.UploadStatus;
-	tableObject.IsFile = obj.IsFile;
-	tableObject.File = obj.File;
-	tableObject.Etag = obj.Etag;
-	tableObject.Properties = obj.Properties;
-	return tableObject;
+	}
+): TableObject {
+	let tableObject = new TableObject(obj.Uuid)
+	tableObject.TableId = obj.TableId
+	tableObject.UploadStatus = obj.UploadStatus
+	tableObject.IsFile = obj.IsFile
+	tableObject.File = obj.File
+	tableObject.Etag = obj.Etag
+	tableObject.Properties = obj.Properties
+	return tableObject
 }
