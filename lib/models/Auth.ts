@@ -20,6 +20,10 @@ export class Auth {
 	}
 
 	private GenerateAuthToken(): string {
-		return `${this.apiKey},${CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(this.uuid, this.secretKey))}`
+		let hmac = CryptoJS.HmacSHA256(this.uuid, this.secretKey).toString()
+		let base64Hmac = CryptoJS.enc.Utf8.parse(hmac)
+		let base64 = CryptoJS.enc.Base64.stringify(base64Hmac)
+
+		return `${this.apiKey},${base64}`
 	}
 }
