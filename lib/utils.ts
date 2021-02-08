@@ -201,3 +201,15 @@ export function SortTableIds(
 export async function requestNotificationPermission(): Promise<boolean> {
 	return await Notification.requestPermission() == "granted"
 }
+
+export async function BlobToBase64(file: Blob): Promise<string> {
+	if (file == null) return null
+
+	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
+		let fileReader = new FileReader()
+		fileReader.onloadend = resolve
+		fileReader.readAsDataURL(file)
+	})
+	let readFileResult: ProgressEvent = await readFilePromise
+	return readFileResult.currentTarget["result"]
+}

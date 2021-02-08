@@ -4,16 +4,17 @@ import {
 	ApiErrorResponse,
 	ApiResponse,
 	Environment,
+	DatabaseUser,
 	SessionUploadStatus,
 	TableObjectUploadStatus
 } from '../types'
-import { SortTableIds } from '../utils'
+import { SortTableIds, BlobToBase64 } from '../utils'
 import { extPropertyName, tableObjectUpdateChannelName } from '../constants'
 import * as ErrorCodes from '../errorCodes'
 import { TableObject } from '../models/TableObject'
 import { User } from '../models/User'
 import * as DatabaseOperations from './DatabaseOperations'
-import { GetUser } from '../controllers/UsersController'
+import { GetUser, GetProfileImageOfUser } from '../controllers/UsersController'
 import { GetTable, GetTableResponseData } from '../controllers/TablesController'
 import {
 	CreateTableObject,
@@ -48,7 +49,8 @@ export async function SessionSyncPush() {
 	let session = await DatabaseOperations.GetSession()
 
 	if (
-		session.AccessToken == null
+		session == null
+		|| session.AccessToken == null
 		|| session.UploadStatus == SessionUploadStatus.UpToDate
 	) return
 
@@ -67,19 +69,100 @@ export async function SessionSyncPush() {
 	}
 }
 
+export async function LoadUser() {
+	let user = await DatabaseOperations.GetUser()
+	if (user == null) return
+
+	Dav.user = {
+		Id: user.Id,
+		Email: user.Email,
+		FirstName: user.FirstName,
+		Confirmed: user.Confirmed,
+		TotalStorage: user.TotalStorage,
+		UsedStorage: user.UsedStorage,
+		StripeCustomerId: user.StripeCustomerId,
+		Plan: user.Plan,
+		SubscriptionStatus: user.SubscriptionStatus,
+		PeriodEnd: user.PeriodEnd,
+		Dev: user.Dev,
+		Provider: user.Provider,
+		ProfileImage: null,
+		Apps: user.Apps
+	}
+
+	// Read the profile image
+	Dav.user.ProfileImage = await BlobToBase64(user.ProfileImage)
+
+	// Call userLoaded callback
+	if (Dav.callbacks.UserLoaded) Dav.callbacks.UserLoaded()
+}
+
 export async function SyncUser(): Promise<boolean> {
 	if (Dav.accessToken == null) return false
 
 	// Get the user
 	let getUserResponse = await GetUser()
 	if (getUserResponse.status != 200) {
-		Dav.Logout()
+		// TODO: Error handling
+		await Dav.Logout()
 		return false
 	}
 
+	let userResponseData = (getUserResponse as ApiResponse<User>).data
+	let oldUser = await DatabaseOperations.GetUser()
+
+	let newUser: DatabaseUser = {
+		Id: userResponseData.Id,
+		Email: userResponseData.Email,
+		FirstName: userResponseData.FirstName,
+		Confirmed: userResponseData.Confirmed,
+		TotalStorage: userResponseData.TotalStorage,
+		UsedStorage: userResponseData.UsedStorage,
+		StripeCustomerId: userResponseData.StripeCustomerId,
+		Plan: userResponseData.Plan,
+		SubscriptionStatus: userResponseData.SubscriptionStatus,
+		PeriodEnd: userResponseData.PeriodEnd,
+		Dev: userResponseData.Dev,
+		Provider: userResponseData.Provider,
+		ProfileImage: oldUser != null ? oldUser.ProfileImage : null,
+		ProfileImageEtag: oldUser != null ? oldUser.ProfileImageEtag : null,
+		Apps: userResponseData.Apps
+	}
+
+	if (oldUser == null || oldUser.ProfileImageEtag != userResponseData.ProfileImageEtag) {
+		// Download the new profile image
+		let profileImageResponse = await GetProfileImageOfUser()
+
+		if (profileImageResponse.status == 200) {
+			newUser.ProfileImage = (profileImageResponse as ApiResponse<Blob>).data
+			newUser.ProfileImageEtag = userResponseData.ProfileImageEtag
+		} else {
+			// TODO: Error handling
+		}
+	}
+
 	// Save the user in the database
-	await DatabaseOperations.SetUser((getUserResponse as ApiResponse<User>).data)
-	Dav.callbacks.UserDownloadFinished()
+	await DatabaseOperations.SetUser(newUser)
+
+	// Update the user in Dav
+	Dav.user = {
+		Id: userResponseData.Id,
+		Email: userResponseData.Email,
+		FirstName: userResponseData.FirstName,
+		Confirmed: userResponseData.Confirmed,
+		TotalStorage: userResponseData.TotalStorage,
+		UsedStorage: userResponseData.UsedStorage,
+		StripeCustomerId: userResponseData.StripeCustomerId,
+		Plan: userResponseData.Plan,
+		SubscriptionStatus: userResponseData.SubscriptionStatus,
+		PeriodEnd: userResponseData.PeriodEnd,
+		Dev: userResponseData.Dev,
+		Provider: userResponseData.Provider,
+		ProfileImage: await BlobToBase64(newUser.ProfileImage),
+		Apps: userResponseData.Apps
+	}
+
+	if (Dav.callbacks.UserDownloaded) Dav.callbacks.UserDownloaded()
 	return true
 }
 
@@ -180,7 +263,7 @@ export async function Sync(): Promise<boolean> {
 						// Download the file and save the new etag
 						fileDownloads.push({ tableObject: tableObject, etag: obj.etag })
 					} else {
-						Dav.callbacks.UpdateTableObject(tableObject)
+						if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 						tableChanged = true
 					}
 				}
@@ -197,17 +280,17 @@ export async function Sync(): Promise<boolean> {
 					// Download the file and save the new etag
 					fileDownloads.push({ tableObject: tableObject, etag: obj.etag })
 
-					Dav.callbacks.UpdateTableObject(tableObject)
+					if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 					tableChanged = true
 				} else {
 					// Save the table object
-					Dav.callbacks.UpdateTableObject(tableObject)
+					if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 					tableChanged = true
 				}
 			}
 		}
 
-		Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
+		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
 
 		// Check if there is a next page
 		currentTablePages[tableId]++
@@ -235,11 +318,11 @@ export async function Sync(): Promise<boolean> {
 			if (obj == null || obj.UploadStatus == TableObjectUploadStatus.New) continue
 
 			await obj.DeleteImmediately()
-			Dav.callbacks.DeleteTableObject(obj)
+			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(obj)
 			tableChanged = true
 		}
 
-		Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
+		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
 	}
 
 	isSyncing = false
@@ -427,9 +510,9 @@ export async function StartWebsocketConnection() {
 			webSocket.close()
 		}
 
-		let uuid = json.message?.uuid
-		let change = json.message?.change
-		let accessTokenMd5 = json.message?.access_token_md5
+		let uuid = json.message ? json.message.uuid : null
+		let change = json.message ? json.message.change : null
+		let accessTokenMd5 = json.message ? json.message.access_token_md5 : null
 		if (uuid == null || change == null || accessTokenMd5 == null) return
 
 		// Don't notify the app if the session is the current session
@@ -443,11 +526,11 @@ export async function StartWebsocketConnection() {
 			let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
 
 			await DatabaseOperations.SetTableObject(tableObject)
-			Dav.callbacks.UpdateTableObject(tableObject)
+			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 		} else if (change == 2) {
 			// Remove the table object in the database
 			DatabaseOperations.RemoveTableObject(uuid)
-			Dav.callbacks.DeleteTableObject(uuid)
+			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(uuid)
 		}
 	}
 }
@@ -467,7 +550,7 @@ export async function DownloadFiles() {
 
 		// Update the table object with the new etag
 		await fileDownload.tableObject.SetEtag(fileDownload.etag)
-		Dav.callbacks.UpdateTableObject(fileDownload.tableObject, true)
+		if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(fileDownload.tableObject, true)
 	}
 
 	downloadingFiles = false
