@@ -378,7 +378,7 @@ export async function SyncPush(): Promise<boolean> {
 					let errors = (createResult.message as ApiErrorResponse).errors
 
 					// Check if the table object already exists
-					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyTaken)
+					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
 					if (i != -1) {
 						// Set the upload status to UpToDate
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
@@ -576,7 +576,7 @@ async function CreateTableObjectOnServer(
 		if (createTableObjectResponse.status != 201) {
 			// Check if the table object already exists
 			let errorResponse = createTableObjectResponse as ApiErrorResponse
-			let i = errorResponse.errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyTaken)
+			let i = errorResponse.errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
 
 			if (i == -1) {
 				return {

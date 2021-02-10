@@ -165,7 +165,7 @@ export async function NotificationSyncPush() {
 					let errors = (createResult.message as ApiErrorResponse).errors
 
 					// Check if the notification already exists
-					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyTaken)
+					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
 					if (i != -1) {
 						// Set the UploadStatus to UpToDate
 						notification.UploadStatus = GenericUploadStatus.UpToDate
