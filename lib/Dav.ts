@@ -9,7 +9,8 @@ import {
 	apiBaseUrlDevelopment,
 	apiBaseUrlProduction,
 	websiteUrlDevelopment,
-	websiteUrlProduction
+	websiteUrlProduction,
+	defaultProfileImageUrl
 } from './constants'
 import * as DatabaseOperations from './providers/DatabaseOperations'
 import * as SyncManager from './providers/SyncManager'
@@ -46,7 +47,7 @@ export class Dav {
 			PeriodEnd: null,
 			Dev: false,
 			Provider: false,
-			ProfileImage: "",
+			ProfileImage: defaultProfileImageUrl,
 			Apps: []
 		}
 

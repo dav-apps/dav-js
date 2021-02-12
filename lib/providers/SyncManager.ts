@@ -9,7 +9,11 @@ import {
 	TableObjectUploadStatus
 } from '../types'
 import { SortTableIds, BlobToBase64 } from '../utils'
-import { extPropertyName, tableObjectUpdateChannelName } from '../constants'
+import {
+	defaultProfileImageUrl,
+	extPropertyName,
+	tableObjectUpdateChannelName
+} from '../constants'
 import * as ErrorCodes from '../errorCodes'
 import { TableObject } from '../models/TableObject'
 import { User } from '../models/User'
@@ -66,12 +70,23 @@ export async function SessionSyncPush() {
 
 		// Remove the notifications
 		await DatabaseOperations.RemoveAllNotifications()
+	} else {
+		// Check the error
+		let errorCode = (deleteResponse as ApiErrorResponse).errors[0].code
+
+		if (errorCode == ErrorCodes.SessionDoesNotExist) {
+			// Remove the session
+			await DatabaseOperations.RemoveSession()
+		}
 	}
 }
 
 export async function LoadUser() {
 	let user = await DatabaseOperations.GetUser()
-	if (user == null) return
+	if (user == null) {
+		if (Dav.callbacks.UserLoaded) Dav.callbacks.UserLoaded()
+		return
+	}
 
 	Dav.user = {
 		Id: user.Id,
@@ -86,12 +101,9 @@ export async function LoadUser() {
 		PeriodEnd: user.PeriodEnd,
 		Dev: user.Dev,
 		Provider: user.Provider,
-		ProfileImage: null,
+		ProfileImage: await BlobToBase64(user.ProfileImage, defaultProfileImageUrl),
 		Apps: user.Apps
 	}
-
-	// Read the profile image
-	Dav.user.ProfileImage = await BlobToBase64(user.ProfileImage)
 
 	// Call userLoaded callback
 	if (Dav.callbacks.UserLoaded) Dav.callbacks.UserLoaded()
@@ -158,7 +170,7 @@ export async function SyncUser(): Promise<boolean> {
 		PeriodEnd: userResponseData.PeriodEnd,
 		Dev: userResponseData.Dev,
 		Provider: userResponseData.Provider,
-		ProfileImage: await BlobToBase64(newUser.ProfileImage),
+		ProfileImage: await BlobToBase64(newUser.ProfileImage, defaultProfileImageUrl),
 		Apps: userResponseData.Apps
 	}
 

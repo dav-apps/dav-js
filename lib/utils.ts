@@ -202,8 +202,8 @@ export async function requestNotificationPermission(): Promise<boolean> {
 	return await Notification.requestPermission() == "granted"
 }
 
-export async function BlobToBase64(file: Blob): Promise<string> {
-	if (file == null) return null
+export async function BlobToBase64(file: Blob, defaultValue: string = null): Promise<string> {
+	if (file == null) return defaultValue
 
 	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
 		let fileReader = new FileReader()
