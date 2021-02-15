@@ -49,6 +49,19 @@ export function getNotificationKey(uuid?: string) {
 	}
 }
 
+export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
+	if (error.response) {
+		// API error
+		return {
+			status: error.response.status,
+			errors: error.response.data.errors
+		}
+	} else {
+		// JavaScript error
+		return {status: -1, errors: []}
+	}
+}
+
 export async function HandleApiError(error: any): Promise<string | ApiErrorResponse> {
 	let errorResponse = ConvertErrorToApiErrorResponse(error)
 
@@ -71,19 +84,6 @@ export async function HandleApiError(error: any): Promise<string | ApiErrorRespo
 		}
 	} else {
 		return errorResponse
-	}
-}
-
-export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
-	if (error.response) {
-		// API error
-		return {
-			status: error.response.status,
-			errors: error.response.data.errors
-		}
-	} else {
-		// JavaScript error
-		return {status: -1, errors: []}
 	}
 }
 

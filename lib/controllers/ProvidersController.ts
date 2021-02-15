@@ -1,7 +1,7 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 
 export interface ProviderResponseData {
 	id: number
@@ -10,6 +10,7 @@ export interface ProviderResponseData {
 }
 
 export async function CreateProvider(params: {
+	accessToken?: string,
 	country: string
 }): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
 	try {
@@ -17,7 +18,7 @@ export async function CreateProvider(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: {
 				country: params.country
@@ -33,6 +34,10 @@ export async function CreateProvider(params: {
 			}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -43,13 +48,15 @@ export async function CreateProvider(params: {
 	}
 }
 
-export async function GetProvider(): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
+export async function GetProvider(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -62,6 +69,10 @@ export async function GetProvider(): Promise<ApiResponse<ProviderResponseData> |
 			}
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

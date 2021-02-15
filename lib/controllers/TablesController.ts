@@ -1,10 +1,10 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 import { Table } from '../models/Table'
 
-export interface GetTableResponseData{
+export interface GetTableResponseData {
 	table: Table
 	pages: number
 	tableObjects: {
@@ -14,15 +14,16 @@ export interface GetTableResponseData{
 }
 
 export async function CreateTable(params: {
+	accessToken?: number,
 	appId: number,
 	name: string
-}) : Promise<ApiResponse<Table> | ApiErrorResponse> {
+}): Promise<ApiResponse<Table> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: {
 				app_id: params.appId,
@@ -39,6 +40,10 @@ export async function CreateTable(params: {
 			)
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -50,10 +55,11 @@ export async function CreateTable(params: {
 }
 
 export async function GetTable(params: {
+	accessToken?: string,
 	id: number,
 	count?: number,
 	page?: number
-}) : Promise<ApiResponse<GetTableResponseData> | ApiErrorResponse> {
+}): Promise<ApiResponse<GetTableResponseData> | ApiErrorResponse> {
 	try {
 		let urlParams = {}
 		if (params.count != null) urlParams["count"] = params.count
@@ -63,7 +69,7 @@ export async function GetTable(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table/${params.id}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			params: urlParams
 		})
@@ -81,6 +87,10 @@ export async function GetTable(params: {
 			}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

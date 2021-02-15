@@ -1,10 +1,11 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 import { TableObject } from '../models/TableObject'
 
 export async function CreateTableObject(params: {
+	accessToken?: string,
 	uuid?: string,
 	tableId: number,
 	file?: boolean,
@@ -22,7 +23,7 @@ export async function CreateTableObject(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table_object`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data
 		})
@@ -42,6 +43,10 @@ export async function CreateTableObject(params: {
 			data: tableObject
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -53,6 +58,7 @@ export async function CreateTableObject(params: {
 }
 
 export async function GetTableObject(params: {
+	accessToken?: string,
 	uuid: string
 }): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	try {
@@ -60,7 +66,7 @@ export async function GetTableObject(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -78,6 +84,10 @@ export async function GetTableObject(params: {
 			data: tableObject
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -89,6 +99,7 @@ export async function GetTableObject(params: {
 }
 
 export async function UpdateTableObject(params: {
+	accessToken?: string,
 	uuid: string,
 	properties: { [name: string]: string | boolean | number }
 }): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
@@ -97,7 +108,7 @@ export async function UpdateTableObject(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: {
 				properties: params.properties
@@ -118,6 +129,10 @@ export async function UpdateTableObject(params: {
 			data: tableObject
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -129,6 +144,7 @@ export async function UpdateTableObject(params: {
 }
 
 export async function DeleteTableObject(params: {
+	accessToken?: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
@@ -136,7 +152,7 @@ export async function DeleteTableObject(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -145,6 +161,10 @@ export async function DeleteTableObject(params: {
 			data: {}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -156,6 +176,7 @@ export async function DeleteTableObject(params: {
 }
 
 export async function SetTableObjectFile(params: {
+	accessToken?: string,
 	uuid: string,
 	file: Blob
 }): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
@@ -173,7 +194,7 @@ export async function SetTableObjectFile(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
-				Authorization: Dav.accessToken,
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
 				'Content-Type': params.file.type
 			},
 			data
@@ -193,6 +214,10 @@ export async function SetTableObjectFile(params: {
 			data: tableObject
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -204,6 +229,7 @@ export async function SetTableObjectFile(params: {
 }
 
 export async function GetTableObjectFile(params: {
+	accessToken?: string,
 	uuid: string
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
@@ -211,7 +237,7 @@ export async function GetTableObjectFile(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			responseType: 'blob'
 		})
@@ -221,6 +247,10 @@ export async function GetTableObjectFile(params: {
 			data: response.data as Blob
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -232,6 +262,7 @@ export async function GetTableObjectFile(params: {
 }
 
 export async function RemoveTableObject(params: {
+	accessToken?: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
@@ -239,7 +270,7 @@ export async function RemoveTableObject(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/access`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -248,6 +279,10 @@ export async function RemoveTableObject(params: {
 			data: {}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

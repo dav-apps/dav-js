@@ -1,10 +1,11 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 import { Currency, Purchase } from '../models/Purchase'
 
 export async function CreatePurchase(params: {
+	accessToken?: string,
 	tableObjectUuid: string,
 	providerName: string,
 	providerImage: string,
@@ -17,7 +18,7 @@ export async function CreatePurchase(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table_object/${params.tableObjectUuid}/purchase`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: {
 				provider_name: params.providerName,
@@ -45,6 +46,10 @@ export async function CreatePurchase(params: {
 			}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -56,6 +61,7 @@ export async function CreatePurchase(params: {
 }
 
 export async function GetPurchase(params: {
+	accessToken?: string,
 	id: number
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
@@ -63,7 +69,7 @@ export async function GetPurchase(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/purchase/${params.id}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -84,6 +90,10 @@ export async function GetPurchase(params: {
 			}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -95,6 +105,7 @@ export async function GetPurchase(params: {
 }
 
 export async function CompletePurchase(params: {
+	accessToken?: string,
 	id: number
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
@@ -102,7 +113,7 @@ export async function CompletePurchase(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/purchase/${params.id}/complete`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -123,6 +134,10 @@ export async function CompletePurchase(params: {
 			}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

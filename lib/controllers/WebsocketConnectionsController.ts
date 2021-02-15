@@ -1,19 +1,21 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiErrorResponse, ApiResponse } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 
 export interface WebsocketConnectionResponseData{
 	token: string
 }
 
-export async function CreateWebsocketConnection(): Promise<ApiResponse<WebsocketConnectionResponseData> | ApiErrorResponse> {
+export async function CreateWebsocketConnection(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<WebsocketConnectionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/websocket_connection`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -24,6 +26,10 @@ export async function CreateWebsocketConnection(): Promise<ApiResponse<Websocket
 			}
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

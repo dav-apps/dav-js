@@ -1,7 +1,7 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 
 export interface GetUserActivitiesResponseData{
 	days: UserActivityDay[]
@@ -15,6 +15,7 @@ export interface UserActivityDay{
 }
 
 export async function GetUserActivities(params: {
+	accessToken?: string,
 	start?: number,
 	end?: number
 }): Promise<ApiResponse<GetUserActivitiesResponseData> | ApiErrorResponse> {
@@ -27,7 +28,7 @@ export async function GetUserActivities(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user_activities`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			params
 		})
@@ -50,6 +51,10 @@ export async function GetUserActivities(params: {
 			}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

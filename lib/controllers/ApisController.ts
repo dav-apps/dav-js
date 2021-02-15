@@ -1,13 +1,14 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 import { Api } from '../models/Api'
 import { ConvertObjectArrayToApiEndpoints } from '../models/ApiEndpoint'
 import { ConvertObjectArrayToApiFunctions } from '../models/ApiFunction'
 import { ConvertObjectArrayToApiErrors } from '../models/ApiError'
 
 export async function CreateApi(params: {
+	accessToken?: string,
 	appId: number,
 	name: string
 }): Promise<ApiResponse<Api> | ApiErrorResponse> {
@@ -16,7 +17,7 @@ export async function CreateApi(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/api`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: {
 				app_id: params.appId,
@@ -35,6 +36,10 @@ export async function CreateApi(params: {
 			)
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -46,6 +51,7 @@ export async function CreateApi(params: {
 }
 
 export async function GetApi(params: {
+	accessToken?: string,
 	id: number
 }): Promise<ApiResponse<Api> | ApiErrorResponse>{
 	try {
@@ -53,7 +59,7 @@ export async function GetApi(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/api/${params.id}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -68,6 +74,10 @@ export async function GetApi(params: {
 			)
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

@@ -1,7 +1,7 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse } from '../types'
-import { HandleApiError, ConvertErrorToApiErrorResponse } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 import { Auth } from '../models/Auth'
 import { User } from '../models/User'
 import { ConvertObjectArrayToApps } from '../models/App'
@@ -88,13 +88,15 @@ export async function Signup(params: {
 	}
 }
 
-export async function GetUsers(): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
+export async function GetUsers(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/users`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -116,6 +118,10 @@ export async function GetUsers(): Promise<ApiResponse<GetUsersResponseData> | Ap
 			}
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -126,13 +132,15 @@ export async function GetUsers(): Promise<ApiResponse<GetUsersResponseData> | Ap
 	}
 }
 
-export async function GetUser(): Promise<ApiResponse<User> | ApiErrorResponse> {
+export async function GetUser(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -156,6 +164,10 @@ export async function GetUser(): Promise<ApiResponse<User> | ApiErrorResponse> {
 			)
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -204,6 +216,7 @@ export async function GetUserById(params: {
 }
 
 export async function UpdateUser(params: {
+	accessToken?: string,
 	email?: string,
 	firstName?: string,
 	password?: string
@@ -218,7 +231,7 @@ export async function UpdateUser(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data
 		})
@@ -243,6 +256,10 @@ export async function UpdateUser(params: {
 			)
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -254,6 +271,7 @@ export async function UpdateUser(params: {
 }
 
 export async function SetProfileImageOfUser(params: {
+	accessToken?: string,
 	file: Blob
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	// Read the blob
@@ -270,7 +288,7 @@ export async function SetProfileImageOfUser(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user/profile_image`,
 			headers: {
-				Authorization: Dav.accessToken,
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
 				'Content-Type': params.file.type
 			},
 			data
@@ -296,6 +314,10 @@ export async function SetProfileImageOfUser(params: {
 			)
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -306,13 +328,15 @@ export async function SetProfileImageOfUser(params: {
 	}
 }
 
-export async function GetProfileImageOfUser(): Promise<ApiResponse<Blob> | ApiErrorResponse> {
+export async function GetProfileImageOfUser(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user/profile_image`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			responseType: 'blob'
 		})
@@ -322,6 +346,10 @@ export async function GetProfileImageOfUser(): Promise<ApiResponse<Blob> | ApiEr
 			data: response.data as Blob
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -332,13 +360,15 @@ export async function GetProfileImageOfUser(): Promise<ApiResponse<Blob> | ApiEr
 	}
 }
 
-export async function CreateStripeCustomerForUser(): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
+export async function CreateStripeCustomerForUser(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/stripe`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -349,6 +379,10 @@ export async function CreateStripeCustomerForUser(): Promise<ApiResponse<CreateS
 			}
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {

@@ -1,10 +1,11 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types'
-import { HandleApiError } from '../utils'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
 import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification'
 
 export async function CreateNotification(params: {
+	accessToken?: string,
 	uuid?: string,
 	time: number,
 	interval: number,
@@ -24,7 +25,7 @@ export async function CreateNotification(params: {
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/notification`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data
 		})
@@ -51,13 +52,15 @@ export async function CreateNotification(params: {
 	}
 }
 
-export async function GetNotifications(): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
+export async function GetNotifications(params?: {
+	accessToken?: string
+}): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/notifications`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -66,6 +69,10 @@ export async function GetNotifications(): Promise<ApiResponse<Notification[]> | 
 			data: ConvertObjectArrayToNotifications(response.data.notifications)
 		}
 	} catch (error) {
+		if (params != null && params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -77,6 +84,7 @@ export async function GetNotifications(): Promise<ApiResponse<Notification[]> | 
 }
 
 export async function UpdateNotification(params: {
+	accessToken?: string,
 	uuid: string,
 	time?: number,
 	interval?: number,
@@ -94,7 +102,7 @@ export async function UpdateNotification(params: {
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data
 		})
@@ -111,6 +119,10 @@ export async function UpdateNotification(params: {
 			})
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
@@ -122,6 +134,7 @@ export async function UpdateNotification(params: {
 }
 
 export async function DeleteNotification(params: {
+	accessToken?: string,
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse>{
 	try {
@@ -129,7 +142,7 @@ export async function DeleteNotification(params: {
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: Dav.accessToken
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -138,6 +151,10 @@ export async function DeleteNotification(params: {
 			data: {}
 		}
 	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
 		let result = await HandleApiError(error)
 
 		if (typeof result == "string") {
