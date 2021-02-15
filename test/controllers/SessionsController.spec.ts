@@ -3,6 +3,7 @@ import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
 import { davDevAuth } from '../constants'
+import * as ErrorCodes from '../../lib/errorCodes'
 import {
 	CreateSession,
 	CreateSessionFromAccessToken,
@@ -98,7 +99,7 @@ describe("CreateSession function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -226,7 +227,7 @@ describe("CreateSessionFromAccessToken function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -326,7 +327,7 @@ describe("RenewSession function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -404,7 +405,7 @@ describe("DeleteSession function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}

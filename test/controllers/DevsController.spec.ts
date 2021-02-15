@@ -2,6 +2,7 @@ import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
+import * as ErrorCodes from '../../lib/errorCodes'
 import { App } from '../../lib/models/App'
 import { GetDev, GetDevResponseData } from '../../lib/controllers/DevsController'
 
@@ -133,7 +134,7 @@ describe("GetDev function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -229,7 +230,7 @@ describe("GetDev function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}

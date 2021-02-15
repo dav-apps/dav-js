@@ -2,6 +2,7 @@ import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
+import * as ErrorCodes from '../../lib/errorCodes'
 import {
 	CreateWebsocketConnection,
 	WebsocketConnectionResponseData
@@ -64,7 +65,7 @@ describe("CreateWebsocketConnection function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -126,7 +127,7 @@ describe("CreateWebsocketConnection function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}

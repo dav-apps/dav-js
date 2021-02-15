@@ -2,6 +2,7 @@ import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
+import * as ErrorCodes from '../../lib/errorCodes'
 import { Currency, Purchase } from '../../lib/models/Purchase'
 import { CreatePurchase, GetPurchase, CompletePurchase } from '../../lib/controllers/PurchasesController'
 
@@ -124,7 +125,7 @@ describe("CreatePurchase function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -230,7 +231,7 @@ describe("CreatePurchase function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}
@@ -406,7 +407,7 @@ describe("GetPurchase function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -490,7 +491,7 @@ describe("GetPurchase function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}
@@ -653,7 +654,7 @@ describe("CompletePurchase function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -737,7 +738,7 @@ describe("CompletePurchase function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}

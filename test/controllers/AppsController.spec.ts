@@ -2,6 +2,7 @@ import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
+import * as ErrorCodes from '../../lib/errorCodes'
 import { App } from '../../lib/models/App'
 import { CreateApp, GetApps, GetApp, UpdateApp } from '../../lib/controllers/AppsController'
 import { Table } from '../../lib/models/Table'
@@ -95,7 +96,7 @@ describe("CreateApp function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -178,7 +179,7 @@ describe("CreateApp function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}
@@ -361,7 +362,7 @@ describe("GetApps function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -508,7 +509,7 @@ describe("GetApp function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -605,7 +606,7 @@ describe("GetApp function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}
@@ -783,7 +784,7 @@ describe("UpdateApp function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -883,7 +884,7 @@ describe("UpdateApp function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}

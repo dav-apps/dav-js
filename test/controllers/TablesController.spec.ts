@@ -2,6 +2,7 @@ import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
 import { ApiResponse, ApiErrorResponse } from '../../lib/types'
+import * as ErrorCodes from '../../lib/errorCodes'
 import { Table } from '../../lib/models/Table'
 import {
 	CreateTable,
@@ -81,7 +82,7 @@ describe("CreateTable function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -156,7 +157,7 @@ describe("CreateTable function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}
@@ -319,7 +320,7 @@ describe("GetTable function", () => {
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
 			errors: [{
-				code: 1103,
+				code: ErrorCodes.ActionNotAllowed,
 				message: "Action not allowed"
 			}]
 		}
@@ -411,7 +412,7 @@ describe("GetTable function", () => {
 				status: 403,
 				response: {
 					errors: [{
-						code: 1602,
+						code: ErrorCodes.AccessTokenMustBeRenewed,
 						message: "Access token must be renewed"
 					}]
 				}
