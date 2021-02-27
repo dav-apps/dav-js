@@ -1,5 +1,5 @@
 import * as localforage from 'localforage'
-import { tableObjectsKey } from '../lib/Dav'
+import { tableObjectsKey } from '../lib/constants'
 import { TableObject } from '../lib/models/TableObject'
 
 export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
