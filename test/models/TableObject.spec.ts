@@ -1,19 +1,76 @@
-import 'mocha';
-import { assert } from 'chai';
-import { Dav, Init } from '../../lib/Dav';
-import * as localforage from "localforage";
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations';
-import { TableObject, TableObjectUploadStatus } from '../../lib/models/TableObject';
-import { DavEnvironment } from '../../lib/models/DavUser';
-import { davClassLibraryTestAppId, testDataTableId, davClassLibraryTestUserXTestUserJwt } from '../Constants';
+import 'mocha'
+import { assert } from 'chai'
+import * as localforage from 'localforage'
+import {
+	TableObjectUploadStatus
+} from '../../lib/types'
+import { testerXTestAppAccessToken } from '../constants'
+import { Dav } from '../../lib/Dav'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
+import { TableObject } from '../../lib/models/TableObject'
 
 beforeEach(async () => {
 	// Reset global variables
 	Dav.skipSyncPushInTests = true
-	Dav.jwt = null
+	Dav.isLoggedIn = false
+	Dav.accessToken = null
 
 	// Clear the database
 	await localforage.clear()
+})
+
+describe("Constructor", () => {
+	it("should assign all given properties", () => {
+		// Arrange
+		const uuid = "78a5a7a4-2f3f-47c3-8d6f-a8e63182f92a"
+		const tableId = 123
+		let isFile = true
+		let firstPropertyName = "firstProperty"
+		let firstPropertyValue = "Hello World"
+		let secondPropertyName = "secondProperty"
+		let secondPropertyValue = "Hallo Welt"
+		let properties = {
+			[firstPropertyName]: {
+				value: firstPropertyValue
+			},
+			[secondPropertyName]: {
+				value: secondPropertyValue
+			}
+		}
+		let uploadStatus = TableObjectUploadStatus.Updated
+		let etag = "siodgjiosgdhiosgsghiod"
+		
+		// Act
+		let tableObject = new TableObject({
+			uuid,
+			tableId,
+			isFile,
+			properties,
+			uploadStatus,
+			etag
+		})
+
+		// Assert
+		assert.equal(tableObject.Uuid, uuid)
+		assert.equal(tableObject.TableId, tableId)
+		assert.equal(tableObject.IsFile, isFile)
+		assert.equal(tableObject.GetPropertyValue(firstPropertyName), firstPropertyValue)
+		assert.equal(tableObject.GetPropertyValue(secondPropertyName), secondPropertyValue)
+	})
+
+	it("should generate a uuid when no uuid is given", () => {
+		// Act
+		let tableObject = new TableObject()
+
+		// Assert
+		assert.isNotNull(tableObject.Uuid)
+		assert.equal(tableObject.TableId, 0)
+		assert.isFalse(tableObject.IsFile)
+		assert.isUndefined(tableObject.File)
+		assert.equal(Object.keys(tableObject.Properties).length, 0)
+		assert.equal(tableObject.UploadStatus, TableObjectUploadStatus.New)
+		assert.isUndefined(tableObject.Etag)
+	})
 })
 
 describe("SetUploadStatus function", () => {
@@ -807,7 +864,7 @@ describe("GetPropertyValue function", () => {
 		// Assert
 		assert.isNull(value);
 	})
-});
+})
 
 describe("RemoveProperty function", () => {
 	it("should remove the property of the table object and save it in the database", async () => {
@@ -837,14 +894,8 @@ describe("RemoveProperty function", () => {
 
 	it("should set the value of the property to null and save it in the database if the user is logged in", async () => {
 		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		})
-		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.isLoggedIn = true
+		Dav.accessToken = testerXTestAppAccessToken
 
 		let propertyName = "test"
 
@@ -871,14 +922,8 @@ describe("RemoveProperty function", () => {
 
 	it("should remove the property of the table object and save it in the database if the user is logged in and the property is local", async () => {
 		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		})
-		Dav.jwt = davClassLibraryTestUserXTestUserJwt;
+		Dav.isLoggedIn = true
+		Dav.accessToken = testerXTestAppAccessToken
 
 		let propertyName = "test"
 
@@ -925,14 +970,8 @@ describe("Delete function", () => {
 
 	it("should set the UploadStatus of the table object to Deleted if the user is logged in", async () => {
 		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		})
-		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+		Dav.isLoggedIn = true
+		Dav.accessToken = testerXTestAppAccessToken
 
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
@@ -995,14 +1034,8 @@ describe("Remove function", () => {
 
 	it("should set the UploadStatus of the table object to Removed if the user is logged in", async () => {
 		// Arrange
-		Init(DavEnvironment.Test, davClassLibraryTestAppId, [testDataTableId], [], { icon: "", badge: "" }, {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		})
-		Dav.jwt = davClassLibraryTestUserXTestUserJwt
+		Dav.isLoggedIn = true
+		Dav.accessToken = testerXTestAppAccessToken
 
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
