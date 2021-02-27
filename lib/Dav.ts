@@ -122,6 +122,7 @@ export class Dav {
 			|| session.AccessToken == null
 			|| session.UploadStatus == SessionUploadStatus.Deleted
 		) {
+			if (Dav.callbacks.UserLoaded) Dav.callbacks.UserLoaded()
 			await SyncManager.SessionSyncPush()
 			this.isSyncing = false
 			return

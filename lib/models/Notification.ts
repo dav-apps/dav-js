@@ -44,6 +44,19 @@ export class Notification {
 			NotificationManager.NotificationSyncPush()
 		}
 	}
+
+	async Delete() {
+		if (Dav.accessToken != null) {
+			this.UploadStatus = GenericUploadStatus.Deleted
+			await this.Save()
+		} else {
+			await this.DeleteImmediately()
+		}
+	}
+
+	async DeleteImmediately() {
+		await DatabaseOperations.RemoveNotification(this.Uuid)
+	}
 }
 
 export function ConvertObjectArrayToNotifications(objArray: any[]): Notification[] {
