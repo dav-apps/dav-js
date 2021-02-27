@@ -14,39 +14,56 @@ import { GetTableObjectFile } from '../controllers/TableObjectsController'
 
 export class TableObject {
 	public Uuid: string
-	public TableId: number
+	public TableId: number = 0
 	public IsFile: boolean = false
 	public File: Blob
 	public Properties: TableObjectProperties = {}
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New
 	public Etag: string
 
-	constructor(uuid?: string) {
-		if (uuid) {
-			this.Uuid = uuid
-		} else {
-			this.Uuid = generateUuid()
+	constructor(params?: {
+		uuid?: string,
+		tableId?: number,
+		isFile?: boolean,
+		file?: Blob,
+		properties?: TableObjectProperties,
+		uploadStatus?: TableObjectUploadStatus,
+		etag?: string
+	}) {
+		if (params != null) {
+			if (params.uuid != null) {
+				this.Uuid = params.uuid
+			} else {
+				this.Uuid = generateUuid()
+			}
+
+			if (params.tableId != null) this.TableId = params.tableId
+			if (params.isFile != null) this.IsFile = params.isFile
+			if (params.file != null) this.File = params.file
+			if (params.properties != null) this.Properties = params.properties
+			if (params.uploadStatus != null) this.UploadStatus = params.uploadStatus
+			if (params.etag != null) this.Etag = params.etag
 		}
 	}
 
 	async SetUploadStatus(uploadStatus: TableObjectUploadStatus): Promise<void> {
-		this.UploadStatus = uploadStatus;
-		await this.Save(false);
+		this.UploadStatus = uploadStatus
+		await this.Save(false)
 	}
 
 	async SetEtag(etag: string): Promise<void> {
-		this.Etag = etag;
-		await this.Save(false);
+		this.Etag = etag
+		await this.Save(false)
 	}
 
 	async SetPropertyValue(property: Property): Promise<void> {
 		if (this.SetProperty(property)) {
-			await this.Save();
+			await this.Save()
 		}
 	}
 
 	async SetPropertyValues(properties: Property[]): Promise<void> {
-		var propertiesChanged = false;
+		var propertiesChanged = false
 
 		for (let property of properties) {
 			if (this.SetProperty(property)) {
@@ -55,7 +72,7 @@ export class TableObject {
 		}
 
 		if (propertiesChanged) {
-			await this.Save();
+			await this.Save()
 		}
 	}
 
@@ -87,17 +104,17 @@ export class TableObject {
 	}
 
 	GetPropertyValue(name: string): string | boolean | number {
-		var property = this.Properties[name];
-		return property ? property.value : null;
+		var property = this.Properties[name]
+		return property ? property.value : null
 	}
 
 	async RemoveProperty(name: string): Promise<void> {
 		if (this.Properties[name] == null) return
 
-		if (Dav.accessToken == null || this.Properties[name].local) {
+		if (!Dav.isLoggedIn || this.Properties[name].local) {
 			delete this.Properties[name]
 		} else {
-			// Set the value to empty string if the user is logged in
+			// Set the value to null if the user is logged in
 			this.Properties[name].value = null
 		}
 
@@ -127,15 +144,17 @@ export class TableObject {
 	}
 
 	async SetFile(file: Blob, fileExt: string) {
-		if (!this.IsFile) return;
-		if (file == this.File) return;
+		if (
+			!this.IsFile
+			|| file == this.File
+		) return
 
 		if (this.UploadStatus == TableObjectUploadStatus.UpToDate) {
-			this.UploadStatus = TableObjectUploadStatus.Updated;
+			this.UploadStatus = TableObjectUploadStatus.Updated
 		}
 
-		this.File = file;
-		await this.SetPropertyValue({ name: "ext", value: fileExt });
+		this.File = file
+		await this.SetPropertyValue({ name: "ext", value: fileExt })
 	}
 
 	GetFileDownloadStatus(): TableObjectFileDownloadStatus {
@@ -203,12 +222,13 @@ export function ConvertObjectToTableObject(
 		Etag: string
 	}
 ): TableObject {
-	let tableObject = new TableObject(obj.Uuid)
-	tableObject.TableId = obj.TableId
-	tableObject.UploadStatus = obj.UploadStatus
-	tableObject.IsFile = obj.IsFile
-	tableObject.File = obj.File
-	tableObject.Etag = obj.Etag
-	tableObject.Properties = obj.Properties
-	return tableObject
+	return new TableObject({
+		uuid: obj.Uuid,
+		tableId: obj.TableId,
+		isFile: obj.IsFile,
+		file: obj.File,
+		properties: obj.Properties,
+		uploadStatus: obj.UploadStatus,
+		etag: obj.Etag
+	})
 }
