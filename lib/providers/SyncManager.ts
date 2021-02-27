@@ -35,7 +35,7 @@ var isSyncing = false
 var syncAgain = false
 
 // Stores the table objects to download with the new etag
-var fileDownloads: Array<{ tableObject: TableObject, etag: string }> = []
+var fileDownloads: Array<{ uuid: string, etag?: string }> = []
 var downloadingFiles: boolean = false
 export var downloadingFileUuid: string
 
@@ -234,7 +234,7 @@ export async function Sync(): Promise<boolean> {
 
 	// Process the table results
 	for (let tableId of sortedTableIds) {
-		if (getTableResultsOkay.get(tableId)) continue
+		if (!getTableResultsOkay.get(tableId)) continue
 
 		let removedTableObjects = removedTableObjectUuids.get(tableId)
 		let tableObjects = tableResults.get(tableId).tableObjects
@@ -249,18 +249,14 @@ export async function Sync(): Promise<boolean> {
 			let currentTableObject = await DatabaseOperations.GetTableObject(obj.uuid)
 
 			if (currentTableObject != null) {
-				// Is the etag correct?
+				// Has the etag changed?
 				if (obj.etag == currentTableObject.Etag) {
-					// Is it a file?
-					if (currentTableObject.IsFile) {
-						// Is the file already downloaded?
-						if (!currentTableObject.File) {
-							// Download the file
-							fileDownloads.push({
-								tableObject: currentTableObject,
-								etag: currentTableObject.Etag
-							})
-						}
+					// Is it a file and is it already downloaded?
+					if (currentTableObject.IsFile && currentTableObject.File == null) {
+						// Download the file
+						fileDownloads.push({
+							uuid: currentTableObject.Uuid
+						})
 					}
 				} else {
 					// Get the updated table object from the server
@@ -272,8 +268,14 @@ export async function Sync(): Promise<boolean> {
 
 					// Is it a file?
 					if (tableObject.IsFile) {
+						// Set the old etag
+						await tableObject.SetEtag(currentTableObject.Etag)
+
 						// Download the file and save the new etag
-						fileDownloads.push({ tableObject: tableObject, etag: obj.etag })
+						fileDownloads.push({
+							uuid: tableObject.Uuid,
+							etag: obj.etag
+						})
 					} else {
 						if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 						tableChanged = true
@@ -281,7 +283,7 @@ export async function Sync(): Promise<boolean> {
 				}
 			} else {
 				// Get the table object
-				let getTableObjectResponse = await GetTableObject({ uuid: currentTableObject.Uuid })
+				let getTableObjectResponse = await GetTableObject({ uuid: obj.uuid })
 				if (getTableObjectResponse.status != 200) continue
 
 				let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
@@ -289,13 +291,11 @@ export async function Sync(): Promise<boolean> {
 
 				// Is it a file?
 				if (tableObject.IsFile) {
-					// Download the file and save the new etag
-					fileDownloads.push({ tableObject: tableObject, etag: obj.etag })
-
-					if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
-					tableChanged = true
+					// Download the file
+					fileDownloads.push({
+						uuid: tableObject.Uuid
+					})
 				} else {
-					// Save the table object
 					if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 					tableChanged = true
 				}
@@ -357,9 +357,7 @@ export async function SyncPush(): Promise<boolean> {
 
 	// Get all table objects from the database
 	let tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true)
-	let filteredTableObjects = tableObjects.filter(obj => {
-		obj.UploadStatus != TableObjectUploadStatus.UpToDate
-	}).reverse()
+	let filteredTableObjects = tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate).reverse()
 
 	for (let tableObject of filteredTableObjects) {
 		switch (tableObject.UploadStatus) {
@@ -553,19 +551,77 @@ export async function DownloadFiles() {
 
 	while (fileDownloads.length > 0) {
 		let fileDownload = fileDownloads.pop()
-		if (
-			!fileDownload.tableObject.IsFile
-			|| fileDownload.tableObject.File != null
-		) continue
+		let tableObject = await DatabaseOperations.GetTableObject(fileDownload.uuid)
+		if (tableObject == null || !tableObject.IsFile) continue
 
-		if (!await fileDownload.tableObject.DownloadFile()) continue
+		if (!await tableObject.DownloadFile()) continue
 
 		// Update the table object with the new etag
-		await fileDownload.tableObject.SetEtag(fileDownload.etag)
-		if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(fileDownload.tableObject, true)
+		if (fileDownload.etag != null) {
+			await tableObject.SetEtag(fileDownload.etag)
+		}
+		
+		if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject, true)
 	}
 
 	downloadingFiles = false
+}
+
+export async function DownloadTableObject(uuid: string) {
+	// Get the table object from the database
+	let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+
+	// Get the table object from the server
+	let getResponse = await GetTableObject({ uuid })
+	if (getResponse.status != 200) return
+
+	let tableObject = (getResponse as ApiResponse<TableObject>).data
+
+	if (tableObjectFromDatabase != null) {
+		// Has the etag changed?
+		if (tableObjectFromDatabase.Etag == tableObject.Etag) {
+			// Is it a file and is it already downloaded?
+			if (tableObjectFromDatabase.IsFile && tableObjectFromDatabase.File == null) {
+				// Download the file
+				fileDownloads.unshift({
+					uuid: tableObject.Uuid
+				})
+			}
+		} else {
+			await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
+
+			// Is it a file?
+			if (tableObject.IsFile) {
+				// Download the file and save the new etag
+				fileDownloads.unshift({
+					uuid: tableObject.Uuid,
+					etag: tableObject.Etag
+				})
+
+				// Set the old etag
+				await tableObject.SetEtag(tableObjectFromDatabase.Etag)
+			} else {
+				if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+			}
+		}
+	} else {
+		await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
+
+		if (tableObject.IsFile) {
+			// Download the file
+			fileDownloads.unshift({
+				uuid: tableObject.Uuid,
+				etag: tableObject.Etag
+			})
+		}else{
+			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+		}
+	}
+
+	// Start the file downloads if necessary
+	if (fileDownloads.length > 0) {
+		await DownloadFiles()
+	}
 }
 
 //#region Utility functions
