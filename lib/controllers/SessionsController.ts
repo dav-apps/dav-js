@@ -5,7 +5,8 @@ import { ApiErrorResponse, ApiResponse } from '../types'
 import { ConvertErrorToApiErrorResponse } from '../utils'
 
 export interface SessionResponseData {
-	accessToken: string
+	accessToken: string,
+	websiteAccessToken?: string
 }
 
 export async function CreateSession(params: {
@@ -41,7 +42,8 @@ export async function CreateSession(params: {
 		return {
 			status: response.status,
 			data: {
-				accessToken: response.data.access_token
+				accessToken: response.data.access_token,
+				websiteAccessToken: response.data.website_access_token
 			}
 		}
 	} catch (error) {

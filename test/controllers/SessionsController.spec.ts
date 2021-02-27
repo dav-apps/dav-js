@@ -31,13 +31,15 @@ describe("CreateSession function", () => {
 		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 		let accessToken = "hiuhfeiugasdasd"
+		let websiteAccessToken = "jsodhiosdfhiosfd"
 		
 		let url = `${Dav.apiBaseUrl}/session`
 
 		let expectedResult: ApiResponse<SessionResponseData> = {
 			status: 201,
 			data: {
-				accessToken
+				accessToken,
+				websiteAccessToken
 			}
 		}
 
@@ -62,7 +64,8 @@ describe("CreateSession function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					access_token: accessToken
+					access_token: accessToken,
+					website_access_token: websiteAccessToken
 				}
 			})
 		})
@@ -82,6 +85,7 @@ describe("CreateSession function", () => {
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
+		assert.equal(result.data.websiteAccessToken, expectedResult.data.websiteAccessToken)
 	})
 
 	it("should call createSession endpoint with error", async () => {
@@ -321,7 +325,6 @@ describe("RenewSession function", () => {
 	it("should call renewSession endpoint with error", async () => {
 		// Arrange
 		let accessToken = "snjdgosndgosgd"
-		let newAccessToken = "siodgsodghsdg"
 		let url = `${Dav.apiBaseUrl}/session/renew`
 
 		let expectedResult: ApiErrorResponse = {
