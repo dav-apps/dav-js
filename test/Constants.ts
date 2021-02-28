@@ -21,16 +21,16 @@ export const firstNotificationPropertyName = "title"
 export const secondNotificationPropertyName = "message"
 
 export var firstTestDataTableObject = new TableObject({
-	uuid: "642e6407-f357-4e03-b9c2-82f754931161",
-	properties: {
+	Uuid: "642e6407-f357-4e03-b9c2-82f754931161",
+	Properties: {
 		[firstPropertyName]: {value: "Hello World"},
 		[secondPropertyName]: {value: "Hallo Welt"}
 	}
 })
 
 export var secondTestDataTableObject = new TableObject({
-	uuid: "8d29f002-9511-407b-8289-5ebdcb5a5559",
-	properties: {
+	Uuid: "8d29f002-9511-407b-8289-5ebdcb5a5559",
+	Properties: {
 		[firstPropertyName]: {value: "Table"},
 		[secondPropertyName]: {value: "Tabelle"}
 	}

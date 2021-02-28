@@ -5,12 +5,12 @@ import * as DatabaseOperations from '../providers/DatabaseOperations'
 import * as NotificationManager from '../providers/NotificationManager'
 
 export class Notification {
-	public Uuid: string
+	public Uuid: string = generateUuid()
 	public Time: number
 	public Interval: number
 	public Title: string
 	public Body: string
-	public UploadStatus: GenericUploadStatus
+	public UploadStatus: GenericUploadStatus = GenericUploadStatus.New
 
 	constructor(params: {
 		Uuid?: string,
@@ -20,33 +20,16 @@ export class Notification {
 		Body: string,
 		UploadStatus?: GenericUploadStatus
 	}) {
-		this.Uuid = params.Uuid == null ? generateUuid() : params.Uuid
+		if (params.Uuid != null) this.Uuid = params.Uuid
 		this.Time = params.Time
 		this.Interval = params.Interval
 		this.Title = params.Title
 		this.Body = params.Body
-		this.UploadStatus = params.UploadStatus == null ? GenericUploadStatus.New : params.UploadStatus
-	}
-
-	async Save() {
-		if (
-			this.UploadStatus == GenericUploadStatus.UpToDate
-			&& await DatabaseOperations.NotificationExists(this.Uuid)
-		) {
-			this.UploadStatus = GenericUploadStatus.Updated
-		}
-
-		await DatabaseOperations.SetNotification(this)
-
-		if (Dav.environment == Environment.Test && !Dav.skipSyncPushInTests) {
-			await NotificationManager.NotificationSyncPush()
-		} else if(Dav.environment != Environment.Test) {
-			NotificationManager.NotificationSyncPush()
-		}
+		if (params.UploadStatus != null) this.UploadStatus = params.UploadStatus
 	}
 
 	async Delete() {
-		if (Dav.accessToken != null) {
+		if (Dav.isLoggedIn) {
 			this.UploadStatus = GenericUploadStatus.Deleted
 			await this.Save()
 		} else {
@@ -56,6 +39,21 @@ export class Notification {
 
 	async DeleteImmediately() {
 		await DatabaseOperations.RemoveNotification(this.Uuid)
+	}
+
+	private async Save() {
+		if (
+			this.UploadStatus == GenericUploadStatus.UpToDate
+			&& await DatabaseOperations.NotificationExists(this.Uuid)
+		) this.UploadStatus = GenericUploadStatus.Updated
+
+		await DatabaseOperations.SetNotification(this)
+
+		if (Dav.environment == Environment.Test && !Dav.skipSyncPushInTests) {
+			await NotificationManager.NotificationSyncPush()
+		} else if(Dav.environment != Environment.Test) {
+			NotificationManager.NotificationSyncPush()
+		}
 	}
 }
 
