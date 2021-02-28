@@ -13,7 +13,7 @@ import * as DatabaseOperations from '../providers/DatabaseOperations'
 import { GetTableObjectFile } from '../controllers/TableObjectsController'
 
 export class TableObject {
-	public Uuid: string
+	public Uuid: string = generateUuid()
 	public TableId: number = 0
 	public IsFile: boolean = false
 	public File: Blob
@@ -22,27 +22,22 @@ export class TableObject {
 	public Etag: string
 
 	constructor(params?: {
-		uuid?: string,
-		tableId?: number,
-		isFile?: boolean,
-		file?: Blob,
-		properties?: TableObjectProperties,
-		uploadStatus?: TableObjectUploadStatus,
-		etag?: string
+		Uuid?: string,
+		TableId?: number,
+		IsFile?: boolean,
+		File?: Blob,
+		Properties?: TableObjectProperties,
+		UploadStatus?: TableObjectUploadStatus,
+		Etag?: string
 	}) {
 		if (params != null) {
-			if (params.uuid != null) {
-				this.Uuid = params.uuid
-			} else {
-				this.Uuid = generateUuid()
-			}
-
-			if (params.tableId != null) this.TableId = params.tableId
-			if (params.isFile != null) this.IsFile = params.isFile
-			if (params.file != null) this.File = params.file
-			if (params.properties != null) this.Properties = params.properties
-			if (params.uploadStatus != null) this.UploadStatus = params.uploadStatus
-			if (params.etag != null) this.Etag = params.etag
+			if (params.Uuid != null) this.Uuid = params.Uuid
+			if (params.TableId != null) this.TableId = params.TableId
+			if (params.IsFile != null) this.IsFile = params.IsFile
+			if (params.File != null) this.File = params.File
+			if (params.Properties != null) this.Properties = params.Properties
+			if (params.UploadStatus != null) this.UploadStatus = params.UploadStatus
+			if (params.Etag != null) this.Etag = params.Etag
 		}
 	}
 
@@ -122,7 +117,7 @@ export class TableObject {
 	}
 
 	async Delete(): Promise<void> {
-		if (Dav.accessToken != null) {
+		if (Dav.isLoggedIn) {
 			this.UploadStatus = TableObjectUploadStatus.Deleted
 			await this.Save()
 		} else {
@@ -223,12 +218,12 @@ export function ConvertObjectToTableObject(
 	}
 ): TableObject {
 	return new TableObject({
-		uuid: obj.Uuid,
-		tableId: obj.TableId,
-		isFile: obj.IsFile,
-		file: obj.File,
-		properties: obj.Properties,
-		uploadStatus: obj.UploadStatus,
-		etag: obj.Etag
+		Uuid: obj.Uuid,
+		TableId: obj.TableId,
+		IsFile: obj.IsFile,
+		File: obj.File,
+		Properties: obj.Properties,
+		UploadStatus: obj.UploadStatus,
+		Etag: obj.Etag
 	})
 }

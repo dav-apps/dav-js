@@ -1,9 +1,7 @@
 import 'mocha'
 import { assert } from 'chai'
 import * as localforage from 'localforage'
-import {
-	TableObjectUploadStatus
-} from '../../lib/types'
+import { Environment, TableObjectUploadStatus } from '../../lib/types'
 import { testerXTestAppAccessToken } from '../constants'
 import { Dav } from '../../lib/Dav'
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
@@ -11,6 +9,7 @@ import { TableObject } from '../../lib/models/TableObject'
 
 beforeEach(async () => {
 	// Reset global variables
+	Dav.environment = Environment.Test
 	Dav.skipSyncPushInTests = true
 	Dav.isLoggedIn = false
 	Dav.accessToken = null
@@ -42,12 +41,12 @@ describe("Constructor", () => {
 		
 		// Act
 		let tableObject = new TableObject({
-			uuid,
-			tableId,
-			isFile,
-			properties,
-			uploadStatus,
-			etag
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: isFile,
+			Properties: properties,
+			UploadStatus: uploadStatus,
+			Etag: etag
 		})
 
 		// Assert
@@ -58,7 +57,7 @@ describe("Constructor", () => {
 		assert.equal(tableObject.GetPropertyValue(secondPropertyName), secondPropertyValue)
 	})
 
-	it("should generate a uuid when no uuid is given", () => {
+	it("should set default values for optional properties", () => {
 		// Act
 		let tableObject = new TableObject()
 
