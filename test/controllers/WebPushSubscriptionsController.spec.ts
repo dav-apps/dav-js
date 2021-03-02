@@ -6,7 +6,8 @@ import * as ErrorCodes from '../../lib/errorCodes'
 import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
 import {
 	CreateWebPushSubscription,
-	GetWebPushSubscription
+	GetWebPushSubscription,
+	DeleteWebPushSubscription
 } from '../../lib/controllers/WebPushSubscriptionsController'
 
 beforeEach(() => {
@@ -448,5 +449,164 @@ describe("GetWebPushSubscription function", () => {
 		assert.equal(result.data.Endpoint, expectedResult.data.Endpoint)
 		assert.equal(result.data.P256dh, expectedResult.data.P256dh)
 		assert.equal(result.data.Auth, expectedResult.data.Auth)
+	})
+})
+
+describe("DeleteWebPushSubscription function", () => {
+	it("should call deleteWebPushSubscription endpoint", async () => {
+		// Arrange
+		let uuid = "a400f12b-468d-4283-bc56-859e6b3d96b6"
+
+		let accessToken = "shiodghsodghsgod"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/web_push_subscription/${uuid}`
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await DeleteWebPushSubscription({
+			uuid
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+	})
+
+	it("should call deleteWebPushSubscription endpoint with error", async () => {
+		// Arrange
+		let uuid = "a400f12b-468d-4283-bc56-859e6b3d96b6"
+
+		let accessToken = "shiodghsodghsgod"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/web_push_subscription/${uuid}`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: ErrorCodes.ActionNotAllowed,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await DeleteWebPushSubscription({
+			uuid
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+
+	it("should call deleteWebPushSubscription endpoint and renew the session", async () => {
+		// Arrange
+		let uuid = "a400f12b-468d-4283-bc56-859e6b3d96b6"
+
+		let accessToken = "shiodghsodghsgod"
+		let newAccessToken = "sghiodsghiodsghiod"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/web_push_subscription/${uuid}`
+
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		// First deleteWebPushSubscription request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 403,
+				response: {
+					errors: [{
+						code: ErrorCodes.AccessTokenMustBeRenewed,
+						message: "Access token must be renewed"
+					}]
+				}
+			})
+		})
+
+		// renewSession request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 200,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Second deleteWebPushSubscription request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, newAccessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await DeleteWebPushSubscription({
+			uuid
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
 	})
 })

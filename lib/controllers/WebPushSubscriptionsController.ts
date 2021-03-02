@@ -89,3 +89,40 @@ export async function GetWebPushSubscription(params: {
 		}
 	}
 }
+
+export async function DeleteWebPushSubscription(params: {
+	accessToken?: string,
+	uuid: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'delete',
+			url: `${Dav.apiBaseUrl}/web_push_subscription/${params.uuid}`,
+			headers: {
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: new WebPushSubscription(
+				response.data.uuid,
+				response.data.endpoint,
+				response.data.p256dh,
+				response.data.auth
+			)
+		}
+	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await DeleteWebPushSubscription(params)
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
