@@ -102,7 +102,7 @@ export class Dav {
 		// Set the other static variables
 		Dav.apiBaseUrl = Dav.environment == Environment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment
 		Dav.websiteUrl = Dav.environment == Environment.Production ? websiteUrlProduction : websiteUrlDevelopment
-		if (Dav.server) return
+		if (Dav.server || Dav.environment == Environment.Test) return
 
 		// Init the service worker
 		SyncManager.InitServiceWorker()

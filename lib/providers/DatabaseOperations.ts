@@ -60,13 +60,16 @@ export async function GetSession(): Promise<DatabaseSession> {
 		await SetUser(user)
 
 		// Save the new session with the jwt as access token
-		await SetSession({
+		let session: DatabaseSession = {
 			AccessToken: oldUser["jwt"],
 			UploadStatus: SessionUploadStatus.UpToDate
-		})
+		}
+		await SetSession(session)
 
 		// Remove the old user from the database
 		await localforage.removeItem(oldUserKey)
+		
+		return session
 	} else {
 		return await localforage.getItem(sessionKey) as DatabaseSession
 	}

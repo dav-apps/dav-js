@@ -2,8 +2,8 @@ import * as localforage from 'localforage'
 import { tableObjectsKey } from '../lib/constants'
 import { TableObject } from '../lib/models/TableObject'
 
-export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
-	try{
+export async function SetTableObjectsArray(tableObjects: Array<TableObject>) {
+	try {
 		// Convert the table objects into objects
 		var objects: object[] = [];
 		tableObjects.forEach(tableObject => {
@@ -19,7 +19,7 @@ export async function SetTableObjectsArray(tableObjects: Array<TableObject>){
 		})
 
 		await localforage.setItem(tableObjectsKey, objects)
-	}catch(error){
+	} catch (error) {
 		console.log(error)
 	}
 }
