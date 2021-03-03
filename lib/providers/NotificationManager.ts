@@ -215,7 +215,7 @@ export async function NotificationSyncPush() {
 					await DatabaseOperations.RemoveNotification(notification.Uuid)
 				} else if (deleteResult.message != null) {
 					// Check the errors
-					let errors = (updateResult.message as ApiErrorResponse).errors
+					let errors = (deleteResult.message as ApiErrorResponse).errors
 
 					// Check if the notification does not exist
 					let i = errors.findIndex(error =>

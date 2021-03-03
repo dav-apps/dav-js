@@ -1,6 +1,4 @@
-import { GenericUploadStatus } from '../lib/types'
 import { TableObject } from '../lib/models/TableObject'
-import { Notification } from '../lib/models/Notification'
 import { Auth } from '../lib/models/Auth'
 
 export const testerXTestAppAccessToken = "ckktuu0gs00008iw3ctnrofzf"
@@ -34,22 +32,4 @@ export var secondTestDataTableObject = new TableObject({
 		[firstPropertyName]: {value: "Table"},
 		[secondPropertyName]: {value: "Tabelle"}
 	}
-})
-
-export var firstTestNotification = new Notification({
-	Uuid: "0289e7ab-5497-45dc-a6ad-d5d49143b17b",
-	Time: 1863541331,
-	Interval: 3600,
-	Title: "Hello World",
-	Body: "You have an appointment",
-	UploadStatus: GenericUploadStatus.UpToDate
-})
-
-export var secondTestNotification = new Notification({
-	Uuid: "4590db9d-f154-42bc-aaa9-c222e3b82487",
-	Time: 1806755643,
-	Interval: 864000,
-	Title: "Your daily summary",
-	Body: "You have 2 appointments and one Todo for today",
-	UploadStatus: GenericUploadStatus.UpToDate
 })
