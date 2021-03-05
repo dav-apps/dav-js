@@ -174,6 +174,8 @@ export class Dav {
 
 		// Set the session UploadStatus to Deleted
 		let session = await DatabaseOperations.GetSession()
+		if (session == null) return
+
 		session.UploadStatus = SessionUploadStatus.Deleted
 		await DatabaseOperations.SetSession(session)
 

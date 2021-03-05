@@ -1,7 +1,6 @@
 import 'mocha'
 import { assert } from 'chai'
 import * as localforage from 'localforage'
-import { extendPrototype } from 'localforage-startswith'
 import {
 	Environment,
 	DatabaseSession,
@@ -21,8 +20,6 @@ import { TableObject } from '../../lib/models/TableObject'
 import { Notification } from '../../lib/models/Notification'
 import { App } from '../../lib/models/App'
 import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
-
-extendPrototype(localforage)
 
 beforeEach(async () => {
 	// Reset global variables

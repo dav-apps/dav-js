@@ -65,10 +65,10 @@ export interface DatabaseUser {
 	Confirmed: boolean
 	TotalStorage: number
 	UsedStorage: number
-	StripeCustomerId: string
+	StripeCustomerId?: string
 	Plan: Plan
-	SubscriptionStatus: SubscriptionStatus
-	PeriodEnd: Date
+	SubscriptionStatus?: SubscriptionStatus
+	PeriodEnd?: Date
 	Dev: boolean
 	Provider: boolean
 	ProfileImage: Blob

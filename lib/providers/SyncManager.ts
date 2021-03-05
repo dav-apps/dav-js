@@ -465,7 +465,10 @@ export async function SyncPush(): Promise<boolean> {
 					// Check the errors
 					let errors = (removeResult.message as ApiErrorResponse).errors
 
-					let i = errors.findIndex(error => error.code == ErrorCodes.TableObjectUserAccessDoesNotExist)
+					let i = errors.findIndex(error =>
+						error.code == ErrorCodes.TableObjectUserAccessDoesNotExist
+						|| error.code == ErrorCodes.TableObjectDoesNotExist
+					)
 					if (i != -1) {
 						// Delete the table object
 						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)

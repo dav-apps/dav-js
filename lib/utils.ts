@@ -203,7 +203,10 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 export async function BlobToBase64(file: Blob, defaultValue: string = null): Promise<string> {
-	if (file == null) return defaultValue
+	if (
+		file == null
+		|| typeof FileReader == 'undefined'
+	) return defaultValue
 
 	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
 		let fileReader = new FileReader()
