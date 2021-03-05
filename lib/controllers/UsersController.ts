@@ -144,6 +144,11 @@ export async function GetUser(params?: {
 			}
 		})
 
+		let periodEnd = undefined
+		if (typeof response.data.period_end == 'object') {
+			periodEnd = response.data.period_end == null ? null : new Date(response.data.period_end)
+		}
+
 		return {
 			status: response.status,
 			data: new User(
@@ -156,7 +161,7 @@ export async function GetUser(params?: {
 				response.data.stripe_customer_id,
 				response.data.plan,
 				response.data.subscription_status,
-				response.data.period_end == null ? null : new Date(response.data.period_end),
+				periodEnd,
 				response.data.dev,
 				response.data.provider,
 				response.data.profile_image_etag,

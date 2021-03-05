@@ -28,11 +28,13 @@ export async function CreateTableObject(params: {
 			data
 		})
 
-		let tableObject = new TableObject(response.data.uuid)
-		tableObject.TableId = response.data.table_id
-		tableObject.IsFile = response.data.file
-		tableObject.Etag = response.data.etag
-		tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
+		let tableObject = new TableObject({
+			Uuid: response.data.uuid,
+			TableId: response.data.table_id,
+			IsFile: response.data.file,
+			Etag: response.data.etag,
+			UploadStatus: TableObjectUploadStatus.UpToDate
+		})
 
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = { value: response.data.properties[key] }
@@ -70,10 +72,12 @@ export async function GetTableObject(params: {
 			}
 		})
 
-		let tableObject = new TableObject(response.data.uuid)
-		tableObject.TableId = response.data.table_id
-		tableObject.IsFile = response.data.file
-		tableObject.Etag = response.data.etag
+		let tableObject = new TableObject({
+			Uuid: response.data.uuid,
+			TableId: response.data.table_id,
+			IsFile: response.data.file,
+			Etag: response.data.etag
+		})
 
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = { value: response.data.properties[key] }
@@ -115,10 +119,12 @@ export async function UpdateTableObject(params: {
 			}
 		})
 
-		let tableObject = new TableObject(response.data.uuid)
-		tableObject.TableId = response.data.table_id
-		tableObject.IsFile = response.data.file
-		tableObject.Etag = response.data.etag
+		let tableObject = new TableObject({
+			Uuid: response.data.uuid,
+			TableId: response.data.table_id,
+			IsFile: response.data.file,
+			Etag: response.data.etag
+		})
 
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = { value: response.data.properties[key] }
@@ -200,10 +206,12 @@ export async function SetTableObjectFile(params: {
 			data
 		})
 
-		let tableObject = new TableObject(response.data.uuid)
-		tableObject.TableId = response.data.table_id
-		tableObject.IsFile = response.data.file
-		tableObject.Etag = response.data.etag
+		let tableObject = new TableObject({
+			Uuid: response.data.uuid,
+			TableId: response.data.table_id,
+			IsFile: response.data.file,
+			Etag: response.data.etag
+		})
 
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = { value: response.data.properties[key] }

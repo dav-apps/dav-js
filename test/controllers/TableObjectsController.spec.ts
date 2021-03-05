@@ -31,13 +31,15 @@ describe("CreateTableObject function", () => {
 		let secondPropertyName = "page2"
 		let secondPropertyValue = 523.1
 
-		let tableObject = new TableObject(uuid)
-		tableObject.TableId = tableId
-		tableObject.IsFile = file
-		tableObject.Properties = {
-			[firstPropertyName]: { value: firstPropertyValue },
-			[secondPropertyName]: { value: secondPropertyValue }
-		}
+		let tableObject = new TableObject({
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: file,
+			Properties: {
+				[firstPropertyName]: { value: firstPropertyValue },
+				[secondPropertyName]: { value: secondPropertyValue }
+			}
+		})
 
 		let accessToken = "asdasdasdasd"
 		Dav.accessToken = accessToken
@@ -178,13 +180,15 @@ describe("CreateTableObject function", () => {
 		let secondPropertyName = "page2"
 		let secondPropertyValue = 523.1
 
-		let tableObject = new TableObject(uuid)
-		tableObject.TableId = tableId
-		tableObject.IsFile = file
-		tableObject.Properties = {
-			[firstPropertyName]: { value: firstPropertyValue },
-			[secondPropertyName]: { value: secondPropertyValue }
-		}
+		let tableObject = new TableObject({
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: file,
+			Properties: {
+				[firstPropertyName]: { value: firstPropertyValue },
+				[secondPropertyName]: { value: secondPropertyValue }
+			}
+		})
 
 		let accessToken = "asdasdasdasd"
 		let newAccessToken = "psgisodjgosidj"
@@ -308,13 +312,15 @@ describe("GetTableObject function", () => {
 		let secondPropertyName = "test2"
 		let secondPropertyValue = true
 
-		let tableObject = new TableObject(uuid)
-		tableObject.TableId = tableId
-		tableObject.IsFile = file
-		tableObject.Properties = {
-			[firstPropertyName]: { value: firstPropertyValue },
-			[secondPropertyName]: { value: secondPropertyValue }
-		}
+		let tableObject = new TableObject({
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: file,
+			Properties: {
+				[firstPropertyName]: { value: firstPropertyValue },
+				[secondPropertyName]: { value: secondPropertyValue }
+			}
+		})
 
 		let accessToken = "iosdfshodhsdf"
 		Dav.accessToken = accessToken
@@ -421,13 +427,15 @@ describe("GetTableObject function", () => {
 		let secondPropertyName = "test2"
 		let secondPropertyValue = true
 
-		let tableObject = new TableObject(uuid)
-		tableObject.TableId = tableId
-		tableObject.IsFile = file
-		tableObject.Properties = {
-			[firstPropertyName]: { value: firstPropertyValue },
-			[secondPropertyName]: { value: secondPropertyValue }
-		}
+		let tableObject = new TableObject({
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: file,
+			Properties: {
+				[firstPropertyName]: { value: firstPropertyValue },
+				[secondPropertyName]: { value: secondPropertyValue }
+			}
+		})
 
 		let accessToken = "iosdfshodhsdf"
 		let newAccessToken = "jiosdgiofhiosgssdf"
@@ -529,13 +537,15 @@ describe("UpdateTableObject function", () => {
 		let secondPropertyName = "test2"
 		let secondPropertyValue = true
 
-		let tableObject = new TableObject(uuid)
-		tableObject.TableId = tableId
-		tableObject.IsFile = file
-		tableObject.Properties = {
-			[firstPropertyName]: { value: firstPropertyValue },
-			[secondPropertyName]: { value: secondPropertyValue }
-		}
+		let tableObject = new TableObject({
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: file,
+			Properties: {
+				[firstPropertyName]: { value: firstPropertyValue },
+				[secondPropertyName]: { value: secondPropertyValue }
+			}
+		})
 
 		let accessToken = "iosdfshodhsdf"
 		Dav.accessToken = accessToken
@@ -664,13 +674,15 @@ describe("UpdateTableObject function", () => {
 		let secondPropertyName = "test2"
 		let secondPropertyValue = true
 
-		let tableObject = new TableObject(uuid)
-		tableObject.TableId = tableId
-		tableObject.IsFile = file
-		tableObject.Properties = {
-			[firstPropertyName]: { value: firstPropertyValue },
-			[secondPropertyName]: { value: secondPropertyValue }
-		}
+		let tableObject = new TableObject({
+			Uuid: uuid,
+			TableId: tableId,
+			IsFile: file,
+			Properties: {
+				[firstPropertyName]: { value: firstPropertyValue },
+				[secondPropertyName]: { value: secondPropertyValue }
+			}
+		})
 
 		let accessToken = "iosdfshodhsdf"
 		let newAccessToken = "iosdsdfosjdfsdf"
