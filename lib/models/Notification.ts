@@ -41,7 +41,7 @@ export class Notification {
 		await DatabaseOperations.RemoveNotification(this.Uuid)
 	}
 
-	private async Save() {
+	async Save() {
 		if (
 			this.UploadStatus == GenericUploadStatus.UpToDate
 			&& await DatabaseOperations.NotificationExists(this.Uuid)
