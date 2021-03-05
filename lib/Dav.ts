@@ -180,7 +180,9 @@ export class Dav {
 		await DatabaseOperations.SetSession(session)
 
 		// Start deleting the session on the server
-		SyncManager.SessionSyncPush()
+		if (this.environment != Environment.Test) {
+			SyncManager.SessionSyncPush()
+		}
 	}
 
 	static ShowLoginPage(apiKey: string, callbackUrl: string) {

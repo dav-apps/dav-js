@@ -1,121 +1,56 @@
-import { Dav, Init } from '../lib/Dav';
-import { assert } from 'chai';
-import 'mocha';
-import { TableObject } from '../lib/models/TableObject';
-import { DavEnvironment } from '../lib/models/DavUser';
+import 'mocha'
+import { assert } from 'chai'
+import { Dav } from '../lib/Dav'
+import * as DatabaseOperations from '../lib/providers/DatabaseOperations'
+import { Environment, SessionUploadStatus } from '../lib/types'
+import * as Constants from './constants'
 
-describe("Initialize function", () => {
-	it("should set globals variables to the appropriate values", () => {
-		// Arrange
-		var environment = DavEnvironment.Test;
-		var appId = -23;
-		var tableIds = [12, 213];
-		var callbacks = {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		}
+describe("Dav class", () => {
+	describe("Logout function", () => {
+		it("should log the user out and set the session to Deleted", async () => {
+			// Arrange
+			new Dav({
+				environment: Environment.Test,
+				appId: Constants.testAppId
+			})
+	
+			Dav.isLoggedIn = true
+			Dav.accessToken = Constants.testerXTestAppAccessToken
 
-		// Act
-		Init(environment, appId, tableIds, [], { icon: "", badge: "" }, callbacks);
+			await DatabaseOperations.SetUser({
+				Id: Constants.tester.id,
+				Email: Constants.tester.email,
+				FirstName: Constants.tester.firstName,
+				Confirmed: Constants.tester.confirmed,
+				TotalStorage: Constants.tester.totalStorage,
+				UsedStorage: Constants.tester.usedStorage,
+				Plan: Constants.tester.plan,
+				Dev: Constants.tester.dev,
+				Provider: Constants.tester.provider,
+				ProfileImage: null,
+				ProfileImageEtag: null,
+				Apps: []
+			})
 
-		// Assert
-		assert.equal(environment, Dav.environment);
-		assert.equal(appId, Dav.appId)
-	});
-});
+			await DatabaseOperations.SetSession({
+				AccessToken: Constants.testerXTestAppAccessToken,
+				UploadStatus: SessionUploadStatus.UpToDate
+			})
 
-describe("Globals class", () => {
-	it("should return different values for apiBaseUrl and websiteUrl in different environments", () => {
-		// Arrange
-		var environment = DavEnvironment.Test;
-		var appId = 12;
-		var tableIds = [12, 123];
-		var callbacks = {
-			UpdateAllOfTable: () => { },
-			UpdateTableObject: () => { },
-			DeleteTableObject: () => { },
-			UserDownloadFinished: () => { },
-			SyncFinished: () => { }
-		}
+			// Act
+			await Dav.Logout()
 
-		// Act
-		Init(environment, appId, tableIds, [], { icon: "", badge: "" }, callbacks);
-		var firstWebsiteUrl = Dav.websiteUrl;
-		var firstApiBaseUrl = Dav.apiBaseUrl;
+			// Assert
+			assert.isNull(Dav.accessToken)
+			assert.isFalse(Dav.isLoggedIn)
 
-		environment = DavEnvironment.Production;
+			let userFromDatabase = await DatabaseOperations.GetUser()
+			assert.isNull(userFromDatabase)
 
-		Init(environment, appId, tableIds, [], { icon: "", badge: "" }, callbacks);
-		var secondWebsiteUrl = Dav.websiteUrl;
-		var secondApiBaseUrl = Dav.apiBaseUrl;
-
-		// Assert
-		assert.notEqual(firstWebsiteUrl, secondWebsiteUrl);
-		assert.notEqual(secondWebsiteUrl, secondApiBaseUrl);
-	});
-
-	it("should call callback methods", () => {
-		// Arrange
-		var environment = DavEnvironment.Test;
-		var appId = 13;
-		var tableIds = [133, 121];
-
-		var callingTableId = 12;
-		var callingTableObject = new TableObject();
-
-		var updateAllOfTableCalled = false;
-		var updatedTableId = -1;
-		var updatedTableIdChanged = false;
-		var updateTableObjectCalled = false;
-		var updatedTableObjectUuid = "";
-		var deleteTableObjectCalled = false;
-		var deletedTableObjectUuid = "";
-		var userDownloadFinished = false;
-		var syncFinishedCalled = false;
-
-		var callbacks = {
-			UpdateAllOfTable: (tableId: number, changed: boolean) => {
-				updateAllOfTableCalled = true;
-				updatedTableId = tableId;
-				updatedTableIdChanged = changed;
-			},
-			UpdateTableObject: (tableObject: TableObject) => {
-				updateTableObjectCalled = true;
-				updatedTableObjectUuid = tableObject.Uuid;
-			},
-			DeleteTableObject: (tableObject: TableObject) => {
-				deleteTableObjectCalled = true;
-				deletedTableObjectUuid = tableObject.Uuid;
-			},
-			UserDownloadFinished: () => {
-				userDownloadFinished = true;
-			},
-			SyncFinished: () => {
-				syncFinishedCalled = true;
-			}
-		}
-
-		Init(environment, appId, tableIds, [], { icon: "", badge: "" }, callbacks);
-
-		// Act
-		Dav.callbacks.UpdateAllOfTable(callingTableId, true);
-		Dav.callbacks.UpdateTableObject(callingTableObject);
-		Dav.callbacks.DeleteTableObject(callingTableObject);
-		Dav.callbacks.UserDownloadFinished();
-		Dav.callbacks.SyncFinished();
-
-		// Assert
-		assert.isTrue(updateAllOfTableCalled);
-		assert.isTrue(updateTableObjectCalled);
-		assert.isTrue(deleteTableObjectCalled);
-		assert.isTrue(userDownloadFinished);
-		assert.isTrue(syncFinishedCalled);
-		assert.equal(callingTableId, updatedTableId);
-		assert.isTrue(updatedTableIdChanged);
-		assert.equal(callingTableObject.Uuid, updatedTableObjectUuid);
-		assert.equal(callingTableObject.Uuid, deletedTableObjectUuid);
-	});
-});
+			let sessionFromDatabase = await DatabaseOperations.GetSession()
+			assert.isNotNull(sessionFromDatabase)
+			assert.equal(sessionFromDatabase.AccessToken, Constants.testerXTestAppAccessToken)
+			assert.equal(sessionFromDatabase.UploadStatus, SessionUploadStatus.Deleted)
+		})
+	})
+})
