@@ -1,9 +1,9 @@
 {
-	"name": "dav-npm",
-	"version": "1.6.1",
+	"name": "dav-js",
+	"version": "2.0.0",
 	"description": "The npm package for accessing the dav API",
 	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
+	"types": "dist/**/**.d.ts",
 	"scripts": {
 		"test": "./node_modules/mocha/bin/mocha -r mock-local-storage -r ts-node/register test/*.spec.ts test/**/*.spec.ts",
 		"prepublishOnly": "npm run build",
@@ -16,14 +16,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com/dav-apps/dav-npm.git"
+		"url": "git+ssh://git@github.com/dav-apps/dav-js.git"
 	},
 	"author": "Dav",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/dav-apps/dav-npm/issues"
+		"url": "https://github.com/dav-apps/dav-js/issues"
 	},
-	"homepage": "https://github.com/dav-apps/dav-npm",
+	"homepage": "https://github.com/dav-apps/dav-js",
 	"files": [
 		"dist/index.js",
 		"dist/index.d.ts",
@@ -33,14 +33,13 @@
 		"axios": "^0.21.1",
 		"crypto-js": "^4.0.0",
 		"localforage": "^1.9.0",
-		"localforage-startswith": "^1.4.0",
-		"rxjs": "^6.6.3"
+		"localforage-startswith": "^1.4.0"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.14",
 		"@types/crypto-js": "^4.0.1",
 		"@types/mocha": "^8.2.0",
-		"@types/moxios": "^0.4.9",
+		"@types/moxios": "^0.4.10",
 		"@types/node": "^14.14.22",
 		"chai": "^4.2.0",
 		"cpx": "^1.5.0",
