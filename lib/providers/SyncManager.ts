@@ -33,6 +33,8 @@ import { DeleteSession } from '../controllers/SessionsController'
 
 var isSyncing = false
 var syncAgain = false
+var webSocket: WebSocket
+var websocketConnectionEstablished = false
 
 // Stores the table objects to download with the new etag
 var fileDownloads: Array<{ uuid: string, etag?: string }> = []
@@ -72,9 +74,10 @@ export async function SessionSyncPush() {
 		await DatabaseOperations.RemoveAllNotifications()
 	} else {
 		// Check the error
-		let errorCode = (deleteResponse as ApiErrorResponse).errors[0].code
+		let errors = (deleteResponse as ApiErrorResponse).errors
+		let i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
 
-		if (errorCode == ErrorCodes.SessionDoesNotExist) {
+		if (i != -1) {
 			// Remove the session
 			await DatabaseOperations.RemoveSession()
 		}
@@ -394,13 +397,6 @@ export async function SyncPush(): Promise<boolean> {
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
 						await DatabaseOperations.SetTableObject(tableObject)
 					}
-
-					// Check if the session does not exist
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
-					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
-					}
 				}
 				break
 			case TableObjectUploadStatus.Updated:
@@ -419,13 +415,6 @@ export async function SyncPush(): Promise<boolean> {
 					if (i != -1) {
 						// Delete the table object
 						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
-					}
-
-					// Check if the session does not exist
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
-					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
 					}
 				}
 				break
@@ -447,12 +436,6 @@ export async function SyncPush(): Promise<boolean> {
 						// Delete the table object
 						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
 					}
-
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
-					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
-					}
 				}
 				break
 			case TableObjectUploadStatus.Removed:
@@ -472,12 +455,6 @@ export async function SyncPush(): Promise<boolean> {
 					if (i != -1) {
 						// Delete the table object
 						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
-					}
-
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
-					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
 					}
 				}
 				break
@@ -504,12 +481,16 @@ export async function StartWebsocketConnection() {
 	let token = (createWebsocketConnectionResponse as ApiResponse<WebsocketConnectionResponseData>).data.token
 	let baseUrl = Dav.apiBaseUrl.replace("http", "ws")
 
-	let webSocket = new WebSocket(`${baseUrl}/cable?token=${token}`)
+	webSocket = new WebSocket(`${baseUrl}/cable?token=${token}`)
 
 	webSocket.onopen = () => {
+		websocketConnectionEstablished = true
+
 		let json = JSON.stringify({
 			command: "subscribe",
-			identifier: '{"channel": "' + tableObjectUpdateChannelName + '"}'
+			identifier: {
+				channel: tableObjectUpdateChannelName
+			}
 		})
 		webSocket.send(json)
 	}
@@ -517,19 +498,20 @@ export async function StartWebsocketConnection() {
 	webSocket.onmessage = async (e) => {
 		let json = JSON.parse(e.data)
 
-		if (json.type == "ping") {
+		if (json.type == "ping" || json.message == null) {
 			return
 		} else if (json.type == "reject_subscription") {
-			webSocket.close()
+			CloseWebsocketConnection()
+			return
 		}
 
-		let uuid = json.message ? json.message.uuid : null
-		let change = json.message ? json.message.change : null
-		let accessTokenMd5 = json.message ? json.message.access_token_md5 : null
+		let uuid = json.message.uuid
+		let change = json.message.change
+		let accessTokenMd5 = json.message.access_token_md5
 		if (uuid == null || change == null || accessTokenMd5 == null) return
 
 		// Don't notify the app if the session is the current session
-		if(CryptoJS.MD5(Dav.accessToken) == accessTokenMd5) return
+		if (CryptoJS.MD5(Dav.accessToken) == accessTokenMd5) return
 
 		if (change == 0 || change == 1) {
 			// Get the table object from the server and update it locally
@@ -541,11 +523,21 @@ export async function StartWebsocketConnection() {
 			await DatabaseOperations.SetTableObject(tableObject)
 			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 		} else if (change == 2) {
+			let tableObject = await DatabaseOperations.GetTableObject(uuid)
+			if(tableObject == null) return
+
+			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(tableObject)
+
 			// Remove the table object in the database
 			DatabaseOperations.RemoveTableObject(uuid)
-			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(uuid)
 		}
 	}
+}
+
+export async function CloseWebsocketConnection() {
+	if (!websocketConnectionEstablished) return
+	webSocket.close()
+	websocketConnectionEstablished = false
 }
 
 export async function DownloadFiles() {
@@ -563,7 +555,7 @@ export async function DownloadFiles() {
 		if (fileDownload.etag != null) {
 			await tableObject.SetEtag(fileDownload.etag)
 		}
-		
+
 		if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject, true)
 	}
 
@@ -616,7 +608,7 @@ export async function DownloadTableObject(uuid: string) {
 				uuid: tableObject.Uuid,
 				etag: tableObject.Etag
 			})
-		}else{
+		} else {
 			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
 		}
 	}
@@ -671,11 +663,11 @@ async function CreateTableObjectOnServer(
 					success: true,
 					message: (setTableObjectFileResponse as ApiResponse<TableObject>).data
 				}
-			} else {
-				return {
-					success: false,
-					message: setTableObjectFileResponse as ApiErrorResponse
-				}
+			}
+
+			return {
+				success: false,
+				message: setTableObjectFileResponse as ApiErrorResponse
 			}
 		}
 	} else {
@@ -701,11 +693,11 @@ async function CreateTableObjectOnServer(
 				success: true,
 				message: (createTableObjectResponse as ApiResponse<TableObject>).data
 			}
-		} else {
-			return {
-				success: false,
-				message: createTableObjectResponse as ApiErrorResponse
-			}
+		}
+
+		return {
+			success: false,
+			message: createTableObjectResponse as ApiErrorResponse
 		}
 	}
 
@@ -720,54 +712,52 @@ async function UpdateTableObjectOnServer(
 ): Promise<{ success: boolean, message: TableObject | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
-	if (tableObject.IsFile) {
-		if (tableObject.File != null) {
-			// Upload the file
-			let setTableObjectFileResponse = await SetTableObjectFile({
-				uuid: tableObject.Uuid,
-				file: tableObject.File
-			})
+	if (tableObject.IsFile && tableObject.File != null) {
+		// Upload the file
+		let setTableObjectFileResponse = await SetTableObjectFile({
+			uuid: tableObject.Uuid,
+			file: tableObject.File
+		})
 
-			if (setTableObjectFileResponse.status != 200) {
-				return {
-					success: false,
-					message: setTableObjectFileResponse as ApiErrorResponse
-				}
-			}
-
-			// Check if the ext has changed
-			let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObject>).data
-			let tableObjectResponseDataExt = tableObjectResponseData.GetPropertyValue(extPropertyName)
-			let tableObjectExt = tableObject.GetPropertyValue(extPropertyName)
-
-			if (tableObjectResponseDataExt != tableObjectExt) {
-				// Update the table object with the new ext
-				let updateTableObjectResponse = await UpdateTableObject({
-					uuid: tableObject.Uuid,
-					properties: {
-						[extPropertyName]: tableObjectExt
-					}
-				})
-
-				if (updateTableObjectResponse.status == 200) {
-					return {
-						success: true,
-						message: (updateTableObjectResponse as ApiResponse<TableObject>).data
-					}
-				} else {
-					return {
-						success: false,
-						message: updateTableObjectResponse as ApiErrorResponse
-					}
-				}
-			} else {
-				return {
-					success: true,
-					message: tableObjectResponseData
-				}
+		if (setTableObjectFileResponse.status != 200) {
+			return {
+				success: false,
+				message: setTableObjectFileResponse as ApiErrorResponse
 			}
 		}
-	} else {
+
+		// Check if the ext has changed
+		let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObject>).data
+		let tableObjectResponseDataExt = tableObjectResponseData.GetPropertyValue(extPropertyName)
+		let tableObjectExt = tableObject.GetPropertyValue(extPropertyName)
+
+		if (tableObjectResponseDataExt != tableObjectExt) {
+			// Update the table object with the new ext
+			let updateTableObjectResponse = await UpdateTableObject({
+				uuid: tableObject.Uuid,
+				properties: {
+					[extPropertyName]: tableObjectExt
+				}
+			})
+
+			if (updateTableObjectResponse.status == 200) {
+				return {
+					success: true,
+					message: (updateTableObjectResponse as ApiResponse<TableObject>).data
+				}
+			}
+
+			return {
+				success: false,
+				message: updateTableObjectResponse as ApiErrorResponse
+			}
+		}
+
+		return {
+			success: true,
+			message: tableObjectResponseData
+		}
+	} else if (!tableObject.IsFile) {
 		// Get the properties
 		let properties = {}
 		for (let key of Object.keys(tableObject.Properties)) {
@@ -788,11 +778,11 @@ async function UpdateTableObjectOnServer(
 				success: true,
 				message: (updateTableObjectResponse as ApiResponse<TableObject>).data
 			}
-		} else {
-			return {
-				success: false,
-				message: updateTableObjectResponse as ApiErrorResponse
-			}
+		}
+
+		return {
+			success: false,
+			message: updateTableObjectResponse as ApiErrorResponse
 		}
 	}
 
@@ -816,11 +806,11 @@ async function DeleteTableObjectOnServer(
 			success: true,
 			message: {}
 		}
-	} else {
-		return {
-			success: false,
-			message: deleteTableObjectResponse as ApiErrorResponse
-		}
+	}
+
+	return {
+		success: false,
+		message: deleteTableObjectResponse as ApiErrorResponse
 	}
 }
 
@@ -838,15 +828,15 @@ async function RemoveTableObjectOnServer(
 			success: true,
 			message: {}
 		}
-	} else {
-		return {
-			success: false,
-			message: removeTableObjectResponse as ApiErrorResponse
-		}
+	}
+
+	return {
+		success: false,
+		message: removeTableObjectResponse as ApiErrorResponse
 	}
 }
 
-export function setDownloadingFileUuid(value: string) {
-	downloadingFileUuid = value
+export function setDownloadingFileUuid(uuid: string) {
+	downloadingFileUuid = uuid
 }
 //#endregion

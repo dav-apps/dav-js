@@ -160,6 +160,8 @@ export class Dav {
 	}
 
 	static async Login(accessToken: string) {
+		if (accessToken == null) return
+
 		// Save the access token in the database
 		await DatabaseOperations.SetSession({ AccessToken: accessToken, UploadStatus: SessionUploadStatus.UpToDate })
 		this.StartSync()
@@ -168,6 +170,9 @@ export class Dav {
 	static async Logout() {
 		Dav.accessToken = null
 		Dav.isLoggedIn = false
+
+		// Close the websocket connection
+		SyncManager.CloseWebsocketConnection()
 
 		// Remove the user
 		await DatabaseOperations.RemoveUser()
