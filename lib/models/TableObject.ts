@@ -130,7 +130,7 @@ export class TableObject {
 	}
 
 	async Remove(): Promise<void> {
-		if (Dav.accessToken != null) {
+		if (Dav.isLoggedIn) {
 			this.UploadStatus = TableObjectUploadStatus.Removed
 			await this.Save()
 		} else {
@@ -155,20 +155,15 @@ export class TableObject {
 	GetFileDownloadStatus(): TableObjectFileDownloadStatus {
 		if (!this.IsFile) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
 		if (this.File != null) return TableObjectFileDownloadStatus.Downloaded
-		if (Dav.accessToken == null) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
+		if (!Dav.isLoggedIn) return TableObjectFileDownloadStatus.NoFileOrNotLoggedIn
 
 		if (SyncManager.downloadingFileUuid == this.Uuid) return TableObjectFileDownloadStatus.Downloading
 		return TableObjectFileDownloadStatus.NotDownloaded
 	}
 
 	async DownloadFile(): Promise<boolean> {
-		var downloadStatus = this.GetFileDownloadStatus()
-
-		if (
-			Dav.accessToken == null
-			|| downloadStatus == TableObjectFileDownloadStatus.Downloading
-			|| downloadStatus == TableObjectFileDownloadStatus.Downloaded
-		) return false
+		if (this.GetFileDownloadStatus() != TableObjectFileDownloadStatus.NotDownloaded)
+			return false
 
 		if (SyncManager.downloadingFileUuid != null) return false
 		SyncManager.setDownloadingFileUuid(this.Uuid)
@@ -181,10 +176,10 @@ export class TableObject {
 
 			SyncManager.setDownloadingFileUuid(null)
 			return true
-		} else {
-			SyncManager.setDownloadingFileUuid(null)
-			return false
 		}
+
+		SyncManager.setDownloadingFileUuid(null)
+		return false
 	}
 
 	private async Save(triggerSyncPush: boolean = true) {
