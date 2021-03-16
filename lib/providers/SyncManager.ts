@@ -112,7 +112,7 @@ export async function LoadUser() {
 	if (Dav.callbacks.UserLoaded) Dav.callbacks.UserLoaded()
 }
 
-export async function SyncUser(): Promise<boolean> {
+export async function UserSync(): Promise<boolean> {
 	if (Dav.accessToken == null) return false
 
 	// Get the user

@@ -134,7 +134,7 @@ export class Dav {
 		await SyncManager.LoadUser()
 
 		// Sync the user
-		if (!await SyncManager.SyncUser()) {
+		if (!await SyncManager.UserSync()) {
 			this.isSyncing = false
 			return
 		}

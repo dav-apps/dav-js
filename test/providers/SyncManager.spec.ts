@@ -20,7 +20,7 @@ import { TableObject } from '../../lib/models/TableObject'
 import {
 	SessionSyncPush,
 	LoadUser,
-	SyncUser,
+	UserSync,
 	Sync,
 	SyncPush,
 	DownloadTableObject
@@ -210,7 +210,7 @@ describe("LoadUser function", () => {
 	})
 })
 
-describe("SyncUser function", () => {
+describe("UserSync function", () => {
 	it("should download the user and save it in the database", async () => {
 		// Arrange
 		new Dav({
@@ -222,7 +222,7 @@ describe("SyncUser function", () => {
 		Dav.accessToken = Constants.testerXTestAppAccessToken
 
 		// Act
-		await SyncUser()
+		await UserSync()
 
 		// Assert
 		let userFromDatabase = await DatabaseOperations.GetUser()
@@ -278,7 +278,7 @@ describe("SyncUser function", () => {
 		})
 
 		// Act
-		await SyncUser()
+		await UserSync()
 
 		// Assert
 		let userFromDatabase = await DatabaseOperations.GetUser()
@@ -334,7 +334,7 @@ describe("SyncUser function", () => {
 		})
 
 		// Act
-		await SyncUser()
+		await UserSync()
 
 		// Assert
 		assert.isFalse(Dav.isLoggedIn)
