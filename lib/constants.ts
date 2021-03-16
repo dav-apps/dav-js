@@ -1,5 +1,5 @@
 export const apiBaseUrlDevelopment = "http://localhost:3111/v1"
-export const apiBaseUrlProduction = "https://dav-backend-b4fy9.ondigitalocean.app/v1"
+export const apiBaseUrlProduction = "https://dav-backend-tfpik.ondigitalocean.app/v1"
 export const websiteUrlDevelopment = "http://localhost:3000"
 export const websiteUrlProduction = "https://dav-apps.tech"
 export const defaultProfileImageUrl = "https://davapps.blob.core.windows.net/avatars/default.png"
