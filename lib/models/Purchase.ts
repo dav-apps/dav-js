@@ -1,4 +1,4 @@
-export type Currency = "eur"
+import { Currency } from '../types'
 
 export class Purchase {
 	constructor(

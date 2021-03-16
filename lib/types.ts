@@ -1,6 +1,6 @@
 import { App } from './models/App'
 
-//#region General types
+//#region Generic types
 export enum Environment{
 	Development,
 	Test,
@@ -27,6 +27,8 @@ export interface DatabaseSession{
 	AccessToken: string
 	UploadStatus: SessionUploadStatus
 }
+
+export type Currency = "eur"
 //#endregion
 
 //#region Response types
