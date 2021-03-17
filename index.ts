@@ -6,7 +6,8 @@ export {
 	ApiResponse,
 	ApiErrorResponse,
 	SubscriptionStatus,
-	Property
+	Property,
+	Currency
 } from './lib/types'
 
 // utils
@@ -29,7 +30,7 @@ export { App } from './lib/models/App'
 export { Table } from './lib/models/Table'
 export { TableObject } from './lib/models/TableObject'
 export { Notification } from './lib/models/Notification'
-export { Currency, Purchase } from './lib/models/Purchase'
+export { Purchase } from './lib/models/Purchase'
 export { Api } from './lib/models/Api'
 export { ApiEndpoint } from './lib/models/ApiEndpoint'
 export { ApiFunction } from './lib/models/ApiFunction'
