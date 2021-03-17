@@ -1,9 +1,9 @@
 import { assert } from 'chai'
 import * as moxios from 'moxios'
 import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
+import { ApiResponse, ApiErrorResponse, Currency } from '../../lib/types'
 import * as ErrorCodes from '../../lib/errorCodes'
-import { Currency, Purchase } from '../../lib/models/Purchase'
+import { Purchase } from '../../lib/models/Purchase'
 import { CreatePurchase, GetPurchase, CompletePurchase } from '../../lib/controllers/PurchasesController'
 
 beforeEach(() => {

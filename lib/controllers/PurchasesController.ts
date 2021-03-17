@@ -1,8 +1,8 @@
 import * as axios from 'axios'
 import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse } from '../types'
+import { ApiResponse, ApiErrorResponse, Currency } from '../types'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { Currency, Purchase } from '../models/Purchase'
+import { Purchase } from '../models/Purchase'
 
 export async function CreatePurchase(params: {
 	accessToken?: string,
