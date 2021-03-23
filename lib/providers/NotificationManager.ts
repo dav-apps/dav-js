@@ -149,9 +149,10 @@ export async function NotificationSyncPush() {
 	}
 	isSyncingNotifications = true
 
-	let notifications = await DatabaseOperations.GetAllNotifications()
+	let notifications: Notification[] = await DatabaseOperations.GetAllNotifications()
+	let filteredNotifications = notifications.filter(notification => notification.UploadStatus != GenericUploadStatus.UpToDate).reverse()
 
-	for (let notification of notifications) {
+	for (let notification of filteredNotifications) {
 		switch (notification.UploadStatus) {
 			case GenericUploadStatus.New:
 				// Create the notification on the server
@@ -172,11 +173,11 @@ export async function NotificationSyncPush() {
 						await DatabaseOperations.SetNotification(notification)
 					}
 
-					// Check if the session does not exist
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
+					// Check if title or body is missing
+					i = errors.findIndex(error => error.code == ErrorCodes.TitleMissing || error.code == ErrorCodes.BodyMissing)
 					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
+						// Delete the notification
+						await DatabaseOperations.RemoveNotification(notification.Uuid)
 					}
 				}
 				break
@@ -196,13 +197,6 @@ export async function NotificationSyncPush() {
 					if (i != -1) {
 						// Delete the notification
 						await DatabaseOperations.RemoveNotification(notification.Uuid)
-					}
-
-					// Check if the session does not exist
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
-					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
 					}
 				}
 				break
@@ -225,13 +219,6 @@ export async function NotificationSyncPush() {
 					if (i != -1) {
 						// Delete the notification
 						await DatabaseOperations.RemoveNotification(notification.Uuid)
-					}
-
-					// Check if the session does not exist
-					i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
-					if (i != -1) {
-						// Log the user out
-						await Dav.Logout()
 					}
 				}
 				break
