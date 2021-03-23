@@ -308,7 +308,7 @@ export async function Sync(): Promise<boolean> {
 		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
 
 		// Check if there is a next page
-		currentTablePages[tableId]++
+		currentTablePages.set(tableId, currentTablePages.get(tableId) + 1)
 		if (currentTablePages.get(tableId) > tablePages.get(tableId)) continue
 
 		// Get the next page
