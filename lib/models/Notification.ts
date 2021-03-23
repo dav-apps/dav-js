@@ -67,7 +67,8 @@ export function ConvertObjectArrayToNotifications(objArray: any[]): Notification
 				Time: obj.time,
 				Interval: obj.interval,
 				Title: obj.title,
-				Body: obj.body
+				Body: obj.body,
+				UploadStatus: GenericUploadStatus.UpToDate
 			}))
 		}
 	}
