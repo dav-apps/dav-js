@@ -6,7 +6,8 @@ import {
 	TableObjectProperties,
 	DatabaseTableObject,
 	DatabaseSession,
-	DatabaseUser
+	DatabaseUser,
+	DatabaseNotification
 } from '../types'
 import {
 	sessionKey,
@@ -103,17 +104,19 @@ export async function GetAllNotifications(): Promise<Notification[]> {
 	let key = getNotificationKey()
 
 	try {
-		var notificationsObject = await localforage.startsWith(key) as { [key: string]: Notification }
+		var notificationsObject = await localforage.startsWith(key) as { [key: string]: DatabaseNotification }
 	} catch (error) {
 		console.log(error)
 		return []
 	}
 
-	return Object.values(notificationsObject)
+	return Object.values(notificationsObject).map(notification => ConvertDatabaseNotificationToNotification(notification))
 }
 
 export async function GetNotification(uuid: string): Promise<Notification> {
-	return await localforage.getItem(getNotificationKey(uuid)) as Notification
+	return ConvertDatabaseNotificationToNotification(
+		await localforage.getItem(getNotificationKey(uuid)) as DatabaseNotification
+	)
 }
 
 export async function NotificationExists(uuid: string): Promise<boolean>{
@@ -341,5 +344,18 @@ export function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject
 	}
 
 	return tableObject
+}
+
+export function ConvertDatabaseNotificationToNotification(notification: DatabaseNotification) {
+	if (notification == null) return null
+
+	return new Notification({
+		Uuid: notification.Uuid,
+		Time: notification.Time,
+		Interval: notification.Interval,
+		Title: notification.Title,
+		Body: notification.Body,
+		UploadStatus: notification.UploadStatus
+	})
 }
 //#endregion

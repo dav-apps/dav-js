@@ -128,6 +128,15 @@ export enum TableObjectFileDownloadStatus {
 //#endregion
 
 //#region Notification types
+export interface DatabaseNotification {
+	Uuid: string
+	Time: number
+	Interval: number
+	Title: string
+	Body: string
+	UploadStatus: number
+}
+
 export interface NotificationOptions{
 	icon: string,
 	badge: string
