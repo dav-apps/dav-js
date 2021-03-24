@@ -15,11 +15,7 @@ export {
 	generateUuid
 } from './lib/utils'
 
-// constants
-export {
-	
-} from './lib/constants'
-
+// errorCodes
 import * as ErrorCodes from './lib/errorCodes'
 export { ErrorCodes }
 
@@ -35,7 +31,6 @@ export { Api } from './lib/models/Api'
 export { ApiEndpoint } from './lib/models/ApiEndpoint'
 export { ApiFunction } from './lib/models/ApiFunction'
 export { ApiError } from './lib/models/ApiError'
-
 export { PromiseHolder } from './lib/models/PromiseHolder'
 
 // providers
