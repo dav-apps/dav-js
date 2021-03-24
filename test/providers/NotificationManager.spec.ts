@@ -14,6 +14,7 @@ import * as ErrorCodes from '../../lib/errorCodes'
 import { Dav } from '../../lib/Dav'
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
 import {
+	WebPushSubscriptionSync,
 	WebPushSubscriptionSyncPush,
 	NotificationSync,
 	NotificationSyncPush
@@ -73,6 +74,134 @@ afterEach(async () => {
 			}
 		}
 	}
+})
+
+describe("WebPushSubscriptionSync function", () => {
+	it("should do nothing if there is no WebPushSubscription locally", async () => {
+		// Arrange
+		new Dav({
+			environment: Environment.Test,
+			appId: Constants.testAppId
+		})
+
+		Dav.isLoggedIn = true
+		Dav.accessToken = Constants.testerXTestAppAccessToken
+
+		// Create a WebPushSubscription on the server
+		let uuid = generateUuid()
+		let endpoint = "https://dav-apps.tech"
+		let p256dh = "asdasfasdasdasfpjoasf"
+		let auth = "sghiodhiosdghdios"
+		webPushSubscriptionsToDelete.push(uuid)
+
+		await WebPushSubscriptionsController.CreateWebPushSubscription({
+			accessToken: Constants.testerXTestAppAccessToken,
+			uuid,
+			endpoint,
+			p256dh,
+			auth
+		})
+
+		// Act
+		await WebPushSubscriptionSync()
+
+		// Assert
+		let webPushSubscriptionFromServerResponse = await WebPushSubscriptionsController.GetWebPushSubscription({
+			accessToken: Constants.testerXTestAppAccessToken,
+			uuid
+		})
+		assert.equal(webPushSubscriptionFromServerResponse.status, 200)
+
+		let webPushSubscriptionFromServer = (webPushSubscriptionFromServerResponse as ApiResponse<WebPushSubscription>).data
+		assert.equal(webPushSubscriptionFromServer.Uuid, uuid)
+		assert.equal(webPushSubscriptionFromServer.Endpoint, endpoint)
+		assert.equal(webPushSubscriptionFromServer.P256dh, p256dh)
+		assert.equal(webPushSubscriptionFromServer.Auth, auth)
+	})
+
+	it("should do nothing if the local WebPushSubscription is new", async () => {
+		// Arrange
+		new Dav({
+			environment: Environment.Test,
+			appId: Constants.testAppId
+		})
+
+		Dav.isLoggedIn = true
+		Dav.accessToken = Constants.testerXTestAppAccessToken
+
+		// Create a WebPushSubscription on the server
+		let uuid = generateUuid()
+		let endpoint = "https://dav-apps.tech"
+		let p256dh = "asdasfasdasdasfpjoasf"
+		let auth = "sghiodhiosdghdios"
+		webPushSubscriptionsToDelete.push(uuid)
+
+		await WebPushSubscriptionsController.CreateWebPushSubscription({
+			accessToken: Constants.testerXTestAppAccessToken,
+			uuid,
+			endpoint,
+			p256dh,
+			auth
+		})
+
+		// Create a WebPushSubscription in the database
+		let webPushSubscription = new WebPushSubscription(
+			generateUuid(),
+			"https://endpoint.example.com",
+			"oijafoiadfoadfoadf",
+			"oiahsfoihasdoa",
+			WebPushSubscriptionUploadStatus.New
+		)
+		await DatabaseOperations.SetWebPushSubscription(webPushSubscription)
+
+		// Act
+		await WebPushSubscriptionSync()
+
+		// Assert
+		let webPushSubscriptionFromDatabase = await DatabaseOperations.GetWebPushSubscription()
+		assert.isNotNull(webPushSubscriptionFromDatabase)
+		assert.equal(webPushSubscriptionFromDatabase.UploadStatus, WebPushSubscriptionUploadStatus.New)
+
+		let webPushSubscriptionFromServerResponse = await WebPushSubscriptionsController.GetWebPushSubscription({
+			accessToken: Constants.testerXTestAppAccessToken,
+			uuid
+		})
+		assert.equal(webPushSubscriptionFromServerResponse.status, 200)
+
+		let webPushSubscriptionFromServer = (webPushSubscriptionFromServerResponse as ApiResponse<WebPushSubscription>).data
+		assert.equal(webPushSubscriptionFromServer.Uuid, uuid)
+		assert.equal(webPushSubscriptionFromServer.Endpoint, endpoint)
+		assert.equal(webPushSubscriptionFromServer.P256dh, p256dh)
+		assert.equal(webPushSubscriptionFromServer.Auth, auth)
+	})
+
+	it("should delete the local WebPushSubscription if it does not exist on the server", async () => {
+		// Arrange
+		new Dav({
+			environment: Environment.Test,
+			appId: Constants.testAppId
+		})
+
+		Dav.isLoggedIn = true
+		Dav.accessToken = Constants.testerXTestAppAccessToken
+
+		// Create a WebPushSubscription in the database
+		let webPushSubscription = new WebPushSubscription(
+			generateUuid(),
+			"https://endpoint.example.com",
+			"oijafoiadfoadfoadf",
+			"oiahsfoihasdoa",
+			WebPushSubscriptionUploadStatus.UpToDate
+		)
+		await DatabaseOperations.SetWebPushSubscription(webPushSubscription)
+
+		// Act
+		await WebPushSubscriptionSync()
+
+		// Assert
+		let webPushSubscriptionFromDatabase = await DatabaseOperations.GetWebPushSubscription()
+		assert.isNull(webPushSubscriptionFromDatabase)
+	})
 })
 
 describe("WebPushSubscriptionSyncPush function", () => {
