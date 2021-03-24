@@ -18,7 +18,7 @@ import * as ErrorCodes from '../errorCodes'
 import * as DatabaseOperations from './DatabaseOperations'
 import { WebPushSubscription } from '../models/WebPushSubscription'
 import { Notification } from '../models/Notification'
-import { CreateWebPushSubscription } from '../controllers/WebPushSubscriptionsController'
+import * as WebPushSubscriptionsController from '../controllers/WebPushSubscriptionsController'
 import {
 	CreateNotification,
 	GetNotifications,
@@ -68,6 +68,40 @@ export async function SetupWebPushSubscription(): Promise<boolean> {
 	WebPushSubscriptionSyncPush()
 
 	return true
+}
+
+export async function WebPushSubscriptionSync() {
+	if (Dav.accessToken == null || isSyncingWebPushSubscription) return
+	isSyncingWebPushSubscription = true
+
+	// Get the WebPushSubscription from the database
+	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
+	if (
+		webPushSubscription == null
+		|| webPushSubscription.UploadStatus == WebPushSubscriptionUploadStatus.New
+	) {
+		isSyncingWebPushSubscription = false
+		return
+	}
+
+	// Check if the web push subscription still exists on the server
+	let webPushSubscriptionResponse = await WebPushSubscriptionsController.GetWebPushSubscription({
+		uuid: webPushSubscription.Uuid
+	})
+
+	if (webPushSubscriptionResponse.status != 200) {
+		let errors = (webPushSubscriptionResponse as ApiErrorResponse).errors
+
+		if (errors != null) {
+			let i = errors.findIndex(error => error.code == ErrorCodes.WebPushSubscriptionDoesNotExist)
+			if (i != -1) {
+				// Delete the web push subscription locally
+				await DatabaseOperations.RemoveWebPushSubscription()
+			}
+		}
+	}
+
+	isSyncingWebPushSubscription = false
 }
 
 export async function WebPushSubscriptionSyncPush() {
@@ -239,7 +273,7 @@ async function CreateWebPushSubscriptionOnServer(
 ): Promise<{success: boolean, message: WebPushSubscription | ApiErrorResponse}> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 	
-	const createWebPushSubscriptionResponse = await CreateWebPushSubscription({
+	const createWebPushSubscriptionResponse = await WebPushSubscriptionsController.CreateWebPushSubscription({
 		uuid: webPushSubscription.Uuid,
 		endpoint: webPushSubscription.Endpoint,
 		p256dh: webPushSubscription.P256dh,

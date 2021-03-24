@@ -151,6 +151,7 @@ export class Dav {
 		SyncManager.DownloadFiles()
 
 		// Sync the web push subscription and notifications
+		await NotificationManager.WebPushSubscriptionSync()
 		await NotificationManager.WebPushSubscriptionSyncPush()
 		await NotificationManager.NotificationSync()
 		await NotificationManager.NotificationSyncPush()
