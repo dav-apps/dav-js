@@ -72,6 +72,7 @@ export class Dav {
 	static skipSyncPushInTests: boolean = true
 
 	private static isSyncing = false
+	private static isLoadingUser = false
 
 	constructor(params?: {
 		environment?: Environment,
@@ -107,12 +108,12 @@ export class Dav {
 		// Init the service worker
 		SyncManager.InitServiceWorker()
 
-		Dav.StartSync()
+		Dav.LoadUser().then(() => Dav.SyncData())
 	}
 
-	private static async StartSync() {
-		if (this.isSyncing) return
-		this.isSyncing = true
+	private static async LoadUser() {
+		if (this.isLoadingUser) return
+		this.isLoadingUser = true
 
 		// Get the access token from the database
 		let session = await DatabaseOperations.GetSession()
@@ -122,16 +123,23 @@ export class Dav {
 			|| session.AccessToken == null
 			|| session.UploadStatus == SessionUploadStatus.Deleted
 		) {
-			if (Dav.callbacks.UserLoaded) Dav.callbacks.UserLoaded()
+			if (this.callbacks.UserLoaded) this.callbacks.UserLoaded()
 			await SyncManager.SessionSyncPush()
-			this.isSyncing = false
+			this.isLoadingUser = false
 			return
 		}
-		Dav.isLoggedIn = true
-		Dav.accessToken = session.AccessToken
+		this.isLoggedIn = true
+		this.accessToken = session.AccessToken
 
 		// Load the user
 		await SyncManager.LoadUser()
+
+		this.isLoadingUser = false
+	}
+
+	private static async SyncData() {
+		if (!this.isLoggedIn || this.isSyncing) return
+		this.isSyncing = true
 
 		// Sync the user
 		if (!await SyncManager.UserSync()) {
@@ -156,7 +164,7 @@ export class Dav {
 		await NotificationManager.NotificationSync()
 		await NotificationManager.NotificationSyncPush()
 
-		if (Dav.callbacks.SyncFinished) Dav.callbacks.SyncFinished()
+		if (this.callbacks.SyncFinished) this.callbacks.SyncFinished()
 		this.isSyncing = false
 	}
 
@@ -165,12 +173,13 @@ export class Dav {
 
 		// Save the access token in the database
 		await DatabaseOperations.SetSession({ AccessToken: accessToken, UploadStatus: SessionUploadStatus.UpToDate })
-		this.StartSync()
+		await this.LoadUser()
+		this.SyncData()
 	}
 
 	static async Logout() {
-		Dav.accessToken = null
-		Dav.isLoggedIn = false
+		this.accessToken = null
+		this.isLoggedIn = false
 
 		// Close the websocket connection
 		SyncManager.CloseWebsocketConnection()
