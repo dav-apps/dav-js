@@ -2,6 +2,7 @@ import * as axios from 'axios'
 import { Dav } from '../Dav'
 import { ApiResponse, ApiErrorResponse, Currency } from '../types'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
+import { Auth } from '../models/Auth'
 import { Purchase } from '../models/Purchase'
 
 export async function CreatePurchase(params: {
@@ -61,7 +62,7 @@ export async function CreatePurchase(params: {
 }
 
 export async function GetPurchase(params: {
-	accessToken?: string,
+	auth: Auth,
 	id: number
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
@@ -69,7 +70,7 @@ export async function GetPurchase(params: {
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/purchase/${params.id}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization: params.auth.token
 			}
 		})
 
@@ -90,17 +91,7 @@ export async function GetPurchase(params: {
 			}
 		}
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let result = await HandleApiError(error)
-
-		if (typeof result == "string") {
-			return await GetPurchase(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return ConvertErrorToApiErrorResponse(error)
 	}
 }
 
