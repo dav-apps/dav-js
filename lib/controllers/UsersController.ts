@@ -365,6 +365,29 @@ export async function GetProfileImageOfUser(params?: {
 	}
 }
 
+export async function GetProfileImageOfUserById(params: {
+	auth: Auth,
+	id: number
+}): Promise<ApiResponse<Blob> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'get',
+			url: `${Dav.apiBaseUrl}/user/${params.id}/profile_image`,
+			headers: {
+				Authorization: params.auth.token
+			},
+			responseType: 'blob'
+		})
+
+		return {
+			status: response.status,
+			data: response.data as Blob
+		}
+	} catch (error) {
+		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
 export async function CreateStripeCustomerForUser(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
