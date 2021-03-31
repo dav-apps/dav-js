@@ -445,14 +445,17 @@ export async function SendConfirmationEmail(params: {
 
 export async function SendPasswordResetEmail(params: {
 	auth: Auth,
-	id: number
+	email: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
-			url: `${Dav.apiBaseUrl}/user/${params.id}/send_password_reset_email`,
+			url: `${Dav.apiBaseUrl}/user/send_password_reset_email`,
 			headers: {
 				Authorization: params.auth.token
+			},
+			data: {
+				email: params.email
 			}
 		})
 

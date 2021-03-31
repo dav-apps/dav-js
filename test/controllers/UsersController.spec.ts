@@ -1540,9 +1540,9 @@ describe("SendConfirmationEmail function", () => {
 describe("SendPasswordResetEmail function", () => {
 	it("should call sendPasswordResetEmail endpoint", async () => {
 		// Arrange
-		let id = 123
+		let email = "test@example.com"
 
-		let url = `${Dav.apiBaseUrl}/user/${id}/send_password_reset_email`
+		let url = `${Dav.apiBaseUrl}/user/send_password_reset_email`
 
 		let expectedResult: ApiResponse<{}> = {
 			status: 204,
@@ -1557,6 +1557,9 @@ describe("SendPasswordResetEmail function", () => {
 			assert.equal(request.config.method, 'post')
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.email, email)
+
 			request.respondWith({
 				status: expectedResult.status,
 				response: {}
@@ -1566,7 +1569,7 @@ describe("SendPasswordResetEmail function", () => {
 		// Act
 		let result = await SendPasswordResetEmail({
 			auth: davDevAuth,
-			id
+			email
 		}) as ApiResponse<{}>
 
 		// Assert for the response
@@ -1575,9 +1578,9 @@ describe("SendPasswordResetEmail function", () => {
 
 	it("should call sendPasswordResetEmail endpoint with error", async () => {
 		// Arrange
-		let id = 123
+		let email = "test@example.com"
 
-		let url = `${Dav.apiBaseUrl}/user/${id}/send_password_reset_email`
+		let url = `${Dav.apiBaseUrl}/user/send_password_reset_email`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -1595,6 +1598,9 @@ describe("SendPasswordResetEmail function", () => {
 			assert.equal(request.config.method, 'post')
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
+			let data = JSON.parse(request.config.data)
+			assert.equal(data.email, email)
+
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
@@ -1609,7 +1615,7 @@ describe("SendPasswordResetEmail function", () => {
 		// Act
 		let result = await SendPasswordResetEmail({
 			auth: davDevAuth,
-			id
+			email
 		}) as ApiErrorResponse
 
 		// Assert for the response
