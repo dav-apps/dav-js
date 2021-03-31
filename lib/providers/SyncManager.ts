@@ -113,7 +113,10 @@ export async function LoadUser() {
 }
 
 export async function UserSync(): Promise<boolean> {
-	if (Dav.accessToken == null) return false
+	if (Dav.accessToken == null) {
+		if (Dav.callbacks.UserDownloaded) Dav.callbacks.UserDownloaded()
+		return false
+	}
 
 	// Get the user
 	let getUserResponse = await GetUser()

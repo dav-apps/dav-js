@@ -10,14 +10,20 @@ export {
 	Currency
 } from './lib/types'
 
-// utils
+// constants
 export {
-	generateUuid
-} from './lib/utils'
+	defaultProfileImageUrl
+} from './lib/constants'
 
 // errorCodes
 import * as ErrorCodes from './lib/errorCodes'
 export { ErrorCodes }
+
+// utils
+export {
+	generateUuid,
+	BlobToBase64
+} from './lib/utils'
 
 // models
 export { Auth } from './lib/models/Auth'

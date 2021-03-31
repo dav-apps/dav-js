@@ -138,7 +138,10 @@ export class Dav {
 	}
 
 	private static async SyncData() {
-		if (!this.isLoggedIn || this.isSyncing) return
+		if (!this.isLoggedIn || this.isSyncing) {
+			if (this.callbacks.UserDownloaded) this.callbacks.UserDownloaded()
+			return
+		}
 		this.isSyncing = true
 
 		// Sync the user
