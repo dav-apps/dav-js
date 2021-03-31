@@ -15,6 +15,7 @@ export class User {
 		public PeriodEnd: Date,
 		public Dev: boolean,
 		public Provider: boolean,
+		public ProfileImage: string,
 		public ProfileImageEtag: string,
 		public Apps: App[] = []
 	) { }

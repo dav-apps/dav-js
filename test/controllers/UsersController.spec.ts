@@ -55,6 +55,7 @@ describe("Signup function", () => {
 		let periodEnd = null
 		let dev = false
 		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
 		let profileImageEtag = null
 		let accessToken = "iasdho9h393iuasbad"
 		let websiteAccessToken = "0hef9oh8risohfwg8r39rzq3"
@@ -77,6 +78,7 @@ describe("Signup function", () => {
 					periodEnd,
 					dev,
 					provider,
+					profileImage,
 					profileImageEtag,
 					[]
 				),
@@ -120,6 +122,7 @@ describe("Signup function", () => {
 						period_end: periodEnd,
 						dev,
 						provider,
+						profile_image: profileImage,
 						profile_image_etag: profileImageEtag,
 						apps: []
 					},
@@ -156,6 +159,7 @@ describe("Signup function", () => {
 		assert.equal(result.data.user.PeriodEnd, expectedResult.data.user.PeriodEnd)
 		assert.equal(result.data.user.Dev, expectedResult.data.user.Dev)
 		assert.equal(result.data.user.Provider, expectedResult.data.user.Provider)
+		assert.equal(result.data.user.ProfileImage, expectedResult.data.user.ProfileImage)
 		assert.equal(result.data.user.ProfileImageEtag, expectedResult.data.user.ProfileImageEtag)
 		assert.equal(result.data.user.Apps.length, expectedResult.data.user.Apps.length)
 		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
@@ -512,6 +516,7 @@ describe("GetUser function", () => {
 		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
 		let dev = false
 		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
 		let profileImageEtag = "shodfhosidf"
 		let appId = 23
 		let appName = "TestApp"
@@ -540,6 +545,7 @@ describe("GetUser function", () => {
 				periodEnd,
 				dev,
 				provider,
+				profileImage,
 				profileImageEtag,
 				[
 					new App(
@@ -578,6 +584,7 @@ describe("GetUser function", () => {
 					period_end: periodEnd,
 					dev,
 					provider,
+					profile_image: profileImage,
 					profile_image_etag: profileImageEtag,
 					apps: [{
 						id: appId,
@@ -609,6 +616,7 @@ describe("GetUser function", () => {
 		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
 		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
 
 		assert.equal(result.data.Apps.length, 1)
@@ -677,6 +685,7 @@ describe("GetUser function", () => {
 		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
 		let dev = false
 		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
 		let profileImageEtag = "sfgosodgsfiod"
 		let appId = 23
 		let appName = "TestApp"
@@ -706,6 +715,7 @@ describe("GetUser function", () => {
 				periodEnd,
 				dev,
 				provider,
+				profileImage,
 				profileImageEtag,
 				[
 					new App(
@@ -782,6 +792,7 @@ describe("GetUser function", () => {
 					period_end: periodEnd,
 					dev,
 					provider,
+					profile_image: profileImage,
 					profile_image_etag: profileImageEtag,
 					apps: [{
 						id: appId,
@@ -813,6 +824,7 @@ describe("GetUser function", () => {
 		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
 		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
 
 		assert.equal(result.data.Apps.length, 1)
@@ -841,6 +853,7 @@ describe("GetUserById function", () => {
 		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
 		let dev = false
 		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
 		let profileImageEtag = "sghiodsiodg"
 		let appId = 23
 		let appName = "TestApp"
@@ -867,6 +880,7 @@ describe("GetUserById function", () => {
 				periodEnd,
 				dev,
 				provider,
+				profileImage,
 				profileImageEtag,
 				[
 					new App(
@@ -905,6 +919,7 @@ describe("GetUserById function", () => {
 					period_end: periodEnd,
 					dev,
 					provider,
+					profile_image: profileImage,
 					profile_image_etag: profileImageEtag,
 					apps: [{
 						id: appId,
@@ -936,6 +951,7 @@ describe("GetUserById function", () => {
 		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
 		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
 
 		assert.equal(result.data.Apps.length, 1)
@@ -1005,6 +1021,7 @@ describe("UpdateUser function", () => {
 		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
 		let dev = false
 		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
 		let profileImageEtag = "sghiodsgdsgiod"
 
 		let newFirstName = "UpdatedTestUser"
@@ -1030,6 +1047,7 @@ describe("UpdateUser function", () => {
 				periodEnd,
 				dev,
 				provider,
+				profileImage,
 				profileImageEtag
 			)
 		}
@@ -1063,6 +1081,7 @@ describe("UpdateUser function", () => {
 					period_end: periodEnd,
 					dev,
 					provider,
+					profile_image: profileImage,
 					profile_image_etag: profileImageEtag
 				}
 			})
@@ -1089,6 +1108,7 @@ describe("UpdateUser function", () => {
 		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
 		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
 	})
 
@@ -1161,6 +1181,7 @@ describe("UpdateUser function", () => {
 		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
 		let dev = false
 		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
 		let profileImageEtag = "ioshdhiosgd"
 
 		let newFirstName = "UpdatedTestUser"
@@ -1187,6 +1208,7 @@ describe("UpdateUser function", () => {
 				periodEnd,
 				dev,
 				provider,
+				profileImage,
 				profileImageEtag
 			)
 		}
@@ -1264,6 +1286,7 @@ describe("UpdateUser function", () => {
 					period_end: periodEnd,
 					dev,
 					provider,
+					profile_image: profileImage,
 					profile_image_etag: profileImageEtag
 				}
 			})
@@ -1290,6 +1313,7 @@ describe("UpdateUser function", () => {
 		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
 		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
 	})
 })

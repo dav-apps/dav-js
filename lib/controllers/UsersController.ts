@@ -76,6 +76,7 @@ export async function Signup(params: {
 					null,
 					response.data.user.dev,
 					response.data.user.provider,
+					response.data.user.profile_image,
 					response.data.user.profile_image_etag,
 					[]
 				),
@@ -164,6 +165,7 @@ export async function GetUser(params?: {
 				periodEnd,
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image,
 				response.data.profile_image_etag,
 				ConvertObjectArrayToApps(response.data.apps)
 			)
@@ -211,6 +213,7 @@ export async function GetUserById(params: {
 				response.data.period_end,
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image,
 				response.data.profile_image_etag,
 				ConvertObjectArrayToApps(response.data.apps)
 			)
@@ -256,6 +259,7 @@ export async function UpdateUser(params: {
 				response.data.period_end == null ? null : new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image,
 				response.data.profile_image_etag,
 				[]
 			)
@@ -314,6 +318,7 @@ export async function SetProfileImageOfUser(params: {
 				response.data.period_end == null ? null : new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
+				response.data.profile_image,
 				response.data.profile_image_etag,
 				[]
 			)
