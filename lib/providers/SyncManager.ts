@@ -491,9 +491,9 @@ export async function StartWebsocketConnection() {
 
 		let json = JSON.stringify({
 			command: "subscribe",
-			identifier: {
+			identifier: JSON.stringify({
 				channel: tableObjectUpdateChannelName
-			}
+			})
 		})
 		webSocket.send(json)
 	}
