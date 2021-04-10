@@ -26,6 +26,9 @@ describe("CreateTableObject function", () => {
 		let uuid = "cc229955-1e1f-4dc2-8e42-6d265df4bc65"
 		let tableId = 52
 		let file = false
+		let etag = "asodashoishoda"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "page1"
 		let firstPropertyValue = "Hello World"
 		let secondPropertyName = "page2"
@@ -35,6 +38,9 @@ describe("CreateTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			IsFile: file,
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue },
 				[secondPropertyName]: { value: secondPropertyValue }
@@ -74,7 +80,9 @@ describe("CreateTableObject function", () => {
 					table_id: tableId,
 					uuid,
 					file,
-					etag: "asdasaassadasd",
+					etag,
+					belongs_to_user: belongsToUser,
+					purchase,
 					properties: {
 						[firstPropertyName]: firstPropertyValue,
 						[secondPropertyName]: secondPropertyValue
@@ -99,6 +107,9 @@ describe("CreateTableObject function", () => {
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
+		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
 		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
 		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
 		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
@@ -175,6 +186,9 @@ describe("CreateTableObject function", () => {
 		let uuid = "cc229955-1e1f-4dc2-8e42-6d265df4bc65"
 		let tableId = 52
 		let file = false
+		let etag = "dsfhosdfhosfd"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "page1"
 		let firstPropertyValue = "Hello World"
 		let secondPropertyName = "page2"
@@ -184,6 +198,9 @@ describe("CreateTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			IsFile: file,
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue },
 				[secondPropertyName]: { value: secondPropertyValue }
@@ -270,7 +287,9 @@ describe("CreateTableObject function", () => {
 					table_id: tableId,
 					uuid,
 					file,
-					etag: "asdasaassadasd",
+					etag,
+					belongs_to_user: belongsToUser,
+					purchase,
 					properties: {
 						[firstPropertyName]: firstPropertyValue,
 						[secondPropertyName]: secondPropertyValue
@@ -295,6 +314,9 @@ describe("CreateTableObject function", () => {
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
+		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
 		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
 		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
 		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
@@ -307,6 +329,9 @@ describe("GetTableObject function", () => {
 		let uuid = "9491bd47-8d1f-4172-b290-c89a58f354dc"
 		let tableId = 52
 		let file = false
+		let etag = "iosdfhiosdhoisdf"
+		let belongsToUser = false
+		let purchase = "sdfksdklfjsdlfk"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 42
 		let secondPropertyName = "test2"
@@ -316,6 +341,9 @@ describe("GetTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			IsFile: file,
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue },
 				[secondPropertyName]: { value: secondPropertyValue }
@@ -347,7 +375,9 @@ describe("GetTableObject function", () => {
 					table_id: tableId,
 					uuid,
 					file,
-					etag: "asdasaassadasd",
+					etag,
+					belongs_to_user: belongsToUser,
+					purchase,
 					properties: {
 						[firstPropertyName]: firstPropertyValue,
 						[secondPropertyName]: secondPropertyValue
@@ -366,6 +396,9 @@ describe("GetTableObject function", () => {
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
+		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
 		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
 		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
 		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
@@ -422,6 +455,9 @@ describe("GetTableObject function", () => {
 		let uuid = "9491bd47-8d1f-4172-b290-c89a58f354dc"
 		let tableId = 52
 		let file = false
+		let etag = "iosdfhiosdfhiosdf"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 42
 		let secondPropertyName = "test2"
@@ -431,6 +467,9 @@ describe("GetTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			IsFile: file,
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue },
 				[secondPropertyName]: { value: secondPropertyValue }
@@ -501,7 +540,9 @@ describe("GetTableObject function", () => {
 					table_id: tableId,
 					uuid,
 					file,
-					etag: "asdasaassadasd",
+					etag,
+					belongs_to_user: belongsToUser,
+					purchase,
 					properties: {
 						[firstPropertyName]: firstPropertyValue,
 						[secondPropertyName]: secondPropertyValue
@@ -520,6 +561,9 @@ describe("GetTableObject function", () => {
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
+		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
 		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
 		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
 		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
@@ -532,6 +576,9 @@ describe("UpdateTableObject function", () => {
 		let uuid = "9491bd47-8d1f-4172-b290-c89a58f354dc"
 		let tableId = 52
 		let file = false
+		let etag = "shodhsdfhosdf"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 42
 		let secondPropertyName = "test2"
@@ -541,6 +588,9 @@ describe("UpdateTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			IsFile: file,
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue },
 				[secondPropertyName]: { value: secondPropertyValue }
@@ -577,7 +627,9 @@ describe("UpdateTableObject function", () => {
 					table_id: tableId,
 					uuid,
 					file,
-					etag: "asdasaassadasd",
+					etag,
+					belongs_to_user: belongsToUser,
+					purchase,
 					properties: {
 						[firstPropertyName]: firstPropertyValue,
 						[secondPropertyName]: secondPropertyValue
@@ -600,6 +652,9 @@ describe("UpdateTableObject function", () => {
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
+		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
 		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
 		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
 		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
@@ -669,6 +724,9 @@ describe("UpdateTableObject function", () => {
 		let uuid = "9491bd47-8d1f-4172-b290-c89a58f354dc"
 		let tableId = 52
 		let file = false
+		let etag = "osdfhsodhsdfs"
+		let belongsToUser = false
+		let purchase = "iosdhhsdfoisfhiosd"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 42
 		let secondPropertyName = "test2"
@@ -678,6 +736,9 @@ describe("UpdateTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			IsFile: file,
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue },
 				[secondPropertyName]: { value: secondPropertyValue }
@@ -758,7 +819,9 @@ describe("UpdateTableObject function", () => {
 					table_id: tableId,
 					uuid,
 					file,
-					etag: "asdasaassadasd",
+					etag,
+					belongs_to_user: belongsToUser,
+					purchase,
 					properties: {
 						[firstPropertyName]: firstPropertyValue,
 						[secondPropertyName]: secondPropertyValue
@@ -781,6 +844,9 @@ describe("UpdateTableObject function", () => {
 		assert.equal(result.data.TableId, expectedResult.data.TableId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
+		assert.equal(result.data.Etag, expectedResult.data.Etag)
+		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
+		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
 		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
 		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
 		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))

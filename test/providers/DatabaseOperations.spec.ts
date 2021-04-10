@@ -622,6 +622,8 @@ describe("SetTableObject function", () => {
 		let tableId = 13
 		let uploadStatus = TableObjectUploadStatus.Removed
 		let etag = "asdasdasd"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "page1"
 		let firstPropertyValue = "Hello World"
 		let secondPropertyName = "page2"
@@ -632,6 +634,8 @@ describe("SetTableObject function", () => {
 		tableObject.TableId = tableId
 		tableObject.UploadStatus = uploadStatus
 		tableObject.Etag = etag
+		tableObject.BelongsToUser = belongsToUser
+		tableObject.Purchase = purchase
 		tableObject.Properties = {
 			[firstPropertyName]: { value: firstPropertyValue },
 			[secondPropertyName]: { value: secondPropertyValue }
@@ -648,6 +652,8 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
@@ -660,6 +666,8 @@ describe("SetTableObject function", () => {
 		let tableId = 13
 		let uploadStatus = TableObjectUploadStatus.Removed
 		let etag = "asdasdasd"
+		let belongsToUser = false
+		let purchase = "sdfhiosdfhiosdfosdf"
 		let firstPropertyName = "page1"
 		let firstPropertyValue = 123
 		let secondPropertyName = "page2"
@@ -670,6 +678,8 @@ describe("SetTableObject function", () => {
 		tableObject.TableId = tableId
 		tableObject.UploadStatus = uploadStatus
 		tableObject.Etag = etag
+		tableObject.BelongsToUser = belongsToUser
+		tableObject.Purchase = purchase
 		tableObject.Properties = {
 			[firstPropertyName]: { value: firstPropertyValue },
 			[secondPropertyName]: { value: secondPropertyValue }
@@ -686,6 +696,8 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
@@ -702,6 +714,8 @@ describe("SetTableObject function", () => {
 		firstTableObject.TableId = tableId
 		firstTableObject.UploadStatus = TableObjectUploadStatus.Deleted
 		firstTableObject.Etag = "adsasdasd"
+		firstTableObject.BelongsToUser = true
+		firstTableObject.Purchase = null
 		firstTableObject.Properties = {
 			"test": { value: "Hallo Welt" }
 		}
@@ -710,6 +724,8 @@ describe("SetTableObject function", () => {
 
 		let uploadStatus = TableObjectUploadStatus.New
 		let etag = "Lorem ipsum dolor sit amet"
+		let belongsToUser = false
+		let purchase = "shiodfhoisdfsdf"
 		let firstPropertyName = "page1"
 		let firstPropertyValue = "Guten Tag"
 		let secondPropertyName = "page2"
@@ -720,6 +736,8 @@ describe("SetTableObject function", () => {
 		secondTableObject.TableId = tableId
 		secondTableObject.UploadStatus = uploadStatus
 		secondTableObject.Etag = etag
+		secondTableObject.BelongsToUser = belongsToUser
+		secondTableObject.Purchase = purchase
 		secondTableObject.Properties = {
 			[firstPropertyName]: { value: firstPropertyValue },
 			[secondPropertyName]: { value: secondPropertyValue }
@@ -737,6 +755,8 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
@@ -753,6 +773,8 @@ describe("SetTableObject function", () => {
 		firstTableObject.TableId = tableId
 		firstTableObject.UploadStatus = TableObjectUploadStatus.Deleted
 		firstTableObject.Etag = "adsasdasd"
+		firstTableObject.BelongsToUser = false
+		firstTableObject.Purchase = "dfhosidshodif"
 		firstTableObject.Properties = {
 			"test": { value: 9203 }
 		}
@@ -761,6 +783,8 @@ describe("SetTableObject function", () => {
 
 		let uploadStatus = TableObjectUploadStatus.New
 		let etag = "Lorem ipsum dolor sit amet"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "page1"
 		let firstPropertyValue = true
 		let secondPropertyName = "page2"
@@ -771,6 +795,8 @@ describe("SetTableObject function", () => {
 		secondTableObject.TableId = tableId
 		secondTableObject.UploadStatus = uploadStatus
 		secondTableObject.Etag = etag
+		secondTableObject.BelongsToUser = belongsToUser
+		secondTableObject.Purchase = purchase
 		secondTableObject.Properties = {
 			[firstPropertyName]: { value: firstPropertyValue },
 			[secondPropertyName]: { value: secondPropertyValue }
@@ -788,6 +814,8 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
@@ -811,12 +839,16 @@ describe("SetTableObject function", () => {
 
 		let uploadStatus = TableObjectUploadStatus.UpToDate
 		let etag = "Lorem ipsum dolor sit amet"
+		let belongsToUser = true
+		let purchase = null
 
 		let firstTableObject = new TableObject()
 		firstTableObject.Uuid = uuid
 		firstTableObject.TableId = tableId
 		firstTableObject.UploadStatus = TableObjectUploadStatus.Deleted
 		firstTableObject.Etag = "adsasdasd"
+		firstTableObject.BelongsToUser = belongsToUser
+		firstTableObject.Purchase = purchase
 		firstTableObject.Properties = {
 			[firstLocalPropertyName]: { value: firstLocalPropertyValue, local: true },
 			[firstPropertyName]: { value: "asdadsasd" },
@@ -831,6 +863,8 @@ describe("SetTableObject function", () => {
 		secondTableObject.TableId = tableId
 		secondTableObject.UploadStatus = uploadStatus
 		secondTableObject.Etag = etag
+		secondTableObject.BelongsToUser = belongsToUser
+		secondTableObject.Purchase = purchase
 		secondTableObject.Properties = {
 			[firstPropertyName]: { value: firstPropertyValue },
 			[secondPropertyName]: { value: secondPropertyValue }
@@ -848,6 +882,8 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 4)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
@@ -875,12 +911,16 @@ describe("SetTableObject function", () => {
 
 		let uploadStatus = TableObjectUploadStatus.UpToDate
 		let etag = "Lorem ipsum dolor sit amet"
+		let belongsToUser = false
+		let purchase = "hiosdhodfosdf"
 
 		let firstTableObject = new TableObject()
 		firstTableObject.Uuid = uuid
 		firstTableObject.TableId = tableId
 		firstTableObject.UploadStatus = TableObjectUploadStatus.Deleted
 		firstTableObject.Etag = "adsasdasd"
+		firstTableObject.BelongsToUser = belongsToUser
+		firstTableObject.Purchase = purchase
 		firstTableObject.Properties = {
 			[firstLocalPropertyName]: { value: firstLocalPropertyValue, local: true },
 			[firstPropertyName]: { value: 9874 },
@@ -895,6 +935,8 @@ describe("SetTableObject function", () => {
 		secondTableObject.TableId = tableId
 		secondTableObject.UploadStatus = uploadStatus
 		secondTableObject.Etag = etag
+		secondTableObject.BelongsToUser = belongsToUser
+		secondTableObject.Purchase = purchase
 		secondTableObject.Properties = {
 			[firstPropertyName]: { value: firstPropertyValue },
 			[secondPropertyName]: { value: secondPropertyValue }
@@ -912,6 +954,8 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 4)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
@@ -938,6 +982,12 @@ describe("SetTableObjects function", () => {
 		let etag1 = "asdasd"
 		let etag2 = "werwerwer"
 		let etag3 = "ojsdfnsdfons"
+		let belongsToUser1 = true
+		let belongsToUser2 = false
+		let belongsToUser3 = false
+		let purchase1 = null
+		let purchase2 = null
+		let purchase3 = "hiodfhosdhosdf"
 
 		let firstPropertyName1 = "page1"
 		let firstPropertyValue1 = "Hello World"
@@ -958,6 +1008,8 @@ describe("SetTableObjects function", () => {
 		firstTableObject.TableId = tableId1
 		firstTableObject.UploadStatus = uploadStatus1
 		firstTableObject.Etag = etag1
+		firstTableObject.BelongsToUser = belongsToUser1
+		firstTableObject.Purchase = purchase1
 		firstTableObject.Properties = {
 			[firstPropertyName1]: { value: firstPropertyValue1 },
 			[secondPropertyName1]: { value: secondPropertyValue1 }
@@ -968,6 +1020,8 @@ describe("SetTableObjects function", () => {
 		secondTableObject.TableId = tableId2
 		secondTableObject.UploadStatus = uploadStatus2
 		secondTableObject.Etag = etag2
+		secondTableObject.BelongsToUser = belongsToUser2
+		secondTableObject.Purchase = purchase2
 		secondTableObject.Properties = {
 			[firstPropertyName2]: { value: firstPropertyValue2 },
 			[secondPropertyName2]: { value: secondPropertyValue2 }
@@ -978,6 +1032,8 @@ describe("SetTableObjects function", () => {
 		thirdTableObject.TableId = tableId3
 		thirdTableObject.UploadStatus = uploadStatus3
 		thirdTableObject.Etag = etag3
+		thirdTableObject.BelongsToUser = belongsToUser3
+		thirdTableObject.Purchase = purchase3
 		thirdTableObject.Properties = {
 			[firstPropertyName3]: { value: firstPropertyValue3 },
 			[secondPropertyName3]: { value: secondPropertyValue3 }
@@ -1001,6 +1057,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, uploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, etag1)
+		assert.equal(firstTableObjectFromDatabase.BelongsToUser, belongsToUser1)
+		assert.equal(firstTableObjectFromDatabase.Purchase, purchase1)
 
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
@@ -1011,6 +1069,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, uploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, etag2)
+		assert.equal(secondTableObjectFromDatabase.BelongsToUser, belongsToUser2)
+		assert.equal(secondTableObjectFromDatabase.Purchase, purchase2)
 
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
@@ -1021,6 +1081,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(thirdTableObjectFromDatabase.TableId, tableId3)
 		assert.equal(thirdTableObjectFromDatabase.UploadStatus, uploadStatus3)
 		assert.equal(thirdTableObjectFromDatabase.Etag, etag3)
+		assert.equal(thirdTableObjectFromDatabase.BelongsToUser, belongsToUser3)
+		assert.equal(thirdTableObjectFromDatabase.Purchase, purchase3)
 
 		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(thirdTableObjectFromDatabase.Properties[firstPropertyName3].value, firstPropertyValue3)
@@ -1041,6 +1103,12 @@ describe("SetTableObjects function", () => {
 		let etag1 = "asdasd"
 		let etag2 = "werwerwer"
 		let etag3 = "ojsdfnsdfons"
+		let belongsToUser1 = true
+		let belongsToUser2 = false
+		let belongsToUser3 = false
+		let purchase1 = null
+		let purchase2 = null
+		let purchase3 = "hiodfhosdhosdf"
 
 		let firstPropertyName1 = "page1"
 		let firstPropertyValue1 = 123
@@ -1061,6 +1129,8 @@ describe("SetTableObjects function", () => {
 		firstTableObject.TableId = tableId1
 		firstTableObject.UploadStatus = uploadStatus1
 		firstTableObject.Etag = etag1
+		firstTableObject.BelongsToUser = belongsToUser1
+		firstTableObject.Purchase = purchase1
 		firstTableObject.Properties = {
 			[firstPropertyName1]: { value: firstPropertyValue1 },
 			[secondPropertyName1]: { value: secondPropertyValue1 }
@@ -1071,6 +1141,8 @@ describe("SetTableObjects function", () => {
 		secondTableObject.TableId = tableId2
 		secondTableObject.UploadStatus = uploadStatus2
 		secondTableObject.Etag = etag2
+		secondTableObject.BelongsToUser = belongsToUser2
+		secondTableObject.Purchase = purchase2
 		secondTableObject.Properties = {
 			[firstPropertyName2]: { value: firstPropertyValue2 },
 			[secondPropertyName2]: { value: secondPropertyValue2 }
@@ -1081,6 +1153,8 @@ describe("SetTableObjects function", () => {
 		thirdTableObject.TableId = tableId3
 		thirdTableObject.UploadStatus = uploadStatus3
 		thirdTableObject.Etag = etag3
+		thirdTableObject.BelongsToUser = belongsToUser3
+		thirdTableObject.Purchase = purchase3
 		thirdTableObject.Properties = {
 			[firstPropertyName3]: { value: firstPropertyValue3 },
 			[secondPropertyName3]: { value: secondPropertyValue3 }
@@ -1104,6 +1178,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, uploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, etag1)
+		assert.equal(firstTableObjectFromDatabase.BelongsToUser, belongsToUser1)
+		assert.equal(firstTableObjectFromDatabase.Purchase, purchase1)
 
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
@@ -1114,6 +1190,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, uploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, etag2)
+		assert.equal(secondTableObjectFromDatabase.BelongsToUser, belongsToUser2)
+		assert.equal(secondTableObjectFromDatabase.Purchase, purchase2)
 
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
@@ -1124,6 +1202,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(thirdTableObjectFromDatabase.TableId, tableId3)
 		assert.equal(thirdTableObjectFromDatabase.UploadStatus, uploadStatus3)
 		assert.equal(thirdTableObjectFromDatabase.Etag, etag3)
+		assert.equal(thirdTableObjectFromDatabase.BelongsToUser, belongsToUser3)
+		assert.equal(thirdTableObjectFromDatabase.Purchase, purchase3)
 
 		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(thirdTableObjectFromDatabase.Properties[firstPropertyName3].value, firstPropertyValue3)
@@ -1142,6 +1222,8 @@ describe("SetTableObjects function", () => {
 		tableObject1.TableId = tableId1
 		tableObject1.UploadStatus = TableObjectUploadStatus.Updated
 		tableObject1.Etag = "asdasdasd"
+		tableObject1.BelongsToUser = true
+		tableObject1.Purchase = null
 		tableObject1.Properties = {
 			"test": { value: "Hello World" }
 		}
@@ -1151,6 +1233,8 @@ describe("SetTableObjects function", () => {
 		tableObject2.TableId = tableId2
 		tableObject2.UploadStatus = TableObjectUploadStatus.UpToDate
 		tableObject2.Etag = "sdofndgsdg"
+		tableObject2.BelongsToUser = false
+		tableObject2.Purchase = "shiodfhosdf"
 		tableObject2.Properties = {
 			"bla": { value: "Lorem ipsum dolor sit amet" }
 		}
@@ -1164,6 +1248,10 @@ describe("SetTableObjects function", () => {
 		let newUploadStatus2 = TableObjectUploadStatus.Deleted
 		let newEtag1 = "oijsegioasf"
 		let newEtag2 = "oinsdgjdsoknsdf"
+		let newBelongsToUser1 = false
+		let newBelongsToUser2 = true
+		let newPurchase1 = "sidufsuihfs"
+		let newPurchase2 = null
 		let firstNewPropertyName1 = "page1"
 		let firstNewPropertyValue1 = "Good day"
 		let firstNewPropertyName2 = "test1"
@@ -1178,6 +1266,8 @@ describe("SetTableObjects function", () => {
 		newTableObject1.TableId = tableId1
 		newTableObject1.UploadStatus = newUploadStatus1
 		newTableObject1.Etag = newEtag1
+		newTableObject1.BelongsToUser = newBelongsToUser1
+		newTableObject1.Purchase = newPurchase1
 		newTableObject1.Properties = {
 			[firstNewPropertyName1]: { value: firstNewPropertyValue1 },
 			[secondNewPropertyName1]: { value: secondNewPropertyValue1 }
@@ -1188,6 +1278,8 @@ describe("SetTableObjects function", () => {
 		newTableObject2.TableId = tableId2
 		newTableObject2.UploadStatus = newUploadStatus2
 		newTableObject2.Etag = newEtag2
+		newTableObject2.BelongsToUser = newBelongsToUser2
+		newTableObject2.Purchase = newPurchase2
 		newTableObject2.Properties = {
 			[firstNewPropertyName2]: { value: firstNewPropertyValue2 },
 			[secondNewPropertyName2]: { value: secondNewPropertyValue2 }
@@ -1209,6 +1301,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
+		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value, firstNewPropertyValue1)
@@ -1219,6 +1313,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
+		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value, firstNewPropertyValue2)
@@ -1237,6 +1333,8 @@ describe("SetTableObjects function", () => {
 		tableObject1.TableId = tableId1
 		tableObject1.UploadStatus = TableObjectUploadStatus.Updated
 		tableObject1.Etag = "asdasdasd"
+		tableObject1.BelongsToUser = true
+		tableObject1.Purchase = null
 		tableObject1.Properties = {
 			"test": { value: 93885 }
 		}
@@ -1246,6 +1344,8 @@ describe("SetTableObjects function", () => {
 		tableObject2.TableId = tableId2
 		tableObject2.UploadStatus = TableObjectUploadStatus.UpToDate
 		tableObject2.Etag = "sdofndgsdg"
+		tableObject2.BelongsToUser = false
+		tableObject2.Purchase = "oishdhoisdfhoisdf"
 		tableObject2.Properties = {
 			"bla": { value: 9289.2324 }
 		}
@@ -1259,6 +1359,10 @@ describe("SetTableObjects function", () => {
 		let newUploadStatus2 = TableObjectUploadStatus.Deleted
 		let newEtag1 = "oijsegioasf"
 		let newEtag2 = "oinsdgjdsoknsdf"
+		let newBelongsToUser1 = false
+		let newBelongsToUser2 = true
+		let newPurchase1 = "hiosfdfshiodshiodf"
+		let newPurchase2 = null
 		let firstNewPropertyName1 = "page1"
 		let firstNewPropertyValue1 = 123
 		let firstNewPropertyName2 = "test1"
@@ -1273,6 +1377,8 @@ describe("SetTableObjects function", () => {
 		newTableObject1.TableId = tableId1
 		newTableObject1.UploadStatus = newUploadStatus1
 		newTableObject1.Etag = newEtag1
+		newTableObject1.BelongsToUser = newBelongsToUser1
+		newTableObject1.Purchase = newPurchase1
 		newTableObject1.Properties = {
 			[firstNewPropertyName1]: { value: firstNewPropertyValue1 },
 			[secondNewPropertyName1]: { value: secondNewPropertyValue1 }
@@ -1283,6 +1389,8 @@ describe("SetTableObjects function", () => {
 		newTableObject2.TableId = tableId2
 		newTableObject2.UploadStatus = newUploadStatus2
 		newTableObject2.Etag = newEtag2
+		newTableObject2.BelongsToUser = newBelongsToUser2
+		newTableObject2.Purchase = newPurchase2
 		newTableObject2.Properties = {
 			[firstNewPropertyName2]: { value: firstNewPropertyValue2 },
 			[secondNewPropertyName2]: { value: secondNewPropertyValue2 }
@@ -1304,6 +1412,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
+		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value, firstNewPropertyValue1)
@@ -1314,6 +1424,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
+		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
 		assert.equal(secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value, firstNewPropertyValue2)
@@ -1331,6 +1443,10 @@ describe("SetTableObjects function", () => {
 		let newUploadStatus2 = TableObjectUploadStatus.Deleted
 		let newEtag1 = "oijsegioasf"
 		let newEtag2 = "oinsdgjdsoknsdf"
+		let newBelongsToUser1 = false
+		let newBelongsToUser2 = true
+		let newPurchase1 = "isohsdfshodf"
+		let newPurchase2 = null
 
 		let firstLocalPropertyName1 = "local1"
 		let firstLocalPropertyValue1 = "Hello World"
@@ -1357,6 +1473,8 @@ describe("SetTableObjects function", () => {
 		tableObject1.TableId = tableId1
 		tableObject1.UploadStatus = TableObjectUploadStatus.UpToDate
 		tableObject1.Etag = "oijhrsguisadfo"
+		tableObject1.BelongsToUser = true
+		tableObject1.Purchase = "ohisdfhosdfhosdf"
 		tableObject1.Properties = {
 			[firstLocalPropertyName1]: { value: firstLocalPropertyValue1, local: true },
 			[firstPropertyName1]: { value: "asasdasd" },
@@ -1369,6 +1487,8 @@ describe("SetTableObjects function", () => {
 		tableObject2.TableId = tableId2
 		tableObject2.UploadStatus = TableObjectUploadStatus.UpToDate
 		tableObject2.Etag = "oihsg9asdpmasd"
+		tableObject2.BelongsToUser = false
+		tableObject2.Purchase = "osdhiosdhiosdfhiosdf"
 		tableObject2.Properties = {
 			[firstLocalPropertyName2]: { value: firstLocalPropertyValue2, local: true },
 			[firstPropertyName2]: { value: "asdasdasdp" },
@@ -1386,6 +1506,8 @@ describe("SetTableObjects function", () => {
 		newTableObject1.TableId = tableId1
 		newTableObject1.UploadStatus = newUploadStatus1
 		newTableObject1.Etag = newEtag1
+		newTableObject1.BelongsToUser = newBelongsToUser1
+		newTableObject1.Purchase = newPurchase1
 		newTableObject1.Properties = {
 			[firstPropertyName1]: { value: firstPropertyValue1 },
 			[secondPropertyName1]: { value: secondPropertyValue1 }
@@ -1396,6 +1518,8 @@ describe("SetTableObjects function", () => {
 		newTableObject2.TableId = tableId2
 		newTableObject2.UploadStatus = newUploadStatus2
 		newTableObject2.Etag = newEtag2
+		newTableObject2.BelongsToUser = newBelongsToUser2
+		newTableObject2.Purchase = newPurchase2
 		newTableObject2.Properties = {
 			[firstPropertyName2]: { value: firstPropertyValue2 },
 			[secondPropertyName2]: { value: secondPropertyValue2 }
@@ -1418,6 +1542,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
+		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 4)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
@@ -1433,6 +1559,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
+		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 4)
 		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
@@ -1454,6 +1582,10 @@ describe("SetTableObjects function", () => {
 		let newUploadStatus2 = TableObjectUploadStatus.Deleted
 		let newEtag1 = "oijsegioasf"
 		let newEtag2 = "oinsdgjdsoknsdf"
+		let newBelongsToUser1 = false
+		let newBelongsToUser2 = true
+		let newPurchase1 = "isohsdfshodf"
+		let newPurchase2 = null
 
 		let firstLocalPropertyName1 = "local1"
 		let firstLocalPropertyValue1 = false
@@ -1480,6 +1612,8 @@ describe("SetTableObjects function", () => {
 		tableObject1.TableId = tableId1
 		tableObject1.UploadStatus = TableObjectUploadStatus.UpToDate
 		tableObject1.Etag = "oijhrsguisadfo"
+		tableObject1.BelongsToUser = true
+		tableObject1.Purchase = "ohisdfhosdfhosdf"
 		tableObject1.Properties = {
 			[firstLocalPropertyName1]: { value: firstLocalPropertyValue1, local: true },
 			[firstPropertyName1]: { value: 3672884 },
@@ -1492,6 +1626,8 @@ describe("SetTableObjects function", () => {
 		tableObject2.TableId = tableId2
 		tableObject2.UploadStatus = TableObjectUploadStatus.UpToDate
 		tableObject2.Etag = "oihsg9asdpmasd"
+		tableObject2.BelongsToUser = false
+		tableObject2.Purchase = "osdhiosdhiosdfhiosdf"
 		tableObject2.Properties = {
 			[firstLocalPropertyName2]: { value: firstLocalPropertyValue2, local: true },
 			[firstPropertyName2]: { value: 2394782 },
@@ -1509,6 +1645,8 @@ describe("SetTableObjects function", () => {
 		newTableObject1.TableId = tableId1
 		newTableObject1.UploadStatus = newUploadStatus1
 		newTableObject1.Etag = newEtag1
+		newTableObject1.BelongsToUser = newBelongsToUser1
+		newTableObject1.Purchase = newPurchase1
 		newTableObject1.Properties = {
 			[firstPropertyName1]: { value: firstPropertyValue1 },
 			[secondPropertyName1]: { value: secondPropertyValue1 }
@@ -1519,6 +1657,8 @@ describe("SetTableObjects function", () => {
 		newTableObject2.TableId = tableId2
 		newTableObject2.UploadStatus = newUploadStatus2
 		newTableObject2.Etag = newEtag2
+		newTableObject2.BelongsToUser = newBelongsToUser2
+		newTableObject2.Purchase = newPurchase2
 		newTableObject2.Properties = {
 			[firstPropertyName2]: { value: firstPropertyValue2 },
 			[secondPropertyName2]: { value: secondPropertyValue2 }
@@ -1541,6 +1681,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
+		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 4)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
@@ -1556,6 +1698,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
+		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 4)
 		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
@@ -1574,6 +1718,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = "jaodnaosd"
 
@@ -1582,6 +1728,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -1591,6 +1739,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = 12345.123
 
@@ -1599,6 +1749,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -1608,6 +1760,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = true
 
@@ -1616,6 +1770,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -1625,6 +1781,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = true
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 9402
 
@@ -1633,6 +1791,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -1655,6 +1815,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -1662,6 +1824,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, thirdTableId)
 		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.equal(tableObjects[1].BelongsToUser, thirdBelongsToUser)
+		assert.equal(tableObjects[1].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
 	})
@@ -1672,6 +1836,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = false
 
@@ -1680,6 +1846,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -1689,6 +1857,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = "0werhoeifndck"
 
@@ -1697,6 +1867,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -1706,6 +1878,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = 123.4657
 
@@ -1714,6 +1888,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -1723,6 +1899,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 9234
 
@@ -1731,6 +1909,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -1830,6 +2010,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -1837,6 +2019,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, thirdTableId)
 		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.equal(tableObjects[1].BelongsToUser, thirdBelongsToUser)
+		assert.equal(tableObjects[1].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
 
@@ -1844,6 +2028,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[2].TableId, fifthTableId)
 		assert.equal(tableObjects[2].UploadStatus, fifthUploadStatus)
 		assert.equal(tableObjects[2].Etag, fifthEtag)
+		assert.isTrue(tableObjects[2].BelongsToUser)
+		assert.isUndefined(tableObjects[2].Purchase)
 		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
 		assert.equal(tableObjects[2].Properties[fifthPropertyName].value, fifthPropertyValue)
 
@@ -1851,6 +2037,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[3].TableId, seventhTableId)
 		assert.equal(tableObjects[3].UploadStatus, seventhUploadStatus)
 		assert.equal(tableObjects[3].Etag, seventhEtag)
+		assert.isTrue(tableObjects[3].BelongsToUser)
+		assert.isUndefined(tableObjects[3].Purchase)
 		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
 		assert.equal(tableObjects[3].Properties[seventhPropertyName].value, seventhPropertyValue)
 	})
@@ -1861,6 +2049,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 12345
 
@@ -1869,6 +2059,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -1878,6 +2070,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = "0werhoeifndck"
 
@@ -1886,6 +2080,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -1895,6 +2091,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = false
 
@@ -1903,6 +2101,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -1912,6 +2112,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 9183.12
 
@@ -1920,6 +2122,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -1942,6 +2146,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -1949,6 +2155,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, secondTableId)
 		assert.equal(tableObjects[1].UploadStatus, secondUploadStatus)
 		assert.equal(tableObjects[1].Etag, secondEtag)
+		assert.equal(tableObjects[1].BelongsToUser, secondBelongsToUser)
+		assert.equal(tableObjects[1].Purchase, secondPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[secondPropertyName].value, secondPropertyValue)
 
@@ -1956,6 +2164,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[2].TableId, thirdTableId)
 		assert.equal(tableObjects[2].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[2].Etag, thirdEtag)
+		assert.equal(tableObjects[2].BelongsToUser, thirdBelongsToUser)
+		assert.equal(tableObjects[2].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
 		assert.equal(tableObjects[2].Properties[thirdPropertyName].value, thirdPropertyValue)
 
@@ -1963,6 +2173,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[3].TableId, fourthTableId)
 		assert.equal(tableObjects[3].UploadStatus, fourthUploadStatus)
 		assert.equal(tableObjects[3].Etag, fourthEtag)
+		assert.equal(tableObjects[3].BelongsToUser, fourthBelongsToUser)
+		assert.equal(tableObjects[3].Purchase, fourthPurchase)
 		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
 		assert.equal(tableObjects[3].Properties[fourthPropertyName].value, fourthPropertyValue)
 	})
@@ -1973,6 +2185,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 92734.234
 
@@ -1981,6 +2195,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -1990,6 +2206,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = "0werhoeifndck"
 
@@ -1998,6 +2216,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -2007,6 +2227,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = false
 
@@ -2015,6 +2237,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -2024,6 +2248,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 1987
 
@@ -2032,6 +2258,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -2131,6 +2359,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -2138,6 +2368,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, secondTableId)
 		assert.equal(tableObjects[1].UploadStatus, secondUploadStatus)
 		assert.equal(tableObjects[1].Etag, secondEtag)
+		assert.equal(tableObjects[1].BelongsToUser, secondBelongsToUser)
+		assert.equal(tableObjects[1].Purchase, secondPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[secondPropertyName].value, secondPropertyValue)
 
@@ -2145,6 +2377,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[2].TableId, thirdTableId)
 		assert.equal(tableObjects[2].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[2].Etag, thirdEtag)
+		assert.equal(tableObjects[2].BelongsToUser, thirdBelongsToUser)
+		assert.equal(tableObjects[2].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
 		assert.equal(tableObjects[2].Properties[thirdPropertyName].value, thirdPropertyValue)
 
@@ -2152,6 +2386,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[3].TableId, fourthTableId)
 		assert.equal(tableObjects[3].UploadStatus, fourthUploadStatus)
 		assert.equal(tableObjects[3].Etag, fourthEtag)
+		assert.equal(tableObjects[3].BelongsToUser, fourthBelongsToUser)
+		assert.equal(tableObjects[3].Purchase, fourthPurchase)
 		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
 		assert.equal(tableObjects[3].Properties[fourthPropertyName].value, fourthPropertyValue)
 
@@ -2159,6 +2395,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[4].TableId, fifthTableId)
 		assert.equal(tableObjects[4].UploadStatus, fifthUploadStatus)
 		assert.equal(tableObjects[4].Etag, fifthEtag)
+		assert.isTrue(tableObjects[4].BelongsToUser)
+		assert.isUndefined(tableObjects[4].Purchase)
 		assert.equal(Object.keys(tableObjects[4].Properties).length, 1)
 		assert.equal(tableObjects[4].Properties[fifthPropertyName].value, fifthPropertyValue)
 
@@ -2166,6 +2404,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[5].TableId, sixthTableId)
 		assert.equal(tableObjects[5].UploadStatus, sixthUploadStatus)
 		assert.equal(tableObjects[5].Etag, sixthEtag)
+		assert.isTrue(tableObjects[5].BelongsToUser)
+		assert.isUndefined(tableObjects[5].Purchase)
 		assert.equal(Object.keys(tableObjects[5].Properties).length, 1)
 		assert.equal(tableObjects[5].Properties[sixthPropertyName].value, sixthPropertyValue)
 
@@ -2173,6 +2413,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[6].TableId, seventhTableId)
 		assert.equal(tableObjects[6].UploadStatus, seventhUploadStatus)
 		assert.equal(tableObjects[6].Etag, seventhEtag)
+		assert.isTrue(tableObjects[6].BelongsToUser)
+		assert.isUndefined(tableObjects[6].Purchase)
 		assert.equal(Object.keys(tableObjects[6].Properties).length, 1)
 		assert.equal(tableObjects[6].Properties[seventhPropertyName].value, seventhPropertyValue)
 
@@ -2180,6 +2422,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[7].TableId, eighthTableId)
 		assert.equal(tableObjects[7].UploadStatus, eighthUploadStatus)
 		assert.equal(tableObjects[7].Etag, eighthEtag)
+		assert.isTrue(tableObjects[7].BelongsToUser)
+		assert.isUndefined(tableObjects[7].Purchase)
 		assert.equal(Object.keys(tableObjects[7].Properties).length, 1)
 		assert.equal(tableObjects[7].Properties[eighthPropertyName].value, eighthPropertyValue)
 	})
@@ -2190,6 +2434,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = "jaodnaosd"
 
@@ -2198,6 +2444,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -2207,6 +2455,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = 124
 
@@ -2215,6 +2465,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -2224,6 +2476,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = true
 
@@ -2232,6 +2486,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -2241,6 +2497,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 98234.234
 
@@ -2249,6 +2507,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -2271,6 +2531,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 	})
@@ -2281,6 +2543,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = true
 
@@ -2289,6 +2553,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -2298,6 +2564,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = "0werhoeifndck"
 
@@ -2306,6 +2574,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -2315,6 +2585,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = 9234.234
 
@@ -2323,6 +2595,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -2332,6 +2606,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 234
 
@@ -2340,6 +2616,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -2439,6 +2717,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -2446,6 +2726,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, fifthTableId)
 		assert.equal(tableObjects[1].UploadStatus, fifthUploadStatus)
 		assert.equal(tableObjects[1].Etag, fifthEtag)
+		assert.isTrue(tableObjects[1].BelongsToUser)
+		assert.isUndefined(tableObjects[1].Purchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[fifthPropertyName].value, fifthPropertyValue)
 	})
@@ -2456,6 +2738,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = "jaodnaosd"
 
@@ -2464,6 +2748,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -2473,6 +2759,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = 987
 
@@ -2481,6 +2769,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -2490,6 +2780,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = false
 
@@ -2498,6 +2790,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -2507,6 +2801,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 12.43
 
@@ -2515,6 +2811,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -2537,6 +2835,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, thirdTableId)
 		assert.equal(tableObjects[0].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[0].Etag, thirdEtag)
+		assert.equal(tableObjects[0].BelongsToUser, thirdBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[thirdPropertyName].value, thirdPropertyValue)
 
@@ -2544,6 +2844,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, fourthTableId)
 		assert.equal(tableObjects[1].UploadStatus, fourthUploadStatus)
 		assert.equal(tableObjects[1].Etag, fourthEtag)
+		assert.equal(tableObjects[1].BelongsToUser, fourthBelongsToUser)
+		assert.equal(tableObjects[1].Purchase, fourthPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[fourthPropertyName].value, fourthPropertyValue)
 	})
@@ -2554,6 +2856,8 @@ describe("GetAllTableObjects function", () => {
 		let firstTableId = 13
 		let firstUploadStatus = TableObjectUploadStatus.New
 		let firstEtag = "asdasdasdasd"
+		let firstBelongsToUser = false
+		let firstPurchase = "sdfpjsdpsdfjpsdf"
 		let firstPropertyName = "test1"
 		let firstPropertyValue = 9834.2
 
@@ -2562,6 +2866,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: firstTableId,
 			UploadStatus: firstUploadStatus,
 			Etag: firstEtag,
+			BelongsToUser: firstBelongsToUser,
+			Purchase: firstPurchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -2571,6 +2877,8 @@ describe("GetAllTableObjects function", () => {
 		let secondTableId = firstTableId
 		let secondUploadStatus = TableObjectUploadStatus.Deleted
 		let secondEtag = "j0s0dghsidf"
+		let secondBelongsToUser = true
+		let secondPurchase = null
 		let secondPropertyName = "test2"
 		let secondPropertyValue = "0werhoeifndck"
 
@@ -2579,6 +2887,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: secondTableId,
 			UploadStatus: secondUploadStatus,
 			Etag: secondEtag,
+			BelongsToUser: secondBelongsToUser,
+			Purchase: secondPurchase,
 			Properties: {
 				[secondPropertyName]: { value: secondPropertyValue }
 			}
@@ -2588,6 +2898,8 @@ describe("GetAllTableObjects function", () => {
 		let thirdTableId = 25
 		let thirdUploadStatus = TableObjectUploadStatus.UpToDate
 		let thirdEtag = "ionsdgjbsdf"
+		let thirdBelongsToUser = false
+		let thirdPurchase = null
 		let thirdPropertyName = "test3"
 		let thirdPropertyValue = true
 
@@ -2596,6 +2908,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: thirdTableId,
 			UploadStatus: thirdUploadStatus,
 			Etag: thirdEtag,
+			BelongsToUser: thirdBelongsToUser,
+			Purchase: thirdPurchase,
 			Properties: {
 				[thirdPropertyName]: { value: thirdPropertyValue }
 			}
@@ -2605,6 +2919,8 @@ describe("GetAllTableObjects function", () => {
 		let fourthTableId = thirdTableId
 		let fourthUploadStatus = TableObjectUploadStatus.Removed
 		let fourthEtag = "9oqiweqwue091231"
+		let fourthBelongsToUser = false
+		let fourthPurchase = "hkosfdhiosfdhiosfd"
 		let fourthPropertyName = "test4"
 		let fourthPropertyValue = 9823
 
@@ -2613,6 +2929,8 @@ describe("GetAllTableObjects function", () => {
 			TableId: fourthTableId,
 			UploadStatus: fourthUploadStatus,
 			Etag: fourthEtag,
+			BelongsToUser: fourthBelongsToUser,
+			Purchase: fourthPurchase,
 			Properties: {
 				[fourthPropertyName]: { value: fourthPropertyValue }
 			}
@@ -2712,6 +3030,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].TableId, thirdTableId)
 		assert.equal(tableObjects[0].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[0].Etag, thirdEtag)
+		assert.equal(tableObjects[0].BelongsToUser, thirdBelongsToUser)
+		assert.equal(tableObjects[0].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[thirdPropertyName].value, thirdPropertyValue)
 
@@ -2719,6 +3039,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].TableId, fourthTableId)
 		assert.equal(tableObjects[1].UploadStatus, fourthUploadStatus)
 		assert.equal(tableObjects[1].Etag, fourthEtag)
+		assert.equal(tableObjects[1].BelongsToUser, fourthBelongsToUser)
+		assert.equal(tableObjects[1].Purchase, fourthPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[fourthPropertyName].value, fourthPropertyValue)
 
@@ -2726,6 +3048,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[2].TableId, seventhTableId)
 		assert.equal(tableObjects[2].UploadStatus, seventhUploadStatus)
 		assert.equal(tableObjects[2].Etag, seventhEtag)
+		assert.isTrue(tableObjects[2].BelongsToUser)
+		assert.isUndefined(tableObjects[2].Purchase)
 		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
 		assert.equal(tableObjects[2].Properties[seventhPropertyName].value, seventhPropertyValue)
 
@@ -2733,6 +3057,8 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[3].TableId, eighthTableId)
 		assert.equal(tableObjects[3].UploadStatus, eighthUploadStatus)
 		assert.equal(tableObjects[3].Etag, eighthEtag)
+		assert.isTrue(tableObjects[3].BelongsToUser)
+		assert.isUndefined(tableObjects[3].Purchase)
 		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
 		assert.equal(tableObjects[3].Properties[eighthPropertyName].value, eighthPropertyValue)
 	})
@@ -2745,6 +3071,8 @@ describe("GetTableObject function", () => {
 		let tableId = 14
 		let uploadStatus = TableObjectUploadStatus.New
 		let etag = "asdonsdgonasdpnasd"
+		let belongsToUser = false
+		let purchase = "kldsdfosdfhiosdsfd"
 		let firstPropertyName = "test"
 		let firstPropertyValue = 124
 
@@ -2759,6 +3087,8 @@ describe("GetTableObject function", () => {
 			TableId: tableId,
 			UploadStatus: uploadStatus,
 			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -2776,6 +3106,8 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
 	})
@@ -2819,6 +3151,8 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.isTrue(tableObjectFromDatabase.BelongsToUser)
+		assert.isUndefined(tableObjectFromDatabase.Purchase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
 	})
@@ -2829,6 +3163,8 @@ describe("GetTableObject function", () => {
 		let tableId = 14
 		let uploadStatus = TableObjectUploadStatus.New
 		let etag = "asdonsdgonasdpnasd"
+		let belongsToUser = true
+		let purchase = null
 		let firstPropertyName = "test"
 		let firstPropertyValue = 124
 
@@ -2843,6 +3179,8 @@ describe("GetTableObject function", () => {
 			TableId: tableId,
 			UploadStatus: uploadStatus,
 			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase,
 			Properties: {
 				[firstPropertyName]: { value: firstPropertyValue }
 			}
@@ -2860,6 +3198,8 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
+		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
 	})
@@ -2903,6 +3243,8 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
 		assert.equal(tableObjectFromDatabase.Etag, etag)
+		assert.isTrue(tableObjectFromDatabase.BelongsToUser)
+		assert.isUndefined(tableObjectFromDatabase.Purchase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
 		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
 	})
@@ -3142,6 +3484,8 @@ describe("RemoveTableObject function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.isTrue(tableObjects[0].BelongsToUser)
+		assert.isUndefined(tableObjects[0].Purchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -3149,6 +3493,8 @@ describe("RemoveTableObject function", () => {
 		assert.equal(tableObjects[1].TableId, thirdTableId)
 		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.isTrue(tableObjects[1].BelongsToUser)
+		assert.isUndefined(tableObjects[1].Purchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
 	})
@@ -3258,6 +3604,8 @@ describe("RemoveTableObject function", () => {
 		assert.equal(tableObjects[0].TableId, firstTableId)
 		assert.equal(tableObjects[0].UploadStatus, firstUploadStatus)
 		assert.equal(tableObjects[0].Etag, firstEtag)
+		assert.isTrue(tableObjects[0].BelongsToUser)
+		assert.isUndefined(tableObjects[0].Purchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
 		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -3265,6 +3613,8 @@ describe("RemoveTableObject function", () => {
 		assert.equal(tableObjects[1].TableId, thirdTableId)
 		assert.equal(tableObjects[1].UploadStatus, thirdUploadStatus)
 		assert.equal(tableObjects[1].Etag, thirdEtag)
+		assert.isTrue(tableObjects[1].BelongsToUser)
+		assert.isUndefined(tableObjects[1].Purchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
 		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
 	})
@@ -3343,6 +3693,8 @@ describe("ConvertDatabaseFormat function", () => {
 		assert.equal(firstTableObjectFromDatabase.TableId, firstTableId)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, firstUploadStatus)
 		assert.equal(firstTableObjectFromDatabase.Etag, firstEtag)
+		assert.isTrue(firstTableObjectFromDatabase.BelongsToUser)
+		assert.isUndefined(firstTableObjectFromDatabase.Purchase)
 		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 1)
 		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
 
@@ -3354,6 +3706,8 @@ describe("ConvertDatabaseFormat function", () => {
 		assert.equal(secondTableObjectFromDatabase.TableId, secondTableId)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, secondUploadStatus)
 		assert.equal(secondTableObjectFromDatabase.Etag, secondEtag)
+		assert.isTrue(secondTableObjectFromDatabase.BelongsToUser)
+		assert.isUndefined(secondTableObjectFromDatabase.Purchase)
 		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 1)
 		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
 
@@ -3365,6 +3719,8 @@ describe("ConvertDatabaseFormat function", () => {
 		assert.equal(thirdTableObjectFromDatabase.TableId, thirdTableId)
 		assert.equal(thirdTableObjectFromDatabase.UploadStatus, thirdUploadStatus)
 		assert.equal(thirdTableObjectFromDatabase.Etag, thirdEtag)
+		assert.isTrue(thirdTableObjectFromDatabase.BelongsToUser)
+		assert.isUndefined(thirdTableObjectFromDatabase.Purchase)
 		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 1)
 		assert.equal(thirdTableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
 	})

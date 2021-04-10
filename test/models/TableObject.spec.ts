@@ -38,6 +38,8 @@ describe("Constructor", () => {
 		}
 		let uploadStatus = TableObjectUploadStatus.Updated
 		let etag = "siodgjiosgdhiosgsghiod"
+		let belongsToUser = false
+		let purchase = "oasidhasidashd"
 		
 		// Act
 		let tableObject = new TableObject({
@@ -46,13 +48,19 @@ describe("Constructor", () => {
 			IsFile: isFile,
 			Properties: properties,
 			UploadStatus: uploadStatus,
-			Etag: etag
+			Etag: etag,
+			BelongsToUser: belongsToUser,
+			Purchase: purchase
 		})
 
 		// Assert
 		assert.equal(tableObject.Uuid, uuid)
 		assert.equal(tableObject.TableId, tableId)
 		assert.equal(tableObject.IsFile, isFile)
+		assert.equal(tableObject.UploadStatus, uploadStatus)
+		assert.equal(tableObject.Etag, etag)
+		assert.equal(tableObject.BelongsToUser, belongsToUser)
+		assert.equal(tableObject.Purchase, purchase)
 		assert.equal(tableObject.GetPropertyValue(firstPropertyName), firstPropertyValue)
 		assert.equal(tableObject.GetPropertyValue(secondPropertyName), secondPropertyValue)
 	})
@@ -69,6 +77,8 @@ describe("Constructor", () => {
 		assert.equal(Object.keys(tableObject.Properties).length, 0)
 		assert.equal(tableObject.UploadStatus, TableObjectUploadStatus.New)
 		assert.isUndefined(tableObject.Etag)
+		assert.isTrue(tableObject.BelongsToUser)
+		assert.isUndefined(tableObject.Purchase)
 	})
 })
 
