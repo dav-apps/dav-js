@@ -330,6 +330,8 @@ export function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject
 	tableObject.File = obj.File
 	tableObject.UploadStatus = obj.UploadStatus
 	tableObject.Etag = obj.Etag
+	tableObject.BelongsToUser = obj.BelongsToUser != null ? obj.BelongsToUser : true
+	tableObject.Purchase = obj.Purchase
 
 	for (let key of Object.keys(obj.Properties)) {
 		let value = obj.Properties[key]

@@ -32,8 +32,10 @@ export async function CreateTableObject(params: {
 			Uuid: response.data.uuid,
 			TableId: response.data.table_id,
 			IsFile: response.data.file,
+			UploadStatus: TableObjectUploadStatus.UpToDate,
 			Etag: response.data.etag,
-			UploadStatus: TableObjectUploadStatus.UpToDate
+			BelongsToUser: response.data.belongs_to_user,
+			Purchase: response.data.purchase
 		})
 
 		for (let key of Object.keys(response.data.properties)) {
@@ -76,7 +78,9 @@ export async function GetTableObject(params: {
 			Uuid: response.data.uuid,
 			TableId: response.data.table_id,
 			IsFile: response.data.file,
-			Etag: response.data.etag
+			Etag: response.data.etag,
+			BelongsToUser: response.data.belongs_to_user,
+			Purchase: response.data.purchase
 		})
 
 		for (let key of Object.keys(response.data.properties)) {
@@ -123,7 +127,9 @@ export async function UpdateTableObject(params: {
 			Uuid: response.data.uuid,
 			TableId: response.data.table_id,
 			IsFile: response.data.file,
-			Etag: response.data.etag
+			Etag: response.data.etag,
+			BelongsToUser: response.data.belongs_to_user,
+			Purchase: response.data.purchase
 		})
 
 		for (let key of Object.keys(response.data.properties)) {
@@ -210,7 +216,9 @@ export async function SetTableObjectFile(params: {
 			Uuid: response.data.uuid,
 			TableId: response.data.table_id,
 			IsFile: response.data.file,
-			Etag: response.data.etag
+			Etag: response.data.etag,
+			BelongsToUser: response.data.belongs_to_user,
+			Purchase: response.data.purchase
 		})
 
 		for (let key of Object.keys(response.data.properties)) {

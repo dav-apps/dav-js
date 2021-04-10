@@ -88,6 +88,8 @@ export interface DatabaseTableObject {
 	Properties: TableObjectProperties | OldTableObjectProperties
 	UploadStatus: number
 	Etag: string
+	BelongsToUser: boolean
+	Purchase: string
 }
 
 export interface TableObjectProperties {

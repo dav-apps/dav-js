@@ -20,6 +20,8 @@ export class TableObject {
 	public Properties: TableObjectProperties = {}
 	public UploadStatus: TableObjectUploadStatus = TableObjectUploadStatus.New
 	public Etag: string
+	public BelongsToUser: boolean = true
+	public Purchase: string
 
 	constructor(params?: {
 		Uuid?: string,
@@ -28,7 +30,9 @@ export class TableObject {
 		File?: Blob,
 		Properties?: TableObjectProperties,
 		UploadStatus?: TableObjectUploadStatus,
-		Etag?: string
+		Etag?: string,
+		BelongsToUser?: boolean,
+		Purchase?: string
 	}) {
 		if (params != null) {
 			if (params.Uuid != null) this.Uuid = params.Uuid
@@ -38,6 +42,8 @@ export class TableObject {
 			if (params.Properties != null) this.Properties = params.Properties
 			if (params.UploadStatus != null) this.UploadStatus = params.UploadStatus
 			if (params.Etag != null) this.Etag = params.Etag
+			if (params.BelongsToUser != null) this.BelongsToUser = params.BelongsToUser
+			if (params.Purchase != null) this.Purchase = params.Purchase
 		}
 	}
 
