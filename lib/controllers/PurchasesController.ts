@@ -36,6 +36,7 @@ export async function CreatePurchase(params: {
 				Id: response.data.id,
 				UserId: response.data.user_id,
 				TableObjectId: response.data.table_object_id,
+				Uuid: response.data.uuid,
 				PaymentIntentId: response.data.payment_intent_id,
 				ProviderName: response.data.provider_name,
 				ProviderImage: response.data.provider_image,
@@ -63,12 +64,12 @@ export async function CreatePurchase(params: {
 
 export async function GetPurchase(params: {
 	auth: Auth,
-	id: number
+	uuid: string
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'get',
-			url: `${Dav.apiBaseUrl}/purchase/${params.id}`,
+			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}`,
 			headers: {
 				Authorization: params.auth.token
 			}
@@ -80,6 +81,7 @@ export async function GetPurchase(params: {
 				Id: response.data.id,
 				UserId: response.data.user_id,
 				TableObjectId: response.data.table_object_id,
+				Uuid: response.data.uuid,
 				PaymentIntentId: response.data.payment_intent_id,
 				ProviderName: response.data.provider_name,
 				ProviderImage: response.data.provider_image,
@@ -97,12 +99,12 @@ export async function GetPurchase(params: {
 
 export async function CompletePurchase(params: {
 	accessToken?: string,
-	id: number
+	uuid: string
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
-			url: `${Dav.apiBaseUrl}/purchase/${params.id}/complete`,
+			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}/complete`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
@@ -114,6 +116,7 @@ export async function CompletePurchase(params: {
 				Id: response.data.id,
 				UserId: response.data.user_id,
 				TableObjectId: response.data.table_object_id,
+				Uuid: response.data.uuid,
 				PaymentIntentId: response.data.payment_intent_id,
 				ProviderName: response.data.provider_name,
 				ProviderImage: response.data.provider_image,

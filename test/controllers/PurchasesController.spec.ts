@@ -22,6 +22,7 @@ describe("CreatePurchase function", () => {
 		let id = 12
 		let userId = 23
 		let tableObjectId = 34
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
 		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
@@ -41,6 +42,7 @@ describe("CreatePurchase function", () => {
 				id,
 				userId,
 				tableObjectId,
+				uuid,
 				paymentIntentId,
 				providerName,
 				providerImage,
@@ -74,6 +76,7 @@ describe("CreatePurchase function", () => {
 					id,
 					user_id: userId,
 					table_object_id: tableObjectId,
+					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
 					provider_image: providerImage,
@@ -101,6 +104,7 @@ describe("CreatePurchase function", () => {
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
 		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
 		assert.equal(result.data.ProductName, expectedResult.data.ProductName)
@@ -180,6 +184,7 @@ describe("CreatePurchase function", () => {
 		let id = 12
 		let userId = 23
 		let tableObjectId = 34
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
 		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
@@ -200,6 +205,7 @@ describe("CreatePurchase function", () => {
 				id,
 				userId,
 				tableObjectId,
+				uuid,
 				paymentIntentId,
 				providerName,
 				providerImage,
@@ -279,6 +285,7 @@ describe("CreatePurchase function", () => {
 					id,
 					user_id: userId,
 					table_object_id: tableObjectId,
+					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
 					provider_image: providerImage,
@@ -306,6 +313,7 @@ describe("CreatePurchase function", () => {
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
 		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
 		assert.equal(result.data.ProductName, expectedResult.data.ProductName)
@@ -322,6 +330,7 @@ describe("GetPurchase function", () => {
 		let id = 12
 		let userId = 23
 		let tableObjectId = 34
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
 		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
@@ -331,7 +340,7 @@ describe("GetPurchase function", () => {
 		let currency: Currency = "eur"
 		let completed = false
 
-		let url = `${Dav.apiBaseUrl}/purchase/${id}`
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
 
 		let expectedResult: ApiResponse<Purchase> = {
 			status: 200,
@@ -339,6 +348,7 @@ describe("GetPurchase function", () => {
 				id,
 				userId,
 				tableObjectId,
+				uuid,
 				paymentIntentId,
 				providerName,
 				providerImage,
@@ -364,6 +374,7 @@ describe("GetPurchase function", () => {
 					id,
 					user_id: userId,
 					table_object_id: tableObjectId,
+					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
 					provider_image: providerImage,
@@ -379,7 +390,7 @@ describe("GetPurchase function", () => {
 		// Act
 		let result = await GetPurchase({
 			auth: davDevAuth,
-			id
+			uuid
 		}) as ApiResponse<Purchase>
 
 		// Assert for the response
@@ -387,6 +398,7 @@ describe("GetPurchase function", () => {
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
 		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
 		assert.equal(result.data.ProductName, expectedResult.data.ProductName)
@@ -398,9 +410,9 @@ describe("GetPurchase function", () => {
 
 	it("should call getPurchase endpoint with error", async () => {
 		// Arrange
-		let id = 12
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 
-		let url = `${Dav.apiBaseUrl}/purchase/${id}`
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -432,7 +444,7 @@ describe("GetPurchase function", () => {
 		// Act
 		let result = await GetPurchase({
 			auth: davDevAuth,
-			id
+			uuid
 		}) as ApiErrorResponse
 
 		// Assert for the response
@@ -448,6 +460,7 @@ describe("CompletePurchase function", () => {
 		let id = 12
 		let userId = 23
 		let tableObjectId = 34
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
 		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
@@ -459,7 +472,7 @@ describe("CompletePurchase function", () => {
 
 		let accessToken = "shodsodsfhiodshiodf"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/purchase/${id}/complete`
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}/complete`
 
 		let expectedResult: ApiResponse<Purchase> = {
 			status: 200,
@@ -467,6 +480,7 @@ describe("CompletePurchase function", () => {
 				id,
 				userId,
 				tableObjectId,
+				uuid,
 				paymentIntentId,
 				providerName,
 				providerImage,
@@ -492,6 +506,7 @@ describe("CompletePurchase function", () => {
 					id,
 					user_id: userId,
 					table_object_id: tableObjectId,
+					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
 					provider_image: providerImage,
@@ -506,7 +521,7 @@ describe("CompletePurchase function", () => {
 
 		// Act
 		let result = await CompletePurchase({
-			id
+			uuid
 		}) as ApiResponse<Purchase>
 
 		// Assert for the response
@@ -514,6 +529,7 @@ describe("CompletePurchase function", () => {
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
 		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
 		assert.equal(result.data.ProductName, expectedResult.data.ProductName)
@@ -525,11 +541,11 @@ describe("CompletePurchase function", () => {
 
 	it("should call completePurchase endpoint with error", async () => {
 		// Arrange
-		let id = 12
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 
 		let accessToken = "shodsodsfhiodshiodf"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/purchase/${id}/complete`
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}/complete`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -560,7 +576,7 @@ describe("CompletePurchase function", () => {
 
 		// Act
 		let result = await CompletePurchase({
-			id
+			uuid
 		}) as ApiErrorResponse
 
 		// Assert for the response
@@ -574,6 +590,7 @@ describe("CompletePurchase function", () => {
 		let id = 12
 		let userId = 23
 		let tableObjectId = 34
+		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
 		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
@@ -586,7 +603,7 @@ describe("CompletePurchase function", () => {
 		let accessToken = "shodsodsfhiodshiodf"
 		let newAccessToken = "sdiofshiodghiosdg"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/purchase/${id}/complete`
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}/complete`
 
 		let expectedResult: ApiResponse<Purchase> = {
 			status: 200,
@@ -594,6 +611,7 @@ describe("CompletePurchase function", () => {
 				id,
 				userId,
 				tableObjectId,
+				uuid,
 				paymentIntentId,
 				providerName,
 				providerImage,
@@ -657,6 +675,7 @@ describe("CompletePurchase function", () => {
 					id,
 					user_id: userId,
 					table_object_id: tableObjectId,
+					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
 					provider_image: providerImage,
@@ -671,7 +690,7 @@ describe("CompletePurchase function", () => {
 
 		// Act
 		let result = await CompletePurchase({
-			id
+			uuid
 		}) as ApiResponse<Purchase>
 
 		// Assert for the response
@@ -679,6 +698,7 @@ describe("CompletePurchase function", () => {
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
 		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
+		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
 		assert.equal(result.data.ProductName, expectedResult.data.ProductName)
