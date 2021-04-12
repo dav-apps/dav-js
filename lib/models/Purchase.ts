@@ -4,7 +4,6 @@ export class Purchase {
 	constructor(
 		public Id: number,
 		public UserId: number,
-		public TableObjectId: number,
 		public Uuid: string,
 		public PaymentIntentId: string,
 		public ProviderName: string,

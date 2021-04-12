@@ -7,17 +7,17 @@ import { Purchase } from '../models/Purchase'
 
 export async function CreatePurchase(params: {
 	accessToken?: string,
-	tableObjectUuid: string,
 	providerName: string,
 	providerImage: string,
 	productName: string,
 	productImage: string,
-	currency: Currency
+	currency: Currency,
+	tableObjects: string[]
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
 		let response = await axios.default({
 			method: 'post',
-			url: `${Dav.apiBaseUrl}/table_object/${params.tableObjectUuid}/purchase`,
+			url: `${Dav.apiBaseUrl}/purchase`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
@@ -26,7 +26,8 @@ export async function CreatePurchase(params: {
 				provider_image: params.providerImage,
 				product_name: params.productName,
 				product_image: params.productImage,
-				currency: params.currency
+				currency: params.currency,
+				table_objects: params.tableObjects
 			}
 		})
 
@@ -35,7 +36,6 @@ export async function CreatePurchase(params: {
 			data: {
 				Id: response.data.id,
 				UserId: response.data.user_id,
-				TableObjectId: response.data.table_object_id,
 				Uuid: response.data.uuid,
 				PaymentIntentId: response.data.payment_intent_id,
 				ProviderName: response.data.provider_name,
@@ -80,7 +80,6 @@ export async function GetPurchase(params: {
 			data: {
 				Id: response.data.id,
 				UserId: response.data.user_id,
-				TableObjectId: response.data.table_object_id,
 				Uuid: response.data.uuid,
 				PaymentIntentId: response.data.payment_intent_id,
 				ProviderName: response.data.provider_name,
@@ -115,7 +114,6 @@ export async function CompletePurchase(params: {
 			data: {
 				Id: response.data.id,
 				UserId: response.data.user_id,
-				TableObjectId: response.data.table_object_id,
 				Uuid: response.data.uuid,
 				PaymentIntentId: response.data.payment_intent_id,
 				ProviderName: response.data.provider_name,
@@ -136,6 +134,38 @@ export async function CompletePurchase(params: {
 
 		if (typeof result == "string") {
 			return await CompletePurchase(params)
+		} else {
+			return result as ApiErrorResponse
+		}
+	}
+}
+
+export async function DeletePurchase(params: {
+	accessToken?: string,
+	uuid: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+	try {
+		let response = await axios.default({
+			method: 'delete',
+			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}`,
+			headers: {
+				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+			}
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		if (params.accessToken != null) {
+			return ConvertErrorToApiErrorResponse(error)
+		}
+
+		let result = await HandleApiError(error)
+
+		if (typeof result == "string") {
+			return await DeletePurchase(params)
 		} else {
 			return result as ApiErrorResponse
 		}

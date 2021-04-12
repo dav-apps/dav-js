@@ -5,7 +5,7 @@ import { davDevAuth } from '../constants'
 import { ApiResponse, ApiErrorResponse, Currency } from '../../lib/types'
 import * as ErrorCodes from '../../lib/errorCodes'
 import { Purchase } from '../../lib/models/Purchase'
-import { CreatePurchase, GetPurchase, CompletePurchase } from '../../lib/controllers/PurchasesController'
+import { CreatePurchase, GetPurchase, CompletePurchase, DeletePurchase } from '../../lib/controllers/PurchasesController'
 
 beforeEach(() => {
 	moxios.install()
@@ -18,10 +18,8 @@ afterEach(() => {
 describe("CreatePurchase function", () => {
 	it("should call createPurchase endpoint", async () => {
 		// Arrange
-		let tableObjectUuid = "28c66e28-f1cd-4765-b38f-e03c0f467ae9"
 		let id = 12
 		let userId = 23
-		let tableObjectId = 34
 		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
@@ -31,17 +29,17 @@ describe("CreatePurchase function", () => {
 		let price = 1313
 		let currency: Currency = "eur"
 		let completed = false
+		let tableObjects = ["oihsdfiosdf", "osdshiodfoishdf"]
 
 		let accessToken = "osdosdiosdf"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/table_object/${tableObjectUuid}/purchase`
+		let url = `${Dav.apiBaseUrl}/purchase`
 
 		let expectedResult: ApiResponse<Purchase> = {
 			status: 201,
 			data: new Purchase(
 				id,
 				userId,
-				tableObjectId,
 				uuid,
 				paymentIntentId,
 				providerName,
@@ -69,13 +67,14 @@ describe("CreatePurchase function", () => {
 			assert.equal(data.product_name, productName)
 			assert.equal(data.product_image, productImage)
 			assert.equal(data.currency, currency)
+			assert.equal(data.table_objects[0], tableObjects[0])
+			assert.equal(data.table_objects[1], tableObjects[1])
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
 					id,
 					user_id: userId,
-					table_object_id: tableObjectId,
 					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
@@ -91,19 +90,18 @@ describe("CreatePurchase function", () => {
 
 		// Act
 		let result = await CreatePurchase({
-			tableObjectUuid,
 			providerName,
 			providerImage,
 			productName,
 			productImage,
-			currency
+			currency,
+			tableObjects
 		}) as ApiResponse<Purchase>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
-		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
@@ -116,16 +114,16 @@ describe("CreatePurchase function", () => {
 
 	it("should call createPurchase endpoint with error", async () => {
 		// Arrange
-		let tableObjectUuid = "28c66e28-f1cd-4765-b38f-e03c0f467ae9"
 		let providerName = "Lemony Snicket"
 		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
 		let productName = "A Series of Unfortunate Events - Book the First"
 		let productImage = "https://api.pocketlib.app/store/book/sdfsdfsfddf/cover"
 		let currency: Currency = "eur"
+		let tableObjects = ["osjdfohisdfhosdf", "fhiodhodfhdfg"]
 
 		let accessToken = "osdosdiosdf"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/table_object/${tableObjectUuid}/purchase`
+		let url = `${Dav.apiBaseUrl}/purchase`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -150,6 +148,8 @@ describe("CreatePurchase function", () => {
 			assert.equal(data.product_name, productName)
 			assert.equal(data.product_image, productImage)
 			assert.equal(data.currency, currency)
+			assert.equal(data.table_objects[0], tableObjects[0])
+			assert.equal(data.table_objects[1], tableObjects[1])
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -164,12 +164,12 @@ describe("CreatePurchase function", () => {
 
 		// Act
 		let result = await CreatePurchase({
-			tableObjectUuid,
 			providerName,
 			providerImage,
 			productName,
 			productImage,
-			currency
+			currency,
+			tableObjects
 		}) as ApiErrorResponse
 
 		// Assert for the response
@@ -180,10 +180,8 @@ describe("CreatePurchase function", () => {
 
 	it("should call createPurchase endpoint and renew the session", async () => {
 		// Arrange
-		let tableObjectUuid = "28c66e28-f1cd-4765-b38f-e03c0f467ae9"
 		let id = 12
 		let userId = 23
-		let tableObjectId = 34
 		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
@@ -193,18 +191,18 @@ describe("CreatePurchase function", () => {
 		let price = 1313
 		let currency: Currency = "eur"
 		let completed = false
+		let tableObjects = ["lsosjdfjsdf", "ihiosadoiahsdoasd"]
 
 		let accessToken = "osdosdiosdf"
 		let newAccessToken = "sgiodsfghiosghio"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/table_object/${tableObjectUuid}/purchase`
+		let url = `${Dav.apiBaseUrl}/purchase`
 
 		let expectedResult: ApiResponse<Purchase> = {
 			status: 201,
 			data: new Purchase(
 				id,
 				userId,
-				tableObjectId,
 				uuid,
 				paymentIntentId,
 				providerName,
@@ -233,6 +231,8 @@ describe("CreatePurchase function", () => {
 			assert.equal(data.product_name, productName)
 			assert.equal(data.product_image, productImage)
 			assert.equal(data.currency, currency)
+			assert.equal(data.table_objects[0], tableObjects[0])
+			assert.equal(data.table_objects[1], tableObjects[1])
 
 			request.respondWith({
 				status: 403,
@@ -278,13 +278,14 @@ describe("CreatePurchase function", () => {
 			assert.equal(data.product_name, productName)
 			assert.equal(data.product_image, productImage)
 			assert.equal(data.currency, currency)
+			assert.equal(data.table_objects[0], tableObjects[0])
+			assert.equal(data.table_objects[1], tableObjects[1])
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
 					id,
 					user_id: userId,
-					table_object_id: tableObjectId,
 					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
@@ -300,19 +301,18 @@ describe("CreatePurchase function", () => {
 
 		// Act
 		let result = await CreatePurchase({
-			tableObjectUuid,
 			providerName,
 			providerImage,
 			productName,
 			productImage,
-			currency
+			currency,
+			tableObjects
 		}) as ApiResponse<Purchase>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
-		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
@@ -329,7 +329,6 @@ describe("GetPurchase function", () => {
 		// Arrange
 		let id = 12
 		let userId = 23
-		let tableObjectId = 34
 		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
@@ -347,7 +346,6 @@ describe("GetPurchase function", () => {
 			data: new Purchase(
 				id,
 				userId,
-				tableObjectId,
 				uuid,
 				paymentIntentId,
 				providerName,
@@ -373,7 +371,6 @@ describe("GetPurchase function", () => {
 				response: {
 					id,
 					user_id: userId,
-					table_object_id: tableObjectId,
 					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
@@ -397,7 +394,6 @@ describe("GetPurchase function", () => {
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
-		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
@@ -459,7 +455,6 @@ describe("CompletePurchase function", () => {
 		// Arrange
 		let id = 12
 		let userId = 23
-		let tableObjectId = 34
 		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
@@ -479,7 +474,6 @@ describe("CompletePurchase function", () => {
 			data: new Purchase(
 				id,
 				userId,
-				tableObjectId,
 				uuid,
 				paymentIntentId,
 				providerName,
@@ -505,7 +499,6 @@ describe("CompletePurchase function", () => {
 				response: {
 					id,
 					user_id: userId,
-					table_object_id: tableObjectId,
 					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
@@ -528,7 +521,6 @@ describe("CompletePurchase function", () => {
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
-		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
@@ -589,7 +581,6 @@ describe("CompletePurchase function", () => {
 		// Arrange
 		let id = 12
 		let userId = 23
-		let tableObjectId = 34
 		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
@@ -610,7 +601,6 @@ describe("CompletePurchase function", () => {
 			data: new Purchase(
 				id,
 				userId,
-				tableObjectId,
 				uuid,
 				paymentIntentId,
 				providerName,
@@ -674,7 +664,6 @@ describe("CompletePurchase function", () => {
 				response: {
 					id,
 					user_id: userId,
-					table_object_id: tableObjectId,
 					uuid,
 					payment_intent_id: paymentIntentId,
 					provider_name: providerName,
@@ -697,7 +686,6 @@ describe("CompletePurchase function", () => {
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.Id, expectedResult.data.Id)
 		assert.equal(result.data.UserId, expectedResult.data.UserId)
-		assert.equal(result.data.TableObjectId, expectedResult.data.TableObjectId)
 		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
 		assert.equal(result.data.ProviderName, expectedResult.data.ProviderName)
 		assert.equal(result.data.ProviderImage, expectedResult.data.ProviderImage)
@@ -706,5 +694,164 @@ describe("CompletePurchase function", () => {
 		assert.equal(result.data.Price, expectedResult.data.Price)
 		assert.equal(result.data.Currency, expectedResult.data.Currency)
 		assert.equal(result.data.Completed, expectedResult.data.Completed)
+	})
+})
+
+describe("DeletePurchase function", () => {
+	it("should call deletePurchase endpoint", async () => {
+		// Arrange
+		let uuid = "1903b4e7-cb52-48e4-8605-943794cee4eb"
+
+		let accessToken = "iosdfshodhsdf"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
+		
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await DeletePurchase({
+			uuid
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+	})
+
+	it("should call deletePurchase endpoint with error", async () => {
+		// Arrange
+		let uuid = "1903b4e7-cb52-48e4-8605-943794cee4eb"
+
+		let accessToken = "iosdfshodhsdf"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: ErrorCodes.ActionNotAllowed,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await DeletePurchase({
+			uuid
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+
+	it("should call deletePurchase endpoint and renew session", async () => {
+		// Arrange
+		let uuid = "1903b4e7-cb52-48e4-8605-943794cee4eb"
+
+		let accessToken = "iosdfshodhsdf"
+		let newAccessToken = "sfdhosfdhiosfd"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
+		
+		let expectedResult: ApiResponse<{}> = {
+			status: 204,
+			data: {}
+		}
+
+		// First deletePurchase request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 403,
+				response: {
+					errors: [{
+						code: ErrorCodes.AccessTokenMustBeRenewed,
+						message: "Access token must be renewed"
+					}]
+				}
+			})
+		})
+
+		// renewSession request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 200,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Second deletePurchase request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.headers.Authorization, newAccessToken)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {}
+			})
+		})
+
+		// Act
+		let result = await DeletePurchase({
+			uuid
+		}) as ApiResponse<{}>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
 	})
 })
