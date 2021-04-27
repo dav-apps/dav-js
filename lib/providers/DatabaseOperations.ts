@@ -19,7 +19,8 @@ import {
 import {
 	generateUuid,
 	getTableObjectKey,
-	getNotificationKey
+	getNotificationKey,
+	requestStoragePersistence
 } from '../utils'
 import { Dav } from '../Dav'
 import { TableObject } from '../models/TableObject'
@@ -152,6 +153,7 @@ export async function RemoveWebPushSubscription() {
 
 //#region TableObject functions
 export async function SetTableObject(tableObject: TableObject, overwrite: boolean = true): Promise<string> {
+	requestStoragePersistence()
 	await ConvertDatabaseFormat()
 
 	try {

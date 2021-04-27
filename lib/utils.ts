@@ -216,3 +216,17 @@ export async function BlobToBase64(file: Blob, defaultValue: string = null): Pro
 	let readFileResult: ProgressEvent = await readFilePromise
 	return readFileResult.currentTarget["result"]
 }
+
+export async function requestStoragePersistence(): Promise<boolean> {
+	if (
+		!navigator.storage
+		|| !navigator.storage.persist
+		|| !navigator.storage.persisted
+	) return false
+	
+	// Check if the storage is already persisting
+	if (await navigator.storage.persisted()) return true
+	
+	// Ask for storage persistence
+	return await navigator.storage.persist()
+}

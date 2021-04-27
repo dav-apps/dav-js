@@ -146,8 +146,8 @@ export async function GetUser(params?: {
 		})
 
 		let periodEnd = undefined
-		if (typeof response.data.period_end == 'object') {
-			periodEnd = response.data.period_end == null ? null : new Date(response.data.period_end)
+		if (response.data.period_end != null) {
+			periodEnd = new Date(response.data.period_end)
 		}
 
 		return {
