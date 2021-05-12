@@ -66,7 +66,8 @@ export async function HandleApiError(error: any): Promise<string | ApiErrorRespo
 	let errorResponse = ConvertErrorToApiErrorResponse(error)
 
 	if (
-		errorResponse.errors.length > 0
+		errorResponse.errors
+		&& errorResponse.errors.length > 0
 		&& errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
 	) {
 		let renewSessionResult = await RenewSession({ accessToken: Dav.accessToken })
