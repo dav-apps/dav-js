@@ -652,12 +652,10 @@ async function CreateTableObjectOnServer(
 			}
 		}
 
-		let createTableObjectResponseData: TableObject = (createTableObjectResponse as ApiResponse<TableObject>).data
-
 		if (tableObject.File != null) {
 			// Upload the file
 			let setTableObjectFileResponse = await SetTableObjectFile({
-				uuid: createTableObjectResponseData.Uuid,
+				uuid: tableObject.Uuid,
 				file: tableObject.File
 			})
 
