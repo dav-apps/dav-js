@@ -209,13 +209,13 @@ export async function BlobToBase64(file: Blob, defaultValue: string = null): Pro
 		|| typeof FileReader == 'undefined'
 	) return defaultValue
 
+	let fileReader = new FileReader()
 	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
-		let fileReader = new FileReader()
 		fileReader.onloadend = resolve
 		fileReader.readAsDataURL(file)
 	})
-	let readFileResult: ProgressEvent = await readFilePromise
-	return readFileResult.currentTarget["result"]
+	await readFilePromise
+	return fileReader.result as string
 }
 
 export async function requestStoragePersistence(): Promise<boolean> {
