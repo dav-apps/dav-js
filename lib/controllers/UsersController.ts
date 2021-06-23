@@ -123,13 +123,10 @@ export async function GetUsers(params?: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetUsers()
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetUsers()
 	}
 }
 
@@ -175,13 +172,10 @@ export async function GetUser(params?: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetUser()
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetUser()
 	}
 }
 
@@ -269,13 +263,10 @@ export async function UpdateUser(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await UpdateUser(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await UpdateUser(params)
 	}
 }
 
@@ -328,13 +319,10 @@ export async function SetProfileImageOfUser(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await SetProfileImageOfUser(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await SetProfileImageOfUser(params)
 	}
 }
 
@@ -360,13 +348,10 @@ export async function GetProfileImageOfUser(params?: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetProfileImageOfUser()
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetProfileImageOfUser()
 	}
 }
 
@@ -416,13 +401,10 @@ export async function CreateStripeCustomerForUser(params?: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateStripeCustomerForUser()
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateStripeCustomerForUser()
 	}
 }
 

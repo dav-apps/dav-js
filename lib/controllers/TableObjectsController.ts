@@ -51,13 +51,10 @@ export async function CreateTableObject(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateTableObject(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateTableObject(params)
 	}
 }
 
@@ -96,13 +93,10 @@ export async function GetTableObject(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetTableObject(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetTableObject(params)
 	}
 }
 
@@ -145,13 +139,10 @@ export async function UpdateTableObject(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await UpdateTableObject(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await UpdateTableObject(params)
 	}
 }
 
@@ -177,13 +168,10 @@ export async function DeleteTableObject(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await DeleteTableObject(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await DeleteTableObject(params)
 	}
 }
 
@@ -234,13 +222,10 @@ export async function SetTableObjectFile(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await SetTableObjectFile(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await SetTableObjectFile(params)
 	}
 }
 
@@ -267,13 +252,10 @@ export async function GetTableObjectFile(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetTableObjectFile(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetTableObjectFile(params)
 	}
 }
 
@@ -299,12 +281,9 @@ export async function RemoveTableObject(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await RemoveTableObject(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await RemoveTableObject(params)
 	}
 }

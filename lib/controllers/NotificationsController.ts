@@ -42,13 +42,10 @@ export async function CreateNotification(params: {
 			})
 		}
 	} catch (error) {
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateNotification(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateNotification(params)
 	}
 }
 
@@ -73,13 +70,10 @@ export async function GetNotifications(params?: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetNotifications()
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetNotifications()
 	}
 }
 
@@ -123,13 +117,10 @@ export async function UpdateNotification(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await UpdateNotification(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await UpdateNotification(params)
 	}
 }
 
@@ -155,12 +146,9 @@ export async function DeleteNotification(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await DeleteNotification(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await DeleteNotification(params)
 	}
 }

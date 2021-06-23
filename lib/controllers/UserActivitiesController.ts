@@ -55,12 +55,9 @@ export async function GetUserActivities(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetUserActivities(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetUserActivities(params)
 	}
 }

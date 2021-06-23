@@ -22,7 +22,9 @@ export { ErrorCodes }
 // utils
 export {
 	generateUuid,
-	BlobToBase64
+	BlobToBase64,
+	ConvertErrorToApiErrorResponse,
+	HandleApiError
 } from './lib/utils'
 
 // models

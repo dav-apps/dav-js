@@ -52,13 +52,10 @@ export async function CreatePurchase(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreatePurchase(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreatePurchase(params)
 	}
 }
 
@@ -130,13 +127,10 @@ export async function CompletePurchase(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CompletePurchase(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CompletePurchase(params)
 	}
 }
 
@@ -162,12 +156,9 @@ export async function DeletePurchase(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await DeletePurchase(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await DeletePurchase(params)
 	}
 }

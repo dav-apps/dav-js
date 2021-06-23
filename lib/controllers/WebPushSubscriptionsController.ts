@@ -43,13 +43,10 @@ export async function CreateWebPushSubscription(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateWebPushSubscription(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateWebPushSubscription(params)
 	}
 }
 
@@ -80,13 +77,10 @@ export async function GetWebPushSubscription(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetWebPushSubscription(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetWebPushSubscription(params)
 	}
 }
 
@@ -117,12 +111,9 @@ export async function DeleteWebPushSubscription(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await DeleteWebPushSubscription(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await DeleteWebPushSubscription(params)
 	}
 }

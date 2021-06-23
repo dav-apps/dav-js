@@ -38,13 +38,10 @@ export async function CreateProvider(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateProvider(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateProvider(params)
 	}
 }
 
@@ -73,12 +70,9 @@ export async function GetProvider(params?: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetProvider()
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetProvider()
 	}
 }

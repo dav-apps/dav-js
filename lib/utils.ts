@@ -49,7 +49,7 @@ export function getNotificationKey(uuid?: string) {
 	}
 }
 
-export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
+export function ConvertErrorToApiErrorResponse(error: any): ApiErrorResponse {
 	if (error.response) {
 		// API error
 		return {
@@ -62,7 +62,7 @@ export function ConvertErrorToApiErrorResponse(error: any) : ApiErrorResponse {
 	}
 }
 
-export async function HandleApiError(error: any): Promise<string | ApiErrorResponse> {
+export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 	let errorResponse = ConvertErrorToApiErrorResponse(error)
 
 	if (
@@ -77,9 +77,7 @@ export async function HandleApiError(error: any): Promise<string | ApiErrorRespo
 
 			// Save the new access token in the database
 			await SetAccessToken(accessToken)
-
-			// Return the access token
-			return accessToken
+			return null
 		} else {
 			return renewSessionResult as ApiErrorResponse
 		}

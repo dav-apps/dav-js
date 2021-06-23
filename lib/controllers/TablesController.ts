@@ -44,13 +44,10 @@ export async function CreateTable(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateTable(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateTable(params)
 	}
 }
 
@@ -91,12 +88,9 @@ export async function GetTable(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetTable(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetTable(params)
 	}
 }

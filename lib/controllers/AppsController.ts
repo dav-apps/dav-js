@@ -42,13 +42,10 @@ export async function CreateApp(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateApp(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateApp(params)
 	}
 }
 
@@ -101,13 +98,10 @@ export async function GetApp(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetApp(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetApp(params)
 	}
 }
 
@@ -156,12 +150,9 @@ export async function UpdateApp(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await UpdateApp(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await UpdateApp(params)
 	}
 }

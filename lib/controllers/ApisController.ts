@@ -40,13 +40,10 @@ export async function CreateApi(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await CreateApi(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await CreateApi(params)
 	}
 }
 
@@ -78,12 +75,9 @@ export async function GetApi(params: {
 			return ConvertErrorToApiErrorResponse(error)
 		}
 
-		let result = await HandleApiError(error)
+		let renewSessionError = await HandleApiError(error)
+		if (renewSessionError != null) return renewSessionError
 
-		if (typeof result == "string") {
-			return await GetApi(params)
-		} else {
-			return result as ApiErrorResponse
-		}
+		return await GetApi(params)
 	}
 }
