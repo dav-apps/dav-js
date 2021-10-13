@@ -1,11 +1,11 @@
 {
 	"name": "dav-js",
-	"version": "2.0.8",
+	"version": "2.0.9",
 	"description": "JavaScript library for accessing the dav API",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"test": "./node_modules/mocha/bin/mocha -r mock-local-storage -r ts-node/register test/*.spec.ts test/**/*.spec.ts",
+		"test": "env TS_NODE_PROJECT=tsconfig.test.json mocha -r mock-local-storage -r ts-node/register test/*.spec.ts test/**/*.spec.ts",
 		"prepublishOnly": "npm run build",
 		"compile": "npm run clean && tsc -p . && npm run copyJs",
 		"watch": "tsc -w -p .",
@@ -30,20 +30,20 @@
 		"dist/lib"
 	],
 	"dependencies": {
-		"axios": "^0.21.1",
-		"crypto-js": "^4.0.0",
-		"localforage": "^1.9.0",
+		"axios": "^0.21.4",
+		"crypto-js": "^4.1.1",
+		"localforage": "^1.10.0",
 		"localforage-startswith": "^1.4.0"
 	},
 	"devDependencies": {
-		"@types/chai": "^4.2.14",
+		"@types/chai": "^4.2.22",
 		"@types/crypto-js": "^4.0.1",
-		"@types/mocha": "^8.2.0",
-		"@types/moxios": "^0.4.10",
+		"@types/mocha": "^9.0.0",
+		"@types/moxios": "^0.4.12",
 		"@types/node": "^14.14.22",
-		"chai": "^4.2.0",
+		"chai": "^4.3.4",
 		"cpx": "^1.5.0",
-		"mocha": "^8.2.1",
+		"mocha": "^9.1.2",
 		"mock-local-storage": "^1.1.17",
 		"moxios": "^0.4.0",
 		"ts-node": "^9.1.1",
