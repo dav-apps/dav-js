@@ -1,6 +1,5 @@
-import 'mocha'
 import { assert } from 'chai'
-import { SortTableIds } from '../lib/utils'
+import { SortTableIds } from '../lib/utils.js'
 
 describe("SortTableIds function", () => {
 	it("should return the correct array when there are no parallel table ids", () => {

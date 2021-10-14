@@ -1,16 +1,16 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import { davDevAuth } from '../constants'
-import * as ErrorCodes from '../../lib/errorCodes'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import { davDevAuth } from '../constants.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
 import {
 	CreateSession,
 	CreateSessionFromAccessToken,
 	RenewSession,
 	DeleteSession,
 	SessionResponseData
-} from '../../lib/controllers/SessionsController'
+} from '../../lib/controllers/SessionsController.js'
 
 beforeEach(() => {
 	moxios.install()

@@ -1,16 +1,16 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { TableObject } from '../../lib/models/TableObject'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { TableObject } from '../../lib/models/TableObject.js'
 import {
 	CreateTableObject,
 	GetTableObject,
 	UpdateTableObject,
 	DeleteTableObject,
 	RemoveTableObject
-} from '../../lib/controllers/TableObjectsController'
+} from '../../lib/controllers/TableObjectsController.js'
 
 beforeEach(() => {
 	moxios.install()

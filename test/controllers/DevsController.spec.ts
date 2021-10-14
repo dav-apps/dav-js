@@ -1,10 +1,10 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { App } from '../../lib/models/App'
-import { GetDev, GetDevResponseData } from '../../lib/controllers/DevsController'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { App } from '../../lib/models/App.js'
+import { GetDev, GetDevResponseData } from '../../lib/controllers/DevsController.js'
 
 beforeEach(() => {
 	moxios.install()

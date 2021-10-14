@@ -1,11 +1,11 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse, SubscriptionStatus } from '../../lib/types'
-import { davDevAuth } from '../constants'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { User } from '../../lib/models/User'
-import { App } from '../../lib/models/App'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse, SubscriptionStatus } from '../../lib/types.js'
+import { davDevAuth } from '../constants.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { User } from '../../lib/models/User.js'
+import { App } from '../../lib/models/App.js'
 import {
 	Signup,
 	GetUsers,
@@ -23,7 +23,7 @@ import {
 	SignupResponseData,
 	GetUsersResponseData,
 	CreateStripeCustomerForUserResponseData
-} from '../../lib/controllers/UsersController'
+} from '../../lib/controllers/UsersController.js'
 
 beforeEach(() => {
 	moxios.install()

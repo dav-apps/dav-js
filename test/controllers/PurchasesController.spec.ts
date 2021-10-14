@@ -1,11 +1,11 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { davDevAuth } from '../constants'
-import { ApiResponse, ApiErrorResponse, Currency } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { Purchase } from '../../lib/models/Purchase'
-import { CreatePurchase, GetPurchase, CompletePurchase, DeletePurchase } from '../../lib/controllers/PurchasesController'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { davDevAuth } from '../constants.js'
+import { ApiResponse, ApiErrorResponse, Currency } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { Purchase } from '../../lib/models/Purchase.js'
+import { CreatePurchase, GetPurchase, CompletePurchase, DeletePurchase } from '../../lib/controllers/PurchasesController.js'
 
 beforeEach(() => {
 	moxios.install()

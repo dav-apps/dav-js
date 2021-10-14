@@ -1,11 +1,10 @@
-import 'mocha'
 import { assert } from 'chai'
-import * as localforage from 'localforage'
-import { Environment, GenericUploadStatus } from '../../lib/types'
-import { testerXTestAppAccessToken } from '../constants'
-import { Dav } from '../../lib/Dav'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
-import { Notification } from '../../lib/models/Notification'
+import localforage from 'localforage'
+import { Environment, GenericUploadStatus } from '../../lib/types.js'
+import { testerXTestAppAccessToken } from '../constants.js'
+import { Dav } from '../../lib/Dav.js'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
+import { Notification } from '../../lib/models/Notification.js'
 
 beforeEach(async () => {
 	// Reset global variables

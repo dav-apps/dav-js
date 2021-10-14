@@ -1,11 +1,10 @@
-import 'mocha'
 import { assert } from 'chai'
-import * as localforage from 'localforage'
-import { Environment, TableObjectUploadStatus } from '../../lib/types'
-import { testerXTestAppAccessToken } from '../constants'
-import { Dav } from '../../lib/Dav'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
-import { TableObject } from '../../lib/models/TableObject'
+import localforage from 'localforage'
+import { Environment, TableObjectUploadStatus } from '../../lib/types.js'
+import { testerXTestAppAccessToken } from '../constants.js'
+import { Dav } from '../../lib/Dav.js'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
+import { TableObject } from '../../lib/models/TableObject.js'
 
 beforeEach(async () => {
 	// Reset global variables

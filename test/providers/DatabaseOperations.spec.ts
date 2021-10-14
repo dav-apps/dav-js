@@ -1,6 +1,5 @@
-import 'mocha'
 import { assert } from 'chai'
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import {
 	Environment,
 	DatabaseSession,
@@ -10,16 +9,16 @@ import {
 	WebPushSubscriptionUploadStatus,
 	TableObjectUploadStatus,
 	DatabaseTableObject
-} from '../../lib/types'
-import { oldUserKey, sessionKey, userKey, webPushSubscriptionKey } from '../../lib/constants'
-import { generateUuid, getNotificationKey, getTableObjectKey } from '../../lib/utils'
-import { SetTableObjectsArray } from '../utils'
-import { Dav } from '../../lib/Dav'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
-import { TableObject } from '../../lib/models/TableObject'
-import { Notification } from '../../lib/models/Notification'
-import { App } from '../../lib/models/App'
-import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
+} from '../../lib/types.js'
+import { oldUserKey, sessionKey, userKey, webPushSubscriptionKey } from '../../lib/constants.js'
+import { generateUuid, getNotificationKey, getTableObjectKey } from '../../lib/utils.js'
+import { SetTableObjectsArray } from '../utils.js'
+import { Dav } from '../../lib/Dav.js'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
+import { TableObject } from '../../lib/models/TableObject.js'
+import { Notification } from '../../lib/models/Notification.js'
+import { App } from '../../lib/models/App.js'
+import { WebPushSubscription } from '../../lib/models/WebPushSubscription.js'
 
 beforeEach(async () => {
 	// Reset global variables

@@ -1,15 +1,15 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { Notification } from '../../lib/models/Notification'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { Notification } from '../../lib/models/Notification.js'
 import {
 	CreateNotification,
 	GetNotifications,
 	UpdateNotification,
 	DeleteNotification
-} from '../../lib/controllers/NotificationsController'
+} from '../../lib/controllers/NotificationsController.js'
 
 beforeEach(() => {
 	moxios.install()

@@ -1,6 +1,5 @@
-import 'mocha'
 import { assert } from 'chai'
-import { Auth } from '../../lib/models/Auth'
+import { Auth } from '../../lib/models/Auth.js'
 
 describe("Constructor", () => {
 	it("should assign the params and generate the correct auth token", () => {

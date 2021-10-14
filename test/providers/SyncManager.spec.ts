@@ -1,6 +1,5 @@
-import 'mocha'
 import { assert } from 'chai'
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import {
 	ApiResponse,
 	ApiErrorResponse,
@@ -9,14 +8,14 @@ import {
 	DatabaseUser,
 	Plan,
 	TableObjectUploadStatus
-} from '../../lib/types'
-import { generateUuid } from '../../lib/utils'
-import * as Constants from '../constants'
-import { defaultProfileImageUrl } from '../../lib/constants'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { Dav } from '../../lib/Dav'
-import { App } from '../../lib/models/App'
-import { TableObject } from '../../lib/models/TableObject'
+} from '../../lib/types.js'
+import { generateUuid } from '../../lib/utils.js'
+import * as Constants from '../constants.js'
+import { defaultProfileImageUrl } from '../../lib/constants.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { Dav } from '../../lib/Dav.js'
+import { App } from '../../lib/models/App.js'
+import { TableObject } from '../../lib/models/TableObject.js'
 import {
 	SessionSyncPush,
 	LoadUser,
@@ -24,11 +23,11 @@ import {
 	Sync,
 	SyncPush,
 	DownloadTableObject
-} from '../../lib/providers/SyncManager'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
-import * as SessionsController from '../../lib/controllers/SessionsController'
-import * as TablesController from '../../lib/controllers/TablesController'
-import * as TableObjectsController from '../../lib/controllers/TableObjectsController'
+} from '../../lib/providers/SyncManager.js'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
+import * as SessionsController from '../../lib/controllers/SessionsController.js'
+import * as TablesController from '../../lib/controllers/TablesController.js'
+import * as TableObjectsController from '../../lib/controllers/TableObjectsController.js'
 
 beforeEach(async () => {
 	// Reset global variables

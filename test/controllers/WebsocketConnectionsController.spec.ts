@@ -1,12 +1,12 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
 import {
 	CreateWebsocketConnection,
 	WebsocketConnectionResponseData
-} from '../../lib/controllers/WebsocketConnectionsController'
+} from '../../lib/controllers/WebsocketConnectionsController.js'
 
 beforeEach(() => {
 	moxios.install()

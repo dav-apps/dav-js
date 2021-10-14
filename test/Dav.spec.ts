@@ -1,9 +1,8 @@
-import 'mocha'
 import { assert } from 'chai'
-import { Dav } from '../lib/Dav'
-import * as DatabaseOperations from '../lib/providers/DatabaseOperations'
-import { Environment, SessionUploadStatus } from '../lib/types'
-import * as Constants from './constants'
+import { Dav } from '../lib/Dav.js'
+import * as DatabaseOperations from '../lib/providers/DatabaseOperations.js'
+import { Environment, SessionUploadStatus } from '../lib/types.js'
+import * as Constants from './constants.js'
 
 describe("Dav class", () => {
 	describe("Logout function", () => {

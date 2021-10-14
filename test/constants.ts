@@ -1,6 +1,6 @@
-import { TableObject } from '../lib/models/TableObject'
-import { Auth } from '../lib/models/Auth'
-import { Plan } from '../lib/types'
+import { TableObject } from '../lib/models/TableObject.js'
+import { Auth } from '../lib/models/Auth.js'
+import { Plan } from '../lib/types.js'
 
 export const testerXTestAppAccessToken = "ckktuu0gs00008iw3ctnrofzf"
 

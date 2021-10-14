@@ -1,6 +1,6 @@
-import * as localforage from 'localforage'
-import { tableObjectsKey } from '../lib/constants'
-import { TableObject } from '../lib/models/TableObject'
+import localforage from 'localforage'
+import { tableObjectsKey } from '../lib/constants.js'
+import { TableObject } from '../lib/models/TableObject.js'
 
 export async function SetTableObjectsArray(tableObjects: Array<TableObject>) {
 	try {

@@ -1,13 +1,13 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
 import {
 	CreateProvider,
 	GetProvider,
 	ProviderResponseData
-} from '../../lib/controllers/ProvidersController'
+} from '../../lib/controllers/ProvidersController.js'
 
 beforeEach(() => {
 	moxios.install()

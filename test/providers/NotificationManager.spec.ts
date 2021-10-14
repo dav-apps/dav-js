@@ -1,28 +1,27 @@
-import 'mocha'
 import { assert } from 'chai'
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import {
 	ApiResponse,
 	ApiErrorResponse,
 	Environment,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus
-} from '../../lib/types'
-import { generateUuid } from '../../lib/utils'
-import * as Constants from '../constants'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { Dav } from '../../lib/Dav'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations'
+} from '../../lib/types.js'
+import { generateUuid } from '../../lib/utils.js'
+import * as Constants from '../constants.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { Dav } from '../../lib/Dav.js'
+import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
 import {
 	WebPushSubscriptionSync,
 	WebPushSubscriptionSyncPush,
 	NotificationSync,
 	NotificationSyncPush
-} from '../../lib/providers/NotificationManager'
-import * as NotificationsController from '../../lib/controllers/NotificationsController'
-import * as WebPushSubscriptionsController from '../../lib/controllers/WebPushSubscriptionsController'
-import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
-import { Notification } from '../../lib/models/Notification'
+} from '../../lib/providers/NotificationManager.js'
+import * as NotificationsController from '../../lib/controllers/NotificationsController.js'
+import * as WebPushSubscriptionsController from '../../lib/controllers/WebPushSubscriptionsController.js'
+import { WebPushSubscription } from '../../lib/models/WebPushSubscription.js'
+import { Notification } from '../../lib/models/Notification.js'
 
 var webPushSubscriptionsToDelete: string[] = []
 

@@ -1,14 +1,14 @@
 import { assert } from 'chai'
-import * as moxios from 'moxios'
-import { Dav } from '../../lib/Dav'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types'
-import * as ErrorCodes from '../../lib/errorCodes'
-import { WebPushSubscription } from '../../lib/models/WebPushSubscription'
+import moxios from 'moxios'
+import { Dav } from '../../lib/Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
+import * as ErrorCodes from '../../lib/errorCodes.js'
+import { WebPushSubscription } from '../../lib/models/WebPushSubscription.js'
 import {
 	CreateWebPushSubscription,
 	GetWebPushSubscription,
 	DeleteWebPushSubscription
-} from '../../lib/controllers/WebPushSubscriptionsController'
+} from '../../lib/controllers/WebPushSubscriptionsController.js'
 
 beforeEach(() => {
 	moxios.install()
