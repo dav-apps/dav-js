@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse, Currency } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -15,7 +15,7 @@ export async function CreatePurchase(params: {
 	tableObjects: string[]
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/purchase`,
 			headers: {
@@ -64,7 +64,7 @@ export async function GetPurchase(params: {
 	uuid: string
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}`,
 			headers: {
@@ -98,7 +98,7 @@ export async function CompletePurchase(params: {
 	uuid: string
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}/complete`,
 			headers: {
@@ -139,7 +139,7 @@ export async function DeletePurchase(params: {
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}`,
 			headers: {

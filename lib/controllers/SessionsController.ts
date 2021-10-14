@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { Auth } from '../models/Auth.js'
 import { ApiErrorResponse, ApiResponse } from '../types.js'
@@ -30,7 +30,7 @@ export async function CreateSession(params: {
 		if (params.deviceType != null) data["device_type"] = params.deviceType
 		if (params.deviceOs != null) data["device_os"] = params.deviceOs
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/session`,
 			headers: {
@@ -70,7 +70,7 @@ export async function CreateSessionFromAccessToken(params: {
 		if (params.deviceType != null) data["device_type"] = params.deviceType
 		if (params.deviceOs != null) data["device_os"] = params.deviceOs
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/session/access_token`,
 			headers: {
@@ -94,7 +94,7 @@ export async function RenewSession(params: {
 	accessToken: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/session/renew`,
 			headers: {
@@ -117,7 +117,7 @@ export async function DeleteSession(params: {
 	accessToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/session`,
 			headers: {

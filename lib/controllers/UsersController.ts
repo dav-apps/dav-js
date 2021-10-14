@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -51,7 +51,7 @@ export async function Signup(params: {
 		if (params.deviceType != null) data["device_type"] = params.deviceType
 		if (params.deviceOs != null) data["device_os"] = params.deviceOs
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/signup`,
 			headers: {
@@ -93,7 +93,7 @@ export async function GetUsers(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/users`,
 			headers: {
@@ -134,7 +134,7 @@ export async function GetUser(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
@@ -184,7 +184,7 @@ export async function GetUserById(params: {
 	id: number
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user/${params.id}`,
 			headers: {
@@ -229,7 +229,7 @@ export async function UpdateUser(params: {
 		if (params.firstName != null) data["first_name"] = params.firstName
 		if (params.password != null) data["password"] = params.password
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
@@ -284,7 +284,7 @@ export async function SetProfileImageOfUser(params: {
 	let data = readFileResult.currentTarget["result"]
 
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user/profile_image`,
 			headers: {
@@ -330,7 +330,7 @@ export async function GetProfileImageOfUser(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user/profile_image`,
 			headers: {
@@ -360,7 +360,7 @@ export async function GetProfileImageOfUserById(params: {
 	id: number
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/profile_image`,
 			headers: {
@@ -382,7 +382,7 @@ export async function CreateStripeCustomerForUser(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/stripe`,
 			headers: {
@@ -413,7 +413,7 @@ export async function SendConfirmationEmail(params: {
 	id: number
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/send_confirmation_email`,
 			headers: {
@@ -435,7 +435,7 @@ export async function SendPasswordResetEmail(params: {
 	email: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/send_password_reset_email`,
 			headers: {
@@ -461,7 +461,7 @@ export async function ConfirmUser(params: {
 	emailConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/confirm`,
 			headers: {
@@ -487,7 +487,7 @@ export async function SaveNewEmail(params: {
 	emailConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_email`,
 			headers: {
@@ -513,7 +513,7 @@ export async function SaveNewPassword(params: {
 	passwordConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_password`,
 			headers: {
@@ -539,7 +539,7 @@ export async function ResetEmail(params: {
 	emailConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/reset_email`,
 			headers: {
@@ -566,7 +566,7 @@ export async function SetPassword(params: {
 	passwordConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user/${params.id}/password`,
 			headers: {

@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -14,7 +14,7 @@ export async function CreateProvider(params: {
 	country: string
 }): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {
@@ -49,7 +49,7 @@ export async function GetProvider(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {

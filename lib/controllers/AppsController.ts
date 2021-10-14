@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -13,7 +13,7 @@ export async function CreateApp(params: {
 	description: string
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/app`,
 			headers: {
@@ -51,7 +51,7 @@ export async function CreateApp(params: {
 
 export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/apps`
 		})
@@ -70,7 +70,7 @@ export async function GetApp(params: {
 	id: number
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
@@ -124,7 +124,7 @@ export async function UpdateApp(params: {
 		if (params.googlePlayLink != null) data["google_play_link"] = params.googlePlayLink
 		if (params.microsoftStoreLink != null) data["microsoft_store_link"] = params.microsoftStoreLink
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {

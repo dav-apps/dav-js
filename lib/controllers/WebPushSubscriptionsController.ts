@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { WebPushSubscription } from '../models/WebPushSubscription.js'
 import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '../types.js'
@@ -19,7 +19,7 @@ export async function CreateWebPushSubscription(params: {
 		}
 		if (params.uuid != null) data["uuid"] = params.uuid
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/web_push_subscription`,
 			headers: {
@@ -55,7 +55,7 @@ export async function GetWebPushSubscription(params: {
 	uuid: string
 }): Promise<ApiResponse<WebPushSubscription> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/web_push_subscription/${params.uuid}`,
 			headers: {
@@ -89,7 +89,7 @@ export async function DeleteWebPushSubscription(params: {
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/web_push_subscription/${params.uuid}`,
 			headers: {

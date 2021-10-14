@@ -1,4 +1,4 @@
-import * as CryptoJS from 'crypto-js'
+import CryptoJS from 'crypto-js'
 import { Dav } from '../Dav.js'
 import {
 	ApiErrorResponse,

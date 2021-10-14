@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -21,7 +21,7 @@ export async function CreateNotification(params: {
 		}
 		if (params.uuid != null) data["uuid"] = params.uuid
 		
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/notification`,
 			headers: {
@@ -53,7 +53,7 @@ export async function GetNotifications(params?: {
 	accessToken?: string
 }): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/notifications`,
 			headers: {
@@ -92,7 +92,7 @@ export async function UpdateNotification(params: {
 		if (params.title != null) data["title"] = params.title
 		if (params.body != null) data["body"] = params.body
 		
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
@@ -129,7 +129,7 @@ export async function DeleteNotification(params: {
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse>{
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {

@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -25,7 +25,7 @@ export async function GetAppUserActivities(params: {
 		if (params.start != null) urlParams["start"] = params.start
 		if (params.end != null) urlParams["end"] = params.end
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}/user_activities`,
 			headers: {

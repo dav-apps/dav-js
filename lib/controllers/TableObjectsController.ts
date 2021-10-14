@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -19,7 +19,7 @@ export async function CreateTableObject(params: {
 		if (params.file != null) data["file"] = params.file
 		if (params.properties != null) data["properties"] = params.properties
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table_object`,
 			headers: {
@@ -63,7 +63,7 @@ export async function GetTableObject(params: {
 	uuid: string
 }): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
@@ -106,7 +106,7 @@ export async function UpdateTableObject(params: {
 	properties: { [name: string]: string | boolean | number }
 }): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
@@ -151,7 +151,7 @@ export async function DeleteTableObject(params: {
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
@@ -190,7 +190,7 @@ export async function SetTableObjectFile(params: {
 	let data = readFileResult.currentTarget["result"]
 
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
@@ -234,7 +234,7 @@ export async function GetTableObjectFile(params: {
 	uuid: string
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
@@ -264,7 +264,7 @@ export async function RemoveTableObject(params: {
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'delete',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/access`,
 			headers: {

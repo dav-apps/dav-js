@@ -1,4 +1,4 @@
-import * as axios from 'axios'
+import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
@@ -19,7 +19,7 @@ export async function CreateTable(params: {
 	name: string
 }): Promise<ApiResponse<Table> | ApiErrorResponse> {
 	try {
-		let response = await axios.default({
+		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/table`,
 			headers: {
@@ -62,7 +62,7 @@ export async function GetTable(params: {
 		if (params.count != null) urlParams["count"] = params.count
 		if (params.page != null) urlParams["page"] = params.page
 
-		let response = await axios.default({
+		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table/${params.id}`,
 			headers: {
