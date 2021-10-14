@@ -1,11 +1,12 @@
 {
 	"name": "dav-js",
-	"version": "2.0.9",
+	"version": "2.0.10",
 	"description": "JavaScript library for accessing the dav API",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"type": "module",
 	"scripts": {
-		"test": "env TS_NODE_PROJECT=tsconfig.test.json mocha -r mock-local-storage -r ts-node/register test/*.spec.ts test/**/*.spec.ts",
+		"test": "npm run compile && mocha --require mock-local-storage dist/test/*.spec.js dist/test/**/*.spec.js",
 		"prepublishOnly": "npm run build",
 		"compile": "npm run clean && tsc -p . && npm run copyJs",
 		"watch": "tsc -w -p .",
@@ -46,7 +47,6 @@
 		"mocha": "^9.1.2",
 		"mock-local-storage": "^1.1.17",
 		"moxios": "^0.4.0",
-		"ts-node": "^9.1.1",
-		"typescript": "^4.1.3"
+		"typescript": "^4.4.4"
 	}
 }
