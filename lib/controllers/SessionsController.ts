@@ -1,8 +1,8 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { Auth } from '../models/Auth'
-import { ApiErrorResponse, ApiResponse } from '../types'
-import { ConvertErrorToApiErrorResponse } from '../utils'
+import { Dav } from '../Dav.js'
+import { Auth } from '../models/Auth.js'
+import { ApiErrorResponse, ApiResponse } from '../types.js'
+import { ConvertErrorToApiErrorResponse } from '../utils.js'
 
 export interface SessionResponseData {
 	accessToken: string,

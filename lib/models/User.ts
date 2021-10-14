@@ -1,5 +1,5 @@
-import { Plan, SubscriptionStatus } from '../types'
-import { App } from './App'
+import { Plan, SubscriptionStatus } from '../types.js'
+import { App } from './App.js'
 
 export class User {
 	constructor(

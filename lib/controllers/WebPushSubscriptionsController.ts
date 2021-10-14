@@ -1,8 +1,8 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { WebPushSubscription } from '../models/WebPushSubscription'
-import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
+import { Dav } from '../Dav.js'
+import { WebPushSubscription } from '../models/WebPushSubscription.js'
+import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 
 export async function CreateWebPushSubscription(params: {
 	accessToken?: string,

@@ -1,30 +1,30 @@
-import { Dav } from '../Dav'
+import { Dav } from '../Dav.js'
 import {
 	webPushPublicKey
-} from '../constants'
+} from '../constants.js'
 import {
 	ApiResponse,
 	ApiErrorResponse,
 	Environment,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus
-} from '../types'
+} from '../types.js'
 import {
 	generateUuid,
 	urlBase64ToUint8Array,
 	requestNotificationPermission
-} from '../utils'
-import * as ErrorCodes from '../errorCodes'
-import * as DatabaseOperations from './DatabaseOperations'
-import { WebPushSubscription } from '../models/WebPushSubscription'
-import { Notification } from '../models/Notification'
-import * as WebPushSubscriptionsController from '../controllers/WebPushSubscriptionsController'
+} from '../utils.js'
+import * as ErrorCodes from '../errorCodes.js'
+import * as DatabaseOperations from './DatabaseOperations.js'
+import { WebPushSubscription } from '../models/WebPushSubscription.js'
+import { Notification } from '../models/Notification.js'
+import * as WebPushSubscriptionsController from '../controllers/WebPushSubscriptionsController.js'
 import {
 	CreateNotification,
 	GetNotifications,
 	DeleteNotification,
 	UpdateNotification
-} from '../controllers/NotificationsController'
+} from '../controllers/NotificationsController.js'
 
 var isSyncingWebPushSubscription = false
 var isSyncingNotifications = false

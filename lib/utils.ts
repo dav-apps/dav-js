@@ -1,8 +1,8 @@
-import { Dav } from './Dav'
-import { ApiResponse, ApiErrorResponse } from './types'
-import * as ErrorCodes from './errorCodes'
-import * as DatabaseOperations from './providers/DatabaseOperations'
-import { RenewSession, SessionResponseData } from './controllers/SessionsController'
+import { Dav } from './Dav.js'
+import { ApiResponse, ApiErrorResponse } from './types.js'
+import * as ErrorCodes from './errorCodes.js'
+import * as DatabaseOperations from './providers/DatabaseOperations.js'
+import { RenewSession, SessionResponseData } from './controllers/SessionsController.js'
 
 export function generateUuid() {
 	var d = new Date().getTime()

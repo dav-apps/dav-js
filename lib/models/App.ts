@@ -1,5 +1,5 @@
-import { Table, ConvertObjectArrayToTables } from './Table'
-import { Api, ConvertObjectArrayToApis } from './Api'
+import { Table, ConvertObjectArrayToTables } from './Table.js'
+import { Api, ConvertObjectArrayToApis } from './Api.js'
 
 export class App {
 	constructor(

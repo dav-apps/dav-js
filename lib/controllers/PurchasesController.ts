@@ -1,9 +1,9 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse, Currency } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { Auth } from '../models/Auth'
-import { Purchase } from '../models/Purchase'
+import { Dav } from '../Dav.js'
+import { ApiResponse, ApiErrorResponse, Currency } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { Auth } from '../models/Auth.js'
+import { Purchase } from '../models/Purchase.js'
 
 export async function CreatePurchase(params: {
 	accessToken?: string,

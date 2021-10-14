@@ -1,4 +1,4 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import { extendPrototype } from 'localforage-startswith'
 import {
 	SessionUploadStatus,
@@ -8,25 +8,25 @@ import {
 	DatabaseSession,
 	DatabaseUser,
 	DatabaseNotification
-} from '../types'
+} from '../types.js'
 import {
 	sessionKey,
 	userKey,
 	oldUserKey,
 	webPushSubscriptionKey,
 	tableObjectsKey
-} from '../constants'
+} from '../constants.js'
 import {
 	generateUuid,
 	getTableObjectKey,
 	getNotificationKey,
 	requestStoragePersistence
-} from '../utils'
-import { Dav } from '../Dav'
-import { TableObject } from '../models/TableObject'
-import { Notification } from '../models/Notification'
-import { WebPushSubscription } from '../models/WebPushSubscription'
-import { ConvertObjectArrayToApps } from '../models/App'
+} from '../utils.js'
+import { Dav } from '../Dav.js'
+import { TableObject } from '../models/TableObject.js'
+import { Notification } from '../models/Notification.js'
+import { WebPushSubscription } from '../models/WebPushSubscription.js'
+import { ConvertObjectArrayToApps } from '../models/App.js'
 
 extendPrototype(localforage)
 

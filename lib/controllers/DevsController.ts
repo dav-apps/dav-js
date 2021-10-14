@@ -1,8 +1,8 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { App, ConvertObjectArrayToApps } from '../models/App'
+import { Dav } from '../Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { App, ConvertObjectArrayToApps } from '../models/App.js'
 
 export interface GetDevResponseData{
 	id: number,

@@ -1,7 +1,7 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
+import { Dav } from '../Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 
 export interface GetAppUsersResponseData{
 	appUsers: AppUser[]

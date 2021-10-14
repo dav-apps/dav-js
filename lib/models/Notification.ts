@@ -1,8 +1,8 @@
-import { Environment, GenericUploadStatus } from '../types'
-import { generateUuid } from '../utils'
-import { Dav } from '../Dav'
-import * as DatabaseOperations from '../providers/DatabaseOperations'
-import * as NotificationManager from '../providers/NotificationManager'
+import { Environment, GenericUploadStatus } from '../types.js'
+import { generateUuid } from '../utils.js'
+import { Dav } from '../Dav.js'
+import * as DatabaseOperations from '../providers/DatabaseOperations.js'
+import * as NotificationManager from '../providers/NotificationManager.js'
 
 export class Notification {
 	public Uuid: string = generateUuid()

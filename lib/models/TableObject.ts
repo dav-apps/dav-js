@@ -1,4 +1,4 @@
-import { Dav } from '../Dav'
+import { Dav } from '../Dav.js'
 import {
 	ApiResponse,
 	Environment,
@@ -6,11 +6,11 @@ import {
 	TableObjectUploadStatus,
 	TableObjectFileDownloadStatus,
 	Property
-} from '../types'
-import { generateUuid } from '../utils'
-import * as SyncManager from '../providers/SyncManager'
-import * as DatabaseOperations from '../providers/DatabaseOperations'
-import { GetTableObjectFile } from '../controllers/TableObjectsController'
+} from '../types.js'
+import { generateUuid } from '../utils.js'
+import * as SyncManager from '../providers/SyncManager.js'
+import * as DatabaseOperations from '../providers/DatabaseOperations.js'
+import { GetTableObjectFile } from '../controllers/TableObjectsController.js'
 
 export class TableObject {
 	public Uuid: string = generateUuid()

@@ -1,8 +1,8 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification'
+import { Dav } from '../Dav.js'
+import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification.js'
 
 export async function CreateNotification(params: {
 	accessToken?: string,

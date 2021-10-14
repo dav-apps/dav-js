@@ -1,6 +1,6 @@
-import { ApiEndpoint, ConvertObjectArrayToApiEndpoints } from './ApiEndpoint'
-import { ApiFunction, ConvertObjectArrayToApiFunctions } from './ApiFunction'
-import { ApiError, ConvertObjectArrayToApiErrors } from './ApiError'
+import { ApiEndpoint, ConvertObjectArrayToApiEndpoints } from './ApiEndpoint.js'
+import { ApiFunction, ConvertObjectArrayToApiFunctions } from './ApiFunction.js'
+import { ApiError, ConvertObjectArrayToApiErrors } from './ApiError.js'
 
 export class Api {
 	constructor(

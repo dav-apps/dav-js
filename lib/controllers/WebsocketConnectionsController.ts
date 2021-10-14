@@ -1,7 +1,7 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiErrorResponse, ApiResponse } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
+import { Dav } from '../Dav.js'
+import { ApiErrorResponse, ApiResponse } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 
 export interface WebsocketConnectionResponseData{
 	token: string

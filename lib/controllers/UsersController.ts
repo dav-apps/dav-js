@@ -1,10 +1,10 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { Auth } from '../models/Auth'
-import { User } from '../models/User'
-import { ConvertObjectArrayToApps } from '../models/App'
+import { Dav } from '../Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { Auth } from '../models/Auth.js'
+import { User } from '../models/User.js'
+import { ConvertObjectArrayToApps } from '../models/App.js'
 
 export interface SignupResponseData {
 	user: User,

@@ -1,11 +1,11 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiResponse, ApiErrorResponse } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { App } from '../models/App'
-import { ConvertObjectArrayToApps } from '../models/App'
-import { ConvertObjectArrayToTables } from '../models/Table'
-import { ConvertObjectArrayToApis } from '../models/Api'
+import { Dav } from '../Dav.js'
+import { ApiResponse, ApiErrorResponse } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { App } from '../models/App.js'
+import { ConvertObjectArrayToApps } from '../models/App.js'
+import { ConvertObjectArrayToTables } from '../models/Table.js'
+import { ConvertObjectArrayToApis } from '../models/Api.js'
 
 export async function CreateApp(params: {
 	accessToken?: string,

@@ -1,5 +1,5 @@
 import * as CryptoJS from 'crypto-js'
-import { Dav } from '../Dav'
+import { Dav } from '../Dav.js'
 import {
 	ApiErrorResponse,
 	ApiResponse,
@@ -7,19 +7,19 @@ import {
 	DatabaseUser,
 	SessionUploadStatus,
 	TableObjectUploadStatus
-} from '../types'
-import { SortTableIds, BlobToBase64 } from '../utils'
+} from '../types.js'
+import { SortTableIds, BlobToBase64 } from '../utils.js'
 import {
 	defaultProfileImageUrl,
 	extPropertyName,
 	tableObjectUpdateChannelName
-} from '../constants'
-import * as ErrorCodes from '../errorCodes'
-import { TableObject } from '../models/TableObject'
-import { User } from '../models/User'
-import * as DatabaseOperations from './DatabaseOperations'
-import { GetUser, GetProfileImageOfUser } from '../controllers/UsersController'
-import { GetTable, GetTableResponseData } from '../controllers/TablesController'
+} from '../constants.js'
+import * as ErrorCodes from '../errorCodes.js'
+import { TableObject } from '../models/TableObject.js'
+import { User } from '../models/User.js'
+import * as DatabaseOperations from './DatabaseOperations.js'
+import { GetUser, GetProfileImageOfUser } from '../controllers/UsersController.js'
+import { GetTable, GetTableResponseData } from '../controllers/TablesController.js'
 import {
 	CreateTableObject,
 	GetTableObject,
@@ -27,9 +27,9 @@ import {
 	DeleteTableObject,
 	SetTableObjectFile,
 	RemoveTableObject
-} from '../controllers/TableObjectsController'
-import { CreateWebsocketConnection, WebsocketConnectionResponseData } from '../controllers/WebsocketConnectionsController'
-import { DeleteSession } from '../controllers/SessionsController'
+} from '../controllers/TableObjectsController.js'
+import { CreateWebsocketConnection, WebsocketConnectionResponseData } from '../controllers/WebsocketConnectionsController.js'
+import { DeleteSession } from '../controllers/SessionsController.js'
 
 var isSyncing = false
 var syncAgain = false

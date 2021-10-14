@@ -1,8 +1,8 @@
 import * as axios from 'axios'
-import { Dav } from '../Dav'
-import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils'
-import { TableObject } from '../models/TableObject'
+import { Dav } from '../Dav.js'
+import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { TableObject } from '../models/TableObject.js'
 
 export async function CreateTableObject(params: {
 	accessToken?: string,

@@ -1,4 +1,4 @@
-import { WebPushSubscriptionUploadStatus } from "../types"
+import { WebPushSubscriptionUploadStatus } from '../types.js'
 
 export class WebPushSubscription {
 	constructor(

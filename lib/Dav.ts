@@ -4,18 +4,18 @@ import {
 	SessionUploadStatus,
 	Plan,
 	SubscriptionStatus
-} from './types'
+} from './types.js'
 import {
 	apiBaseUrlDevelopment,
 	apiBaseUrlProduction,
 	websiteUrlDevelopment,
 	websiteUrlProduction,
 	defaultProfileImageUrl
-} from './constants'
-import * as DatabaseOperations from './providers/DatabaseOperations'
-import * as SyncManager from './providers/SyncManager'
-import * as NotificationManager from './providers/NotificationManager'
-import { App } from './models/App'
+} from './constants.js'
+import * as DatabaseOperations from './providers/DatabaseOperations.js'
+import * as SyncManager from './providers/SyncManager.js'
+import * as NotificationManager from './providers/NotificationManager.js'
+import { App } from './models/App.js'
 
 export class Dav {
 	static isLoggedIn: boolean = false
