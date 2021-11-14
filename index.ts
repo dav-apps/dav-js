@@ -100,6 +100,9 @@ export { TableObjectsController }
 import * as PurchasesController from './lib/controllers/PurchasesController.js'
 export { PurchasesController }
 
+import * as CollectionsController from './lib/controllers/CollectionsController.js'
+export { CollectionsController }
+
 import * as UserActivitiesController from './lib/controllers/UserActivitiesController.js'
 export { UserActivitiesController }
 export {
