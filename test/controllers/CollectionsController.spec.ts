@@ -39,6 +39,7 @@ describe("SetTableObjectsOfCollection function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -91,6 +92,7 @@ describe("SetTableObjectsOfCollection function", () => {
 			assert.equal(request.config.url, url)
 			assert.equal(request.config.method, 'put')
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
+			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			request.respondWith({
 				status: expectedResult.status,

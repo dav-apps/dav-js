@@ -14,7 +14,7 @@ export interface GetTableResponseData {
 }
 
 export async function CreateTable(params: {
-	accessToken?: number,
+	accessToken?: string,
 	appId: number,
 	name: string
 }): Promise<ApiResponse<Table> | ApiErrorResponse> {

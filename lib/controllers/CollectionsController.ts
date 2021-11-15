@@ -40,7 +40,6 @@ export async function SetTableObjectsOfCollection(params: {
 			}
 		}
 	} catch (error) {
-		console.log(error)
 		return ConvertErrorToApiErrorResponse(error)
 	}
 }
