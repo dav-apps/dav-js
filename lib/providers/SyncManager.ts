@@ -48,6 +48,8 @@ export async function InitServiceWorker() {
 	) return
 
 	await navigator.serviceWorker.ready
+	if (navigator.serviceWorker.controller == null) return
+
 	navigator.serviceWorker.controller.postMessage(Dav.notificationOptions)
 }
 
