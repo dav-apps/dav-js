@@ -3,14 +3,15 @@ import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 
-export interface GetAppUserActivitiesResponseData{
+export interface GetAppUserActivitiesResponseData {
 	days: AppUserActivityDay[]
 }
 
-export interface AppUserActivityDay{
-	time: Date,
-	countDaily: number,
-	countMonthly: number,
+export interface AppUserActivityDay {
+	time: Date
+	countDaily: number
+	countWeekly: number
+	countMonthly: number
 	countYearly: number
 }
 
@@ -19,7 +20,7 @@ export async function GetAppUserActivities(params: {
 	id: number,
 	start?: number,
 	end?: number
-}): Promise<ApiResponse<GetAppUserActivitiesResponseData> | ApiErrorResponse>{
+}): Promise<ApiResponse<GetAppUserActivitiesResponseData> | ApiErrorResponse> {
 	try {
 		let urlParams = {}
 		if (params.start != null) urlParams["start"] = params.start
@@ -40,6 +41,7 @@ export async function GetAppUserActivities(params: {
 			days.push({
 				time: new Date(day.time),
 				countDaily: day.count_daily,
+				countWeekly: day.count_weekly,
 				countMonthly: day.count_monthly,
 				countYearly: day.count_yearly
 			})

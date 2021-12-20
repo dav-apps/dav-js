@@ -3,14 +3,15 @@ import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 
-export interface GetUserActivitiesResponseData{
+export interface GetUserActivitiesResponseData {
 	days: UserActivityDay[]
 }
 
-export interface UserActivityDay{
-	time: Date,
-	countDaily: number,
-	countMonthly: number,
+export interface UserActivityDay {
+	time: Date
+	countDaily: number
+	countWeekly: number
+	countMonthly: number
 	countYearly: number
 }
 
@@ -39,6 +40,7 @@ export async function GetUserActivities(params: {
 			days.push({
 				time: new Date(day.time),
 				countDaily: day.count_daily,
+				countWeekly: day.count_weekly,
 				countMonthly: day.count_monthly,
 				countYearly: day.count_yearly
 			})
