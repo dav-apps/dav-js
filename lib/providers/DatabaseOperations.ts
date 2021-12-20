@@ -1,7 +1,6 @@
 import localforage from 'localforage'
 import { extendPrototype } from 'localforage-startswith'
 import {
-	SessionUploadStatus,
 	TableObjectUploadStatus,
 	TableObjectProperties,
 	DatabaseTableObject,
@@ -12,9 +11,7 @@ import {
 import {
 	sessionKey,
 	userKey,
-	oldUserKey,
-	webPushSubscriptionKey,
-	tableObjectsKey
+	webPushSubscriptionKey
 } from '../constants.js'
 import {
 	generateUuid,
@@ -26,7 +23,6 @@ import { Dav } from '../Dav.js'
 import { TableObject } from '../models/TableObject.js'
 import { Notification } from '../models/Notification.js'
 import { WebPushSubscription } from '../models/WebPushSubscription.js'
-import { ConvertObjectArrayToApps } from '../models/App.js'
 
 extendPrototype(localforage)
 
@@ -36,45 +32,7 @@ export async function SetSession(session: DatabaseSession) {
 }
 
 export async function GetSession(): Promise<DatabaseSession> {
-	// Check if there is already an old session from the previous version
-	let oldUser = await localforage.getItem(oldUserKey) as object
-
-	if (oldUser != null) {
-		let user: DatabaseUser = {
-			Id: oldUser["id"],
-			Email: oldUser["email"],
-			FirstName: oldUser["username"],
-			Confirmed: oldUser["confirmed"],
-			TotalStorage: oldUser["totalStorage"],
-			UsedStorage: oldUser["usedStorage"],
-			StripeCustomerId: oldUser["stripeCustomerId"],
-			Plan: oldUser["plan"],
-			SubscriptionStatus: oldUser["subscriptionStatus"],
-			PeriodEnd: oldUser["periodEnd"],
-			Dev: oldUser["dev"],
-			Provider: oldUser["provider"],
-			ProfileImage: null,
-			ProfileImageEtag: null,
-			Apps: ConvertObjectArrayToApps(oldUser["apps"])
-		}
-
-		// Save the new user
-		await SetUser(user)
-
-		// Save the new session with the jwt as access token
-		let session: DatabaseSession = {
-			AccessToken: oldUser["jwt"],
-			UploadStatus: SessionUploadStatus.UpToDate
-		}
-		await SetSession(session)
-
-		// Remove the old user from the database
-		await localforage.removeItem(oldUserKey)
-		
-		return session
-	} else {
-		return await localforage.getItem(sessionKey) as DatabaseSession
-	}
+	return await localforage.getItem(sessionKey) as DatabaseSession
 }
 
 export async function RemoveSession() {
@@ -154,7 +112,6 @@ export async function RemoveWebPushSubscription() {
 //#region TableObject functions
 export async function SetTableObject(tableObject: TableObject, overwrite: boolean = true): Promise<string> {
 	requestStoragePersistence()
-	await ConvertDatabaseFormat()
 
 	try {
 		if (!tableObject.Uuid) tableObject.Uuid = generateUuid()
@@ -194,15 +151,11 @@ export async function SetTableObjects(tableObjects: TableObject[], overwrite: bo
 }
 
 export async function GetAllTableObjects(tableId: number = -1, deleted: boolean = false): Promise<TableObject[]> {
-	await ConvertDatabaseFormat()
-
 	// Get all table objects from separateKeyStorage
 	return await GetAllTableObjectsFromSeparateKeyStorage(tableId, deleted)
 }
 
 export async function GetTableObject(uuid: string, tableId?: number): Promise<TableObject> {
-	await ConvertDatabaseFormat()
-
 	// Database -> DatabaseTableObject -(ConvertObjectToTableObject)> TableObject
 	// Try to get the table object from separateKeyStorage
 	return await GetTableObjectFromSeparateKeyStorage(uuid, tableId)
@@ -213,8 +166,6 @@ export async function TableObjectExists(uuid: string, tableId?: number): Promise
 }
 
 export async function RemoveTableObject(uuid: string, tableId?: number) {
-	await ConvertDatabaseFormat()
-
 	// Try to remove the table object from separateKeyStorage
 	try {
 		if (tableId) {
@@ -288,39 +239,6 @@ async function GetAllTableObjectsFromSeparateKeyStorage(tableId: number = -1, de
 	return selectedTableObjects
 }
 //#endregion
-
-export async function ConvertDatabaseFormat() {
-	// Get the table objects array
-	try {
-		var tableObjects = await localforage.getItem(tableObjectsKey) as DatabaseTableObject[]
-		if(!tableObjects) return
-	} catch (error) {
-		console.log(error)
-		return
-	}
-
-	// Save each table object as separateKeyStorage
-	for (let tableObject of tableObjects) {
-		try {
-			// Check if the table object is already saved as separateKeyStorage
-			let key = getTableObjectKey(tableObject.TableId, tableObject.Uuid)
-			
-			let existingItem = await localforage.getItem(key)
-			if(existingItem) continue
-
-			await localforage.setItem(key, tableObject)
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
-	// Remove the tableObjectsArray
-	try {
-		await localforage.removeItem(tableObjectsKey)
-	} catch (error) {
-		console.log(error)
-	}
-}
 
 export function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject): TableObject {
 	if (obj == null) return null
