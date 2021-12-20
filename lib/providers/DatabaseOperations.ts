@@ -78,7 +78,7 @@ export async function GetNotification(uuid: string): Promise<Notification> {
 	)
 }
 
-export async function NotificationExists(uuid: string): Promise<boolean>{
+export async function NotificationExists(uuid: string): Promise<boolean> {
 	return await GetNotification(uuid) != null
 }
 
@@ -100,7 +100,7 @@ export async function SetWebPushSubscription(subscription: WebPushSubscription) 
 	await localforage.setItem(webPushSubscriptionKey, subscription)
 }
 
-export async function GetWebPushSubscription(): Promise<WebPushSubscription>{
+export async function GetWebPushSubscription(): Promise<WebPushSubscription> {
 	return await localforage.getItem(webPushSubscriptionKey) as WebPushSubscription
 }
 
@@ -152,13 +152,56 @@ export async function SetTableObjects(tableObjects: TableObject[], overwrite: bo
 
 export async function GetAllTableObjects(tableId: number = -1, deleted: boolean = false): Promise<TableObject[]> {
 	// Get all table objects from separateKeyStorage
-	return await GetAllTableObjectsFromSeparateKeyStorage(tableId, deleted)
+	let key = getTableObjectKey(tableId)
+
+	try {
+		var tableObjectsObject = await localforage.startsWith(key) as { [key: string]: DatabaseTableObject }
+		if (!tableObjectsObject) return []
+	} catch (error) {
+		console.log(error)
+		return []
+	}
+
+	let tableObjects: DatabaseTableObject[] = Object.values(tableObjectsObject)
+
+	let selectedDatabaseTableObjects = deleted ?
+		tableObjects
+		: tableObjects.filter(obj => (
+			obj.UploadStatus != TableObjectUploadStatus.Deleted
+			&& obj.UploadStatus != TableObjectUploadStatus.Removed
+		))
+
+	let selectedTableObjects = []
+	for (let obj of selectedDatabaseTableObjects) {
+		selectedTableObjects.push(ConvertDatabaseTableObjectToTableObject(obj))
+	}
+
+	return selectedTableObjects
 }
 
 export async function GetTableObject(uuid: string, tableId?: number): Promise<TableObject> {
 	// Database -> DatabaseTableObject -(ConvertObjectToTableObject)> TableObject
 	// Try to get the table object from separateKeyStorage
-	return await GetTableObjectFromSeparateKeyStorage(uuid, tableId)
+	try {
+		if (tableId) {
+			// Get the table object directly
+			return ConvertDatabaseTableObjectToTableObject(
+				await localforage.getItem(
+					getTableObjectKey(tableId, uuid)
+				) as DatabaseTableObject
+			)
+		} else {
+			// Try to get the table objects with the uuid but with each table id
+			for (let id of Dav.tableIds) {
+				let obj = await localforage.getItem(getTableObjectKey(id, uuid)) as DatabaseTableObject
+				if (obj) return ConvertDatabaseTableObjectToTableObject(obj)
+			}
+		}
+	} catch (error) {
+		console.log(error)
+	}
+
+	return null
 }
 
 export async function TableObjectExists(uuid: string, tableId?: number): Promise<boolean> {
@@ -186,59 +229,6 @@ export async function RemoveTableObject(uuid: string, tableId?: number) {
 		console.log(error)
 	}
 }
-
-//#region Private separateKeyStorage functions
-async function GetTableObjectFromSeparateKeyStorage(uuid: string, tableId?: number): Promise<TableObject> {
-	try {
-		if (tableId) {
-			// Get the table object directly
-			return ConvertDatabaseTableObjectToTableObject(
-				await localforage.getItem(
-					getTableObjectKey(tableId, uuid)
-				) as DatabaseTableObject
-			)
-		} else {
-			// Try to get the table objects with the uuid but with each table id
-			for (let id of Dav.tableIds) {
-				let obj = await localforage.getItem(getTableObjectKey(id, uuid)) as DatabaseTableObject
-				if (obj) return ConvertDatabaseTableObjectToTableObject(obj)
-			}
-		}
-	} catch (error) {
-		console.log(error)
-	}
-
-	return null
-}
-
-async function GetAllTableObjectsFromSeparateKeyStorage(tableId: number = -1, deleted: boolean = false): Promise<TableObject[]> {
-	let key = getTableObjectKey(tableId)
-
-	try {
-		var tableObjectsObject = await localforage.startsWith(key) as { [key: string]: DatabaseTableObject }
-		if (!tableObjectsObject) return []
-	} catch (error) {
-		console.log(error)
-		return []
-	}
-
-	let tableObjects: DatabaseTableObject[] = Object.values(tableObjectsObject)
-
-	let selectedDatabaseTableObjects = deleted ?
-		tableObjects
-		: tableObjects.filter(obj => (
-			obj.UploadStatus != TableObjectUploadStatus.Deleted
-			&& obj.UploadStatus != TableObjectUploadStatus.Removed
-		))
-
-	let selectedTableObjects = []
-	for (let obj of selectedDatabaseTableObjects) {
-		selectedTableObjects.push(ConvertDatabaseTableObjectToTableObject(obj))
-	}
-
-	return selectedTableObjects
-}
-//#endregion
 
 export function ConvertDatabaseTableObjectToTableObject(obj: DatabaseTableObject): TableObject {
 	if (obj == null) return null

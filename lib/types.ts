@@ -1,7 +1,7 @@
 import { App } from './models/App.js'
 
 //#region Generic types
-export enum Environment{
+export enum Environment {
 	Development,
 	Test,
 	Production
@@ -18,12 +18,12 @@ export enum GenericUploadStatus {
 	Deleted = 3
 }
 
-export enum SessionUploadStatus{
+export enum SessionUploadStatus {
 	UpToDate = 0,
 	Deleted = 1
 }
 
-export interface DatabaseSession{
+export interface DatabaseSession {
 	AccessToken: string
 	UploadStatus: SessionUploadStatus
 }
@@ -49,13 +49,13 @@ export interface ApiResponseError {
 //#endregion
 
 //#region User types
-export enum Plan{
+export enum Plan {
 	Free = 0,
 	Plus = 1,
 	Pro = 2
 }
 
-export enum SubscriptionStatus{
+export enum SubscriptionStatus {
 	Active = 0,
 	Ending = 1
 }
@@ -139,12 +139,12 @@ export interface DatabaseNotification {
 	UploadStatus: number
 }
 
-export interface NotificationOptions{
+export interface NotificationOptions {
 	icon: string,
 	badge: string
 }
 
-export enum WebPushSubscriptionUploadStatus{
+export enum WebPushSubscriptionUploadStatus {
 	UpToDate = 0,
 	New = 1
 }
