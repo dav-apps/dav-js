@@ -20,10 +20,12 @@ describe("GetUserActivities function", () => {
 		let end = 222222222
 		let firstUserActivityTime = new Date("2021-01-11 23:00:00 UTC")
 		let firstUserActivityCountDaily = 12
+		let firstUserActivityCountWeekly = 14
 		let firstUserActivityCountMonthly = 15
 		let firstUserActivityCountYearly = 20
 		let secondUserActivityTime = new Date("2021-01-16 23:00:00 UTC")
 		let secondUserActivityCountDaily = 7
+		let secondUserActivityCountWeekly = 9
 		let secondUserActivityCountMonthly = 11
 		let secondUserActivityCountYearly = 22
 
@@ -38,12 +40,14 @@ describe("GetUserActivities function", () => {
 					{
 						time: firstUserActivityTime,
 						countDaily: firstUserActivityCountDaily,
+						countWeekly: firstUserActivityCountWeekly,
 						countMonthly: firstUserActivityCountMonthly,
 						countYearly: firstUserActivityCountYearly
 					},
 					{
 						time: secondUserActivityTime,
 						countDaily: secondUserActivityCountDaily,
+						countWeekly: secondUserActivityCountWeekly,
 						countMonthly: secondUserActivityCountMonthly,
 						countYearly: secondUserActivityCountYearly
 					}
@@ -69,12 +73,14 @@ describe("GetUserActivities function", () => {
 						{
 							time: firstUserActivityTime.toString(),
 							count_daily: firstUserActivityCountDaily,
+							count_weekly: firstUserActivityCountWeekly,
 							count_monthly: firstUserActivityCountMonthly,
 							count_yearly: firstUserActivityCountYearly
 						},
 						{
 							time: secondUserActivityTime.toString(),
 							count_daily: secondUserActivityCountDaily,
+							count_weekly: secondUserActivityCountWeekly,
 							count_monthly: secondUserActivityCountMonthly,
 							count_yearly: secondUserActivityCountYearly
 						}
@@ -95,11 +101,13 @@ describe("GetUserActivities function", () => {
 
 		assert.equal(result.data.days[0].time.toString(), expectedResult.data.days[0].time.toString())
 		assert.equal(result.data.days[0].countDaily, expectedResult.data.days[0].countDaily)
+		assert.equal(result.data.days[0].countWeekly, expectedResult.data.days[0].countWeekly)
 		assert.equal(result.data.days[0].countMonthly, expectedResult.data.days[0].countMonthly)
 		assert.equal(result.data.days[0].countYearly, expectedResult.data.days[0].countYearly)
 
 		assert.equal(result.data.days[1].time.toString(), expectedResult.data.days[1].time.toString())
 		assert.equal(result.data.days[1].countDaily, expectedResult.data.days[1].countDaily)
+		assert.equal(result.data.days[1].countWeekly, expectedResult.data.days[1].countWeekly)
 		assert.equal(result.data.days[1].countMonthly, expectedResult.data.days[1].countMonthly)
 		assert.equal(result.data.days[1].countYearly, expectedResult.data.days[1].countYearly)
 	})
@@ -161,10 +169,12 @@ describe("GetUserActivities function", () => {
 		let end = 222222222
 		let firstUserActivityTime = new Date("2021-01-11 23:00:00 UTC")
 		let firstUserActivityCountDaily = 12
+		let firstUserActivityCountWeekly = 14
 		let firstUserActivityCountMonthly = 15
 		let firstUserActivityCountYearly = 20
 		let secondUserActivityTime = new Date("2021-01-16 23:00:00 UTC")
 		let secondUserActivityCountDaily = 7
+		let secondUserActivityCountWeekly = 9
 		let secondUserActivityCountMonthly = 11
 		let secondUserActivityCountYearly = 22
 
@@ -180,12 +190,14 @@ describe("GetUserActivities function", () => {
 					{
 						time: firstUserActivityTime,
 						countDaily: firstUserActivityCountDaily,
+						countWeekly: firstUserActivityCountWeekly,
 						countMonthly: firstUserActivityCountMonthly,
 						countYearly: firstUserActivityCountYearly
 					},
 					{
 						time: secondUserActivityTime,
 						countDaily: secondUserActivityCountDaily,
+						countWeekly: secondUserActivityCountWeekly,
 						countMonthly: secondUserActivityCountMonthly,
 						countYearly: secondUserActivityCountYearly
 					}
@@ -252,12 +264,14 @@ describe("GetUserActivities function", () => {
 						{
 							time: firstUserActivityTime.toString(),
 							count_daily: firstUserActivityCountDaily,
+							count_weekly: firstUserActivityCountWeekly,
 							count_monthly: firstUserActivityCountMonthly,
 							count_yearly: firstUserActivityCountYearly
 						},
 						{
 							time: secondUserActivityTime.toString(),
 							count_daily: secondUserActivityCountDaily,
+							count_weekly: secondUserActivityCountWeekly,
 							count_monthly: secondUserActivityCountMonthly,
 							count_yearly: secondUserActivityCountYearly
 						}
@@ -278,11 +292,13 @@ describe("GetUserActivities function", () => {
 
 		assert.equal(result.data.days[0].time.toString(), expectedResult.data.days[0].time.toString())
 		assert.equal(result.data.days[0].countDaily, expectedResult.data.days[0].countDaily)
+		assert.equal(result.data.days[0].countWeekly, expectedResult.data.days[0].countWeekly)
 		assert.equal(result.data.days[0].countMonthly, expectedResult.data.days[0].countMonthly)
 		assert.equal(result.data.days[0].countYearly, expectedResult.data.days[0].countYearly)
 
 		assert.equal(result.data.days[1].time.toString(), expectedResult.data.days[1].time.toString())
 		assert.equal(result.data.days[1].countDaily, expectedResult.data.days[1].countDaily)
+		assert.equal(result.data.days[1].countWeekly, expectedResult.data.days[1].countWeekly)
 		assert.equal(result.data.days[1].countMonthly, expectedResult.data.days[1].countMonthly)
 		assert.equal(result.data.days[1].countYearly, expectedResult.data.days[1].countYearly)
 	})
