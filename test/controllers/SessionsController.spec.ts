@@ -28,7 +28,6 @@ describe("CreateSession function", () => {
 		let appId = 35
 		let apiKey = "asdasd0htw8hiefiusfbs"
 		let deviceName = "TestDevice"
-		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 		let accessToken = "hiuhfeiugasdasd"
 		let websiteAccessToken = "jsodhiosdfhiosfd"
@@ -58,7 +57,6 @@ describe("CreateSession function", () => {
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
-			assert.equal(data.device_type, deviceType)
 			assert.equal(data.device_os, deviceOs)
 
 			request.respondWith({
@@ -78,7 +76,6 @@ describe("CreateSession function", () => {
 			appId,
 			apiKey,
 			deviceName,
-			deviceType,
 			deviceOs
 		}) as ApiResponse<SessionResponseData>
 
@@ -95,7 +92,6 @@ describe("CreateSession function", () => {
 		let appId = 35
 		let apiKey = "asdasd0htw8hiefiusfbs"
 		let deviceName = "TestDevice"
-		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 
 		let url = `${Dav.apiBaseUrl}/session`
@@ -123,7 +119,6 @@ describe("CreateSession function", () => {
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
-			assert.equal(data.device_type, deviceType)
 			assert.equal(data.device_os, deviceOs)
 
 			request.respondWith({
@@ -145,7 +140,6 @@ describe("CreateSession function", () => {
 			appId,
 			apiKey,
 			deviceName,
-			deviceType,
 			deviceOs
 		}) as ApiErrorResponse
 
@@ -163,7 +157,6 @@ describe("CreateSessionFromAccessToken function", () => {
 		let appId = 83
 		let apiKey = "sndksfndsdfsdfsdf"
 		let deviceName = "TestDevice"
-		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 		
 		let responseAccessToken = "oihdfibsdfig93q"
@@ -190,7 +183,6 @@ describe("CreateSessionFromAccessToken function", () => {
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
-			assert.equal(data.device_type, deviceType)
 			assert.equal(data.device_os, deviceOs)
 
 			request.respondWith({
@@ -208,8 +200,7 @@ describe("CreateSessionFromAccessToken function", () => {
 			appId,
 			apiKey,
 			deviceName,
-			deviceOs,
-			deviceType
+			deviceOs
 		}) as ApiResponse<SessionResponseData>
 
 		// Assert for the response
@@ -223,7 +214,6 @@ describe("CreateSessionFromAccessToken function", () => {
 		let appId = 83
 		let apiKey = "sndksfndsdfsdfsdf"
 		let deviceName = "TestDevice"
-		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 
 		let url = `${Dav.apiBaseUrl}/session/access_token`
@@ -250,7 +240,6 @@ describe("CreateSessionFromAccessToken function", () => {
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
-			assert.equal(data.device_type, deviceType)
 			assert.equal(data.device_os, deviceOs)
 
 			request.respondWith({
@@ -271,8 +260,7 @@ describe("CreateSessionFromAccessToken function", () => {
 			appId,
 			apiKey,
 			deviceName,
-			deviceOs,
-			deviceType
+			deviceOs
 		}) as ApiErrorResponse
 
 		// Assert for the response

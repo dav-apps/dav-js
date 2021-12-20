@@ -39,7 +39,6 @@ describe("Signup function", () => {
 		let appId = 23
 		let apiKey = "0fefhiow4t09w"
 		let deviceName = "TestDevice"
-		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 
 		let id = 2
@@ -103,7 +102,6 @@ describe("Signup function", () => {
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
-			assert.equal(data.device_type, deviceType)
 			assert.equal(data.device_os, deviceOs)
 
 			request.respondWith({
@@ -141,7 +139,6 @@ describe("Signup function", () => {
 			appId,
 			apiKey,
 			deviceName,
-			deviceType,
 			deviceOs
 		}) as ApiResponse<SignupResponseData>
 
@@ -171,7 +168,6 @@ describe("Signup function", () => {
 		let appId = 23
 		let apiKey = "0fefhiow4t09w"
 		let deviceName = "TestDevice"
-		let deviceType = "Laptop"
 		let deviceOs = "Windows 10"
 
 		let email = "test@example.com"
@@ -204,7 +200,6 @@ describe("Signup function", () => {
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
-			assert.equal(data.device_type, deviceType)
 			assert.equal(data.device_os, deviceOs)
 
 			request.respondWith({
@@ -227,7 +222,6 @@ describe("Signup function", () => {
 			appId,
 			apiKey,
 			deviceName,
-			deviceType,
 			deviceOs
 		}) as ApiErrorResponse
 
