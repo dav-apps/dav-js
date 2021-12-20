@@ -16,7 +16,6 @@ export async function CreateSession(params: {
 	appId: number,
 	apiKey: string,
 	deviceName?: string,
-	deviceType?: string,
 	deviceOs?: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
@@ -27,7 +26,6 @@ export async function CreateSession(params: {
 			api_key: params.apiKey
 		}
 		if (params.deviceName != null) data["device_name"] = params.deviceName
-		if (params.deviceType != null) data["device_type"] = params.deviceType
 		if (params.deviceOs != null) data["device_os"] = params.deviceOs
 
 		let response = await axios({
@@ -57,7 +55,6 @@ export async function CreateSessionFromAccessToken(params: {
 	appId: number,
 	apiKey: string,
 	deviceName?: string,
-	deviceType?: string,
 	deviceOs?: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
@@ -67,7 +64,6 @@ export async function CreateSessionFromAccessToken(params: {
 			api_key: params.apiKey
 		}
 		if (params.deviceName != null) data["device_name"] = params.deviceName
-		if (params.deviceType != null) data["device_type"] = params.deviceType
 		if (params.deviceOs != null) data["device_os"] = params.deviceOs
 
 		let response = await axios({

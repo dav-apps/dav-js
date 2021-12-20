@@ -36,7 +36,6 @@ export async function Signup(params: {
 	appId: number,
 	apiKey: string,
 	deviceName?: string,
-	deviceType?: string,
 	deviceOs?: string
 }): Promise<ApiResponse<SignupResponseData> | ApiErrorResponse> {
 	try {
@@ -48,7 +47,6 @@ export async function Signup(params: {
 			api_key: params.apiKey
 		}
 		if (params.deviceName != null) data["device_name"] = params.deviceName
-		if (params.deviceType != null) data["device_type"] = params.deviceType
 		if (params.deviceOs != null) data["device_os"] = params.deviceOs
 
 		let response = await axios({
