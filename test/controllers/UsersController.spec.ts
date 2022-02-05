@@ -12,6 +12,7 @@ import {
 	GetUser,
 	GetUserById,
 	UpdateUser,
+	SetProfileImageOfUser,
 	CreateStripeCustomerForUser,
 	SendConfirmationEmail,
 	SendPasswordResetEmail,
@@ -1291,6 +1292,301 @@ describe("UpdateUser function", () => {
 			email: newEmail,
 			firstName: newFirstName,
 			password
+		}) as ApiResponse<User>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Email, expectedResult.data.Email)
+		assert.equal(result.data.FirstName, expectedResult.data.FirstName)
+		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
+		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
+		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
+		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(result.data.Plan, expectedResult.data.Plan)
+		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
+		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(result.data.Dev, expectedResult.data.Dev)
+		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
+		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+	})
+})
+
+describe("SetProfileImageOfUser function", () => {
+	it("should call setProfileImageOfUser endpoint", async () => {
+		// Arrange
+		let id = 34
+		let email = "test@example.com"
+		let firstName = "TestUser"
+		let confirmed = true
+		let totalStorage = 100000000000
+		let usedStorage = 2073424982
+		let stripeCustomerId = "09u243ioasdasd"
+		let plan = 1
+		let subscriptionStatus = SubscriptionStatus.Active
+		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
+		let dev = false
+		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
+		let profileImageEtag = "sghiodsiodg"
+
+		let data = "asdohdafhisahdasd"
+		let type = "image/png"
+
+		let accessToken = "sfjodsfjiodsfjkod"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/user/profile_image`
+
+		let expectedResult: ApiResponse<User> = {
+			status: 200,
+			data: new User(
+				id,
+				email,
+				firstName,
+				confirmed,
+				totalStorage,
+				usedStorage,
+				stripeCustomerId,
+				plan,
+				subscriptionStatus,
+				periodEnd,
+				dev,
+				provider,
+				profileImage,
+				profileImageEtag
+			)
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], type)
+
+			assert.equal(data, request.config.data)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					email,
+					first_name: firstName,
+					confirmed,
+					total_storage: totalStorage,
+					used_storage: usedStorage,
+					stripe_customer_id: stripeCustomerId,
+					plan,
+					subscription_status: subscriptionStatus,
+					period_end: periodEnd,
+					dev,
+					provider,
+					profile_image: profileImage,
+					profile_image_etag: profileImageEtag
+				}
+			})
+		})
+
+		// Act
+		let result = await SetProfileImageOfUser({
+			data,
+			type
+		}) as ApiResponse<User>
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.data.Id, expectedResult.data.Id)
+		assert.equal(result.data.Email, expectedResult.data.Email)
+		assert.equal(result.data.FirstName, expectedResult.data.FirstName)
+		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
+		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
+		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
+		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(result.data.Plan, expectedResult.data.Plan)
+		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
+		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(result.data.Dev, expectedResult.data.Dev)
+		assert.equal(result.data.Provider, expectedResult.data.Provider)
+		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
+		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+	})
+
+	it("should call setProfileImageOfUser endpoint with error", async () => {
+		// Arrange
+		let data = "asdohdafhisahdasd"
+		let type = "image/png"
+
+		let accessToken = "sfjodsfjiodsfjkod"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/user/profile_image`
+
+		let expectedResult: ApiErrorResponse = {
+			status: 403,
+			errors: [{
+				code: ErrorCodes.ActionNotAllowed,
+				message: "Action not allowed"
+			}]
+		}
+
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], type)
+
+			assert.equal(data, request.config.data)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					errors: [{
+						code: expectedResult.errors[0].code,
+						message: expectedResult.errors[0].message
+					}]
+				}
+			})
+		})
+
+		// Act
+		let result = await SetProfileImageOfUser({
+			data,
+			type
+		}) as ApiErrorResponse
+
+		// Assert for the response
+		assert.equal(result.status, expectedResult.status)
+		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
+		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
+	})
+
+	it("should call setProfileImageOfUser endpoint and renew the session", async () => {
+		// Arrange
+		let id = 34
+		let email = "test@example.com"
+		let firstName = "TestUser"
+		let confirmed = true
+		let totalStorage = 100000000000
+		let usedStorage = 2073424982
+		let stripeCustomerId = "09u243ioasdasd"
+		let plan = 1
+		let subscriptionStatus = SubscriptionStatus.Active
+		let periodEnd = new Date("2021-01-13 21:21:24 +0100")
+		let dev = false
+		let provider = false
+		let profileImage = `http://localhost:3111/v1/user/${id}/profile_image`
+		let profileImageEtag = "sghiodsiodg"
+
+		let data = "asdohdafhisahdasd"
+		let type = "image/png"
+
+		let accessToken = "sfjodsfjiodsfjkod"
+		let newAccessToken = "siodhghosdfsiofhd"
+		Dav.accessToken = accessToken
+		let url = `${Dav.apiBaseUrl}/user/profile_image`
+
+		let expectedResult: ApiResponse<User> = {
+			status: 200,
+			data: new User(
+				id,
+				email,
+				firstName,
+				confirmed,
+				totalStorage,
+				usedStorage,
+				stripeCustomerId,
+				plan,
+				subscriptionStatus,
+				periodEnd,
+				dev,
+				provider,
+				profileImage,
+				profileImageEtag
+			)
+		}
+
+		// First setProfileImageOfUser request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.include(request.config.headers["Content-Type"], type)
+
+			assert.equal(data, request.config.data)
+
+			request.respondWith({
+				status: 403,
+				response: {
+					errors: [{
+						code: ErrorCodes.AccessTokenMustBeRenewed,
+						message: "Access token must be renewed"
+					}]
+				}
+			})
+		})
+
+		// renewSession request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, accessToken)
+
+			request.respondWith({
+				status: 200,
+				response: {
+					access_token: newAccessToken
+				}
+			})
+		})
+
+		// Second setProfileImageOfUser request
+		moxios.wait(() => {
+			let request = moxios.requests.mostRecent()
+
+			// Assert for the request
+			assert.equal(request.config.url, url)
+			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.headers.Authorization, newAccessToken)
+			assert.include(request.config.headers["Content-Type"], type)
+
+			assert.equal(data, request.config.data)
+
+			request.respondWith({
+				status: expectedResult.status,
+				response: {
+					id,
+					email,
+					first_name: firstName,
+					confirmed,
+					total_storage: totalStorage,
+					used_storage: usedStorage,
+					stripe_customer_id: stripeCustomerId,
+					plan,
+					subscription_status: subscriptionStatus,
+					period_end: periodEnd,
+					dev,
+					provider,
+					profile_image: profileImage,
+					profile_image_etag: profileImageEtag
+				}
+			})
+		})
+
+		// Act
+		let result = await SetProfileImageOfUser({
+			data,
+			type
 		}) as ApiResponse<User>
 
 		// Assert for the response
