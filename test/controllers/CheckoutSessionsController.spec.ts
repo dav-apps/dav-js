@@ -19,6 +19,7 @@ afterEach(() => {
 describe("CreateCheckoutSession function", () => {
 	it("should call createCheckoutSession endpoint", async () => {
 		// Arrange
+		let mode = "subscription"
 		let plan = 1
 		let successUrl = "https://dav-apps.tech/user?success=true&plan=1"
 		let cancelUrl = "https://dav-apps.tech/user"
@@ -45,6 +46,7 @@ describe("CreateCheckoutSession function", () => {
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
+			assert.equal(data.mode, mode)
 			assert.equal(data.plan, plan)
 			assert.equal(data.success_url, successUrl)
 			assert.equal(data.cancel_url, cancelUrl)
@@ -59,6 +61,7 @@ describe("CreateCheckoutSession function", () => {
 
 		// Act
 		let result = await CreateCheckoutSession({
+			mode,
 			plan,
 			successUrl,
 			cancelUrl
@@ -71,6 +74,7 @@ describe("CreateCheckoutSession function", () => {
 
 	it("should call createCheckoutSession endpoint with error", async () => {
 		// Arrange
+		let mode = "subscription"
 		let plan = 1
 		let successUrl = "https://dav-apps.tech/user?success=true&plan=1"
 		let cancelUrl = "https://dav-apps.tech/user"
@@ -97,6 +101,7 @@ describe("CreateCheckoutSession function", () => {
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
+			assert.equal(data.mode, mode)
 			assert.equal(data.plan, plan)
 			assert.equal(data.success_url, successUrl)
 			assert.equal(data.cancel_url, cancelUrl)
@@ -114,6 +119,7 @@ describe("CreateCheckoutSession function", () => {
 
 		// Act
 		let result = await CreateCheckoutSession({
+			mode,
 			plan,
 			successUrl,
 			cancelUrl
@@ -127,6 +133,7 @@ describe("CreateCheckoutSession function", () => {
 
 	it("should call createCheckoutSession endpoint and renew the session", async () => {
 		// Arrange
+		let mode = "subscription"
 		let plan = 1
 		let successUrl = "https://dav-apps.tech/user?success=true&plan=1"
 		let cancelUrl = "https://dav-apps.tech/user"
@@ -155,6 +162,7 @@ describe("CreateCheckoutSession function", () => {
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
+			assert.equal(data.mode, mode)
 			assert.equal(data.plan, plan)
 			assert.equal(data.success_url, successUrl)
 			assert.equal(data.cancel_url, cancelUrl)
@@ -198,6 +206,7 @@ describe("CreateCheckoutSession function", () => {
 			assert.include(request.config.headers["Content-Type"], "application/json")
 
 			let data = JSON.parse(request.config.data)
+			assert.equal(data.mode, mode)
 			assert.equal(data.plan, plan)
 			assert.equal(data.success_url, successUrl)
 			assert.equal(data.cancel_url, cancelUrl)
@@ -212,6 +221,7 @@ describe("CreateCheckoutSession function", () => {
 
 		// Act
 		let result = await CreateCheckoutSession({
+			mode,
 			plan,
 			successUrl,
 			cancelUrl

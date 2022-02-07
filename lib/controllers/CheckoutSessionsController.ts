@@ -9,11 +9,20 @@ export interface CreateCheckoutSessionResponseData {
 
 export async function CreateCheckoutSession(params: {
 	accessToken?: string,
-	plan: number,
+	mode?: string,
+	plan?: number,
 	successUrl: string,
 	cancelUrl: string
 }): Promise<ApiResponse<CreateCheckoutSessionResponseData> | ApiErrorResponse> {
 	try {
+		let data = {
+			success_url: params.successUrl,
+			cancel_url: params.cancelUrl
+		}
+
+		if (params.mode != null) data["mode"] = params.mode
+		if (params.plan != null) data["plan"] = params.plan
+
 		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/checkout_session`,
@@ -21,11 +30,7 @@ export async function CreateCheckoutSession(params: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
 				'Content-Type': 'application/json'
 			},
-			data: {
-				plan: params.plan,
-				success_url: params.successUrl,
-				cancel_url: params.cancelUrl
-			}
+			data
 		})
 
 		return {
