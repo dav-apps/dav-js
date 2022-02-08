@@ -130,3 +130,7 @@ export { ApisController }
 import * as CheckoutSessionsController from './lib/controllers/CheckoutSessionsController.js'
 export { CheckoutSessionsController }
 export { CreateCheckoutSessionResponseData } from './lib/controllers/CheckoutSessionsController.js'
+
+import * as CustomerPortalSessionsController from './lib/controllers/CustomerPortalSessionsConroller.js'
+export { CustomerPortalSessionsController }
+export { CreateCustomerPortalSessionResponseData } from './lib/controllers/CustomerPortalSessionsConroller.js'
