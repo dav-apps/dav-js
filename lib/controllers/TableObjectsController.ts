@@ -4,13 +4,18 @@ import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 import { TableObject } from '../models/TableObject.js'
 
+export interface TableObjectResponseData {
+	tableEtag: string
+	tableObject: TableObject
+}
+
 export async function CreateTableObject(params: {
 	accessToken?: string,
 	uuid?: string,
 	tableId: number,
 	file?: boolean,
 	properties?: { [name: string]: string | boolean | number }
-}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
 		let data = {
 			table_id: params.tableId
@@ -41,10 +46,13 @@ export async function CreateTableObject(params: {
 		for (let key of Object.keys(response.data.properties)) {
 			tableObject.Properties[key] = { value: response.data.properties[key] }
 		}
-		
+
 		return {
 			status: response.status,
-			data: tableObject
+			data: {
+				tableEtag: response.data.table_etag,
+				tableObject
+			}
 		}
 	} catch (error) {
 		if (params.accessToken != null) {
@@ -61,7 +69,7 @@ export async function CreateTableObject(params: {
 export async function GetTableObject(params: {
 	accessToken?: string,
 	uuid: string
-}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
 			method: 'get',
@@ -86,7 +94,10 @@ export async function GetTableObject(params: {
 
 		return {
 			status: response.status,
-			data: tableObject
+			data: {
+				tableEtag: response.data.table_etag,
+				tableObject
+			}
 		}
 	} catch (error) {
 		if (params.accessToken != null) {
@@ -104,7 +115,7 @@ export async function UpdateTableObject(params: {
 	accessToken?: string,
 	uuid: string,
 	properties: { [name: string]: string | boolean | number }
-}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
 			method: 'put',
@@ -132,7 +143,10 @@ export async function UpdateTableObject(params: {
 
 		return {
 			status: response.status,
-			data: tableObject
+			data: {
+				tableEtag: response.data.table_etag,
+				tableObject
+			}
 		}
 	} catch (error) {
 		if (params.accessToken != null) {
@@ -179,7 +193,7 @@ export async function SetTableObjectFile(params: {
 	accessToken?: string,
 	uuid: string,
 	file: Blob
-}): Promise<ApiResponse<TableObject> | ApiErrorResponse> {
+}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	// Read the blob
 	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
 		let fileReader = new FileReader()
@@ -215,7 +229,10 @@ export async function SetTableObjectFile(params: {
 
 		return {
 			status: response.status,
-			data: tableObject
+			data: {
+				tableEtag: response.data.table_etag,
+				tableObject
+			}
 		}
 	} catch (error) {
 		if (params.accessToken != null) {

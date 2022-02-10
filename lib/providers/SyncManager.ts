@@ -26,7 +26,8 @@ import {
 	UpdateTableObject,
 	DeleteTableObject,
 	SetTableObjectFile,
-	RemoveTableObject
+	RemoveTableObject,
+	TableObjectResponseData
 } from '../controllers/TableObjectsController.js'
 import { CreateWebsocketConnection, WebsocketConnectionResponseData } from '../controllers/WebsocketConnectionsController.js'
 import { DeleteSession } from '../controllers/SessionsController.js'
@@ -271,7 +272,7 @@ export async function Sync(): Promise<boolean> {
 					let getTableObjectResponse = await GetTableObject({ uuid: currentTableObject.Uuid })
 					if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
-					let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
+					let tableObject = (getTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
 
 					// Is it a file?
@@ -294,7 +295,7 @@ export async function Sync(): Promise<boolean> {
 				let getTableObjectResponse = await GetTableObject({ uuid: obj.uuid })
 				if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
-				let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
+				let tableObject = (getTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
 
 				// Is it a file?
@@ -523,7 +524,7 @@ export async function StartWebsocketConnection() {
 			let getTableObjectResponse = await GetTableObject({ uuid })
 			if (getTableObjectResponse.status != 200) return
 
-			let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
+			let tableObject = (getTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 
 			await DatabaseOperations.SetTableObject(tableObject)
 			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
@@ -575,7 +576,7 @@ export async function DownloadTableObject(uuid: string) {
 	let getResponse = await GetTableObject({ uuid })
 	if (!isSuccessStatusCode(getResponse.status)) return
 
-	let tableObject = (getResponse as ApiResponse<TableObject>).data
+	let tableObject = (getResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 
 	if (tableObjectFromDatabase != null) {
 		// Has the etag changed?
@@ -664,7 +665,7 @@ async function CreateTableObjectOnServer(
 			if (isSuccessStatusCode(setTableObjectFileResponse.status)) {
 				return {
 					success: true,
-					message: (setTableObjectFileResponse as ApiResponse<TableObject>).data
+					message: (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 				}
 			}
 
@@ -694,7 +695,7 @@ async function CreateTableObjectOnServer(
 		if (isSuccessStatusCode(createTableObjectResponse.status)) {
 			return {
 				success: true,
-				message: (createTableObjectResponse as ApiResponse<TableObject>).data
+				message: (createTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 			}
 		}
 
@@ -730,7 +731,7 @@ async function UpdateTableObjectOnServer(
 		}
 
 		// Check if the ext has changed
-		let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObject>).data
+		let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 		let tableObjectResponseDataExt = tableObjectResponseData.GetPropertyValue(extPropertyName)
 		let tableObjectExt = tableObject.GetPropertyValue(extPropertyName)
 
@@ -746,7 +747,7 @@ async function UpdateTableObjectOnServer(
 			if (isSuccessStatusCode(updateTableObjectResponse.status)) {
 				return {
 					success: true,
-					message: (updateTableObjectResponse as ApiResponse<TableObject>).data
+					message: (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 				}
 			}
 
@@ -779,7 +780,7 @@ async function UpdateTableObjectOnServer(
 		if (isSuccessStatusCode(updateTableObjectResponse.status)) {
 			return {
 				success: true,
-				message: (updateTableObjectResponse as ApiResponse<TableObject>).data
+				message: (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 			}
 		}
 

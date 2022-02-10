@@ -9,7 +9,8 @@ import {
 	GetTableObject,
 	UpdateTableObject,
 	DeleteTableObject,
-	RemoveTableObject
+	RemoveTableObject,
+	TableObjectResponseData
 } from '../../lib/controllers/TableObjectsController.js'
 
 beforeEach(() => {
@@ -27,6 +28,7 @@ describe("CreateTableObject function", () => {
 		let tableId = 52
 		let file = false
 		let etag = "asodashoishoda"
+		let tableEtag = "skdfsjkfdkjhsfd"
 		let belongsToUser = true
 		let purchase = null
 		let firstPropertyName = "page1"
@@ -51,9 +53,12 @@ describe("CreateTableObject function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/table_object`
 
-		let expectedResult: ApiResponse<TableObject> = {
+		let expectedResult: ApiResponse<TableObjectResponseData> = {
 			status: 201,
-			data: tableObject
+			data: {
+				tableEtag,
+				tableObject
+			}
 		}
 
 		moxios.wait(() => {
@@ -81,6 +86,7 @@ describe("CreateTableObject function", () => {
 					uuid,
 					file,
 					etag,
+					table_etag: tableEtag,
 					belongs_to_user: belongsToUser,
 					purchase,
 					properties: {
@@ -100,19 +106,20 @@ describe("CreateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObject>
+		}) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.TableId, expectedResult.data.TableId)
-		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
-		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
-		assert.equal(result.data.Etag, expectedResult.data.Etag)
-		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
-		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
-		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
-		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
+		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
+		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
+		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
+		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
+		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
+		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
+		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
+		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
+		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
+		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
 	})
 
 	it("should call createTableObject endpoint with error", async () => {
@@ -187,6 +194,7 @@ describe("CreateTableObject function", () => {
 		let tableId = 52
 		let file = false
 		let etag = "dsfhosdfhosfd"
+		let tableEtag = "shkdfksjdfjhksfd"
 		let belongsToUser = true
 		let purchase = null
 		let firstPropertyName = "page1"
@@ -212,9 +220,12 @@ describe("CreateTableObject function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/table_object`
 
-		let expectedResult: ApiResponse<TableObject> = {
+		let expectedResult: ApiResponse<TableObjectResponseData> = {
 			status: 201,
-			data: tableObject
+			data: {
+				tableEtag,
+				tableObject
+			}
 		}
 
 		// First createTableObject request
@@ -288,6 +299,7 @@ describe("CreateTableObject function", () => {
 					uuid,
 					file,
 					etag,
+					table_etag: tableEtag,
 					belongs_to_user: belongsToUser,
 					purchase,
 					properties: {
@@ -307,19 +319,20 @@ describe("CreateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObject>
+		}) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.TableId, expectedResult.data.TableId)
-		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
-		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
-		assert.equal(result.data.Etag, expectedResult.data.Etag)
-		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
-		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
-		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
-		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
+		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
+		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
+		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
+		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
+		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
+		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
+		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
+		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
+		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
+		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
 	})
 })
 
@@ -354,9 +367,12 @@ describe("GetTableObject function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/table_object/${uuid}`
 
-		let expectedResult: ApiResponse<TableObject> = {
+		let expectedResult: ApiResponse<TableObjectResponseData> = {
 			status: 201,
-			data: tableObject
+			data: {
+				tableEtag: null,
+				tableObject
+			}
 		}
 
 		moxios.wait(() => {
@@ -389,19 +405,20 @@ describe("GetTableObject function", () => {
 		// Act
 		let result = await GetTableObject({
 			uuid
-		}) as ApiResponse<TableObject>
+		}) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.TableId, expectedResult.data.TableId)
-		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
-		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
-		assert.equal(result.data.Etag, expectedResult.data.Etag)
-		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
-		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
-		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
-		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
+		assert.isUndefined(result.data.tableEtag)
+		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
+		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
+		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
+		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
+		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
+		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
+		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
+		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
+		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
 	})
 
 	it("should call getTableObject endpoint with error", async () => {
@@ -481,9 +498,12 @@ describe("GetTableObject function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/table_object/${uuid}`
 
-		let expectedResult: ApiResponse<TableObject> = {
+		let expectedResult: ApiResponse<TableObjectResponseData> = {
 			status: 201,
-			data: tableObject
+			data: {
+				tableEtag: null,
+				tableObject
+			}
 		}
 
 		// First getTableObject request
@@ -554,19 +574,20 @@ describe("GetTableObject function", () => {
 		// Act
 		let result = await GetTableObject({
 			uuid
-		}) as ApiResponse<TableObject>
+		}) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.TableId, expectedResult.data.TableId)
-		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
-		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
-		assert.equal(result.data.Etag, expectedResult.data.Etag)
-		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
-		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
-		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
-		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
+		assert.isUndefined(result.data.tableEtag)
+		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
+		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
+		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
+		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
+		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
+		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
+		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
+		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
+		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
 	})
 })
 
@@ -577,6 +598,7 @@ describe("UpdateTableObject function", () => {
 		let tableId = 52
 		let file = false
 		let etag = "shodhsdfhosdf"
+		let tableEtag = "sjkdfsjkdfjksfd"
 		let belongsToUser = true
 		let purchase = null
 		let firstPropertyName = "test1"
@@ -601,9 +623,12 @@ describe("UpdateTableObject function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/table_object/${uuid}`
 
-		let expectedResult: ApiResponse<TableObject> = {
+		let expectedResult: ApiResponse<TableObjectResponseData> = {
 			status: 201,
-			data: tableObject
+			data: {
+				tableEtag,
+				tableObject
+			}
 		}
 
 		moxios.wait(() => {
@@ -628,6 +653,7 @@ describe("UpdateTableObject function", () => {
 					uuid,
 					file,
 					etag,
+					table_etag: tableEtag,
 					belongs_to_user: belongsToUser,
 					purchase,
 					properties: {
@@ -645,19 +671,20 @@ describe("UpdateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObject>
+		}) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.TableId, expectedResult.data.TableId)
-		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
-		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
-		assert.equal(result.data.Etag, expectedResult.data.Etag)
-		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
-		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
-		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
-		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
+		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
+		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
+		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
+		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
+		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
+		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
+		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
+		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
+		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
+		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
 	})
 
 	it("should call updateTableObject endpoint with error", async () => {
@@ -725,6 +752,7 @@ describe("UpdateTableObject function", () => {
 		let tableId = 52
 		let file = false
 		let etag = "osdfhsodhsdfs"
+		let tableEtag = "kdfsjksdfjhksfd"
 		let belongsToUser = false
 		let purchase = "iosdhhsdfoisfhiosd"
 		let firstPropertyName = "test1"
@@ -750,9 +778,12 @@ describe("UpdateTableObject function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/table_object/${uuid}`
 
-		let expectedResult: ApiResponse<TableObject> = {
+		let expectedResult: ApiResponse<TableObjectResponseData> = {
 			status: 201,
-			data: tableObject
+			data: {
+				tableEtag,
+				tableObject
+			}
 		}
 
 		// First updateTableObject request
@@ -820,6 +851,7 @@ describe("UpdateTableObject function", () => {
 					uuid,
 					file,
 					etag,
+					table_etag: tableEtag,
 					belongs_to_user: belongsToUser,
 					purchase,
 					properties: {
@@ -837,19 +869,20 @@ describe("UpdateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObject>
+		}) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.TableId, expectedResult.data.TableId)
-		assert.equal(result.data.Uuid, expectedResult.data.Uuid)
-		assert.equal(result.data.IsFile, expectedResult.data.IsFile)
-		assert.equal(result.data.Etag, expectedResult.data.Etag)
-		assert.equal(result.data.BelongsToUser, expectedResult.data.BelongsToUser)
-		assert.equal(result.data.Purchase, expectedResult.data.Purchase)
-		assert.equal(Object.keys(result.data.Properties).length, Object.keys(expectedResult.data.Properties).length)
-		assert.equal(result.data.GetPropertyValue(firstPropertyName), expectedResult.data.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.GetPropertyValue(secondPropertyName), expectedResult.data.GetPropertyValue(secondPropertyName))
+		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
+		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
+		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
+		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
+		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
+		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
+		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
+		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
+		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
+		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
 	})
 })
 

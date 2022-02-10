@@ -28,6 +28,7 @@ import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
 import * as SessionsController from '../../lib/controllers/SessionsController.js'
 import * as TablesController from '../../lib/controllers/TablesController.js'
 import * as TableObjectsController from '../../lib/controllers/TableObjectsController.js'
+import { TableObjectResponseData } from '../../lib/controllers/TableObjectsController.js'
 
 beforeEach(async () => {
 	// Reset global variables
@@ -614,7 +615,7 @@ describe("SyncPush function", () => {
 		})
 		assert.equal(firstTableObjectFromServerResponse.status, 200)
 
-		let firstTableObjectFromServer = (firstTableObjectFromServerResponse as ApiResponse<TableObject>).data
+		let firstTableObjectFromServer = (firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 		assert.equal(firstTableObjectFromServer.Uuid, firstTableObjectUuid)
 		assert.equal(firstTableObjectFromServer.TableId, firstTableObjectTableId)
 		assert.equal(Object.keys(firstTableObjectFromServer.Properties).length, 2)
@@ -627,7 +628,7 @@ describe("SyncPush function", () => {
 		})
 		assert.equal(secondTableObjectFromServerResponse.status, 200)
 
-		let secondTableObjectFromServer = (secondTableObjectFromServerResponse as ApiResponse<TableObject>).data
+		let secondTableObjectFromServer = (secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 		assert.equal(secondTableObjectFromServer.Uuid, secondTableObjectUuid)
 		assert.equal(secondTableObjectFromServer.TableId, secondTableObjectTableId)
 		assert.equal(Object.keys(secondTableObjectFromServer.Properties).length, 2)
@@ -735,7 +736,7 @@ describe("SyncPush function", () => {
 		})
 		assert.equal(firstTableObjectFromServerResponse.status, 200)
 
-		let firstTableObjectFromServer = (firstTableObjectFromServerResponse as ApiResponse<TableObject>).data
+		let firstTableObjectFromServer = (firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 		assert.equal(firstTableObjectFromServer.Uuid, firstTableObjectUuid)
 		assert.equal(firstTableObjectFromServer.TableId, firstTableObjectTableId)
 		assert.equal(Object.keys(firstTableObjectFromServer.Properties).length, 2)
@@ -748,7 +749,7 @@ describe("SyncPush function", () => {
 		})
 		assert.equal(secondTableObjectFromServerResponse.status, 200)
 
-		let secondTableObjectFromServer = (secondTableObjectFromServerResponse as ApiResponse<TableObject>).data
+		let secondTableObjectFromServer = (secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
 		assert.equal(secondTableObjectFromServer.Uuid, secondTableObjectUuid)
 		assert.equal(secondTableObjectFromServer.TableId, secondTableObjectTableId)
 		assert.equal(Object.keys(secondTableObjectFromServer.Properties).length, 2)
