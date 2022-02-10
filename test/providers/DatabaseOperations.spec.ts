@@ -10,7 +10,7 @@ import {
 	TableObjectUploadStatus
 } from '../../lib/types.js'
 import { sessionKey, userKey, webPushSubscriptionKey } from '../../lib/constants.js'
-import { generateUuid, getNotificationKey } from '../../lib/utils.js'
+import { generateUuid, getTableEtagKey, getNotificationKey } from '../../lib/utils.js'
 import { Dav } from '../../lib/Dav.js'
 import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
 import { TableObject } from '../../lib/models/TableObject.js'
@@ -258,6 +258,39 @@ describe("RemoveUser function", () => {
 		// Assert
 		let userFromDatabase = await DatabaseOperations.GetUser()
 		assert.isNull(userFromDatabase)
+	})
+})
+
+describe("SetTableEtag function", () => {
+	it("should save the table etag", async () => {
+		// Arrange
+		let etag = "shdjksdfsfd"
+		let tableId = 12
+
+		// Act
+		await DatabaseOperations.SetTableEtag(tableId, etag)
+
+		// Assert
+		let etagFromDatabase = await localforage.getItem(getTableEtagKey(tableId)) as string
+		assert.isNotNull(etagFromDatabase)
+		assert.equal(etagFromDatabase, etag)
+	})
+})
+
+describe("GetTableEtag function", () => {
+	it("should return the table etag from the database", async () => {
+		// Arrange
+		let etag = "shdjkfsfd"
+		let tableId = 14
+
+		await DatabaseOperations.SetTableEtag(tableId, etag)
+
+		// Act
+		let etagFromDatabase = await DatabaseOperations.GetTableEtag(tableId)
+
+		// Assert
+		assert.isNotNull(etagFromDatabase)
+		assert.equal(etagFromDatabase, etag)
 	})
 })
 

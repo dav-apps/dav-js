@@ -41,6 +41,10 @@ export function getTableObjectKey(tableId?: number, uuid?: string) {
 	}
 }
 
+export function getTableEtagKey(tableId: number) {
+	return `tableEtag:${tableId}`
+}
+
 export function getNotificationKey(uuid?: string) {
 	if (uuid != null) {
 		return `notification:${uuid}`

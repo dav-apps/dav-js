@@ -16,6 +16,7 @@ import {
 import {
 	generateUuid,
 	getTableObjectKey,
+	getTableEtagKey,
 	getNotificationKey,
 	requestStoragePersistence
 } from '../utils.js'
@@ -51,6 +52,16 @@ export async function GetUser(): Promise<DatabaseUser> {
 
 export async function RemoveUser() {
 	await localforage.removeItem(userKey)
+}
+//#endregion
+
+//#region TableEtag functions
+export async function SetTableEtag(tableId: number, etag: string) {
+	await localforage.setItem(getTableEtagKey(tableId), etag)
+}
+
+export async function GetTableEtag(tableId: number): Promise<string> {
+	return await localforage.getItem(getTableEtagKey(tableId)) as string
 }
 //#endregion
 
