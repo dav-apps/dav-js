@@ -226,6 +226,7 @@ describe("GetTable function", () => {
 		let appId = 25
 		let name = "TestTable"
 		let pages = 2
+		let etag = "skljdfsjkldjlskfd"
 		let firstTableObjectUuid = "oasdoiahd93r12rhasdasdasdasdh"
 		let firstTableObjectEtag = "sdfksjdfskdf"
 		let secondTableObjectUuid = "hisdiogjw349hoihefnfkwq"
@@ -242,6 +243,7 @@ describe("GetTable function", () => {
 			data: {
 				table: new Table(id, appId, name),
 				pages,
+				etag,
 				tableObjects: [
 					{
 						uuid: firstTableObjectUuid,
@@ -273,6 +275,7 @@ describe("GetTable function", () => {
 					app_id: appId,
 					name,
 					pages,
+					etag,
 					table_objects: [
 						{
 							uuid: firstTableObjectUuid,
@@ -300,6 +303,7 @@ describe("GetTable function", () => {
 		assert.equal(result.data.table.AppId, expectedResult.data.table.AppId)
 		assert.equal(result.data.table.Name, expectedResult.data.table.Name)
 		assert.equal(result.data.pages, expectedResult.data.pages)
+		assert.equal(result.data.etag, expectedResult.data.etag)
 		assert.equal(result.data.tableObjects.length, expectedResult.data.tableObjects.length)
 		assert.equal(result.data.tableObjects[0].uuid, expectedResult.data.tableObjects[0].uuid)
 		assert.equal(result.data.tableObjects[0].etag, expectedResult.data.tableObjects[0].etag)
@@ -366,6 +370,7 @@ describe("GetTable function", () => {
 		let appId = 25
 		let name = "TestTable"
 		let pages = 2
+		let etag = "lksdfjjklsdjklfsd"
 		let firstTableObjectUuid = "oasdoiahd93r12rhasdasdasdasdh"
 		let firstTableObjectEtag = "sdfksjdfskdf"
 		let secondTableObjectUuid = "hisdiogjw349hoihefnfkwq"
@@ -383,6 +388,7 @@ describe("GetTable function", () => {
 			data: {
 				table: new Table(id, appId, name),
 				pages,
+				etag,
 				tableObjects: [
 					{
 						uuid: firstTableObjectUuid,
@@ -455,6 +461,7 @@ describe("GetTable function", () => {
 					app_id: appId,
 					name,
 					pages,
+					etag,
 					table_objects: [
 						{
 							uuid: firstTableObjectUuid,
@@ -482,6 +489,7 @@ describe("GetTable function", () => {
 		assert.equal(result.data.table.AppId, expectedResult.data.table.AppId)
 		assert.equal(result.data.table.Name, expectedResult.data.table.Name)
 		assert.equal(result.data.pages, expectedResult.data.pages)
+		assert.equal(result.data.etag, expectedResult.data.etag)
 		assert.equal(result.data.tableObjects.length, expectedResult.data.tableObjects.length)
 		assert.equal(result.data.tableObjects[0].uuid, expectedResult.data.tableObjects[0].uuid)
 		assert.equal(result.data.tableObjects[0].etag, expectedResult.data.tableObjects[0].etag)

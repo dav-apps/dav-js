@@ -7,6 +7,7 @@ import { Table } from '../models/Table.js'
 export interface GetTableResponseData {
 	table: Table
 	pages: number
+	etag: string
 	tableObjects: {
 		uuid: string
 		etag: string
@@ -80,6 +81,7 @@ export async function GetTable(params: {
 					response.data.name
 				),
 				pages: response.data.pages,
+				etag: response.data.etag,
 				tableObjects: response.data.table_objects
 			}
 		}
