@@ -154,6 +154,7 @@ export class Dav {
 		let syncSuccess = await SyncManager.Sync()
 		let syncPushSuccess = await SyncManager.SyncPush()
 		if (!syncSuccess || !syncPushSuccess) {
+			if (this.callbacks.SyncFinished) this.callbacks.SyncFinished()
 			this.isSyncing = false
 			return
 		}

@@ -34,6 +34,7 @@ import { DeleteSession } from '../controllers/SessionsController.js'
 
 var isSyncing = false
 var syncAgain = false
+var syncCompleted = false
 var webSocket: WebSocket
 var websocketConnectionEstablished = false
 
@@ -207,21 +208,14 @@ export async function Sync(): Promise<boolean> {
 	var removedTableObjectUuids: Map<number, Array<string>> = new Map<number, Array<string>>()
 	// Is true if all http calls of the specified table are successful; in the format <tableId, Boolean>
 	var getTableResultsOkay: Map<number, boolean> = new Map<number, boolean>()
+	// Holds the new table etags for the tables
+	var tableEtags: Map<number, string> = new Map<number, string>()
 
 	if (
 		tableIds == null
 		|| tableIds.length == 0
 		|| parallelTableIds == null
 	) return false
-
-	// Populate removedTableObjectUuids
-	for (let tableId of tableIds) {
-		removedTableObjectUuids.set(tableId, [])
-
-		for (let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)) {
-			removedTableObjectUuids.get(tableId).push(tableObject.Uuid)
-		}
-	}
 
 	// Get the first page of each table
 	for (let tableId of tableIds) {
@@ -232,14 +226,29 @@ export async function Sync(): Promise<boolean> {
 
 		let tableData = (getTableResult as ApiResponse<GetTableResponseData>).data
 
+		// Check if the table has any changes
+		if (tableData.etag == await DatabaseOperations.GetTableEtag(tableId)) {
+			continue
+		}
+
 		// Save the result
 		tableResults.set(tableId, tableData)
 		tablePages.set(tableId, tableData.pages)
 		currentTablePages.set(tableId, 1)
+		tableEtags.set(tableId, tableData.etag)
 	}
 
 	// Generate the sorted tableIds list
 	sortedTableIds = SortTableIds(tableIds, parallelTableIds, tablePages)
+
+	// Populate removedTableObjectUuids
+	for (let tableId of tableIds) {
+		removedTableObjectUuids.set(tableId, [])
+
+		for (let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)) {
+			removedTableObjectUuids.get(tableId).push(tableObject.Uuid)
+		}
+	}
 
 	// Process the table results
 	for (let tableId of sortedTableIds) {
@@ -267,7 +276,7 @@ export async function Sync(): Promise<boolean> {
 							uuid: currentTableObject.Uuid
 						})
 					}
-				} else {
+				} else if (currentTableObject.UploadStatus == TableObjectUploadStatus.UpToDate) {
 					// Get the updated table object from the server
 					let getTableObjectResponse = await GetTableObject({ uuid: currentTableObject.Uuid })
 					if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
@@ -311,11 +320,17 @@ export async function Sync(): Promise<boolean> {
 			}
 		}
 
-		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
-
 		// Check if there is a next page
 		currentTablePages.set(tableId, currentTablePages.get(tableId) + 1)
-		if (currentTablePages.get(tableId) > tablePages.get(tableId)) continue
+
+		if (currentTablePages.get(tableId) > tablePages.get(tableId)) {
+			if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, true)
+
+			// Save the new table etag
+			await DatabaseOperations.SetTableEtag(tableId, tableEtags.get(tableId))
+		}
+
+		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, false)
 
 		// Get the next page
 		let getTableResult = await GetTable({ id: tableId, page: currentTablePages.get(tableId) })
@@ -329,10 +344,9 @@ export async function Sync(): Promise<boolean> {
 
 	// RemovedTableObjects now includes all table objects that were deleted on the server but not locally
 	// Delete these table objects locally
-	for (let tableId of tableIds) {
+	for (let tableId of removedTableObjectUuids.keys()) {
 		if (!getTableResultsOkay.get(tableId)) continue
 		let removedTableObjects = removedTableObjectUuids.get(tableId)
-		let tableChanged = false
 
 		for (let uuid of removedTableObjects) {
 			let obj = await DatabaseOperations.GetTableObject(uuid)
@@ -340,13 +354,11 @@ export async function Sync(): Promise<boolean> {
 
 			await obj.DeleteImmediately()
 			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(obj)
-			tableChanged = true
 		}
-
-		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged)
 	}
 
 	isSyncing = false
+	syncCompleted = true
 
 	// Check if the sync was successful for all tables
 	for (let value of getTableResultsOkay.values()) {
@@ -358,7 +370,7 @@ export async function Sync(): Promise<boolean> {
 
 export async function SyncPush(): Promise<boolean> {
 	if (Dav.accessToken == null) return false
-	if (isSyncing) {
+	if (!syncCompleted || isSyncing) {
 		syncAgain = true
 		return false
 	}
@@ -663,9 +675,14 @@ async function CreateTableObjectOnServer(
 			})
 
 			if (isSuccessStatusCode(setTableObjectFileResponse.status)) {
+				let setTableObjectFileResponseData = (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data
+
+				// Save the new table etag
+				await DatabaseOperations.SetTableEtag(tableObject.TableId, setTableObjectFileResponseData.tableEtag)
+
 				return {
 					success: true,
-					message: (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+					message: setTableObjectFileResponseData.tableObject
 				}
 			}
 
@@ -693,9 +710,14 @@ async function CreateTableObjectOnServer(
 		})
 
 		if (isSuccessStatusCode(createTableObjectResponse.status)) {
+			let createTableObjectResponseData = (createTableObjectResponse as ApiResponse<TableObjectResponseData>).data
+
+			// Save the new etag
+			await DatabaseOperations.SetTableEtag(tableObject.TableId, createTableObjectResponseData.tableEtag)
+
 			return {
 				success: true,
-				message: (createTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+				message: createTableObjectResponseData.tableObject
 			}
 		}
 
@@ -731,9 +753,12 @@ async function UpdateTableObjectOnServer(
 		}
 
 		// Check if the ext has changed
-		let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data.tableObject
-		let tableObjectResponseDataExt = tableObjectResponseData.GetPropertyValue(extPropertyName)
+		let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data
+		let tableObjectResponseDataExt = tableObjectResponseData.tableObject.GetPropertyValue(extPropertyName)
 		let tableObjectExt = tableObject.GetPropertyValue(extPropertyName)
+
+		// Save the new table etag
+		await DatabaseOperations.SetTableEtag(tableObject.TableId, tableObjectResponseData.tableEtag)
 
 		if (tableObjectResponseDataExt != tableObjectExt) {
 			// Update the table object with the new ext
@@ -745,9 +770,14 @@ async function UpdateTableObjectOnServer(
 			})
 
 			if (isSuccessStatusCode(updateTableObjectResponse.status)) {
+				let updateTableObjectResponseData = (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data
+
+				// Save the new table etag
+				await DatabaseOperations.SetTableEtag(tableObject.TableId, updateTableObjectResponseData.tableEtag)
+
 				return {
 					success: true,
-					message: (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+					message: updateTableObjectResponseData.tableObject
 				}
 			}
 
@@ -759,7 +789,7 @@ async function UpdateTableObjectOnServer(
 
 		return {
 			success: true,
-			message: tableObjectResponseData
+			message: tableObjectResponseData.tableObject
 		}
 	} else if (!tableObject.IsFile) {
 		// Get the properties
@@ -778,9 +808,14 @@ async function UpdateTableObjectOnServer(
 		})
 
 		if (isSuccessStatusCode(updateTableObjectResponse.status)) {
+			let updateTableObjectResponseData = (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data
+
+			// Save the new table etag
+			await DatabaseOperations.SetTableEtag(tableObject.TableId, updateTableObjectResponseData.tableEtag)
+
 			return {
 				success: true,
-				message: (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+				message: updateTableObjectResponseData.tableObject
 			}
 		}
 
