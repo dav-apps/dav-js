@@ -98,103 +98,84 @@ export async function SetAccessToken(accessToken: string) {
 }
 
 export function SortTableIds(
-	tableIds: Array<number>,
-	parallelTableIds: Array<number>,
+	tableIds: number[],
+	parallelTableIds: number[],
 	tableIdPages: Map<number, number>
-) : Array<number> {
-	var preparedTableIds: Array<number> = []
+) {
+	// Clone tableIdPages
+	let tableIdPagesCopy = new Map<number, number>()
 
-	// Remove all table ids in parallelTableIds that do not occur in tableIds
-	let removeParallelTableIds: Array<number> = []
-	for (let i = 0; i < parallelTableIds.length; i++) {
-		let value = parallelTableIds[i]
-		if (tableIds.indexOf(value) == -1) {
-			removeParallelTableIds.push(value)
+	for (let key of tableIdPages.keys()) {
+		tableIdPagesCopy.set(key, tableIdPages.get(key))
+	}
+
+	// Remove all entries in tableIdPages with value = 0
+	for (let key of tableIdPagesCopy.keys()) {
+		if (tableIdPagesCopy.get(key) == 0) {
+			tableIdPagesCopy.delete(key)
 		}
 	}
 
-	for (let tableId of removeParallelTableIds) {
-		let index = parallelTableIds.indexOf(tableId)
-		if (index != -1) {
-			parallelTableIds.splice(index, 1)
-		}
-	}
-
-	// Prepare pagesOfParallelTable
-	var pagesOfParallelTable: Map<number, number> = new Map<number, number>()
-	for (let [key, value] of tableIdPages) {
-		if (parallelTableIds.indexOf(key) != -1) {
-			pagesOfParallelTable.set(key, value)
-		}
-	}
-
-	// Count the pages
-	let pagesSum = 0
-	for (let [key, value] of tableIdPages) {
-		pagesSum += value
-
-		if (parallelTableIds.indexOf(key) != -1) {
-			pagesOfParallelTable.set(key, value - 1)
-		}
-	}
-
-	let index = 0
+	let sortedTableIds: number[] = []
 	let currentTableIdIndex = 0
-	let parallelTableIdsInserted = false
 
-	while (index < pagesSum) {
+	while (getSumOfValuesInMap(tableIdPagesCopy) > 0) {
+		if (currentTableIdIndex >= tableIds.length) {
+			currentTableIdIndex = 0
+		}
+
 		let currentTableId = tableIds[currentTableIdIndex]
-		let currentTablePages = tableIdPages.get(currentTableId)
 
-		if (parallelTableIds.indexOf(currentTableId) != -1) {
-			// Add the table id once as it belongs to parallel table ids
-			preparedTableIds.push(currentTableId)
-			index++
+		if (!tableIdPagesCopy.has(currentTableId)) {
+			currentTableIdIndex++
+			continue
+		}
+
+		if (parallelTableIds.includes(currentTableId) && parallelTableIds.length > 1) {
+			// Add just one page of the current table
+			sortedTableIds.push(currentTableId)
+			tableIdPagesCopy.set(currentTableId, tableIdPagesCopy.get(currentTableId) - 1)
+
+			// Remove the table id from the pages if there are no pages left
+			if (tableIdPagesCopy.get(currentTableId) <= 0) {
+				tableIdPagesCopy.delete(currentTableId)
+			}
+
+			// Check if this was the last table of parallelTableIds
+			let i = parallelTableIds.indexOf(currentTableId)
+			let isLastParallelTable = i == parallelTableIds.length - 1
+
+			if (isLastParallelTable) {
+				// Move to the start of the array
+				currentTableIdIndex = 0
+			} else {
+				currentTableIdIndex++
+			}
 		} else {
-			// Add it for all pages
-			for (let j = 0; j < currentTablePages; j++) {
-				preparedTableIds.push(currentTableId)
-				index++
+			// Add all pages of the current table
+			for (let i = 0; i < tableIdPagesCopy.get(currentTableId); i++){
+				sortedTableIds.push(currentTableId)
 			}
+
+			// Clear the pages of the current table
+			tableIdPagesCopy.delete(currentTableId)
+
+			// Go to the next table
+			currentTableIdIndex++
 		}
-
-		// Check if all parallel table ids are in prepared table ids
-		let hasAll = true
-		for (let tableId of parallelTableIds) {
-			if (preparedTableIds.indexOf(tableId) == -1) {
-				hasAll = false
-			}
-		}
-
-		if (hasAll && !parallelTableIdsInserted) {
-			parallelTableIdsInserted = true
-			let pagesOfParallelTableSum = 0
-
-			// Update pagesOfParallelTableSum
-			for (let [key, value] of pagesOfParallelTable) {
-				pagesOfParallelTableSum += value
-			}
-
-			// Append the parallel table ids in the right order
-			while (pagesOfParallelTableSum > 0) {
-				for (let parallelTableId of parallelTableIds) {
-					if (pagesOfParallelTable.get(parallelTableId) > 0) {
-						preparedTableIds.push(parallelTableId)
-						pagesOfParallelTableSum--
-
-						let oldPages = pagesOfParallelTable.get(parallelTableId)
-						pagesOfParallelTable.set(parallelTableId, oldPages - 1)
-
-						index++
-					}
-				}
-			}
-		}
-
-		currentTableIdIndex++
 	}
 
-	return preparedTableIds
+	return sortedTableIds
+}
+
+function getSumOfValuesInMap(map: Map<number, number>) {
+	let sum = 0
+
+	for (let key of map.keys()) {
+		sum += map.get(key)
+	}
+
+	return sum
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
