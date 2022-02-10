@@ -229,3 +229,7 @@ export async function requestStoragePersistence(): Promise<boolean> {
 	// Ask for storage persistence
 	return await navigator.storage.persist()
 }
+
+export function isSuccessStatusCode(code: number) {
+	return code >= 200 && code < 300
+}

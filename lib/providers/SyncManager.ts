@@ -8,7 +8,7 @@ import {
 	SessionUploadStatus,
 	TableObjectUploadStatus
 } from '../types.js'
-import { SortTableIds, BlobToBase64 } from '../utils.js'
+import { SortTableIds, BlobToBase64, isSuccessStatusCode } from '../utils.js'
 import {
 	defaultProfileImageUrl,
 	extPropertyName,
@@ -65,7 +65,7 @@ export async function SessionSyncPush() {
 	// Delete the session on the server
 	let deleteResponse = await DeleteSession({ accessToken: session.AccessToken })
 
-	if (deleteResponse.status == 204) {
+	if (isSuccessStatusCode(deleteResponse.status)) {
 		// Remove the session
 		await DatabaseOperations.RemoveSession()
 
@@ -122,7 +122,7 @@ export async function UserSync(): Promise<boolean> {
 
 	// Get the user
 	let getUserResponse = await GetUser()
-	if (getUserResponse.status != 200) {
+	if (!isSuccessStatusCode(getUserResponse.status)) {
 		// TODO: Error handling
 		await Dav.Logout()
 		return false
@@ -153,7 +153,7 @@ export async function UserSync(): Promise<boolean> {
 		// Download the new profile image
 		let profileImageResponse = await GetProfileImageOfUser()
 
-		if (profileImageResponse.status == 200) {
+		if (isSuccessStatusCode(profileImageResponse.status)) {
 			newUser.ProfileImage = (profileImageResponse as ApiResponse<Blob>).data
 			newUser.ProfileImageEtag = userResponseData.ProfileImageEtag
 		} else {
@@ -226,8 +226,8 @@ export async function Sync(): Promise<boolean> {
 	for (let tableId of tableIds) {
 		// Get the first page of the table
 		let getTableResult = await GetTable({ id: tableId })
-		getTableResultsOkay.set(tableId, getTableResult.status == 200)
-		if (getTableResult.status != 200) continue
+		getTableResultsOkay.set(tableId, isSuccessStatusCode(getTableResult.status))
+		if (!isSuccessStatusCode(getTableResult.status)) continue
 
 		let tableData = (getTableResult as ApiResponse<GetTableResponseData>).data
 
@@ -269,7 +269,7 @@ export async function Sync(): Promise<boolean> {
 				} else {
 					// Get the updated table object from the server
 					let getTableObjectResponse = await GetTableObject({ uuid: currentTableObject.Uuid })
-					if (getTableObjectResponse.status != 200) continue
+					if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
 					let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
 					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
@@ -292,7 +292,7 @@ export async function Sync(): Promise<boolean> {
 			} else {
 				// Get the table object
 				let getTableObjectResponse = await GetTableObject({ uuid: obj.uuid })
-				if (getTableObjectResponse.status != 200) continue
+				if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
 				let tableObject = (getTableObjectResponse as ApiResponse<TableObject>).data
 				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
@@ -318,7 +318,7 @@ export async function Sync(): Promise<boolean> {
 
 		// Get the next page
 		let getTableResult = await GetTable({ id: tableId, page: currentTablePages.get(tableId) })
-		if (getTableResult.status != 200) {
+		if (!isSuccessStatusCode(getTableResult.status)) {
 			getTableResultsOkay.set(tableId, false)
 			continue
 		}
@@ -573,7 +573,7 @@ export async function DownloadTableObject(uuid: string) {
 
 	// Get the table object from the server
 	let getResponse = await GetTableObject({ uuid })
-	if (getResponse.status != 200) return
+	if (!isSuccessStatusCode(getResponse.status)) return
 
 	let tableObject = (getResponse as ApiResponse<TableObject>).data
 
@@ -641,7 +641,7 @@ async function CreateTableObjectOnServer(
 			}
 		})
 
-		if (createTableObjectResponse.status != 201) {
+		if (!isSuccessStatusCode(createTableObjectResponse.status)) {
 			// Check if the table object already exists
 			let errorResponse = createTableObjectResponse as ApiErrorResponse
 			let i = errorResponse.errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
@@ -661,7 +661,7 @@ async function CreateTableObjectOnServer(
 				file: tableObject.File
 			})
 
-			if (setTableObjectFileResponse.status == 200) {
+			if (isSuccessStatusCode(setTableObjectFileResponse.status)) {
 				return {
 					success: true,
 					message: (setTableObjectFileResponse as ApiResponse<TableObject>).data
@@ -691,7 +691,7 @@ async function CreateTableObjectOnServer(
 			properties
 		})
 
-		if (createTableObjectResponse.status == 201) {
+		if (isSuccessStatusCode(createTableObjectResponse.status)) {
 			return {
 				success: true,
 				message: (createTableObjectResponse as ApiResponse<TableObject>).data
@@ -722,7 +722,7 @@ async function UpdateTableObjectOnServer(
 			file: tableObject.File
 		})
 
-		if (setTableObjectFileResponse.status != 200) {
+		if (!isSuccessStatusCode(setTableObjectFileResponse.status)) {
 			return {
 				success: false,
 				message: setTableObjectFileResponse as ApiErrorResponse
@@ -743,7 +743,7 @@ async function UpdateTableObjectOnServer(
 				}
 			})
 
-			if (updateTableObjectResponse.status == 200) {
+			if (isSuccessStatusCode(updateTableObjectResponse.status)) {
 				return {
 					success: true,
 					message: (updateTableObjectResponse as ApiResponse<TableObject>).data
@@ -776,7 +776,7 @@ async function UpdateTableObjectOnServer(
 			properties
 		})
 
-		if (updateTableObjectResponse.status == 200) {
+		if (isSuccessStatusCode(updateTableObjectResponse.status)) {
 			return {
 				success: true,
 				message: (updateTableObjectResponse as ApiResponse<TableObject>).data
@@ -804,7 +804,7 @@ async function DeleteTableObjectOnServer(
 		uuid: tableObject.Uuid
 	})
 
-	if (deleteTableObjectResponse.status == 204) {
+	if (isSuccessStatusCode(deleteTableObjectResponse.status)) {
 		return {
 			success: true,
 			message: {}
@@ -826,7 +826,7 @@ async function RemoveTableObjectOnServer(
 		uuid: tableObject.Uuid
 	})
 
-	if (removeTableObjectResponse.status == 204) {
+	if (isSuccessStatusCode(removeTableObjectResponse.status)) {
 		return {
 			success: true,
 			message: {}

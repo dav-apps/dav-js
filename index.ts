@@ -24,7 +24,8 @@ export {
 	generateUuid,
 	BlobToBase64,
 	ConvertErrorToApiErrorResponse,
-	HandleApiError
+	HandleApiError,
+	isSuccessStatusCode
 } from './lib/utils.js'
 
 // models

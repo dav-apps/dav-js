@@ -12,7 +12,8 @@ import {
 import {
 	generateUuid,
 	urlBase64ToUint8Array,
-	requestNotificationPermission
+	requestNotificationPermission,
+	isSuccessStatusCode
 } from '../utils.js'
 import * as ErrorCodes from '../errorCodes.js'
 import * as DatabaseOperations from './DatabaseOperations.js'
@@ -43,15 +44,15 @@ export async function SetupWebPushSubscription(): Promise<boolean> {
 	if (webPushSubscription != null) return true
 
 	// Ask for permission for sending notifications
-	if(!requestNotificationPermission()) return false
-	
+	if (!requestNotificationPermission()) return false
+
 	// Create the subscription
 	const registration = await navigator.serviceWorker.getRegistration()
 	const subscription = await registration.pushManager.subscribe({
 		userVisibleOnly: true,
 		applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
 	})
-	
+
 	const subscriptionJson = subscription.toJSON()
 	webPushSubscription = new WebPushSubscription(
 		generateUuid(),
@@ -89,7 +90,7 @@ export async function WebPushSubscriptionSync() {
 		uuid: webPushSubscription.Uuid
 	})
 
-	if (webPushSubscriptionResponse.status != 200) {
+	if (!isSuccessStatusCode(webPushSubscriptionResponse.status)) {
 		let errors = (webPushSubscriptionResponse as ApiErrorResponse).errors
 
 		if (errors != null) {
@@ -145,13 +146,13 @@ export async function NotificationSync() {
 
 	// Get all notifications from the server
 	let getNotificationsResponse = await GetNotifications()
-	if (getNotificationsResponse.status != 200) return
+	if (!isSuccessStatusCode(getNotificationsResponse.status)) return
 	let notifications = (getNotificationsResponse as ApiResponse<Notification[]>).data
-	
+
 	for (let notification of notifications) {
 		// Remove the notification from removedNotifications
 		let i = removedNotifications.findIndex(n => n.Uuid == notification.Uuid)
-		if(i != -1) removedNotifications.splice(i, 1)
+		if (i != -1) removedNotifications.splice(i, 1)
 
 		let currentNotification = await DatabaseOperations.GetNotification(notification.Uuid)
 
@@ -270,9 +271,9 @@ export async function NotificationSyncPush() {
 //#region Utility functions
 async function CreateWebPushSubscriptionOnServer(
 	webPushSubscription: WebPushSubscription
-): Promise<{success: boolean, message: WebPushSubscription | ApiErrorResponse}> {
+): Promise<{ success: boolean, message: WebPushSubscription | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
-	
+
 	const createWebPushSubscriptionResponse = await WebPushSubscriptionsController.CreateWebPushSubscription({
 		uuid: webPushSubscription.Uuid,
 		endpoint: webPushSubscription.Endpoint,
@@ -280,7 +281,7 @@ async function CreateWebPushSubscriptionOnServer(
 		auth: webPushSubscription.Auth
 	})
 
-	if (createWebPushSubscriptionResponse.status == 201) {
+	if (isSuccessStatusCode(createWebPushSubscriptionResponse.status)) {
 		return {
 			success: true,
 			message: (createWebPushSubscriptionResponse as ApiResponse<WebPushSubscription>).data
@@ -295,9 +296,9 @@ async function CreateWebPushSubscriptionOnServer(
 
 async function CreateNotificationOnServer(
 	notification: Notification
-): Promise<{success: boolean, message: Notification | ApiErrorResponse}> {
+): Promise<{ success: boolean, message: Notification | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
-	
+
 	let createNotificationResponse = await CreateNotification({
 		uuid: notification.Uuid,
 		time: notification.Time,
@@ -306,7 +307,7 @@ async function CreateNotificationOnServer(
 		body: notification.Body
 	})
 
-	if (createNotificationResponse.status == 201) {
+	if (isSuccessStatusCode(createNotificationResponse.status)) {
 		return {
 			success: true,
 			message: (createNotificationResponse as ApiResponse<Notification>).data
@@ -321,7 +322,7 @@ async function CreateNotificationOnServer(
 
 async function UpdateNotificationOnServer(
 	notification: Notification
-): Promise<{ success: boolean, message: Notification | ApiErrorResponse }>{
+): Promise<{ success: boolean, message: Notification | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let updateNotificationResponse = await UpdateNotification({
@@ -332,7 +333,7 @@ async function UpdateNotificationOnServer(
 		body: notification.Body
 	})
 
-	if (updateNotificationResponse.status == 200) {
+	if (isSuccessStatusCode(updateNotificationResponse.status)) {
 		return {
 			success: true,
 			message: (updateNotificationResponse as ApiResponse<Notification>).data
@@ -347,14 +348,14 @@ async function UpdateNotificationOnServer(
 
 async function DeleteNotificationOnServer(
 	notification: Notification
-): Promise<{ success: boolean, message: {} | ApiErrorResponse}>{
+): Promise<{ success: boolean, message: {} | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let deleteNotificationResponse = await DeleteNotification({
 		uuid: notification.Uuid
 	})
 
-	if (deleteNotificationResponse.status == 204) {
+	if (isSuccessStatusCode(deleteNotificationResponse.status)) {
 		return {
 			success: true,
 			message: {}
