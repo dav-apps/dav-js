@@ -106,7 +106,9 @@ export function SortTableIds(
 	let tableIdPagesCopy = new Map<number, number>()
 
 	for (let key of tableIdPages.keys()) {
-		tableIdPagesCopy.set(key, tableIdPages.get(key))
+		if (tableIds.includes(key)) {
+			tableIdPagesCopy.set(key, tableIdPages.get(key))
+		}
 	}
 
 	// Remove all entries in tableIdPages with value = 0
