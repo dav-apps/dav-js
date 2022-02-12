@@ -12,7 +12,8 @@ import { SortTableIds, BlobToBase64, isSuccessStatusCode } from '../utils.js'
 import {
 	defaultProfileImageUrl,
 	extPropertyName,
-	tableObjectUpdateChannelName
+	tableObjectUpdateChannelName,
+	maxPropertiesUploadCount
 } from '../constants.js'
 import * as ErrorCodes from '../errorCodes.js'
 import { TableObject } from '../models/TableObject.js'
@@ -370,7 +371,7 @@ export async function Sync(): Promise<boolean> {
 
 export async function SyncPush(): Promise<boolean> {
 	if (Dav.accessToken == null) return false
-	if (!syncCompleted || isSyncing) {
+	if (isSyncing || (!syncCompleted && Dav.environment != Environment.Test)) {
 		syncAgain = true
 		return false
 	}
@@ -401,7 +402,13 @@ export async function SyncPush(): Promise<boolean> {
 				let createResult = await CreateTableObjectOnServer(tableObject)
 
 				if (createResult.success) {
-					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
+					if (Object.keys(tableObject.Properties).length > maxPropertiesUploadCount) {
+						tableObject.UploadStatus = TableObjectUploadStatus.Updated
+						syncAgain = true
+					} else {
+						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
+					}
+
 					tableObject.Etag = (createResult.message as TableObject).Etag
 					await DatabaseOperations.SetTableObject(tableObject)
 				} else if (createResult.message != null) {

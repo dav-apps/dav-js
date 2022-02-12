@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
+import { maxPropertiesUploadCount } from '../constants.js'
 import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types.js'
 import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
 import { TableObject } from '../models/TableObject.js'
@@ -22,7 +23,23 @@ export async function CreateTableObject(params: {
 		}
 		if (params.uuid != null) data["uuid"] = params.uuid
 		if (params.file != null) data["file"] = params.file
-		if (params.properties != null) data["properties"] = params.properties
+		if (params.properties != null) {
+			let propertyKeys = Object.keys(params.properties)
+
+			if (propertyKeys.length > maxPropertiesUploadCount) {
+				// Get the first 100 keys
+				let properties = {}
+				let keys = Object.keys(params.properties).slice(0, maxPropertiesUploadCount)
+
+				for (let key of keys) {
+					properties[key] = params.properties[key]
+				}
+
+				data["properties"] = properties
+			} else {
+				data["properties"] = params.properties
+			}
+		}
 
 		let response = await axios({
 			method: 'post',
@@ -117,16 +134,46 @@ export async function UpdateTableObject(params: {
 	properties: { [name: string]: string | boolean | number }
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
-		let response = await axios({
-			method: 'put',
-			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
-			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
-			},
-			data: {
-				properties: params.properties
+		let propertyKeys = Object.keys(params.properties)
+		let response
+
+		if (propertyKeys.length > maxPropertiesUploadCount) {
+			let selectedProperties = {}
+
+			while (propertyKeys.length > 0) {
+				selectedProperties = {}
+
+				for (let i = 0; i < maxPropertiesUploadCount; i++) {
+					if (propertyKeys.length == 0) break
+
+					let key = propertyKeys[i]
+					selectedProperties[key] = params.properties[key]
+					propertyKeys.splice(i, 1)
+				}
+
+				response = await axios({
+					method: 'put',
+					url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
+					headers: {
+						Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+					},
+					data: {
+						properties: selectedProperties
+					}
+				})
 			}
-		})
+		} else {
+			response = await axios({
+				method: 'put',
+				url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
+				headers: {
+					Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				},
+				data: {
+					properties: params.properties
+				}
+			})
+		}
 
 		let tableObject = new TableObject({
 			Uuid: response.data.uuid,

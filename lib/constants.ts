@@ -10,3 +10,4 @@ export const webPushSubscriptionKey = "webPushSubscription"
 export const extPropertyName = "ext"
 export const webPushPublicKey = "BD6vc4i0AcrsRMGK_WWhhx5IhvHVmeNsnFeYp2qwNhkubn0IIvhUpaNoMmK9SDhBKKaYSAWLtlXa2NJNjto-rnQ"
 export const tableObjectUpdateChannelName = "TableObjectUpdateChannel"
+export const maxPropertiesUploadCount = 100
