@@ -1,12 +1,12 @@
 {
 	"name": "dav-js",
-	"version": "2.2.0",
+	"version": "2.3.0",
 	"description": "JavaScript library for accessing the dav API",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"scripts": {
-		"test": "npm run compile && mocha --require mock-local-storage dist/test/*.spec.js dist/test/controllers/*.spec.js dist/test/models/*.spec.js dist/test/controllers/*.spec.js",
+		"test": "npm run compile && mocha --require mock-local-storage dist/test/*.spec.js dist/test/controllers/*.spec.js dist/test/models/*.spec.js",
 		"prepublishOnly": "npm run build",
 		"compile": "npm run clean && tsc -p . && npm run copyJs",
 		"watch": "tsc -w -p .",
