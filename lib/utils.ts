@@ -203,6 +203,16 @@ export async function BlobToBase64(file: Blob, defaultValue: string = null): Pro
 	return fileReader.result as string
 }
 
+export async function GetBlobData(file: Blob) {
+	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
+		let fileReader = new FileReader()
+		fileReader.onloadend = resolve
+		fileReader.readAsArrayBuffer(file)
+	})
+	let readFileResult: ProgressEvent = await readFilePromise
+	return readFileResult.currentTarget["result"]
+}
+
 export async function requestStoragePersistence(): Promise<boolean> {
 	if (
 		!navigator.storage

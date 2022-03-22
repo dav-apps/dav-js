@@ -8,7 +8,7 @@ import {
 	SessionUploadStatus,
 	TableObjectUploadStatus
 } from '../types.js'
-import { SortTableIds, BlobToBase64, isSuccessStatusCode } from '../utils.js'
+import { SortTableIds, BlobToBase64, GetBlobData, isSuccessStatusCode } from '../utils.js'
 import {
 	defaultProfileImageUrl,
 	extPropertyName,
@@ -678,7 +678,8 @@ async function CreateTableObjectOnServer(
 			// Upload the file
 			let setTableObjectFileResponse = await SetTableObjectFile({
 				uuid: tableObject.Uuid,
-				file: tableObject.File
+				data: await GetBlobData(tableObject.File),
+				type: tableObject.File.type
 			})
 
 			if (isSuccessStatusCode(setTableObjectFileResponse.status)) {
@@ -749,7 +750,8 @@ async function UpdateTableObjectOnServer(
 		// Upload the file
 		let setTableObjectFileResponse = await SetTableObjectFile({
 			uuid: tableObject.Uuid,
-			file: tableObject.File
+			data: await GetBlobData(tableObject.File),
+			type: tableObject.File.type
 		})
 
 		if (!isSuccessStatusCode(setTableObjectFileResponse.status)) {
