@@ -239,26 +239,18 @@ export async function DeleteTableObject(params: {
 export async function SetTableObjectFile(params: {
 	accessToken?: string,
 	uuid: string,
-	file: Blob
+	data: string,
+	type: string
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
-	// Read the blob
-	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
-		let fileReader = new FileReader()
-		fileReader.onloadend = resolve
-		fileReader.readAsArrayBuffer(params.file)
-	})
-	let readFileResult: ProgressEvent = await readFilePromise
-	let data = readFileResult.currentTarget["result"]
-
 	try {
 		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
-				'Content-Type': params.file.type
+				'Content-Type': params.type
 			},
-			data
+			data: params.data
 		})
 
 		let tableObject = new TableObject({
