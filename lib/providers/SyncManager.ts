@@ -243,7 +243,7 @@ export async function Sync(): Promise<boolean> {
 	sortedTableIds = SortTableIds(tableIds, parallelTableIds, tablePages)
 
 	// Populate removedTableObjectUuids
-	for (let tableId of tableIds) {
+	for (let tableId of [...new Set(sortedTableIds)]) {
 		removedTableObjectUuids.set(tableId, [])
 
 		for (let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)) {
