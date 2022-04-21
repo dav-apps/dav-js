@@ -1,6 +1,6 @@
 export class PromiseHolder<T>{
-	promise: Promise<T>
-	resolve: Function
+	private promise: Promise<T>
+	private resolve: Function
 
 	constructor() {
 		this.Setup()
