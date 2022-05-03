@@ -5,7 +5,8 @@ import { ApiResponse, ApiErrorResponse } from '../../index.js'
 import * as ErrorCodes from '../../lib/errorCodes.js'
 import {
 	CreateCheckoutSession,
-	CreateCheckoutSessionResponseData
+	CreateCheckoutSessionResponseData,
+	CreateCheckoutSessionMode
 } from '../../lib/controllers/CheckoutSessionsController.js'
 
 beforeEach(() => {
@@ -19,7 +20,7 @@ afterEach(() => {
 describe("CreateCheckoutSession function", () => {
 	it("should call createCheckoutSession endpoint", async () => {
 		// Arrange
-		let mode = "subscription"
+		let mode: CreateCheckoutSessionMode = "subscription"
 		let plan = 1
 		let successUrl = "https://dav-apps.tech/user?success=true&plan=1"
 		let cancelUrl = "https://dav-apps.tech/user"
@@ -74,7 +75,7 @@ describe("CreateCheckoutSession function", () => {
 
 	it("should call createCheckoutSession endpoint with error", async () => {
 		// Arrange
-		let mode = "subscription"
+		let mode: CreateCheckoutSessionMode = "subscription"
 		let plan = 1
 		let successUrl = "https://dav-apps.tech/user?success=true&plan=1"
 		let cancelUrl = "https://dav-apps.tech/user"
@@ -133,7 +134,7 @@ describe("CreateCheckoutSession function", () => {
 
 	it("should call createCheckoutSession endpoint and renew the session", async () => {
 		// Arrange
-		let mode = "subscription"
+		let mode: CreateCheckoutSessionMode = "subscription"
 		let plan = 1
 		let successUrl = "https://dav-apps.tech/user?success=true&plan=1"
 		let cancelUrl = "https://dav-apps.tech/user"
