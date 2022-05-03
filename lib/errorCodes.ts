@@ -15,6 +15,7 @@ export const ImageFileTooLarge = 1202
 
 // Generic request body errors
 export const InvalidBody = 2000
+export const PurchaseRequiresAtLeastOneTableObject = 2001
 
 // Missing fields
 export const AccessTokenMissing = 2100
@@ -30,8 +31,6 @@ export const ApiKeyMissing = 2109
 export const NameMissing = 2110
 export const DescriptionMissing = 2111
 export const PropertiesMissing = 2112
-export const ProviderNameMissing = 2113
-export const ProviderImageMissing = 2114
 export const ProductNameMissing = 2115
 export const ProductImageMissing = 2116
 export const CurrencyMissing = 2117
@@ -47,6 +46,11 @@ export const MethodMissing = 2126
 export const CommandsMissing = 2127
 export const ErrorsMissing = 2128
 export const EnvVarsMissing = 2129
+export const TableObjectsMissing = 2130
+export const SlotMissing = 2131
+export const PlanMissing = 2132
+export const SuccessUrlMissing = 2133
+export const CancelUrlMissing = 2134
 
 // Fields with wrong type
 export const AccessTokenWrongType = 2200
@@ -73,8 +77,6 @@ export const PropertiesWrongType = 2221
 export const PropertyNameWrongType = 2222
 export const PropertyValueWrongType = 2223
 export const ExtWrongType = 2224
-export const ProviderNameWrongType = 2225
-export const ProviderImageWrongType = 2226
 export const ProductNameWrongType = 2227
 export const ProductImageWrongType = 2228
 export const CurrencyWrongType = 2229
@@ -96,6 +98,12 @@ export const MessageWrongType = 2244
 export const EnvVarsWrongType = 2245
 export const EnvVarNameWrongType = 2246
 export const EnvVarValueWrongType = 2247
+export const TableObjectsWrongType = 2248
+export const SlotWrongType = 2249
+export const PlanWrongType = 2250
+export const SuccessUrlWrongType = 2251
+export const CancelUrlWrongType = 2252
+export const ModeWrongType = 2253
 
 // Too short fields
 export const FirstNameTooShort = 2300
@@ -110,8 +118,6 @@ export const MicrosoftStoreLinkTooShort = 2309
 export const PropertyNameTooShort = 2310
 export const PropertyValueTooShort = 2311
 export const ExtTooShort = 2312
-export const ProviderNameTooShort = 2313
-export const ProviderImageTooShort = 2314
 export const ProductNameTooShort = 2315
 export const ProductImageTooShort = 2316
 export const EndpointTooShort = 2317
@@ -125,6 +131,7 @@ export const ParamsTooShort = 2324
 export const MessageTooShort = 2325
 export const EnvVarNameTooShort = 2326
 export const EnvVarValueTooShort = 2327
+export const SlotTooShort = 2328
 
 // Too long fields
 export const FirstNameTooLong = 2400
@@ -139,8 +146,6 @@ export const MicrosoftStoreLinkTooLong = 2409
 export const PropertyNameTooLong = 2410
 export const PropertyValueTooLong = 2411
 export const ExtTooLong = 2412
-export const ProviderNameTooLong = 2413
-export const ProviderImageTooLong = 2414
 export const ProductNameTooLong = 2415
 export const ProductImageTooLong = 2416
 export const EndpointTooLong = 2417
@@ -154,6 +159,7 @@ export const ParamsTooLong = 2424
 export const MessageTooLong = 2425
 export const EnvVarNameTooLong = 2426
 export const EnvVarValueTooLong = 2427
+export const SlotTooLong = 2428
 
 // Invalid fields
 export const EmailInvalid = 2500
@@ -162,6 +168,12 @@ export const WebLinkInvalid = 2502
 export const GooglePlayLinkInvalid = 2503
 export const MicrosoftStoreLinkInvalid = 2504
 export const MethodInvalid = 2505
+export const SlotInvalid = 2506
+export const PlanInvalid = 2507
+export const SuccessUrlInvalid = 2508
+export const CancelUrlInvalid = 2509
+export const ModeInvalid = 2510
+export const ProductImageInvalid = 2511
 
 // Generic state errors
 export const UserIsAlreadyConfirmed = 3000
@@ -172,7 +184,9 @@ export const UserAlreadyHasStripeCustomer = 3004
 export const TableObjectIsNotFile = 3005
 export const TableObjectHasNoFile = 3006
 export const NotSufficientStorageAvailable = 3007
-export const PurchaseIsAlreadyCompleted = 3008
+export const TableObjectNeedsToBelongToSameUser = 3009
+export const PurchaseCannotBeDeleted = 3010
+export const UserIsAlreadyOnThisOrHigherPlan = 3011
 
 // Access token errors
 export const CannotUseOldAccessToken = 3100
@@ -210,6 +224,9 @@ export const WebPushSubscriptionDoesNotExist = 3610
 export const NotificationDoesNotExist = 3611
 export const ApiDoesNotExist = 3612
 export const ApiEndpointDoesNotExist = 3613
+export const CompiledApiEndpointDoesNotExist = 3614
+export const ApiSlotDoesNotExist = 3615
+export const CollectionDoesNotExist = 3616
 
 // Errors for already existing resources
 export const UserAlreadyExists = 3700
@@ -226,3 +243,6 @@ export const WebPushSubscriptionAlreadyExists = 3710
 export const NotificationAlreadyExists = 3711
 export const ApiAlreadyExists = 3712
 export const ApiEndpointAlreadyExists = 3713
+export const CompiledApiEndpointAlreadyExists = 3714
+export const ApiSlotAlreadyExists = 3715
+export const CollectionAlreadyExists = 3716
