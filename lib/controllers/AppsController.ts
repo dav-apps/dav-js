@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 import { App } from '../models/App.js'
 import { ConvertObjectArrayToApps } from '../models/App.js'
 import { ConvertObjectArrayToTables } from '../models/Table.js'
@@ -19,10 +19,10 @@ export async function CreateApp(params: {
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data: {
+			data: PrepareRequestParams({
 				name: params.name,
 				description: params.description
-			}
+			})
 		})
 
 		return {
@@ -116,21 +116,20 @@ export async function UpdateApp(params: {
 	microsoftStoreLink?: string
 }): Promise<ApiResponse<App> | ApiErrorResponse>{
 	try {
-		let data = {}
-		if (params.name != null) data["name"] = params.name
-		if (params.description != null) data["description"] = params.description
-		if (params.published != null) data["published"] = params.published
-		if (params.webLink != null) data["web_link"] = params.webLink
-		if (params.googlePlayLink != null) data["google_play_link"] = params.googlePlayLink
-		if (params.microsoftStoreLink != null) data["microsoft_store_link"] = params.microsoftStoreLink
-
 		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data
+			data: PrepareRequestParams({
+				name: params.name,
+				description: params.description,
+				published: params.published,
+				web_link: params.webLink,
+				google_play_link: params.googlePlayLink,
+				microsoft_store_link: params.microsoftStoreLink
+			})
 		})
 
 		return {

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { Auth } from '../models/Auth.js'
 import { ApiErrorResponse, ApiResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, PrepareRequestParams } from '../utils.js'
 
 export interface SessionResponseData {
 	accessToken: string,
@@ -19,22 +19,20 @@ export async function CreateSession(params: {
 	deviceOs?: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
-		let data = {
-			email: params.email,
-			password: params.password,
-			app_id: params.appId,
-			api_key: params.apiKey
-		}
-		if (params.deviceName != null) data["device_name"] = params.deviceName
-		if (params.deviceOs != null) data["device_os"] = params.deviceOs
-
 		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/session`,
 			headers: {
 				Authorization: params.auth.token
 			},
-			data
+			data: PrepareRequestParams({
+				email: params.email,
+				password: params.password,
+				app_id: params.appId,
+				api_key: params.apiKey,
+				device_name: params.deviceName,
+				device_os: params.deviceOs
+			})
 		})
 
 		return {
@@ -58,21 +56,19 @@ export async function CreateSessionFromAccessToken(params: {
 	deviceOs?: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
-		let data = {
-			access_token: params.accessToken,
-			app_id: params.appId,
-			api_key: params.apiKey
-		}
-		if (params.deviceName != null) data["device_name"] = params.deviceName
-		if (params.deviceOs != null) data["device_os"] = params.deviceOs
-
 		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/session/access_token`,
 			headers: {
 				Authorization: params.auth.token
 			},
-			data
+			data: PrepareRequestParams({
+				access_token: params.accessToken,
+				app_id: params.appId,
+				api_key: params.apiKey,
+				device_name: params.deviceName,
+				device_os: params.deviceOs
+			})
 		})
 
 		return {

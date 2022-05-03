@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification.js'
 
 export async function CreateNotification(params: {
@@ -13,21 +13,19 @@ export async function CreateNotification(params: {
 	body: string
 }): Promise<ApiResponse<Notification> | ApiErrorResponse> {
 	try {
-		let data = {
-			time: params.time,
-			interval: params.interval,
-			title: params.title,
-			body: params.body
-		}
-		if (params.uuid != null) data["uuid"] = params.uuid
-		
 		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/notification`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data
+			data: PrepareRequestParams({
+				uuid: params.uuid,
+				time: params.time,
+				interval: params.interval,
+				title: params.title,
+				body: params.body
+			})
 		})
 
 		return {
@@ -86,19 +84,18 @@ export async function UpdateNotification(params: {
 	body?: string
 }): Promise<ApiResponse<Notification> | ApiErrorResponse>{
 	try {
-		let data = {}
-		if (params.time != null) data["time"] = params.time
-		if (params.interval != null) data["interval"] = params.interval
-		if (params.title != null) data["title"] = params.title
-		if (params.body != null) data["body"] = params.body
-		
 		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data
+			data: PrepareRequestParams({
+				time: params.time,
+				interval: params.interval,
+				title: params.title,
+				body: params.body
+			})
 		})
 
 		return {

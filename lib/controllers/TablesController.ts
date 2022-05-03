@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 import { Table } from '../models/Table.js'
 
 export interface GetTableResponseData {
@@ -26,10 +26,10 @@ export async function CreateTable(params: {
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data: {
+			data: PrepareRequestParams({
 				app_id: params.appId,
 				name: params.name
-			}
+			})
 		})
 
 		return {
@@ -59,17 +59,16 @@ export async function GetTable(params: {
 	page?: number
 }): Promise<ApiResponse<GetTableResponseData> | ApiErrorResponse> {
 	try {
-		let urlParams = {}
-		if (params.count != null) urlParams["count"] = params.count
-		if (params.page != null) urlParams["page"] = params.page
-
 		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/table/${params.id}`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			params: urlParams
+			params: PrepareRequestParams({
+				count: params.count,
+				page: params.page
+			})
 		})
 
 		return {

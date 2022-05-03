@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 import { Api } from '../models/Api.js'
 
 export async function CreateApi(params: {
@@ -16,10 +16,10 @@ export async function CreateApi(params: {
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data: {
+			data: PrepareRequestParams({
 				app_id: params.appId,
 				name: params.name
-			}
+			})
 		})
 
 		return {

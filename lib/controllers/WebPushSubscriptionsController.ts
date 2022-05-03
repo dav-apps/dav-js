@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { WebPushSubscription } from '../models/WebPushSubscription.js'
 import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 
 export async function CreateWebPushSubscription(params: {
 	accessToken?: string,
@@ -12,20 +12,18 @@ export async function CreateWebPushSubscription(params: {
 	auth: string
 }): Promise<ApiResponse<WebPushSubscription> | ApiErrorResponse> {
 	try {
-		let data = {
-			endpoint: params.endpoint,
-			p256dh: params.p256dh,
-			auth: params.auth
-		}
-		if (params.uuid != null) data["uuid"] = params.uuid
-
 		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/web_push_subscription`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data
+			data: PrepareRequestParams({
+				uuid: params.uuid,
+				endpoint: params.endpoint,
+				p256dh: params.p256dh,
+				auth: params.auth
+			})
 		})
 
 		return {

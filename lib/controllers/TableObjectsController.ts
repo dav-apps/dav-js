@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { maxPropertiesUploadCount } from '../constants.js'
 import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 import { TableObject } from '../models/TableObject.js'
 
 export interface TableObjectResponseData {
@@ -18,11 +18,12 @@ export async function CreateTableObject(params: {
 	properties?: { [name: string]: string | boolean | number }
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
-		let data = {
-			table_id: params.tableId
-		}
-		if (params.uuid != null) data["uuid"] = params.uuid
-		if (params.file != null) data["file"] = params.file
+		let data = PrepareRequestParams({
+			table_id: params.tableId,
+			uuid: params.uuid,
+			file: params.file
+		})
+
 		if (params.properties != null) {
 			let propertyKeys = Object.keys(params.properties)
 

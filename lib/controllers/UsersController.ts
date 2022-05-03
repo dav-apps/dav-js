@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 import { Auth } from '../models/Auth.js'
 import { User } from '../models/User.js'
 import { ConvertObjectArrayToApps } from '../models/App.js'
@@ -39,23 +39,21 @@ export async function Signup(params: {
 	deviceOs?: string
 }): Promise<ApiResponse<SignupResponseData> | ApiErrorResponse> {
 	try {
-		let data = {
-			email: params.email,
-			first_name: params.firstName,
-			password: params.password,
-			app_id: params.appId,
-			api_key: params.apiKey
-		}
-		if (params.deviceName != null) data["device_name"] = params.deviceName
-		if (params.deviceOs != null) data["device_os"] = params.deviceOs
-
 		let response = await axios({
 			method: 'post',
 			url: `${Dav.apiBaseUrl}/signup`,
 			headers: {
 				Authorization: params.auth.token
 			},
-			data
+			data: PrepareRequestParams({
+				email: params.email,
+				first_name: params.firstName,
+				password: params.password,
+				app_id: params.appId,
+				api_key: params.apiKey,
+				device_name: params.deviceName,
+				device_os: params.deviceOs
+			})
 		})
 
 		return {
@@ -222,18 +220,17 @@ export async function UpdateUser(params: {
 	password?: string
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
-		let data = {}
-		if (params.email != null) data["email"] = params.email
-		if (params.firstName != null) data["first_name"] = params.firstName
-		if (params.password != null) data["password"] = params.password
-
 		let response = await axios({
 			method: 'put',
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			data
+			data: PrepareRequestParams({
+				email: params.email,
+				first_name: params.firstName,
+				password: params.password
+			})
 		})
 
 		return {
@@ -431,9 +428,9 @@ export async function SendPasswordResetEmail(params: {
 			headers: {
 				Authorization: params.auth.token
 			},
-			data: {
+			data: PrepareRequestParams({
 				email: params.email
-			}
+			})
 		})
 
 		return {
@@ -457,9 +454,9 @@ export async function ConfirmUser(params: {
 			headers: {
 				Authorization: params.auth.token
 			},
-			data: {
+			data: PrepareRequestParams({
 				email_confirmation_token: params.emailConfirmationToken
-			}
+			})
 		})
 
 		return {
@@ -483,9 +480,9 @@ export async function SaveNewEmail(params: {
 			headers: {
 				Authorization: params.auth.token
 			},
-			data: {
+			data: PrepareRequestParams({
 				email_confirmation_token: params.emailConfirmationToken
-			}
+			})
 		})
 
 		return {
@@ -509,9 +506,9 @@ export async function SaveNewPassword(params: {
 			headers: {
 				Authorization: params.auth.token
 			},
-			data: {
+			data: PrepareRequestParams({
 				password_confirmation_token: params.passwordConfirmationToken
-			}
+			})
 		})
 
 		return {
@@ -535,9 +532,9 @@ export async function ResetEmail(params: {
 			headers: {
 				Authorization: params.auth.token
 			},
-			data: {
+			data: PrepareRequestParams({
 				email_confirmation_token: params.emailConfirmationToken
-			}
+			})
 		})
 
 		return {
@@ -562,10 +559,10 @@ export async function SetPassword(params: {
 			headers: {
 				Authorization: params.auth.token
 			},
-			data: {
+			data: PrepareRequestParams({
 				password: params.password,
 				password_confirmation_token: params.passwordConfirmationToken
-			}
+			})
 		})
 
 		return {

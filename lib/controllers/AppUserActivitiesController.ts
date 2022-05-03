@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
 
 export interface GetAppUserActivitiesResponseData {
 	days: AppUserActivityDay[]
@@ -22,17 +22,16 @@ export async function GetAppUserActivities(params: {
 	end?: number
 }): Promise<ApiResponse<GetAppUserActivitiesResponseData> | ApiErrorResponse> {
 	try {
-		let urlParams = {}
-		if (params.start != null) urlParams["start"] = params.start
-		if (params.end != null) urlParams["end"] = params.end
-
 		let response = await axios({
 			method: 'get',
 			url: `${Dav.apiBaseUrl}/app/${params.id}/user_activities`,
 			headers: {
 				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			params
+			params: PrepareRequestParams({
+				start: params.start,
+				end: params.end
+			})
 		})
 
 		let days: AppUserActivityDay[] = []

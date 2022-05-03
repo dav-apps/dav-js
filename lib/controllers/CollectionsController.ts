@@ -2,7 +2,7 @@ import axios from 'axios'
 import { Dav } from '../Dav.js'
 import { Auth } from '../models/Auth.js'
 import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse } from '../utils.js'
+import { ConvertErrorToApiErrorResponse, PrepareRequestParams } from '../utils.js'
 
 export interface CollectionResponseData {
 	Id: number
@@ -24,11 +24,11 @@ export async function SetTableObjectsOfCollection(params: {
 				Authorization: params.auth.token,
 				'Content-Type': 'application/json'
 			},
-			data: {
+			data: PrepareRequestParams({
 				name: params.name,
 				table_id: params.tableId,
 				table_objects: params.tableObjects
-			}
+			})
 		})
 
 		return {
