@@ -25,7 +25,8 @@ export {
 	BlobToBase64,
 	ConvertErrorToApiErrorResponse,
 	HandleApiError,
-	isSuccessStatusCode
+	isSuccessStatusCode,
+	PrepareRequestParams
 } from './lib/utils.js'
 
 // models

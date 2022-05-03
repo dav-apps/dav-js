@@ -230,3 +230,22 @@ export async function requestStoragePersistence(): Promise<boolean> {
 export function isSuccessStatusCode(code: number) {
 	return code >= 200 && code < 300
 }
+
+export function PrepareRequestParams(params: Object, joinArrays = false) {
+	let newParams = {}
+
+	for (let key of Object.keys(params)) {
+		if (params[key] == null) continue
+
+		let value = params[key]
+
+		if (joinArrays && Array.isArray(value)) {
+			if (value.length == 0) continue
+			value = value.join(',')
+		}
+
+		newParams[key] = value
+	}
+
+	return newParams
+}
