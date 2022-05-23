@@ -126,8 +126,11 @@ export async function UserSync(): Promise<boolean> {
 	// Get the user
 	let getUserResponse = await GetUser()
 	if (!isSuccessStatusCode(getUserResponse.status)) {
-		// TODO: Error handling
-		await Dav.Logout()
+		// Error handling
+		if (getUserResponse.status != 504) {
+			await Dav.Logout()
+		}
+
 		return false
 	}
 
