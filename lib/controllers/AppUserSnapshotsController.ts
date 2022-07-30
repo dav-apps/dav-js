@@ -15,7 +15,7 @@ export interface AppUserSnapshot {
    yearlyActive: number
    freePlan: number
    plusPlan: number
-   ProPlan: number
+   proPlan: number
 }
 
 export async function GetAppUserSnapshots(params: {
@@ -48,7 +48,7 @@ export async function GetAppUserSnapshots(params: {
             yearlyActive: snapshot.yearly_active,
             freePlan: snapshot.free_plan,
             plusPlan: snapshot.plus_plan,
-            ProPlan: snapshot.pro_plan
+            proPlan: snapshot.pro_plan
 			})
 		}
 
