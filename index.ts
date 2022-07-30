@@ -105,15 +105,15 @@ export { PurchasesController }
 import * as CollectionsController from './lib/controllers/CollectionsController.js'
 export { CollectionsController }
 
-import * as UserActivitiesController from './lib/controllers/UserSnapshotsController.js'
-export { UserActivitiesController }
+import * as UserSnapshotsController from './lib/controllers/UserSnapshotsController.js'
+export { UserSnapshotsController }
 export {
 	GetUserSnapshotsResponseData,
 	UserSnapshot
 } from './lib/controllers/UserSnapshotsController.js'
 
-import * as AppUserActivitiesController from './lib/controllers/AppUserSnapshotsController.js'
-export { AppUserActivitiesController }
+import * as AppUserSnapshotsController from './lib/controllers/AppUserSnapshotsController.js'
+export { AppUserSnapshotsController }
 export {
 	GetAppUserSnapshotsResponseData,
 	AppUserSnapshot
