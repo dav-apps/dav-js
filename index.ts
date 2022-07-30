@@ -105,19 +105,19 @@ export { PurchasesController }
 import * as CollectionsController from './lib/controllers/CollectionsController.js'
 export { CollectionsController }
 
-import * as UserActivitiesController from './lib/controllers/UserActivitiesController.js'
+import * as UserActivitiesController from './lib/controllers/UserSnapshotsController.js'
 export { UserActivitiesController }
 export {
-	GetUserActivitiesResponseData,
-	UserActivityDay
-} from './lib/controllers/UserActivitiesController.js'
+	GetUserSnapshotsResponseData,
+	UserSnapshot
+} from './lib/controllers/UserSnapshotsController.js'
 
-import * as AppUserActivitiesController from './lib/controllers/AppUserActivitiesController.js'
+import * as AppUserActivitiesController from './lib/controllers/AppUserSnapshotsController.js'
 export { AppUserActivitiesController }
 export {
-	GetAppUserActivitiesResponseData,
-	AppUserActivityDay
-} from './lib/controllers/AppUserActivitiesController.js'
+	GetAppUserSnapshotsResponseData,
+	AppUserSnapshot
+} from './lib/controllers/AppUserSnapshotsController.js'
 
 import * as AppUsersController from './lib/controllers/AppUsersController.js'
 export { AppUsersController }
