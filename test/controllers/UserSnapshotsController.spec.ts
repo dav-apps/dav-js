@@ -84,7 +84,7 @@ describe("GetUserSnapshots function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					days: [
+					snapshots: [
 						{
 							time: firstUserSnapshotTime.toString(),
 							daily_active: firstUserSnapshotDailyActive,
@@ -146,7 +146,7 @@ describe("GetUserSnapshots function", () => {
 
 		let accessToken = "iohafduwe98hh9fesbodc"
 		Dav.accessToken = accessToken
-		let url = `${Dav.apiBaseUrl}/user_activities`
+		let url = `${Dav.apiBaseUrl}/user_snapshots`
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
@@ -302,23 +302,23 @@ describe("GetUserSnapshots function", () => {
 					snapshots: [
                   {
                      time: firstUserSnapshotTime,
-                     dailyActive: firstUserSnapshotDailyActive,
-                     weeklyActive: firstUserSnapshotWeeklyActive,
-                     monthlyActive: firstUserSnapshotMonthlyActive,
-                     yearlyActive: firstUserSnapshotYearlyActive,
-                     freePlan: firstUserSnapshotFreePlan,
-                     plusPlan: firstUserSnapshotPlusPlan,
-                     proPlan: firstUserSnapshotProPlan
+                     daily_active: firstUserSnapshotDailyActive,
+                     weekly_active: firstUserSnapshotWeeklyActive,
+                     monthly_active: firstUserSnapshotMonthlyActive,
+                     yearly_active: firstUserSnapshotYearlyActive,
+                     free_plan: firstUserSnapshotFreePlan,
+                     plus_plan: firstUserSnapshotPlusPlan,
+                     pro_plan: firstUserSnapshotProPlan
                   },
                   {
                      time: secondUserSnapshotTime,
-                     dailyActive: secondUserSnapshotDailyActive,
-                     weeklyActive: secondUserSnapshotWeeklyActive,
-                     monthlyActive: secondUserSnapshotMonthlyActive,
-                     yearlyActive: secondUserSnapshotYearlyActive,
-                     freePlan: secondUserSnapshotFreePlan,
-                     plusPlan: secondUserSnapshotPlusPlan,
-                     proPlan: secondUserSnapshotProPlan
+                     daily_active: secondUserSnapshotDailyActive,
+                     weekly_active: secondUserSnapshotWeeklyActive,
+                     monthly_active: secondUserSnapshotMonthlyActive,
+                     yearly_active: secondUserSnapshotYearlyActive,
+                     free_plan: secondUserSnapshotFreePlan,
+                     plus_plan: secondUserSnapshotPlusPlan,
+                     pro_plan: secondUserSnapshotProPlan
                   }
                ]
 				}
