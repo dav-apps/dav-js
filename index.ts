@@ -64,8 +64,6 @@ import * as UsersController from './lib/controllers/UsersController.js'
 export { UsersController }
 export {
 	SignupResponseData,
-	GetUsersResponseData,
-	GetUsersResponseDataUser,
 	CreateStripeCustomerForUserResponseData
 } from './lib/controllers/UsersController.js'
 
@@ -118,13 +116,6 @@ export {
 	GetAppUserSnapshotsResponseData,
 	AppUserSnapshot
 } from './lib/controllers/AppUserSnapshotsController.js'
-
-import * as AppUsersController from './lib/controllers/AppUsersController.js'
-export { AppUsersController }
-export {
-	GetAppUsersResponseData,
-	AppUser
-} from './lib/controllers/AppUsersController.js'
 
 import * as ApisController from './lib/controllers/ApisController.js'
 export { ApisController }
