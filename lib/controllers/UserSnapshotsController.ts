@@ -16,6 +16,8 @@ export interface UserSnapshot {
    freePlan: number
    plusPlan: number
    proPlan: number
+   emailConfirmed: number
+   emailUnconfirmed: number
 }
 
 export async function GetUserSnapshots(params: {
@@ -47,7 +49,9 @@ export async function GetUserSnapshots(params: {
             yearlyActive: snapshot.yearly_active,
             freePlan: snapshot.free_plan,
             plusPlan: snapshot.plus_plan,
-            proPlan: snapshot.pro_plan
+            proPlan: snapshot.pro_plan,
+            emailConfirmed: snapshot.email_confirmed,
+            emailUnconfirmed: snapshot.email_unconfirmed
 			})
 		}
 

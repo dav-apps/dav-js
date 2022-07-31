@@ -29,6 +29,8 @@ describe("GetUserSnapshots function", () => {
       let firstUserSnapshotFreePlan = 34
       let firstUserSnapshotPlusPlan = 12
       let firstUserSnapshotProPlan = 5
+      let firstUserSnapshotEmailConfirmed = 32
+      let firstUserSnapshotEmailUnconfirmed = 42
 		let secondUserSnapshotTime = new Date("2021-01-16 23:00:00 UTC")
 		let secondUserSnapshotDailyActive = 7
 		let secondUserSnapshotWeeklyActive = 8
@@ -37,6 +39,8 @@ describe("GetUserSnapshots function", () => {
       let secondUserSnapshotFreePlan = 42
       let secondUserSnapshotPlusPlan = 25
       let secondUserSnapshotProPlan = 9
+      let secondUserSnapshotEmailConfirmed = 23
+      let secondUserSnapshotEmailUnconfirmed = 14
 
 		let accessToken = "iohafduwe98hh9fesbodc"
 		Dav.accessToken = accessToken
@@ -54,7 +58,9 @@ describe("GetUserSnapshots function", () => {
                   yearlyActive: firstUserSnapshotYearlyActive,
                   freePlan: firstUserSnapshotFreePlan,
                   plusPlan: firstUserSnapshotPlusPlan,
-                  proPlan: firstUserSnapshotProPlan
+                  proPlan: firstUserSnapshotProPlan,
+                  emailConfirmed: firstUserSnapshotEmailConfirmed,
+                  emailUnconfirmed: firstUserSnapshotEmailUnconfirmed
 					},
 					{
 						time: secondUserSnapshotTime,
@@ -64,7 +70,9 @@ describe("GetUserSnapshots function", () => {
                   yearlyActive: secondUserSnapshotYearlyActive,
                   freePlan: secondUserSnapshotFreePlan,
                   plusPlan: secondUserSnapshotPlusPlan,
-                  proPlan: secondUserSnapshotProPlan
+                  proPlan: secondUserSnapshotProPlan,
+                  emailConfirmed: secondUserSnapshotEmailConfirmed,
+                  emailUnconfirmed: secondUserSnapshotEmailUnconfirmed
 					}
 				]
 			}
@@ -93,7 +101,9 @@ describe("GetUserSnapshots function", () => {
                      yearly_active: firstUserSnapshotYearlyActive,
                      free_plan: firstUserSnapshotFreePlan,
                      plus_plan: firstUserSnapshotPlusPlan,
-                     pro_plan: firstUserSnapshotProPlan
+                     pro_plan: firstUserSnapshotProPlan,
+                     email_confirmed: firstUserSnapshotEmailConfirmed,
+                     email_unconfirmed: firstUserSnapshotEmailUnconfirmed
 						},
 						{
 							time: secondUserSnapshotTime.toString(),
@@ -103,7 +113,9 @@ describe("GetUserSnapshots function", () => {
                      yearly_active: secondUserSnapshotYearlyActive,
                      free_plan: secondUserSnapshotFreePlan,
                      plus_plan: secondUserSnapshotPlusPlan,
-                     pro_plan: secondUserSnapshotProPlan
+                     pro_plan: secondUserSnapshotProPlan,
+                     email_confirmed: secondUserSnapshotEmailConfirmed,
+                     email_unconfirmed: secondUserSnapshotEmailUnconfirmed
 						}
 					]
 				}
@@ -128,6 +140,8 @@ describe("GetUserSnapshots function", () => {
       assert.equal(result.data.snapshots[0].freePlan, expectedResult.data.snapshots[0].freePlan)
       assert.equal(result.data.snapshots[0].plusPlan, expectedResult.data.snapshots[0].plusPlan)
       assert.equal(result.data.snapshots[0].proPlan, expectedResult.data.snapshots[0].proPlan)
+      assert.equal(result.data.snapshots[0].emailConfirmed, expectedResult.data.snapshots[0].emailConfirmed)
+      assert.equal(result.data.snapshots[0].emailUnconfirmed, expectedResult.data.snapshots[0].emailUnconfirmed)
 
 		assert.equal(result.data.snapshots[1].time.toString(), expectedResult.data.snapshots[1].time.toString())
 		assert.equal(result.data.snapshots[1].dailyActive, expectedResult.data.snapshots[1].dailyActive)
@@ -137,6 +151,8 @@ describe("GetUserSnapshots function", () => {
       assert.equal(result.data.snapshots[1].freePlan, expectedResult.data.snapshots[1].freePlan)
       assert.equal(result.data.snapshots[1].plusPlan, expectedResult.data.snapshots[1].plusPlan)
       assert.equal(result.data.snapshots[1].proPlan, expectedResult.data.snapshots[1].proPlan)
+      assert.equal(result.data.snapshots[1].emailConfirmed, expectedResult.data.snapshots[1].emailConfirmed)
+      assert.equal(result.data.snapshots[1].emailUnconfirmed, expectedResult.data.snapshots[1].emailUnconfirmed)
 	})
 
 	it("should call getUserSnapshots endpoint with error", async () => {
@@ -202,6 +218,8 @@ describe("GetUserSnapshots function", () => {
       let firstUserSnapshotFreePlan = 34
       let firstUserSnapshotPlusPlan = 12
       let firstUserSnapshotProPlan = 5
+      let firstUserSnapshotEmailConfirmed = 32
+      let firstUserSnapshotEmailUnconfirmed = 42
 		let secondUserSnapshotTime = new Date("2021-01-16 23:00:00 UTC")
 		let secondUserSnapshotDailyActive = 7
 		let secondUserSnapshotWeeklyActive = 8
@@ -210,6 +228,8 @@ describe("GetUserSnapshots function", () => {
       let secondUserSnapshotFreePlan = 42
       let secondUserSnapshotPlusPlan = 25
       let secondUserSnapshotProPlan = 9
+      let secondUserSnapshotEmailConfirmed = 23
+      let secondUserSnapshotEmailUnconfirmed = 14
 
 		let accessToken = "iohafduwe98hh9fesbodc"
 		let newAccessToken = "iofgjiosdfiosdfjiosd"
@@ -228,7 +248,9 @@ describe("GetUserSnapshots function", () => {
                   yearlyActive: firstUserSnapshotYearlyActive,
                   freePlan: firstUserSnapshotFreePlan,
                   plusPlan: firstUserSnapshotPlusPlan,
-                  proPlan: firstUserSnapshotProPlan
+                  proPlan: firstUserSnapshotProPlan,
+                  emailConfirmed: firstUserSnapshotEmailConfirmed,
+                  emailUnconfirmed: firstUserSnapshotEmailUnconfirmed
 					},
 					{
 						time: secondUserSnapshotTime,
@@ -238,7 +260,9 @@ describe("GetUserSnapshots function", () => {
                   yearlyActive: secondUserSnapshotYearlyActive,
                   freePlan: secondUserSnapshotFreePlan,
                   plusPlan: secondUserSnapshotPlusPlan,
-                  proPlan: secondUserSnapshotProPlan
+                  proPlan: secondUserSnapshotProPlan,
+                  emailConfirmed: secondUserSnapshotEmailConfirmed,
+                  emailUnconfirmed: secondUserSnapshotEmailUnconfirmed
 					}
 				]
 			}
@@ -308,7 +332,9 @@ describe("GetUserSnapshots function", () => {
                      yearly_active: firstUserSnapshotYearlyActive,
                      free_plan: firstUserSnapshotFreePlan,
                      plus_plan: firstUserSnapshotPlusPlan,
-                     pro_plan: firstUserSnapshotProPlan
+                     pro_plan: firstUserSnapshotProPlan,
+                     email_confirmed: firstUserSnapshotEmailConfirmed,
+                     email_unconfirmed: firstUserSnapshotEmailUnconfirmed
                   },
                   {
                      time: secondUserSnapshotTime,
@@ -318,7 +344,9 @@ describe("GetUserSnapshots function", () => {
                      yearly_active: secondUserSnapshotYearlyActive,
                      free_plan: secondUserSnapshotFreePlan,
                      plus_plan: secondUserSnapshotPlusPlan,
-                     pro_plan: secondUserSnapshotProPlan
+                     pro_plan: secondUserSnapshotProPlan,
+                     email_confirmed: secondUserSnapshotEmailConfirmed,
+                     email_unconfirmed: secondUserSnapshotEmailUnconfirmed
                   }
                ]
 				}
@@ -343,6 +371,8 @@ describe("GetUserSnapshots function", () => {
       assert.equal(result.data.snapshots[0].freePlan, expectedResult.data.snapshots[0].freePlan)
       assert.equal(result.data.snapshots[0].plusPlan, expectedResult.data.snapshots[0].plusPlan)
       assert.equal(result.data.snapshots[0].proPlan, expectedResult.data.snapshots[0].proPlan)
+      assert.equal(result.data.snapshots[0].emailConfirmed, expectedResult.data.snapshots[0].emailConfirmed)
+      assert.equal(result.data.snapshots[0].emailUnconfirmed, expectedResult.data.snapshots[0].emailUnconfirmed)
 
 		assert.equal(result.data.snapshots[1].time.toString(), expectedResult.data.snapshots[1].time.toString())
 		assert.equal(result.data.snapshots[1].dailyActive, expectedResult.data.snapshots[1].dailyActive)
@@ -352,5 +382,7 @@ describe("GetUserSnapshots function", () => {
       assert.equal(result.data.snapshots[1].freePlan, expectedResult.data.snapshots[1].freePlan)
       assert.equal(result.data.snapshots[1].plusPlan, expectedResult.data.snapshots[1].plusPlan)
       assert.equal(result.data.snapshots[1].proPlan, expectedResult.data.snapshots[1].proPlan)
+      assert.equal(result.data.snapshots[1].emailConfirmed, expectedResult.data.snapshots[1].emailConfirmed)
+      assert.equal(result.data.snapshots[1].emailUnconfirmed, expectedResult.data.snapshots[1].emailUnconfirmed)
 	})
 })
