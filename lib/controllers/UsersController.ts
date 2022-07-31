@@ -12,18 +12,6 @@ export interface SignupResponseData {
 	websiteAccessToken?: string
 }
 
-export interface GetUsersResponseData {
-	users: GetUsersResponseDataUser[]
-}
-
-export interface GetUsersResponseDataUser {
-	id: number,
-	confirmed: boolean,
-	lastActive?: Date,
-	plan: number,
-	createdAt: Date
-}
-
 export interface CreateStripeCustomerForUserResponseData{
 	stripeCustomerId: string
 }
@@ -82,47 +70,6 @@ export async function Signup(params: {
 		}
 	} catch (error) {
 		return ConvertErrorToApiErrorResponse(error)
-	}
-}
-
-export async function GetUsers(params?: {
-	accessToken?: string
-}): Promise<ApiResponse<GetUsersResponseData> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: 'get',
-			url: `${Dav.apiBaseUrl}/users`,
-			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
-			}
-		})
-
-		let users: GetUsersResponseDataUser[] = []
-		for (let user of response.data.users) {
-			users.push({
-				id: user.id,
-				confirmed: user.confirmed,
-				lastActive: user.last_active == null ? null : new Date(user.last_active),
-				plan: user.plan,
-				createdAt: new Date(user.created_at)
-			})
-		}
-
-		return {
-			status: response.status,
-			data: {
-				users
-			}
-		}
-	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetUsers()
 	}
 }
 
