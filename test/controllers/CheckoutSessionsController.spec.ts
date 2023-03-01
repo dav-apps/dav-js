@@ -1,13 +1,13 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../index.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../index.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
 import {
 	CreateCheckoutSession,
 	CreateCheckoutSessionResponseData,
 	CreateCheckoutSessionMode
-} from '../../lib/controllers/CheckoutSessionsController.js'
+} from "../../lib/controllers/CheckoutSessionsController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -42,9 +42,12 @@ describe("CreateCheckoutSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.mode, mode)
@@ -61,12 +64,12 @@ describe("CreateCheckoutSession function", () => {
 		})
 
 		// Act
-		let result = await CreateCheckoutSession({
+		let result = (await CreateCheckoutSession({
 			mode,
 			plan,
 			successUrl,
 			cancelUrl
-		}) as ApiResponse<CreateCheckoutSessionResponseData>
+		})) as ApiResponse<CreateCheckoutSessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -86,10 +89,12 @@ describe("CreateCheckoutSession function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -97,9 +102,12 @@ describe("CreateCheckoutSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.mode, mode)
@@ -110,21 +118,23 @@ describe("CreateCheckoutSession function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateCheckoutSession({
+		let result = (await CreateCheckoutSession({
 			mode,
 			plan,
 			successUrl,
 			cancelUrl
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -158,9 +168,12 @@ describe("CreateCheckoutSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.mode, mode)
@@ -171,10 +184,12 @@ describe("CreateCheckoutSession function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -185,7 +200,7 @@ describe("CreateCheckoutSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -202,9 +217,12 @@ describe("CreateCheckoutSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.mode, mode)
@@ -221,12 +239,12 @@ describe("CreateCheckoutSession function", () => {
 		})
 
 		// Act
-		let result = await CreateCheckoutSession({
+		let result = (await CreateCheckoutSession({
 			mode,
 			plan,
 			successUrl,
 			cancelUrl
-		}) as ApiResponse<CreateCheckoutSessionResponseData>
+		})) as ApiResponse<CreateCheckoutSessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

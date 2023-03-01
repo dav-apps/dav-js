@@ -1,11 +1,15 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse, SubscriptionStatus } from '../../lib/types.js'
-import { davDevAuth } from '../constants.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { User } from '../../lib/models/User.js'
-import { App } from '../../lib/models/App.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import {
+	ApiResponse,
+	ApiErrorResponse,
+	SubscriptionStatus
+} from "../../lib/types.js"
+import { davDevAuth } from "../constants.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { User } from "../../lib/models/User.js"
+import { App } from "../../lib/models/App.js"
 import {
 	Signup,
 	GetUser,
@@ -22,7 +26,7 @@ import {
 	SetPassword,
 	SignupResponseData,
 	CreateStripeCustomerForUserResponseData
-} from '../../lib/controllers/UsersController.js'
+} from "../../lib/controllers/UsersController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -90,9 +94,12 @@ describe("Signup function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, email)
@@ -130,7 +137,7 @@ describe("Signup function", () => {
 		})
 
 		// Act
-		let result = await Signup({
+		let result = (await Signup({
 			auth: davDevAuth,
 			email,
 			firstName,
@@ -139,27 +146,60 @@ describe("Signup function", () => {
 			apiKey,
 			deviceName,
 			deviceOs
-		}) as ApiResponse<SignupResponseData>
+		})) as ApiResponse<SignupResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.user.Id, expectedResult.data.user.Id)
 		assert.equal(result.data.user.Email, expectedResult.data.user.Email)
-		assert.equal(result.data.user.FirstName, expectedResult.data.user.FirstName)
-		assert.equal(result.data.user.Confirmed, expectedResult.data.user.Confirmed)
-		assert.equal(result.data.user.TotalStorage, expectedResult.data.user.TotalStorage)
-		assert.equal(result.data.user.UsedStorage, expectedResult.data.user.UsedStorage)
-		assert.equal(result.data.user.StripeCustomerId, expectedResult.data.user.StripeCustomerId)
+		assert.equal(
+			result.data.user.FirstName,
+			expectedResult.data.user.FirstName
+		)
+		assert.equal(
+			result.data.user.Confirmed,
+			expectedResult.data.user.Confirmed
+		)
+		assert.equal(
+			result.data.user.TotalStorage,
+			expectedResult.data.user.TotalStorage
+		)
+		assert.equal(
+			result.data.user.UsedStorage,
+			expectedResult.data.user.UsedStorage
+		)
+		assert.equal(
+			result.data.user.StripeCustomerId,
+			expectedResult.data.user.StripeCustomerId
+		)
 		assert.equal(result.data.user.Plan, expectedResult.data.user.Plan)
-		assert.equal(result.data.user.SubscriptionStatus, expectedResult.data.user.SubscriptionStatus)
-		assert.equal(result.data.user.PeriodEnd, expectedResult.data.user.PeriodEnd)
+		assert.equal(
+			result.data.user.SubscriptionStatus,
+			expectedResult.data.user.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.user.PeriodEnd,
+			expectedResult.data.user.PeriodEnd
+		)
 		assert.equal(result.data.user.Dev, expectedResult.data.user.Dev)
 		assert.equal(result.data.user.Provider, expectedResult.data.user.Provider)
-		assert.equal(result.data.user.ProfileImage, expectedResult.data.user.ProfileImage)
-		assert.equal(result.data.user.ProfileImageEtag, expectedResult.data.user.ProfileImageEtag)
-		assert.equal(result.data.user.Apps.length, expectedResult.data.user.Apps.length)
+		assert.equal(
+			result.data.user.ProfileImage,
+			expectedResult.data.user.ProfileImage
+		)
+		assert.equal(
+			result.data.user.ProfileImageEtag,
+			expectedResult.data.user.ProfileImageEtag
+		)
+		assert.equal(
+			result.data.user.Apps.length,
+			expectedResult.data.user.Apps.length
+		)
 		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
-		assert.equal(result.data.websiteAccessToken, expectedResult.data.websiteAccessToken)
+		assert.equal(
+			result.data.websiteAccessToken,
+			expectedResult.data.websiteAccessToken
+		)
 	})
 
 	it("should call signup endpoint with error", async () => {
@@ -177,10 +217,12 @@ describe("Signup function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -188,9 +230,12 @@ describe("Signup function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, email)
@@ -204,16 +249,18 @@ describe("Signup function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await Signup({
+		let result = (await Signup({
 			auth: davDevAuth,
 			email,
 			firstName,
@@ -222,7 +269,7 @@ describe("Signup function", () => {
 			apiKey,
 			deviceName,
 			deviceOs
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -296,7 +343,7 @@ describe("GetUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -316,21 +363,23 @@ describe("GetUser function", () => {
 					provider,
 					profile_image: profileImage,
 					profile_image_etag: profileImageEtag,
-					apps: [{
-						id: appId,
-						name: appName,
-						description: appDescription,
-						published: appPublished,
-						web_link: appWebLink,
-						google_play_link: appGooglePlayLink,
-						microsoft_store_link: appMicrosoftStoreLink
-					}]
+					apps: [
+						{
+							id: appId,
+							name: appName,
+							description: appDescription,
+							published: appPublished,
+							web_link: appWebLink,
+							google_play_link: appGooglePlayLink,
+							microsoft_store_link: appMicrosoftStoreLink
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetUser() as ApiResponse<User>
+		let result = (await GetUser()) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -340,23 +389,50 @@ describe("GetUser function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 
 		assert.equal(result.data.Apps.length, 1)
 		assert.equal(result.data.Apps[0].Id, expectedResult.data.Apps[0].Id)
 		assert.equal(result.data.Apps[0].Name, expectedResult.data.Apps[0].Name)
-		assert.equal(result.data.Apps[0].Description, expectedResult.data.Apps[0].Description)
-		assert.equal(result.data.Apps[0].Published, expectedResult.data.Apps[0].Published)
-		assert.equal(result.data.Apps[0].WebLink, expectedResult.data.Apps[0].WebLink)
-		assert.equal(result.data.Apps[0].GooglePlayLink, expectedResult.data.Apps[0].GooglePlayLink)
-		assert.equal(result.data.Apps[0].MicrosoftStoreLink, expectedResult.data.Apps[0].MicrosoftStoreLink)
+		assert.equal(
+			result.data.Apps[0].Description,
+			expectedResult.data.Apps[0].Description
+		)
+		assert.equal(
+			result.data.Apps[0].Published,
+			expectedResult.data.Apps[0].Published
+		)
+		assert.equal(
+			result.data.Apps[0].WebLink,
+			expectedResult.data.Apps[0].WebLink
+		)
+		assert.equal(
+			result.data.Apps[0].GooglePlayLink,
+			expectedResult.data.Apps[0].GooglePlayLink
+		)
+		assert.equal(
+			result.data.Apps[0].MicrosoftStoreLink,
+			expectedResult.data.Apps[0].MicrosoftStoreLink
+		)
 	})
 
 	it("should call getUser endpoint with error", async () => {
@@ -367,10 +443,12 @@ describe("GetUser function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -378,22 +456,24 @@ describe("GetUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetUser() as ApiErrorResponse
+		let result = (await GetUser()) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -467,16 +547,18 @@ describe("GetUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -487,7 +569,7 @@ describe("GetUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -504,7 +586,7 @@ describe("GetUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -524,21 +606,23 @@ describe("GetUser function", () => {
 					provider,
 					profile_image: profileImage,
 					profile_image_etag: profileImageEtag,
-					apps: [{
-						id: appId,
-						name: appName,
-						description: appDescription,
-						published: appPublished,
-						web_link: appWebLink,
-						google_play_link: appGooglePlayLink,
-						microsoft_store_link: appMicrosoftStoreLink
-					}]
+					apps: [
+						{
+							id: appId,
+							name: appName,
+							description: appDescription,
+							published: appPublished,
+							web_link: appWebLink,
+							google_play_link: appGooglePlayLink,
+							microsoft_store_link: appMicrosoftStoreLink
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetUser() as ApiResponse<User>
+		let result = (await GetUser()) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -548,23 +632,50 @@ describe("GetUser function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 
 		assert.equal(result.data.Apps.length, 1)
 		assert.equal(result.data.Apps[0].Id, expectedResult.data.Apps[0].Id)
 		assert.equal(result.data.Apps[0].Name, expectedResult.data.Apps[0].Name)
-		assert.equal(result.data.Apps[0].Description, expectedResult.data.Apps[0].Description)
-		assert.equal(result.data.Apps[0].Published, expectedResult.data.Apps[0].Published)
-		assert.equal(result.data.Apps[0].WebLink, expectedResult.data.Apps[0].WebLink)
-		assert.equal(result.data.Apps[0].GooglePlayLink, expectedResult.data.Apps[0].GooglePlayLink)
-		assert.equal(result.data.Apps[0].MicrosoftStoreLink, expectedResult.data.Apps[0].MicrosoftStoreLink)
+		assert.equal(
+			result.data.Apps[0].Description,
+			expectedResult.data.Apps[0].Description
+		)
+		assert.equal(
+			result.data.Apps[0].Published,
+			expectedResult.data.Apps[0].Published
+		)
+		assert.equal(
+			result.data.Apps[0].WebLink,
+			expectedResult.data.Apps[0].WebLink
+		)
+		assert.equal(
+			result.data.Apps[0].GooglePlayLink,
+			expectedResult.data.Apps[0].GooglePlayLink
+		)
+		assert.equal(
+			result.data.Apps[0].MicrosoftStoreLink,
+			expectedResult.data.Apps[0].MicrosoftStoreLink
+		)
 	})
 })
 
@@ -631,7 +742,7 @@ describe("GetUserById function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			request.respondWith({
@@ -651,21 +762,26 @@ describe("GetUserById function", () => {
 					provider,
 					profile_image: profileImage,
 					profile_image_etag: profileImageEtag,
-					apps: [{
-						id: appId,
-						name: appName,
-						description: appDescription,
-						published: appPublished,
-						web_link: appWebLink,
-						google_play_link: appGooglePlayLink,
-						microsoft_store_link: appMicrosoftStoreLink
-					}]
+					apps: [
+						{
+							id: appId,
+							name: appName,
+							description: appDescription,
+							published: appPublished,
+							web_link: appWebLink,
+							google_play_link: appGooglePlayLink,
+							microsoft_store_link: appMicrosoftStoreLink
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetUserById({ auth: davDevAuth, id }) as ApiResponse<User>
+		let result = (await GetUserById({
+			auth: davDevAuth,
+			id
+		})) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -675,23 +791,50 @@ describe("GetUserById function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 
 		assert.equal(result.data.Apps.length, 1)
 		assert.equal(result.data.Apps[0].Id, expectedResult.data.Apps[0].Id)
 		assert.equal(result.data.Apps[0].Name, expectedResult.data.Apps[0].Name)
-		assert.equal(result.data.Apps[0].Description, expectedResult.data.Apps[0].Description)
-		assert.equal(result.data.Apps[0].Published, expectedResult.data.Apps[0].Published)
-		assert.equal(result.data.Apps[0].WebLink, expectedResult.data.Apps[0].WebLink)
-		assert.equal(result.data.Apps[0].GooglePlayLink, expectedResult.data.Apps[0].GooglePlayLink)
-		assert.equal(result.data.Apps[0].MicrosoftStoreLink, expectedResult.data.Apps[0].MicrosoftStoreLink)
+		assert.equal(
+			result.data.Apps[0].Description,
+			expectedResult.data.Apps[0].Description
+		)
+		assert.equal(
+			result.data.Apps[0].Published,
+			expectedResult.data.Apps[0].Published
+		)
+		assert.equal(
+			result.data.Apps[0].WebLink,
+			expectedResult.data.Apps[0].WebLink
+		)
+		assert.equal(
+			result.data.Apps[0].GooglePlayLink,
+			expectedResult.data.Apps[0].GooglePlayLink
+		)
+		assert.equal(
+			result.data.Apps[0].MicrosoftStoreLink,
+			expectedResult.data.Apps[0].MicrosoftStoreLink
+		)
 	})
 
 	it("should call getUserById endpoint with error", async () => {
@@ -702,10 +845,12 @@ describe("GetUserById function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -713,22 +858,27 @@ describe("GetUserById function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetUserById({ auth: davDevAuth, id }) as ApiErrorResponse
+		let result = (await GetUserById({
+			auth: davDevAuth,
+			id
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -787,9 +937,12 @@ describe("UpdateUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, newEmail)
@@ -818,11 +971,11 @@ describe("UpdateUser function", () => {
 		})
 
 		// Act
-		let result = await UpdateUser({
+		let result = (await UpdateUser({
 			email: newEmail,
 			firstName: newFirstName,
 			password
-		}) as ApiResponse<User>
+		})) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -832,14 +985,26 @@ describe("UpdateUser function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 	})
 
 	it("should call updateUser endpoint with error", async () => {
@@ -854,10 +1019,12 @@ describe("UpdateUser function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -865,9 +1032,12 @@ describe("UpdateUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, newEmail)
@@ -877,20 +1047,22 @@ describe("UpdateUser function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await UpdateUser({
+		let result = (await UpdateUser({
 			email: newEmail,
 			firstName: newFirstName,
 			password
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -949,9 +1121,12 @@ describe("UpdateUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, newEmail)
@@ -961,10 +1136,12 @@ describe("UpdateUser function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -975,7 +1152,7 @@ describe("UpdateUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -992,9 +1169,12 @@ describe("UpdateUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, newEmail)
@@ -1023,11 +1203,11 @@ describe("UpdateUser function", () => {
 		})
 
 		// Act
-		let result = await UpdateUser({
+		let result = (await UpdateUser({
 			email: newEmail,
 			firstName: newFirstName,
 			password
-		}) as ApiResponse<User>
+		})) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1037,14 +1217,26 @@ describe("UpdateUser function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 	})
 })
 
@@ -1098,7 +1290,7 @@ describe("SetProfileImageOfUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
@@ -1126,10 +1318,10 @@ describe("SetProfileImageOfUser function", () => {
 		})
 
 		// Act
-		let result = await SetProfileImageOfUser({
+		let result = (await SetProfileImageOfUser({
 			data,
 			type
-		}) as ApiResponse<User>
+		})) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1139,14 +1331,26 @@ describe("SetProfileImageOfUser function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 	})
 
 	it("should call setProfileImageOfUser endpoint with error", async () => {
@@ -1160,10 +1364,12 @@ describe("SetProfileImageOfUser function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1171,7 +1377,7 @@ describe("SetProfileImageOfUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
@@ -1180,19 +1386,21 @@ describe("SetProfileImageOfUser function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SetProfileImageOfUser({
+		let result = (await SetProfileImageOfUser({
 			data,
 			type
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1251,7 +1459,7 @@ describe("SetProfileImageOfUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
@@ -1260,10 +1468,12 @@ describe("SetProfileImageOfUser function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -1274,7 +1484,7 @@ describe("SetProfileImageOfUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1291,7 +1501,7 @@ describe("SetProfileImageOfUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
@@ -1319,10 +1529,10 @@ describe("SetProfileImageOfUser function", () => {
 		})
 
 		// Act
-		let result = await SetProfileImageOfUser({
+		let result = (await SetProfileImageOfUser({
 			data,
 			type
-		}) as ApiResponse<User>
+		})) as ApiResponse<User>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1332,14 +1542,26 @@ describe("SetProfileImageOfUser function", () => {
 		assert.equal(result.data.Confirmed, expectedResult.data.Confirmed)
 		assert.equal(result.data.TotalStorage, expectedResult.data.TotalStorage)
 		assert.equal(result.data.UsedStorage, expectedResult.data.UsedStorage)
-		assert.equal(result.data.StripeCustomerId, expectedResult.data.StripeCustomerId)
+		assert.equal(
+			result.data.StripeCustomerId,
+			expectedResult.data.StripeCustomerId
+		)
 		assert.equal(result.data.Plan, expectedResult.data.Plan)
-		assert.equal(result.data.SubscriptionStatus, expectedResult.data.SubscriptionStatus)
-		assert.equal(result.data.PeriodEnd.toString(), expectedResult.data.PeriodEnd.toString())
+		assert.equal(
+			result.data.SubscriptionStatus,
+			expectedResult.data.SubscriptionStatus
+		)
+		assert.equal(
+			result.data.PeriodEnd.toString(),
+			expectedResult.data.PeriodEnd.toString()
+		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
 		assert.equal(result.data.ProfileImage, expectedResult.data.ProfileImage)
-		assert.equal(result.data.ProfileImageEtag, expectedResult.data.ProfileImageEtag)
+		assert.equal(
+			result.data.ProfileImageEtag,
+			expectedResult.data.ProfileImageEtag
+		)
 	})
 })
 
@@ -1352,19 +1574,20 @@ describe("CreateStripeCustomerForUser function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/user/stripe`
 
-		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> = {
-			status: 201,
-			data: {
-				stripeCustomerId
+		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> =
+			{
+				status: 201,
+				data: {
+					stripeCustomerId
+				}
 			}
-		}
 
 		moxios.wait(() => {
 			let request = moxios.requests.mostRecent()
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1376,11 +1599,15 @@ describe("CreateStripeCustomerForUser function", () => {
 		})
 
 		// Act
-		let result = await CreateStripeCustomerForUser() as ApiResponse<CreateStripeCustomerForUserResponseData>
+		let result =
+			(await CreateStripeCustomerForUser()) as ApiResponse<CreateStripeCustomerForUserResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.stripeCustomerId, expectedResult.data.stripeCustomerId)
+		assert.equal(
+			result.data.stripeCustomerId,
+			expectedResult.data.stripeCustomerId
+		)
 	})
 
 	it("should call createStripeCustomerForUser endpoint with error", async () => {
@@ -1391,10 +1618,12 @@ describe("CreateStripeCustomerForUser function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1402,22 +1631,24 @@ describe("CreateStripeCustomerForUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateStripeCustomerForUser() as ApiErrorResponse
+		let result = (await CreateStripeCustomerForUser()) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1434,12 +1665,13 @@ describe("CreateStripeCustomerForUser function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/user/stripe`
 
-		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> = {
-			status: 201,
-			data: {
-				stripeCustomerId
+		let expectedResult: ApiResponse<CreateStripeCustomerForUserResponseData> =
+			{
+				status: 201,
+				data: {
+					stripeCustomerId
+				}
 			}
-		}
 
 		// First createStripeCustomerForUser request
 		moxios.wait(() => {
@@ -1447,16 +1679,18 @@ describe("CreateStripeCustomerForUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -1467,7 +1701,7 @@ describe("CreateStripeCustomerForUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1484,7 +1718,7 @@ describe("CreateStripeCustomerForUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -1496,11 +1730,15 @@ describe("CreateStripeCustomerForUser function", () => {
 		})
 
 		// Act
-		let result = await CreateStripeCustomerForUser() as ApiResponse<CreateStripeCustomerForUserResponseData>
+		let result =
+			(await CreateStripeCustomerForUser()) as ApiResponse<CreateStripeCustomerForUserResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.data.stripeCustomerId, expectedResult.data.stripeCustomerId)
+		assert.equal(
+			result.data.stripeCustomerId,
+			expectedResult.data.stripeCustomerId
+		)
 	})
 })
 
@@ -1521,7 +1759,7 @@ describe("SendConfirmationEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			request.respondWith({
@@ -1531,10 +1769,10 @@ describe("SendConfirmationEmail function", () => {
 		})
 
 		// Act
-		let result = await SendConfirmationEmail({
+		let result = (await SendConfirmationEmail({
 			auth: davDevAuth,
 			id
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1548,10 +1786,12 @@ describe("SendConfirmationEmail function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1559,25 +1799,27 @@ describe("SendConfirmationEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SendConfirmationEmail({
+		let result = (await SendConfirmationEmail({
 			auth: davDevAuth,
 			id
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1603,7 +1845,7 @@ describe("SendPasswordResetEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			let data = JSON.parse(request.config.data)
@@ -1616,10 +1858,10 @@ describe("SendPasswordResetEmail function", () => {
 		})
 
 		// Act
-		let result = await SendPasswordResetEmail({
+		let result = (await SendPasswordResetEmail({
 			auth: davDevAuth,
 			email
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1633,10 +1875,12 @@ describe("SendPasswordResetEmail function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1644,7 +1888,7 @@ describe("SendPasswordResetEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			let data = JSON.parse(request.config.data)
@@ -1653,19 +1897,21 @@ describe("SendPasswordResetEmail function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SendPasswordResetEmail({
+		let result = (await SendPasswordResetEmail({
 			auth: davDevAuth,
 			email
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1679,7 +1925,7 @@ describe("ConfirmUser function", () => {
 		// Arrange
 		let id = 12
 		let emailConfirmationToken = "skodahiosfahiofahiosfahiofas"
-		
+
 		let url = `${Dav.apiBaseUrl}/user/${id}/confirm`
 
 		let expectedResult: ApiResponse<{}> = {
@@ -1692,9 +1938,12 @@ describe("ConfirmUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
@@ -1706,11 +1955,11 @@ describe("ConfirmUser function", () => {
 		})
 
 		// Act
-		let result = await ConfirmUser({
+		let result = (await ConfirmUser({
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1725,10 +1974,12 @@ describe("ConfirmUser function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1736,9 +1987,12 @@ describe("ConfirmUser function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
@@ -1746,20 +2000,22 @@ describe("ConfirmUser function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await ConfirmUser({
+		let result = (await ConfirmUser({
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1786,9 +2042,12 @@ describe("SaveNewEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
@@ -1800,11 +2059,11 @@ describe("SaveNewEmail function", () => {
 		})
 
 		// Act
-		let result = await SaveNewEmail({
+		let result = (await SaveNewEmail({
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1819,10 +2078,12 @@ describe("SaveNewEmail function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1830,9 +2091,12 @@ describe("SaveNewEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
@@ -1840,20 +2104,22 @@ describe("SaveNewEmail function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SaveNewEmail({
+		let result = (await SaveNewEmail({
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1880,12 +2146,18 @@ describe("SaveNewPassword function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
-			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+			assert.equal(
+				data.password_confirmation_token,
+				passwordConfirmationToken
+			)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -1894,11 +2166,11 @@ describe("SaveNewPassword function", () => {
 		})
 
 		// Act
-		let result = await SaveNewPassword({
+		let result = (await SaveNewPassword({
 			auth: davDevAuth,
 			id,
 			passwordConfirmationToken
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1913,10 +2185,12 @@ describe("SaveNewPassword function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1924,30 +2198,38 @@ describe("SaveNewPassword function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
-			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+			assert.equal(
+				data.password_confirmation_token,
+				passwordConfirmationToken
+			)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SaveNewPassword({
+		let result = (await SaveNewPassword({
 			auth: davDevAuth,
 			id,
 			passwordConfirmationToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1974,9 +2256,12 @@ describe("ResetEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
@@ -1988,11 +2273,11 @@ describe("ResetEmail function", () => {
 		})
 
 		// Act
-		let result = await ResetEmail({
+		let result = (await ResetEmail({
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -2007,10 +2292,12 @@ describe("ResetEmail function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -2018,9 +2305,12 @@ describe("ResetEmail function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
@@ -2028,20 +2318,22 @@ describe("ResetEmail function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await ResetEmail({
+		let result = (await ResetEmail({
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -2069,13 +2361,19 @@ describe("SetPassword function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.password, password)
-			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+			assert.equal(
+				data.password_confirmation_token,
+				passwordConfirmationToken
+			)
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -2084,12 +2382,12 @@ describe("SetPassword function", () => {
 		})
 
 		// Act
-		let result = await SetPassword({
+		let result = (await SetPassword({
 			auth: davDevAuth,
 			id,
 			password,
 			passwordConfirmationToken
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -2105,10 +2403,12 @@ describe("SetPassword function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -2116,32 +2416,40 @@ describe("SetPassword function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.password, password)
-			assert.equal(data.password_confirmation_token, passwordConfirmationToken)
+			assert.equal(
+				data.password_confirmation_token,
+				passwordConfirmationToken
+			)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SetPassword({
+		let result = (await SetPassword({
 			auth: davDevAuth,
 			id,
 			password,
 			passwordConfirmationToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

@@ -1,14 +1,14 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { WebPushSubscription } from '../../lib/models/WebPushSubscription.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { WebPushSubscription } from "../../lib/models/WebPushSubscription.js"
 import {
 	CreateWebPushSubscription,
 	GetWebPushSubscription,
 	DeleteWebPushSubscription
-} from '../../lib/controllers/WebPushSubscriptionsController.js'
+} from "../../lib/controllers/WebPushSubscriptionsController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -32,12 +32,7 @@ describe("CreateWebPushSubscription function", () => {
 
 		let expectedResult: ApiResponse<WebPushSubscription> = {
 			status: 201,
-			data: new WebPushSubscription(
-				uuid,
-				endpoint,
-				p256dh,
-				auth
-			)
+			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
 		moxios.wait(() => {
@@ -45,9 +40,12 @@ describe("CreateWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -69,12 +67,12 @@ describe("CreateWebPushSubscription function", () => {
 		})
 
 		// Act
-		let result = await CreateWebPushSubscription({
+		let result = (await CreateWebPushSubscription({
 			uuid,
 			endpoint,
 			p256dh,
 			auth
-		}) as ApiResponse<WebPushSubscription>
+		})) as ApiResponse<WebPushSubscription>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -97,10 +95,12 @@ describe("CreateWebPushSubscription function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -108,9 +108,12 @@ describe("CreateWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -121,21 +124,23 @@ describe("CreateWebPushSubscription function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateWebPushSubscription({
+		let result = (await CreateWebPushSubscription({
 			uuid,
 			endpoint,
 			p256dh,
 			auth
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -157,12 +162,7 @@ describe("CreateWebPushSubscription function", () => {
 
 		let expectedResult: ApiResponse<WebPushSubscription> = {
 			status: 201,
-			data: new WebPushSubscription(
-				uuid,
-				endpoint,
-				p256dh,
-				auth
-			)
+			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
 		// First createWebPushSubscription request
@@ -171,9 +171,12 @@ describe("CreateWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -184,10 +187,12 @@ describe("CreateWebPushSubscription function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -198,7 +203,7 @@ describe("CreateWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -215,9 +220,12 @@ describe("CreateWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -239,12 +247,12 @@ describe("CreateWebPushSubscription function", () => {
 		})
 
 		// Act
-		let result = await CreateWebPushSubscription({
+		let result = (await CreateWebPushSubscription({
 			uuid,
 			endpoint,
 			p256dh,
 			auth
-		}) as ApiResponse<WebPushSubscription>
+		})) as ApiResponse<WebPushSubscription>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -269,12 +277,7 @@ describe("GetWebPushSubscription function", () => {
 
 		let expectedResult: ApiResponse<WebPushSubscription> = {
 			status: 200,
-			data: new WebPushSubscription(
-				uuid,
-				endpoint,
-				p256dh,
-				auth
-			)
+			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
 		moxios.wait(() => {
@@ -282,7 +285,7 @@ describe("GetWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -299,9 +302,9 @@ describe("GetWebPushSubscription function", () => {
 		})
 
 		// Act
-		let result = await GetWebPushSubscription({
+		let result = (await GetWebPushSubscription({
 			uuid
-		}) as ApiResponse<WebPushSubscription>
+		})) as ApiResponse<WebPushSubscription>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -321,10 +324,12 @@ describe("GetWebPushSubscription function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -332,24 +337,26 @@ describe("GetWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetWebPushSubscription({
+		let result = (await GetWebPushSubscription({
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -371,12 +378,7 @@ describe("GetWebPushSubscription function", () => {
 
 		let expectedResult: ApiResponse<WebPushSubscription> = {
 			status: 201,
-			data: new WebPushSubscription(
-				uuid,
-				endpoint,
-				p256dh,
-				auth
-			)
+			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
 		// First getWebPushSubscription request
@@ -385,16 +387,18 @@ describe("GetWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -405,7 +409,7 @@ describe("GetWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -422,7 +426,7 @@ describe("GetWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -439,9 +443,9 @@ describe("GetWebPushSubscription function", () => {
 		})
 
 		// Act
-		let result = await GetWebPushSubscription({
+		let result = (await GetWebPushSubscription({
 			uuid
-		}) as ApiResponse<WebPushSubscription>
+		})) as ApiResponse<WebPushSubscription>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -471,7 +475,7 @@ describe("DeleteWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -481,9 +485,9 @@ describe("DeleteWebPushSubscription function", () => {
 		})
 
 		// Act
-		let result = await DeleteWebPushSubscription({
+		let result = (await DeleteWebPushSubscription({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -499,10 +503,12 @@ describe("DeleteWebPushSubscription function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -510,24 +516,26 @@ describe("DeleteWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await DeleteWebPushSubscription({
+		let result = (await DeleteWebPushSubscription({
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -555,16 +563,18 @@ describe("DeleteWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -575,7 +585,7 @@ describe("DeleteWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -592,7 +602,7 @@ describe("DeleteWebPushSubscription function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -602,9 +612,9 @@ describe("DeleteWebPushSubscription function", () => {
 		})
 
 		// Act
-		let result = await DeleteWebPushSubscription({
+		let result = (await DeleteWebPushSubscription({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

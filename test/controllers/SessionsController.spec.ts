@@ -1,16 +1,16 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import { davDevAuth } from '../constants.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import { davDevAuth } from "../constants.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
 import {
 	CreateSession,
 	CreateSessionFromAccessToken,
 	RenewSession,
 	DeleteSession,
 	SessionResponseData
-} from '../../lib/controllers/SessionsController.js'
+} from "../../lib/controllers/SessionsController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -31,7 +31,7 @@ describe("CreateSession function", () => {
 		let deviceOs = "Windows 10"
 		let accessToken = "hiuhfeiugasdasd"
 		let websiteAccessToken = "jsodhiosdfhiosfd"
-		
+
 		let url = `${Dav.apiBaseUrl}/session`
 
 		let expectedResult: ApiResponse<SessionResponseData> = {
@@ -47,9 +47,12 @@ describe("CreateSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, email)
@@ -69,7 +72,7 @@ describe("CreateSession function", () => {
 		})
 
 		// Act
-		let result = await CreateSession({
+		let result = (await CreateSession({
 			auth: davDevAuth,
 			email,
 			password,
@@ -77,12 +80,15 @@ describe("CreateSession function", () => {
 			apiKey,
 			deviceName,
 			deviceOs
-		}) as ApiResponse<SessionResponseData>
+		})) as ApiResponse<SessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.accessToken, expectedResult.data.accessToken)
-		assert.equal(result.data.websiteAccessToken, expectedResult.data.websiteAccessToken)
+		assert.equal(
+			result.data.websiteAccessToken,
+			expectedResult.data.websiteAccessToken
+		)
 	})
 
 	it("should call createSession endpoint with error", async () => {
@@ -98,10 +104,12 @@ describe("CreateSession function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -109,9 +117,12 @@ describe("CreateSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.email, email)
@@ -124,16 +135,18 @@ describe("CreateSession function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateSession({
+		let result = (await CreateSession({
 			auth: davDevAuth,
 			email,
 			password,
@@ -141,7 +154,7 @@ describe("CreateSession function", () => {
 			apiKey,
 			deviceName,
 			deviceOs
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -158,7 +171,7 @@ describe("CreateSessionFromAccessToken function", () => {
 		let apiKey = "sndksfndsdfsdfsdf"
 		let deviceName = "TestDevice"
 		let deviceOs = "Windows 10"
-		
+
 		let responseAccessToken = "oihdfibsdfig93q"
 		let url = `${Dav.apiBaseUrl}/session/access_token`
 
@@ -174,9 +187,12 @@ describe("CreateSessionFromAccessToken function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.access_token, accessToken)
@@ -194,14 +210,14 @@ describe("CreateSessionFromAccessToken function", () => {
 		})
 
 		// Act
-		let result = await CreateSessionFromAccessToken({
+		let result = (await CreateSessionFromAccessToken({
 			auth: davDevAuth,
 			accessToken,
 			appId,
 			apiKey,
 			deviceName,
 			deviceOs
-		}) as ApiResponse<SessionResponseData>
+		})) as ApiResponse<SessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -220,10 +236,12 @@ describe("CreateSessionFromAccessToken function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -231,9 +249,12 @@ describe("CreateSessionFromAccessToken function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.access_token, accessToken)
@@ -245,23 +266,25 @@ describe("CreateSessionFromAccessToken function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateSessionFromAccessToken({
+		let result = (await CreateSessionFromAccessToken({
 			auth: davDevAuth,
 			accessToken,
 			appId,
 			apiKey,
 			deviceName,
 			deviceOs
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -289,7 +312,7 @@ describe("RenewSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -301,9 +324,9 @@ describe("RenewSession function", () => {
 		})
 
 		// Act
-		let result = await RenewSession({
+		let result = (await RenewSession({
 			accessToken
-		}) as ApiResponse<SessionResponseData>
+		})) as ApiResponse<SessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -317,10 +340,12 @@ describe("RenewSession function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -328,24 +353,26 @@ describe("RenewSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await RenewSession({
+		let result = (await RenewSession({
 			accessToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -370,7 +397,7 @@ describe("DeleteSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -380,9 +407,9 @@ describe("DeleteSession function", () => {
 		})
 
 		// Act
-		let result = await DeleteSession({
+		let result = (await DeleteSession({
 			accessToken
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -395,10 +422,12 @@ describe("DeleteSession function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -406,24 +435,26 @@ describe("DeleteSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await DeleteSession({
+		let result = (await DeleteSession({
 			accessToken
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

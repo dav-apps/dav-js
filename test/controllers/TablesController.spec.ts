@@ -1,14 +1,14 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { Table } from '../../lib/models/Table.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { Table } from "../../lib/models/Table.js"
 import {
 	CreateTable,
 	GetTable,
 	GetTableResponseData
-} from '../../lib/controllers/TablesController.js'
+} from "../../lib/controllers/TablesController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -39,9 +39,12 @@ describe("CreateTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -58,10 +61,10 @@ describe("CreateTable function", () => {
 		})
 
 		// Act
-		let result = await CreateTable({
+		let result = (await CreateTable({
 			appId,
 			name
-		}) as ApiResponse<Table>
+		})) as ApiResponse<Table>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -81,10 +84,12 @@ describe("CreateTable function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -92,9 +97,12 @@ describe("CreateTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -103,19 +111,21 @@ describe("CreateTable function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateTable({
+		let result = (await CreateTable({
 			appId,
 			name
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -145,9 +155,12 @@ describe("CreateTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -156,10 +169,12 @@ describe("CreateTable function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -170,7 +185,7 @@ describe("CreateTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -187,9 +202,12 @@ describe("CreateTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -206,10 +224,10 @@ describe("CreateTable function", () => {
 		})
 
 		// Act
-		let result = await CreateTable({
+		let result = (await CreateTable({
 			appId,
 			name
-		}) as ApiResponse<Table>
+		})) as ApiResponse<Table>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -262,7 +280,7 @@ describe("GetTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(request.config.params.count, count)
@@ -291,11 +309,11 @@ describe("GetTable function", () => {
 		})
 
 		// Act
-		let result = await GetTable({
+		let result = (await GetTable({
 			id,
 			count,
 			page
-		}) as ApiResponse<GetTableResponseData>
+		})) as ApiResponse<GetTableResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -304,11 +322,26 @@ describe("GetTable function", () => {
 		assert.equal(result.data.table.Name, expectedResult.data.table.Name)
 		assert.equal(result.data.pages, expectedResult.data.pages)
 		assert.equal(result.data.etag, expectedResult.data.etag)
-		assert.equal(result.data.tableObjects.length, expectedResult.data.tableObjects.length)
-		assert.equal(result.data.tableObjects[0].uuid, expectedResult.data.tableObjects[0].uuid)
-		assert.equal(result.data.tableObjects[0].etag, expectedResult.data.tableObjects[0].etag)
-		assert.equal(result.data.tableObjects[1].uuid, expectedResult.data.tableObjects[1].uuid)
-		assert.equal(result.data.tableObjects[1].etag, expectedResult.data.tableObjects[1].etag)
+		assert.equal(
+			result.data.tableObjects.length,
+			expectedResult.data.tableObjects.length
+		)
+		assert.equal(
+			result.data.tableObjects[0].uuid,
+			expectedResult.data.tableObjects[0].uuid
+		)
+		assert.equal(
+			result.data.tableObjects[0].etag,
+			expectedResult.data.tableObjects[0].etag
+		)
+		assert.equal(
+			result.data.tableObjects[1].uuid,
+			expectedResult.data.tableObjects[1].uuid
+		)
+		assert.equal(
+			result.data.tableObjects[1].etag,
+			expectedResult.data.tableObjects[1].etag
+		)
 	})
 
 	it("should call getTable endpoint with error", async () => {
@@ -323,10 +356,12 @@ describe("GetTable function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -334,7 +369,7 @@ describe("GetTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(request.config.params.count, count)
@@ -343,20 +378,22 @@ describe("GetTable function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetTable({
+		let result = (await GetTable({
 			id,
 			count,
 			page
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -408,7 +445,7 @@ describe("GetTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			assert.equal(request.config.params.count, count)
@@ -417,10 +454,12 @@ describe("GetTable function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -431,7 +470,7 @@ describe("GetTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -448,7 +487,7 @@ describe("GetTable function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			assert.equal(request.config.params.count, count)
@@ -477,11 +516,11 @@ describe("GetTable function", () => {
 		})
 
 		// Act
-		let result = await GetTable({
+		let result = (await GetTable({
 			id,
 			count,
 			page
-		}) as ApiResponse<GetTableResponseData>
+		})) as ApiResponse<GetTableResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -490,10 +529,25 @@ describe("GetTable function", () => {
 		assert.equal(result.data.table.Name, expectedResult.data.table.Name)
 		assert.equal(result.data.pages, expectedResult.data.pages)
 		assert.equal(result.data.etag, expectedResult.data.etag)
-		assert.equal(result.data.tableObjects.length, expectedResult.data.tableObjects.length)
-		assert.equal(result.data.tableObjects[0].uuid, expectedResult.data.tableObjects[0].uuid)
-		assert.equal(result.data.tableObjects[0].etag, expectedResult.data.tableObjects[0].etag)
-		assert.equal(result.data.tableObjects[1].uuid, expectedResult.data.tableObjects[1].uuid)
-		assert.equal(result.data.tableObjects[1].etag, expectedResult.data.tableObjects[1].etag)
+		assert.equal(
+			result.data.tableObjects.length,
+			expectedResult.data.tableObjects.length
+		)
+		assert.equal(
+			result.data.tableObjects[0].uuid,
+			expectedResult.data.tableObjects[0].uuid
+		)
+		assert.equal(
+			result.data.tableObjects[0].etag,
+			expectedResult.data.tableObjects[0].etag
+		)
+		assert.equal(
+			result.data.tableObjects[1].uuid,
+			expectedResult.data.tableObjects[1].uuid
+		)
+		assert.equal(
+			result.data.tableObjects[1].etag,
+			expectedResult.data.tableObjects[1].etag
+		)
 	})
 })

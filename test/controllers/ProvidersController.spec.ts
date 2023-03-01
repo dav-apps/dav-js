@@ -1,13 +1,13 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
 import {
 	CreateProvider,
 	GetProvider,
 	ProviderResponseData
-} from '../../lib/controllers/ProvidersController.js'
+} from "../../lib/controllers/ProvidersController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -43,9 +43,12 @@ describe("CreateProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.country, country)
@@ -61,15 +64,18 @@ describe("CreateProvider function", () => {
 		})
 
 		// Act
-		let result = await CreateProvider({
+		let result = (await CreateProvider({
 			country
-		}) as ApiResponse<ProviderResponseData>
+		})) as ApiResponse<ProviderResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.id, expectedResult.data.id)
 		assert.equal(result.data.userId, expectedResult.data.userId)
-		assert.equal(result.data.stripeAccountId, expectedResult.data.stripeAccountId)
+		assert.equal(
+			result.data.stripeAccountId,
+			expectedResult.data.stripeAccountId
+		)
 	})
 
 	it("should call createProvider endpoint with error", async () => {
@@ -82,10 +88,12 @@ describe("CreateProvider function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -93,9 +101,12 @@ describe("CreateProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.country, country)
@@ -103,18 +114,20 @@ describe("CreateProvider function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateProvider({
+		let result = (await CreateProvider({
 			country
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -149,9 +162,12 @@ describe("CreateProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.country, country)
@@ -159,10 +175,12 @@ describe("CreateProvider function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -173,7 +191,7 @@ describe("CreateProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -190,9 +208,12 @@ describe("CreateProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.country, country)
@@ -208,15 +229,18 @@ describe("CreateProvider function", () => {
 		})
 
 		// Act
-		let result = await CreateProvider({
+		let result = (await CreateProvider({
 			country
-		}) as ApiResponse<ProviderResponseData>
+		})) as ApiResponse<ProviderResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.id, expectedResult.data.id)
 		assert.equal(result.data.userId, expectedResult.data.userId)
-		assert.equal(result.data.stripeAccountId, expectedResult.data.stripeAccountId)
+		assert.equal(
+			result.data.stripeAccountId,
+			expectedResult.data.stripeAccountId
+		)
 	})
 })
 
@@ -245,7 +269,7 @@ describe("GetProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -259,13 +283,16 @@ describe("GetProvider function", () => {
 		})
 
 		// Act
-		let result = await GetProvider() as ApiResponse<ProviderResponseData>
+		let result = (await GetProvider()) as ApiResponse<ProviderResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.id, expectedResult.data.id)
 		assert.equal(result.data.userId, expectedResult.data.userId)
-		assert.equal(result.data.stripeAccountId, expectedResult.data.stripeAccountId)
+		assert.equal(
+			result.data.stripeAccountId,
+			expectedResult.data.stripeAccountId
+		)
 	})
 
 	it("should call getProvider endpoint with error", async () => {
@@ -276,10 +303,12 @@ describe("GetProvider function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -287,22 +316,24 @@ describe("GetProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetProvider() as ApiErrorResponse
+		let result = (await GetProvider()) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -336,16 +367,18 @@ describe("GetProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -356,7 +389,7 @@ describe("GetProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -373,7 +406,7 @@ describe("GetProvider function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -387,12 +420,15 @@ describe("GetProvider function", () => {
 		})
 
 		// Act
-		let result = await GetProvider() as ApiResponse<ProviderResponseData>
+		let result = (await GetProvider()) as ApiResponse<ProviderResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.id, expectedResult.data.id)
 		assert.equal(result.data.userId, expectedResult.data.userId)
-		assert.equal(result.data.stripeAccountId, expectedResult.data.stripeAccountId)
+		assert.equal(
+			result.data.stripeAccountId,
+			expectedResult.data.stripeAccountId
+		)
 	})
 })

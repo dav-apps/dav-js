@@ -1,11 +1,14 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { davDevAuth } from '../constants.js'
-import { ApiResponse, ApiErrorResponse, Currency } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { Purchase } from '../../lib/models/Purchase.js'
-import { GetPurchase, DeletePurchase } from '../../lib/controllers/PurchasesController.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { davDevAuth } from "../constants.js"
+import { ApiResponse, ApiErrorResponse, Currency } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { Purchase } from "../../lib/models/Purchase.js"
+import {
+	GetPurchase,
+	DeletePurchase
+} from "../../lib/controllers/PurchasesController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -23,9 +26,11 @@ describe("GetPurchase function", () => {
 		let uuid = "ed082924-ca1b-4d4e-9ee5-69da388546cf"
 		let paymentIntentId = "pi_iasdohafhoasguf"
 		let providerName = "Lemony Snicket"
-		let providerImage = "https://api.pocketlib.app/author/asdasdasd/profile_image"
+		let providerImage =
+			"https://api.pocketlib.app/author/asdasdasd/profile_image"
 		let productName = "A Series of Unfortunate Events - Book the First"
-		let productImage = "https://api.pocketlib.app/store/book/sdfsdfsfddf/cover"
+		let productImage =
+			"https://api.pocketlib.app/store/book/sdfsdfsfddf/cover"
 		let price = 1313
 		let currency: Currency = "eur"
 		let completed = false
@@ -54,7 +59,7 @@ describe("GetPurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			request.respondWith({
@@ -76,10 +81,10 @@ describe("GetPurchase function", () => {
 		})
 
 		// Act
-		let result = await GetPurchase({
+		let result = (await GetPurchase({
 			auth: davDevAuth,
 			uuid
-		}) as ApiResponse<Purchase>
+		})) as ApiResponse<Purchase>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -103,10 +108,12 @@ describe("GetPurchase function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -114,25 +121,27 @@ describe("GetPurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, davDevAuth.token)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetPurchase({
+		let result = (await GetPurchase({
 			auth: davDevAuth,
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -149,7 +158,7 @@ describe("DeletePurchase function", () => {
 		let accessToken = "iosdfshodhsdf"
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
-		
+
 		let expectedResult: ApiResponse<{}> = {
 			status: 204,
 			data: {}
@@ -160,7 +169,7 @@ describe("DeletePurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -170,9 +179,9 @@ describe("DeletePurchase function", () => {
 		})
 
 		// Act
-		let result = await DeletePurchase({
+		let result = (await DeletePurchase({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -188,10 +197,12 @@ describe("DeletePurchase function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -199,24 +210,26 @@ describe("DeletePurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await DeletePurchase({
+		let result = (await DeletePurchase({
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -232,7 +245,7 @@ describe("DeletePurchase function", () => {
 		let newAccessToken = "sfdhosfdhiosfd"
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
-		
+
 		let expectedResult: ApiResponse<{}> = {
 			status: 204,
 			data: {}
@@ -244,16 +257,18 @@ describe("DeletePurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -264,7 +279,7 @@ describe("DeletePurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -281,7 +296,7 @@ describe("DeletePurchase function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -291,9 +306,9 @@ describe("DeletePurchase function", () => {
 		})
 
 		// Act
-		let result = await DeletePurchase({
+		let result = (await DeletePurchase({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

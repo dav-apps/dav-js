@@ -1,12 +1,17 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { App } from '../../lib/models/App.js'
-import { CreateApp, GetApps, GetApp, UpdateApp } from '../../lib/controllers/AppsController.js'
-import { Table } from '../../lib/models/Table.js'
-import { Api } from '../../lib/models/Api.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { App } from "../../lib/models/App.js"
+import {
+	CreateApp,
+	GetApps,
+	GetApp,
+	UpdateApp
+} from "../../lib/controllers/AppsController.js"
+import { Table } from "../../lib/models/Table.js"
+import { Api } from "../../lib/models/Api.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -22,22 +27,14 @@ describe("CreateApp function", () => {
 		let id = 23
 		let name = "TestApp"
 		let description = "This is a test app"
-		
+
 		let accessToken = "sodfnosgdbjsgdjsdgosgd"
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/app`
 
 		let expectedResult: ApiResponse<App> = {
 			status: 201,
-			data: new App(
-				id,
-				name,
-				description,
-				false,
-				null,
-				null,
-				null
-			)
+			data: new App(id, name, description, false, null, null, null)
 		}
 
 		moxios.wait(() => {
@@ -45,9 +42,12 @@ describe("CreateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -68,10 +68,10 @@ describe("CreateApp function", () => {
 		})
 
 		// Act
-		let result = await CreateApp({
+		let result = (await CreateApp({
 			name,
 			description
-		}) as ApiResponse<App>
+		})) as ApiResponse<App>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -80,8 +80,14 @@ describe("CreateApp function", () => {
 		assert.equal(result.data.Description, expectedResult.data.Description)
 		assert.equal(result.data.Published, expectedResult.data.Published)
 		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
-		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
-		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+		assert.equal(
+			result.data.GooglePlayLink,
+			expectedResult.data.GooglePlayLink
+		)
+		assert.equal(
+			result.data.MicrosoftStoreLink,
+			expectedResult.data.MicrosoftStoreLink
+		)
 	})
 
 	it("should call createApp function with error", async () => {
@@ -95,10 +101,12 @@ describe("CreateApp function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -106,9 +114,12 @@ describe("CreateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -117,19 +128,21 @@ describe("CreateApp function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateApp({
+		let result = (await CreateApp({
 			name,
 			description
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -142,7 +155,7 @@ describe("CreateApp function", () => {
 		let id = 23
 		let name = "TestApp"
 		let description = "This is a test app"
-		
+
 		let accessToken = "sodfnosgdbjsgdjsdgosgd"
 		let newAccessToken = "psfjiojsdgiosgdsgid"
 		Dav.accessToken = accessToken
@@ -150,15 +163,7 @@ describe("CreateApp function", () => {
 
 		let expectedResult: ApiResponse<App> = {
 			status: 201,
-			data: new App(
-				id,
-				name,
-				description,
-				false,
-				null,
-				null,
-				null
-			)
+			data: new App(id, name, description, false, null, null, null)
 		}
 
 		// First createApp request
@@ -167,9 +172,12 @@ describe("CreateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -178,10 +186,12 @@ describe("CreateApp function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -192,7 +202,7 @@ describe("CreateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -209,9 +219,12 @@ describe("CreateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -232,10 +245,10 @@ describe("CreateApp function", () => {
 		})
 
 		// Act
-		let result = await CreateApp({
+		let result = (await CreateApp({
 			name,
 			description
-		}) as ApiResponse<App>
+		})) as ApiResponse<App>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -244,8 +257,14 @@ describe("CreateApp function", () => {
 		assert.equal(result.data.Description, expectedResult.data.Description)
 		assert.equal(result.data.Published, expectedResult.data.Published)
 		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
-		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
-		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+		assert.equal(
+			result.data.GooglePlayLink,
+			expectedResult.data.GooglePlayLink
+		)
+		assert.equal(
+			result.data.MicrosoftStoreLink,
+			expectedResult.data.MicrosoftStoreLink
+		)
 	})
 })
 
@@ -300,7 +319,7 @@ describe("GetApps function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 
 			request.respondWith({
 				status: expectedResult.status,
@@ -332,7 +351,7 @@ describe("GetApps function", () => {
 		})
 
 		// Act
-		let result = await GetApps() as ApiResponse<App[]>
+		let result = (await GetApps()) as ApiResponse<App[]>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -340,19 +359,37 @@ describe("GetApps function", () => {
 
 		assert.equal(result.data[0].Id, expectedResult.data[0].Id)
 		assert.equal(result.data[0].Name, expectedResult.data[0].Name)
-		assert.equal(result.data[0].Description, expectedResult.data[0].Description)
+		assert.equal(
+			result.data[0].Description,
+			expectedResult.data[0].Description
+		)
 		assert.equal(result.data[0].Published, expectedResult.data[0].Published)
 		assert.equal(result.data[0].WebLink, expectedResult.data[0].WebLink)
-		assert.equal(result.data[0].GooglePlayLink, expectedResult.data[0].GooglePlayLink)
-		assert.equal(result.data[0].MicrosoftStoreLink, expectedResult.data[0].MicrosoftStoreLink)
+		assert.equal(
+			result.data[0].GooglePlayLink,
+			expectedResult.data[0].GooglePlayLink
+		)
+		assert.equal(
+			result.data[0].MicrosoftStoreLink,
+			expectedResult.data[0].MicrosoftStoreLink
+		)
 
 		assert.equal(result.data[1].Id, expectedResult.data[1].Id)
 		assert.equal(result.data[1].Name, expectedResult.data[1].Name)
-		assert.equal(result.data[1].Description, expectedResult.data[1].Description)
+		assert.equal(
+			result.data[1].Description,
+			expectedResult.data[1].Description
+		)
 		assert.equal(result.data[1].Published, expectedResult.data[1].Published)
 		assert.equal(result.data[1].WebLink, expectedResult.data[1].WebLink)
-		assert.equal(result.data[1].GooglePlayLink, expectedResult.data[1].GooglePlayLink)
-		assert.equal(result.data[1].MicrosoftStoreLink, expectedResult.data[1].MicrosoftStoreLink)
+		assert.equal(
+			result.data[1].GooglePlayLink,
+			expectedResult.data[1].GooglePlayLink
+		)
+		assert.equal(
+			result.data[1].MicrosoftStoreLink,
+			expectedResult.data[1].MicrosoftStoreLink
+		)
 	})
 
 	it("should call getApps endpoint with error", async () => {
@@ -361,10 +398,12 @@ describe("GetApps function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -372,21 +411,23 @@ describe("GetApps function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetApps() as ApiErrorResponse
+		let result = (await GetApps()) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -425,22 +466,8 @@ describe("GetApp function", () => {
 				googlePlayLink,
 				microsoftStoreLink,
 				null,
-				[
-					new Table(
-						tableId,
-						id,
-						tableName
-					)
-				],
-				[
-					new Api(
-						apiId,
-						apiName,
-						[],
-						[],
-						[]
-					)
-				]
+				[new Table(tableId, id, tableName)],
+				[new Api(apiId, apiName, [], [], [])]
 			)
 		}
 
@@ -449,7 +476,7 @@ describe("GetApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -462,22 +489,26 @@ describe("GetApp function", () => {
 					web_link: webLink,
 					google_play_link: googlePlayLink,
 					microsoft_store_link: microsoftStoreLink,
-					tables: [{
-						id: tableId,
-						name: tableName
-					}],
-					apis: [{
-						id: apiId,
-						name: apiName
-					}]
+					tables: [
+						{
+							id: tableId,
+							name: tableName
+						}
+					],
+					apis: [
+						{
+							id: apiId,
+							name: apiName
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetApp({
+		let result = (await GetApp({
 			id
-		}) as ApiResponse<App>
+		})) as ApiResponse<App>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -486,12 +517,21 @@ describe("GetApp function", () => {
 		assert.equal(result.data.Description, expectedResult.data.Description)
 		assert.equal(result.data.Published, expectedResult.data.Published)
 		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
-		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
-		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
-		
+		assert.equal(
+			result.data.GooglePlayLink,
+			expectedResult.data.GooglePlayLink
+		)
+		assert.equal(
+			result.data.MicrosoftStoreLink,
+			expectedResult.data.MicrosoftStoreLink
+		)
+
 		assert.equal(result.data.Tables.length, 1)
 		assert.equal(result.data.Tables[0].Id, expectedResult.data.Tables[0].Id)
-		assert.equal(result.data.Tables[0].Name, expectedResult.data.Tables[0].Name)
+		assert.equal(
+			result.data.Tables[0].Name,
+			expectedResult.data.Tables[0].Name
+		)
 
 		assert.equal(result.data.Apis.length, 1)
 		assert.equal(result.data.Apis[0].Id, expectedResult.data.Apis[0].Id)
@@ -508,10 +548,12 @@ describe("GetApp function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -519,24 +561,26 @@ describe("GetApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetApp({
+		let result = (await GetApp({
 			id
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -574,22 +618,8 @@ describe("GetApp function", () => {
 				googlePlayLink,
 				microsoftStoreLink,
 				null,
-				[
-					new Table(
-						tableId,
-						id,
-						tableName
-					)
-				],
-				[
-					new Api(
-						apiId,
-						apiName,
-						[],
-						[],
-						[]
-					)
-				]
+				[new Table(tableId, id, tableName)],
+				[new Api(apiId, apiName, [], [], [])]
 			)
 		}
 
@@ -599,16 +629,18 @@ describe("GetApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -619,7 +651,7 @@ describe("GetApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -636,7 +668,7 @@ describe("GetApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -649,22 +681,26 @@ describe("GetApp function", () => {
 					web_link: webLink,
 					google_play_link: googlePlayLink,
 					microsoft_store_link: microsoftStoreLink,
-					tables: [{
-						id: tableId,
-						name: tableName
-					}],
-					apis: [{
-						id: apiId,
-						name: apiName
-					}]
+					tables: [
+						{
+							id: tableId,
+							name: tableName
+						}
+					],
+					apis: [
+						{
+							id: apiId,
+							name: apiName
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetApp({
+		let result = (await GetApp({
 			id
-		}) as ApiResponse<App>
+		})) as ApiResponse<App>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -673,12 +709,21 @@ describe("GetApp function", () => {
 		assert.equal(result.data.Description, expectedResult.data.Description)
 		assert.equal(result.data.Published, expectedResult.data.Published)
 		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
-		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
-		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
-		
+		assert.equal(
+			result.data.GooglePlayLink,
+			expectedResult.data.GooglePlayLink
+		)
+		assert.equal(
+			result.data.MicrosoftStoreLink,
+			expectedResult.data.MicrosoftStoreLink
+		)
+
 		assert.equal(result.data.Tables.length, 1)
 		assert.equal(result.data.Tables[0].Id, expectedResult.data.Tables[0].Id)
-		assert.equal(result.data.Tables[0].Name, expectedResult.data.Tables[0].Name)
+		assert.equal(
+			result.data.Tables[0].Name,
+			expectedResult.data.Tables[0].Name
+		)
 
 		assert.equal(result.data.Apis.length, 1)
 		assert.equal(result.data.Apis[0].Id, expectedResult.data.Apis[0].Id)
@@ -719,9 +764,12 @@ describe("UpdateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -746,7 +794,7 @@ describe("UpdateApp function", () => {
 		})
 
 		// Act
-		let result = await UpdateApp({
+		let result = (await UpdateApp({
 			id,
 			name,
 			description,
@@ -754,7 +802,7 @@ describe("UpdateApp function", () => {
 			webLink,
 			googlePlayLink,
 			microsoftStoreLink
-		}) as ApiResponse<App>
+		})) as ApiResponse<App>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -763,8 +811,14 @@ describe("UpdateApp function", () => {
 		assert.equal(result.data.Description, expectedResult.data.Description)
 		assert.equal(result.data.Published, expectedResult.data.Published)
 		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
-		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
-		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+		assert.equal(
+			result.data.GooglePlayLink,
+			expectedResult.data.GooglePlayLink
+		)
+		assert.equal(
+			result.data.MicrosoftStoreLink,
+			expectedResult.data.MicrosoftStoreLink
+		)
 	})
 
 	it("should call updateApp endpoint with error", async () => {
@@ -783,10 +837,12 @@ describe("UpdateApp function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -794,9 +850,12 @@ describe("UpdateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -809,16 +868,18 @@ describe("UpdateApp function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await UpdateApp({
+		let result = (await UpdateApp({
 			id,
 			name,
 			description,
@@ -826,7 +887,7 @@ describe("UpdateApp function", () => {
 			webLink,
 			googlePlayLink,
 			microsoftStoreLink
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -868,9 +929,12 @@ describe("UpdateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -883,10 +947,12 @@ describe("UpdateApp function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -897,7 +963,7 @@ describe("UpdateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -914,9 +980,12 @@ describe("UpdateApp function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.name, name)
@@ -941,7 +1010,7 @@ describe("UpdateApp function", () => {
 		})
 
 		// Act
-		let result = await UpdateApp({
+		let result = (await UpdateApp({
 			id,
 			name,
 			description,
@@ -949,7 +1018,7 @@ describe("UpdateApp function", () => {
 			webLink,
 			googlePlayLink,
 			microsoftStoreLink
-		}) as ApiResponse<App>
+		})) as ApiResponse<App>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -958,7 +1027,13 @@ describe("UpdateApp function", () => {
 		assert.equal(result.data.Description, expectedResult.data.Description)
 		assert.equal(result.data.Published, expectedResult.data.Published)
 		assert.equal(result.data.WebLink, expectedResult.data.WebLink)
-		assert.equal(result.data.GooglePlayLink, expectedResult.data.GooglePlayLink)
-		assert.equal(result.data.MicrosoftStoreLink, expectedResult.data.MicrosoftStoreLink)
+		assert.equal(
+			result.data.GooglePlayLink,
+			expectedResult.data.GooglePlayLink
+		)
+		assert.equal(
+			result.data.MicrosoftStoreLink,
+			expectedResult.data.MicrosoftStoreLink
+		)
 	})
 })

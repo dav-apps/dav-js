@@ -1,10 +1,10 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { Api } from '../../lib/models/Api.js'
-import { CreateApi } from '../../lib/controllers/ApisController.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { Api } from "../../lib/models/Api.js"
+import { CreateApi } from "../../lib/controllers/ApisController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -27,13 +27,7 @@ describe("CreateApi function", () => {
 
 		let expectedResult: ApiResponse<Api> = {
 			status: 201,
-			data: new Api(
-				id,
-				name,
-				[],
-				[],
-				[]
-			)
+			data: new Api(id, name, [], [], [])
 		}
 
 		moxios.wait(() => {
@@ -41,9 +35,12 @@ describe("CreateApi function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -63,10 +60,10 @@ describe("CreateApi function", () => {
 		})
 
 		// Act
-		let result = await CreateApi({
+		let result = (await CreateApi({
 			appId,
 			name
-		}) as ApiResponse<Api>
+		})) as ApiResponse<Api>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -88,10 +85,12 @@ describe("CreateApi function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -99,9 +98,12 @@ describe("CreateApi function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -110,19 +112,21 @@ describe("CreateApi function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateApi({
+		let result = (await CreateApi({
 			appId,
 			name
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -143,13 +147,7 @@ describe("CreateApi function", () => {
 
 		let expectedResult: ApiResponse<Api> = {
 			status: 201,
-			data: new Api(
-				id,
-				name,
-				[],
-				[],
-				[]
-			)
+			data: new Api(id, name, [], [], [])
 		}
 
 		// First createApi request
@@ -158,9 +156,12 @@ describe("CreateApi function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -169,10 +170,12 @@ describe("CreateApi function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -183,7 +186,7 @@ describe("CreateApi function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -200,9 +203,12 @@ describe("CreateApi function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.app_id, appId)
@@ -222,10 +228,10 @@ describe("CreateApi function", () => {
 		})
 
 		// Act
-		let result = await CreateApi({
+		let result = (await CreateApi({
 			appId,
 			name
-		}) as ApiResponse<Api>
+		})) as ApiResponse<Api>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

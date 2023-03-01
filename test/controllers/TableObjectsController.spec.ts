@@ -1,9 +1,9 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { TableObject } from '../../lib/models/TableObject.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { TableObject } from "../../lib/models/TableObject.js"
 import {
 	CreateTableObject,
 	GetTableObject,
@@ -12,7 +12,7 @@ import {
 	SetTableObjectFile,
 	RemoveTableObject,
 	TableObjectResponseData
-} from '../../lib/controllers/TableObjectsController.js'
+} from "../../lib/controllers/TableObjectsController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -67,9 +67,12 @@ describe("CreateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -99,7 +102,7 @@ describe("CreateTableObject function", () => {
 		})
 
 		// Act
-		let result = await CreateTableObject({
+		let result = (await CreateTableObject({
 			uuid,
 			tableId,
 			file,
@@ -107,20 +110,47 @@ describe("CreateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 
 	it("should call createTableObject endpoint with error", async () => {
@@ -139,10 +169,12 @@ describe("CreateTableObject function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -150,9 +182,12 @@ describe("CreateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -164,16 +199,18 @@ describe("CreateTableObject function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateTableObject({
+		let result = (await CreateTableObject({
 			uuid,
 			tableId,
 			file,
@@ -181,7 +218,7 @@ describe("CreateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -235,9 +272,12 @@ describe("CreateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -249,10 +289,12 @@ describe("CreateTableObject function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -263,7 +305,7 @@ describe("CreateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -280,9 +322,12 @@ describe("CreateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.uuid, uuid)
@@ -312,7 +357,7 @@ describe("CreateTableObject function", () => {
 		})
 
 		// Act
-		let result = await CreateTableObject({
+		let result = (await CreateTableObject({
 			uuid,
 			tableId,
 			file,
@@ -320,20 +365,47 @@ describe("CreateTableObject function", () => {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 })
 
@@ -381,7 +453,7 @@ describe("GetTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -404,22 +476,49 @@ describe("GetTableObject function", () => {
 		})
 
 		// Act
-		let result = await GetTableObject({
+		let result = (await GetTableObject({
 			uuid
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.isUndefined(result.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 
 	it("should call getTableObject endpoint with error", async () => {
@@ -432,10 +531,12 @@ describe("GetTableObject function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -443,24 +544,26 @@ describe("GetTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await GetTableObject({
+		let result = (await GetTableObject({
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -513,16 +616,18 @@ describe("GetTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -533,7 +638,7 @@ describe("GetTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -550,7 +655,7 @@ describe("GetTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'get')
+			assert.equal(request.config.method, "get")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -573,22 +678,49 @@ describe("GetTableObject function", () => {
 		})
 
 		// Act
-		let result = await GetTableObject({
+		let result = (await GetTableObject({
 			uuid
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.isUndefined(result.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 })
 
@@ -637,9 +769,12 @@ describe("UpdateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.properties[firstPropertyName], firstPropertyValue)
@@ -666,26 +801,53 @@ describe("UpdateTableObject function", () => {
 		})
 
 		// Act
-		let result = await UpdateTableObject({
+		let result = (await UpdateTableObject({
 			uuid,
 			properties: {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 
 	it("should call updateTableObject endpoint with error", async () => {
@@ -702,10 +864,12 @@ describe("UpdateTableObject function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -713,9 +877,12 @@ describe("UpdateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.properties[firstPropertyName], firstPropertyValue)
@@ -724,22 +891,24 @@ describe("UpdateTableObject function", () => {
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await UpdateTableObject({
+		let result = (await UpdateTableObject({
 			uuid,
 			properties: {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -793,9 +962,12 @@ describe("UpdateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.properties[firstPropertyName], firstPropertyValue)
@@ -804,10 +976,12 @@ describe("UpdateTableObject function", () => {
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -818,7 +992,7 @@ describe("UpdateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -835,9 +1009,12 @@ describe("UpdateTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], "application/json")
+			assert.include(
+				request.config.headers["Content-Type"],
+				"application/json"
+			)
 
 			let data = JSON.parse(request.config.data)
 			assert.equal(data.properties[firstPropertyName], firstPropertyValue)
@@ -864,26 +1041,53 @@ describe("UpdateTableObject function", () => {
 		})
 
 		// Act
-		let result = await UpdateTableObject({
+		let result = (await UpdateTableObject({
 			uuid,
 			properties: {
 				[firstPropertyName]: firstPropertyValue,
 				[secondPropertyName]: secondPropertyValue
 			}
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 })
 
@@ -906,7 +1110,7 @@ describe("DeleteTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -916,9 +1120,9 @@ describe("DeleteTableObject function", () => {
 		})
 
 		// Act
-		let result = await DeleteTableObject({
+		let result = (await DeleteTableObject({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -934,10 +1138,12 @@ describe("DeleteTableObject function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -945,24 +1151,26 @@ describe("DeleteTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await DeleteTableObject({
+		let result = (await DeleteTableObject({
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -990,16 +1198,18 @@ describe("DeleteTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -1010,7 +1220,7 @@ describe("DeleteTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1027,7 +1237,7 @@ describe("DeleteTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -1037,9 +1247,9 @@ describe("DeleteTableObject function", () => {
 		})
 
 		// Act
-		let result = await DeleteTableObject({
+		let result = (await DeleteTableObject({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1093,7 +1303,7 @@ describe("SetTableObjectFile function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
@@ -1116,26 +1326,53 @@ describe("SetTableObjectFile function", () => {
 				}
 			})
 		})
-		
+
 		// Act
-		let result = await SetTableObjectFile({
+		let result = (await SetTableObjectFile({
 			uuid,
 			data,
 			type
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 
 	it("should call setTableObjectFile endpoint with error", async () => {
@@ -1150,10 +1387,12 @@ describe("SetTableObjectFile function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1161,27 +1400,29 @@ describe("SetTableObjectFile function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await SetTableObjectFile({
+		let result = (await SetTableObjectFile({
 			uuid,
 			data,
 			type
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1237,17 +1478,19 @@ describe("SetTableObjectFile function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -1258,7 +1501,7 @@ describe("SetTableObjectFile function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1275,7 +1518,7 @@ describe("SetTableObjectFile function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 			assert.include(request.config.headers["Content-Type"], type)
 
@@ -1300,24 +1543,51 @@ describe("SetTableObjectFile function", () => {
 		})
 
 		// Act
-		let result = await SetTableObjectFile({
+		let result = (await SetTableObjectFile({
 			uuid,
 			data,
 			type
-		}) as ApiResponse<TableObjectResponseData>
+		})) as ApiResponse<TableObjectResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
 		assert.equal(result.data.tableEtag, expectedResult.data.tableEtag)
-		assert.equal(result.data.tableObject.TableId, expectedResult.data.tableObject.TableId)
-		assert.equal(result.data.tableObject.Uuid, expectedResult.data.tableObject.Uuid)
-		assert.equal(result.data.tableObject.IsFile, expectedResult.data.tableObject.IsFile)
-		assert.equal(result.data.tableObject.Etag, expectedResult.data.tableObject.Etag)
-		assert.equal(result.data.tableObject.BelongsToUser, expectedResult.data.tableObject.BelongsToUser)
-		assert.equal(result.data.tableObject.Purchase, expectedResult.data.tableObject.Purchase)
-		assert.equal(Object.keys(result.data.tableObject.Properties).length, Object.keys(expectedResult.data.tableObject.Properties).length)
-		assert.equal(result.data.tableObject.GetPropertyValue(firstPropertyName), expectedResult.data.tableObject.GetPropertyValue(firstPropertyName))
-		assert.equal(result.data.tableObject.GetPropertyValue(secondPropertyName), expectedResult.data.tableObject.GetPropertyValue(secondPropertyName))
+		assert.equal(
+			result.data.tableObject.TableId,
+			expectedResult.data.tableObject.TableId
+		)
+		assert.equal(
+			result.data.tableObject.Uuid,
+			expectedResult.data.tableObject.Uuid
+		)
+		assert.equal(
+			result.data.tableObject.IsFile,
+			expectedResult.data.tableObject.IsFile
+		)
+		assert.equal(
+			result.data.tableObject.Etag,
+			expectedResult.data.tableObject.Etag
+		)
+		assert.equal(
+			result.data.tableObject.BelongsToUser,
+			expectedResult.data.tableObject.BelongsToUser
+		)
+		assert.equal(
+			result.data.tableObject.Purchase,
+			expectedResult.data.tableObject.Purchase
+		)
+		assert.equal(
+			Object.keys(result.data.tableObject.Properties).length,
+			Object.keys(expectedResult.data.tableObject.Properties).length
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(firstPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(firstPropertyName)
+		)
+		assert.equal(
+			result.data.tableObject.GetPropertyValue(secondPropertyName),
+			expectedResult.data.tableObject.GetPropertyValue(secondPropertyName)
+		)
 	})
 })
 
@@ -1340,7 +1610,7 @@ describe("RemoveTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1350,9 +1620,9 @@ describe("RemoveTableObject function", () => {
 		})
 
 		// Act
-		let result = await RemoveTableObject({
+		let result = (await RemoveTableObject({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1368,10 +1638,12 @@ describe("RemoveTableObject function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -1379,24 +1651,26 @@ describe("RemoveTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await RemoveTableObject({
+		let result = (await RemoveTableObject({
 			uuid
-		}) as ApiErrorResponse
+		})) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -1424,16 +1698,18 @@ describe("RemoveTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -1444,7 +1720,7 @@ describe("RemoveTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -1461,7 +1737,7 @@ describe("RemoveTableObject function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'delete')
+			assert.equal(request.config.method, "delete")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -1471,9 +1747,9 @@ describe("RemoveTableObject function", () => {
 		})
 
 		// Act
-		let result = await RemoveTableObject({
+		let result = (await RemoveTableObject({
 			uuid
-		}) as ApiResponse<{}>
+		})) as ApiResponse<{}>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

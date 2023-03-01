@@ -1,12 +1,12 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../lib/types.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
 import {
 	CreateWebsocketConnection,
 	WebsocketConnectionResponseData
-} from '../../lib/controllers/WebsocketConnectionsController.js'
+} from "../../lib/controllers/WebsocketConnectionsController.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -37,7 +37,7 @@ describe("CreateWebsocketConnection function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -49,7 +49,8 @@ describe("CreateWebsocketConnection function", () => {
 		})
 
 		// Act
-		let result = await CreateWebsocketConnection() as ApiResponse<WebsocketConnectionResponseData>
+		let result =
+			(await CreateWebsocketConnection()) as ApiResponse<WebsocketConnectionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -64,10 +65,12 @@ describe("CreateWebsocketConnection function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -75,22 +78,24 @@ describe("CreateWebsocketConnection function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateWebsocketConnection() as ApiErrorResponse
+		let result = (await CreateWebsocketConnection()) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -120,16 +125,18 @@ describe("CreateWebsocketConnection function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -140,7 +147,7 @@ describe("CreateWebsocketConnection function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -157,7 +164,7 @@ describe("CreateWebsocketConnection function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -169,7 +176,8 @@ describe("CreateWebsocketConnection function", () => {
 		})
 
 		// Act
-		let result = await CreateWebsocketConnection() as ApiResponse<WebsocketConnectionResponseData>
+		let result =
+			(await CreateWebsocketConnection()) as ApiResponse<WebsocketConnectionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)

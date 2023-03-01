@@ -1,12 +1,12 @@
-import { assert } from 'chai'
-import moxios from 'moxios'
-import { Dav } from '../../lib/Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../../index.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
+import { assert } from "chai"
+import moxios from "moxios"
+import { Dav } from "../../lib/Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../../index.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
 import {
 	CreateCustomerPortalSession,
 	CreateCustomerPortalSessionResponseData
-} from '../../lib/controllers/CustomerPortalSessionsConroller.js'
+} from "../../lib/controllers/CustomerPortalSessionsConroller.js"
 
 beforeEach(() => {
 	moxios.install()
@@ -25,19 +25,20 @@ describe("CreateCustomerPortalSession function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/customer_portal_session`
 
-		let expectedResult: ApiResponse<CreateCustomerPortalSessionResponseData> = {
-			status: 201,
-			data: {
-				sessionUrl
+		let expectedResult: ApiResponse<CreateCustomerPortalSessionResponseData> =
+			{
+				status: 201,
+				data: {
+					sessionUrl
+				}
 			}
-		}
 
 		moxios.wait(() => {
 			let request = moxios.requests.mostRecent()
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -49,7 +50,8 @@ describe("CreateCustomerPortalSession function", () => {
 		})
 
 		// Act
-		let result = await CreateCustomerPortalSession() as ApiResponse<CreateCustomerPortalSessionResponseData>
+		let result =
+			(await CreateCustomerPortalSession()) as ApiResponse<CreateCustomerPortalSessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -64,10 +66,12 @@ describe("CreateCustomerPortalSession function", () => {
 
 		let expectedResult: ApiErrorResponse = {
 			status: 403,
-			errors: [{
-				code: ErrorCodes.ActionNotAllowed,
-				message: "Action not allowed"
-			}]
+			errors: [
+				{
+					code: ErrorCodes.ActionNotAllowed,
+					message: "Action not allowed"
+				}
+			]
 		}
 
 		moxios.wait(() => {
@@ -75,22 +79,24 @@ describe("CreateCustomerPortalSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: expectedResult.status,
 				response: {
-					errors: [{
-						code: expectedResult.errors[0].code,
-						message: expectedResult.errors[0].message
-					}]
+					errors: [
+						{
+							code: expectedResult.errors[0].code,
+							message: expectedResult.errors[0].message
+						}
+					]
 				}
 			})
 		})
 
 		// Act
-		let result = await CreateCustomerPortalSession() as ApiErrorResponse
+		let result = (await CreateCustomerPortalSession()) as ApiErrorResponse
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
@@ -107,12 +113,13 @@ describe("CreateCustomerPortalSession function", () => {
 		Dav.accessToken = accessToken
 		let url = `${Dav.apiBaseUrl}/customer_portal_session`
 
-		let expectedResult: ApiResponse<CreateCustomerPortalSessionResponseData> = {
-			status: 201,
-			data: {
-				sessionUrl
+		let expectedResult: ApiResponse<CreateCustomerPortalSessionResponseData> =
+			{
+				status: 201,
+				data: {
+					sessionUrl
+				}
 			}
-		}
 
 		// First createCustomerPortalSession request
 		moxios.wait(() => {
@@ -120,16 +127,18 @@ describe("CreateCustomerPortalSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
 				status: 403,
 				response: {
-					errors: [{
-						code: ErrorCodes.AccessTokenMustBeRenewed,
-						message: "Access token must be renewed"
-					}]
+					errors: [
+						{
+							code: ErrorCodes.AccessTokenMustBeRenewed,
+							message: "Access token must be renewed"
+						}
+					]
 				}
 			})
 		})
@@ -140,7 +149,7 @@ describe("CreateCustomerPortalSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, 'put')
+			assert.equal(request.config.method, "put")
 			assert.equal(request.config.headers.Authorization, accessToken)
 
 			request.respondWith({
@@ -157,7 +166,7 @@ describe("CreateCustomerPortalSession function", () => {
 
 			// Assert for the request
 			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, 'post')
+			assert.equal(request.config.method, "post")
 			assert.equal(request.config.headers.Authorization, newAccessToken)
 
 			request.respondWith({
@@ -169,7 +178,8 @@ describe("CreateCustomerPortalSession function", () => {
 		})
 
 		// Act
-		let result = await CreateCustomerPortalSession() as ApiResponse<CreateCustomerPortalSessionResponseData>
+		let result =
+			(await CreateCustomerPortalSession()) as ApiResponse<CreateCustomerPortalSessionResponseData>
 
 		// Assert for the response
 		assert.equal(result.status, expectedResult.status)
