@@ -1,31 +1,29 @@
-import { Dav } from '../Dav.js'
-import {
-	webPushPublicKey
-} from '../constants.js'
+import { Dav } from "../Dav.js"
+import { webPushPublicKey } from "../constants.js"
 import {
 	ApiResponse,
 	ApiErrorResponse,
 	Environment,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus
-} from '../types.js'
+} from "../types.js"
 import {
 	generateUuid,
 	urlBase64ToUint8Array,
 	requestNotificationPermission,
 	isSuccessStatusCode
-} from '../utils.js'
-import * as ErrorCodes from '../errorCodes.js'
-import * as DatabaseOperations from './DatabaseOperations.js'
-import { WebPushSubscription } from '../models/WebPushSubscription.js'
-import { Notification } from '../models/Notification.js'
-import * as WebPushSubscriptionsController from '../controllers/WebPushSubscriptionsController.js'
+} from "../utils.js"
+import * as ErrorCodes from "../errorCodes.js"
+import * as DatabaseOperations from "./DatabaseOperations.js"
+import { WebPushSubscription } from "../models/WebPushSubscription.js"
+import { Notification } from "../models/Notification.js"
+import * as WebPushSubscriptionsController from "../controllers/WebPushSubscriptionsController.js"
 import {
 	CreateNotification,
 	GetNotifications,
 	DeleteNotification,
 	UpdateNotification
-} from '../controllers/NotificationsController.js'
+} from "../controllers/NotificationsController.js"
 
 var isSyncingWebPushSubscription = false
 var isSyncingNotifications = false
@@ -33,11 +31,13 @@ var syncNotificationsAgain = false
 
 export async function SetupWebPushSubscription(): Promise<boolean> {
 	if (
-		Dav.accessToken == null
-		|| Dav.environment != Environment.Production
-		|| !('serviceWorker' in navigator)
-		|| !('PushManager' in window)
-	) return false
+		Dav.accessToken == null ||
+		Dav.environment != Environment.Production ||
+		!("serviceWorker" in navigator) ||
+		!("PushManager" in window)
+	) {
+		return false
+	}
 
 	// Check if there is already a webPushSubscription
 	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
@@ -78,23 +78,26 @@ export async function WebPushSubscriptionSync() {
 	// Get the WebPushSubscription from the database
 	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
 	if (
-		webPushSubscription == null
-		|| webPushSubscription.UploadStatus == WebPushSubscriptionUploadStatus.New
+		webPushSubscription == null ||
+		webPushSubscription.UploadStatus == WebPushSubscriptionUploadStatus.New
 	) {
 		isSyncingWebPushSubscription = false
 		return
 	}
 
 	// Check if the web push subscription still exists on the server
-	let webPushSubscriptionResponse = await WebPushSubscriptionsController.GetWebPushSubscription({
-		uuid: webPushSubscription.Uuid
-	})
+	let webPushSubscriptionResponse =
+		await WebPushSubscriptionsController.GetWebPushSubscription({
+			uuid: webPushSubscription.Uuid
+		})
 
 	if (!isSuccessStatusCode(webPushSubscriptionResponse.status)) {
 		let errors = (webPushSubscriptionResponse as ApiErrorResponse).errors
 
 		if (errors != null) {
-			let i = errors.findIndex(error => error.code == ErrorCodes.WebPushSubscriptionDoesNotExist)
+			let i = errors.findIndex(
+				error => error.code == ErrorCodes.WebPushSubscriptionDoesNotExist
+			)
 			if (i != -1) {
 				// Delete the web push subscription locally
 				await DatabaseOperations.RemoveWebPushSubscription()
@@ -116,18 +119,25 @@ export async function WebPushSubscriptionSyncPush() {
 		return
 	}
 
-	if (webPushSubscription.UploadStatus == WebPushSubscriptionUploadStatus.New) {
+	if (
+		webPushSubscription.UploadStatus == WebPushSubscriptionUploadStatus.New
+	) {
 		// Create the WebPushSubscription on the server
-		let createResult = await CreateWebPushSubscriptionOnServer(webPushSubscription)
+		let createResult = await CreateWebPushSubscriptionOnServer(
+			webPushSubscription
+		)
 
 		if (createResult.success) {
-			webPushSubscription.UploadStatus = WebPushSubscriptionUploadStatus.UpToDate
+			webPushSubscription.UploadStatus =
+				WebPushSubscriptionUploadStatus.UpToDate
 			await DatabaseOperations.SetWebPushSubscription(webPushSubscription)
 		} else {
 			let errors = (createResult.message as ApiErrorResponse).errors
 
 			// Check if the session does not exist
-			let i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
+			let i = errors.findIndex(
+				error => error.code == ErrorCodes.SessionDoesNotExist
+			)
 			if (i != -1) {
 				// Log the user out
 				await Dav.Logout()
@@ -147,14 +157,17 @@ export async function NotificationSync() {
 	// Get all notifications from the server
 	let getNotificationsResponse = await GetNotifications()
 	if (!isSuccessStatusCode(getNotificationsResponse.status)) return
-	let notifications = (getNotificationsResponse as ApiResponse<Notification[]>).data
+	let notifications = (getNotificationsResponse as ApiResponse<Notification[]>)
+		.data
 
 	for (let notification of notifications) {
 		// Remove the notification from removedNotifications
 		let i = removedNotifications.findIndex(n => n.Uuid == notification.Uuid)
 		if (i != -1) removedNotifications.splice(i, 1)
 
-		let currentNotification = await DatabaseOperations.GetNotification(notification.Uuid)
+		let currentNotification = await DatabaseOperations.GetNotification(
+			notification.Uuid
+		)
 
 		if (currentNotification != null) {
 			if (currentNotification.UploadStatus == GenericUploadStatus.UpToDate) {
@@ -184,8 +197,14 @@ export async function NotificationSyncPush() {
 	}
 	isSyncingNotifications = true
 
-	let notifications: Notification[] = await DatabaseOperations.GetAllNotifications()
-	let filteredNotifications = notifications.filter(notification => notification.UploadStatus != GenericUploadStatus.UpToDate).reverse()
+	let notifications: Notification[] =
+		await DatabaseOperations.GetAllNotifications()
+	let filteredNotifications = notifications
+		.filter(
+			notification =>
+				notification.UploadStatus != GenericUploadStatus.UpToDate
+		)
+		.reverse()
 
 	for (let notification of filteredNotifications) {
 		switch (notification.UploadStatus) {
@@ -201,7 +220,9 @@ export async function NotificationSyncPush() {
 					let errors = (createResult.message as ApiErrorResponse).errors
 
 					// Check if the notification already exists
-					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
+					let i = errors.findIndex(
+						error => error.code == ErrorCodes.UuidAlreadyInUse
+					)
 					if (i != -1) {
 						// Set the UploadStatus to UpToDate
 						notification.UploadStatus = GenericUploadStatus.UpToDate
@@ -209,7 +230,11 @@ export async function NotificationSyncPush() {
 					}
 
 					// Check if title or body is missing
-					i = errors.findIndex(error => error.code == ErrorCodes.TitleMissing || error.code == ErrorCodes.BodyMissing)
+					i = errors.findIndex(
+						error =>
+							error.code == ErrorCodes.TitleMissing ||
+							error.code == ErrorCodes.BodyMissing
+					)
 					if (i != -1) {
 						// Delete the notification
 						await DatabaseOperations.RemoveNotification(notification.Uuid)
@@ -228,7 +253,9 @@ export async function NotificationSyncPush() {
 					let errors = (updateResult.message as ApiErrorResponse).errors
 
 					// Check if the notification does not exist
-					let i = errors.findIndex(error => error.code == ErrorCodes.NotificationDoesNotExist)
+					let i = errors.findIndex(
+						error => error.code == ErrorCodes.NotificationDoesNotExist
+					)
 					if (i != -1) {
 						// Delete the notification
 						await DatabaseOperations.RemoveNotification(notification.Uuid)
@@ -247,9 +274,10 @@ export async function NotificationSyncPush() {
 					let errors = (deleteResult.message as ApiErrorResponse).errors
 
 					// Check if the notification does not exist
-					let i = errors.findIndex(error =>
-						error.code == ErrorCodes.NotificationDoesNotExist
-						|| error.code == ErrorCodes.ActionNotAllowed
+					let i = errors.findIndex(
+						error =>
+							error.code == ErrorCodes.NotificationDoesNotExist ||
+							error.code == ErrorCodes.ActionNotAllowed
 					)
 					if (i != -1) {
 						// Delete the notification
@@ -271,20 +299,26 @@ export async function NotificationSyncPush() {
 //#region Utility functions
 async function CreateWebPushSubscriptionOnServer(
 	webPushSubscription: WebPushSubscription
-): Promise<{ success: boolean, message: WebPushSubscription | ApiErrorResponse }> {
+): Promise<{
+	success: boolean
+	message: WebPushSubscription | ApiErrorResponse
+}> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
-	const createWebPushSubscriptionResponse = await WebPushSubscriptionsController.CreateWebPushSubscription({
-		uuid: webPushSubscription.Uuid,
-		endpoint: webPushSubscription.Endpoint,
-		p256dh: webPushSubscription.P256dh,
-		auth: webPushSubscription.Auth
-	})
+	const createWebPushSubscriptionResponse =
+		await WebPushSubscriptionsController.CreateWebPushSubscription({
+			uuid: webPushSubscription.Uuid,
+			endpoint: webPushSubscription.Endpoint,
+			p256dh: webPushSubscription.P256dh,
+			auth: webPushSubscription.Auth
+		})
 
 	if (isSuccessStatusCode(createWebPushSubscriptionResponse.status)) {
 		return {
 			success: true,
-			message: (createWebPushSubscriptionResponse as ApiResponse<WebPushSubscription>).data
+			message: (
+				createWebPushSubscriptionResponse as ApiResponse<WebPushSubscription>
+			).data
 		}
 	} else {
 		return {
@@ -296,7 +330,7 @@ async function CreateWebPushSubscriptionOnServer(
 
 async function CreateNotificationOnServer(
 	notification: Notification
-): Promise<{ success: boolean, message: Notification | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: Notification | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let createNotificationResponse = await CreateNotification({
@@ -322,7 +356,7 @@ async function CreateNotificationOnServer(
 
 async function UpdateNotificationOnServer(
 	notification: Notification
-): Promise<{ success: boolean, message: Notification | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: Notification | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let updateNotificationResponse = await UpdateNotification({
@@ -348,7 +382,7 @@ async function UpdateNotificationOnServer(
 
 async function DeleteNotificationOnServer(
 	notification: Notification
-): Promise<{ success: boolean, message: {} | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: {} | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let deleteNotificationResponse = await DeleteNotification({

@@ -1,5 +1,5 @@
-import CryptoJS from 'crypto-js'
-import { Dav } from '../Dav.js'
+import CryptoJS from "crypto-js"
+import { Dav } from "../Dav.js"
 import {
 	ApiErrorResponse,
 	ApiResponse,
@@ -7,20 +7,31 @@ import {
 	DatabaseUser,
 	SessionUploadStatus,
 	TableObjectUploadStatus
-} from '../types.js'
-import { SortTableIds, BlobToBase64, GetBlobData, isSuccessStatusCode } from '../utils.js'
+} from "../types.js"
+import {
+	SortTableIds,
+	BlobToBase64,
+	GetBlobData,
+	isSuccessStatusCode
+} from "../utils.js"
 import {
 	defaultProfileImageUrl,
 	extPropertyName,
 	tableObjectUpdateChannelName,
 	maxPropertiesUploadCount
-} from '../constants.js'
-import * as ErrorCodes from '../errorCodes.js'
-import { TableObject } from '../models/TableObject.js'
-import { User } from '../models/User.js'
-import * as DatabaseOperations from './DatabaseOperations.js'
-import { GetUser, GetProfileImageOfUser } from '../controllers/UsersController.js'
-import { GetTable, GetTableResponseData } from '../controllers/TablesController.js'
+} from "../constants.js"
+import * as ErrorCodes from "../errorCodes.js"
+import { TableObject } from "../models/TableObject.js"
+import { User } from "../models/User.js"
+import * as DatabaseOperations from "./DatabaseOperations.js"
+import {
+	GetUser,
+	GetProfileImageOfUser
+} from "../controllers/UsersController.js"
+import {
+	GetTable,
+	GetTableResponseData
+} from "../controllers/TablesController.js"
 import {
 	CreateTableObject,
 	GetTableObject,
@@ -29,9 +40,12 @@ import {
 	SetTableObjectFile,
 	RemoveTableObject,
 	TableObjectResponseData
-} from '../controllers/TableObjectsController.js'
-import { CreateWebsocketConnection, WebsocketConnectionResponseData } from '../controllers/WebsocketConnectionsController.js'
-import { DeleteSession } from '../controllers/SessionsController.js'
+} from "../controllers/TableObjectsController.js"
+import {
+	CreateWebsocketConnection,
+	WebsocketConnectionResponseData
+} from "../controllers/WebsocketConnectionsController.js"
+import { DeleteSession } from "../controllers/SessionsController.js"
 
 var isSyncing = false
 var syncAgain = false
@@ -40,15 +54,17 @@ var webSocket: WebSocket
 var websocketConnectionEstablished = false
 
 // Stores the table objects to download with the new etag
-var fileDownloads: Array<{ uuid: string, etag?: string }> = []
+var fileDownloads: Array<{ uuid: string; etag?: string }> = []
 var downloadingFiles: boolean = false
 export var downloadingFileUuid: string
 
 export async function InitServiceWorker() {
 	if (
-		!('serviceWorker' in navigator)
-		|| Dav.environment != Environment.Production
-	) return
+		!("serviceWorker" in navigator) ||
+		Dav.environment != Environment.Production
+	) {
+		return
+	}
 
 	await navigator.serviceWorker.ready
 	if (navigator.serviceWorker.controller == null) return
@@ -60,13 +76,17 @@ export async function SessionSyncPush() {
 	let session = await DatabaseOperations.GetSession()
 
 	if (
-		session == null
-		|| session.AccessToken == null
-		|| session.UploadStatus == SessionUploadStatus.UpToDate
-	) return
+		session == null ||
+		session.AccessToken == null ||
+		session.UploadStatus == SessionUploadStatus.UpToDate
+	) {
+		return
+	}
 
 	// Delete the session on the server
-	let deleteResponse = await DeleteSession({ accessToken: session.AccessToken })
+	let deleteResponse = await DeleteSession({
+		accessToken: session.AccessToken
+	})
 
 	if (isSuccessStatusCode(deleteResponse.status)) {
 		// Remove the session
@@ -80,7 +100,9 @@ export async function SessionSyncPush() {
 	} else {
 		// Check the error
 		let errors = (deleteResponse as ApiErrorResponse).errors
-		let i = errors.findIndex(error => error.code == ErrorCodes.SessionDoesNotExist)
+		let i = errors.findIndex(
+			error => error.code == ErrorCodes.SessionDoesNotExist
+		)
 
 		if (i != -1) {
 			// Remove the session
@@ -109,7 +131,10 @@ export async function LoadUser() {
 		PeriodEnd: user.PeriodEnd,
 		Dev: user.Dev,
 		Provider: user.Provider,
-		ProfileImage: await BlobToBase64(user.ProfileImage, defaultProfileImageUrl),
+		ProfileImage: await BlobToBase64(
+			user.ProfileImage,
+			defaultProfileImageUrl
+		),
 		Apps: user.Apps
 	}
 
@@ -155,7 +180,10 @@ export async function UserSync(): Promise<boolean> {
 		Apps: userResponseData.Apps
 	}
 
-	if (oldUser == null || oldUser.ProfileImageEtag != userResponseData.ProfileImageEtag) {
+	if (
+		oldUser == null ||
+		oldUser.ProfileImageEtag != userResponseData.ProfileImageEtag
+	) {
 		// Download the new profile image
 		let profileImageResponse = await GetProfileImageOfUser()
 
@@ -184,7 +212,10 @@ export async function UserSync(): Promise<boolean> {
 		PeriodEnd: userResponseData.PeriodEnd,
 		Dev: userResponseData.Dev,
 		Provider: userResponseData.Provider,
-		ProfileImage: await BlobToBase64(newUser.ProfileImage, defaultProfileImageUrl),
+		ProfileImage: await BlobToBase64(
+			newUser.ProfileImage,
+			defaultProfileImageUrl
+		),
 		Apps: userResponseData.Apps
 	}
 
@@ -207,31 +238,37 @@ export async function Sync(): Promise<boolean> {
 	// Holds the last downloaded page; in the format <tableId, pages>
 	var currentTablePages: Map<number, number> = new Map<number, number>()
 	// Holds the latest table result; in the format <tableId, GetTableResponseData>
-	var tableResults: Map<number, GetTableResponseData> = new Map<number, GetTableResponseData>()
+	var tableResults: Map<number, GetTableResponseData> = new Map<
+		number,
+		GetTableResponseData
+	>()
 	// Holds the uuids of the table objects that were removed on the server but not locally; in the format <tableId, Array<string>>
-	var removedTableObjectUuids: Map<number, Array<string>> = new Map<number, Array<string>>()
+	var removedTableObjectUuids: Map<number, Array<string>> = new Map<
+		number,
+		Array<string>
+	>()
 	// Is true if all http calls of the specified table are successful; in the format <tableId, Boolean>
 	var getTableResultsOkay: Map<number, boolean> = new Map<number, boolean>()
 	// Holds the new table etags for the tables
 	var tableEtags: Map<number, string> = new Map<number, string>()
 
-	if (
-		tableIds == null
-		|| tableIds.length == 0
-		|| parallelTableIds == null
-	) return false
+	if (tableIds == null || tableIds.length == 0 || parallelTableIds == null)
+		return false
 
 	// Get the first page of each table
 	for (let tableId of tableIds) {
 		// Get the first page of the table
 		let getTableResult = await GetTable({ id: tableId })
-		getTableResultsOkay.set(tableId, isSuccessStatusCode(getTableResult.status))
+		getTableResultsOkay.set(
+			tableId,
+			isSuccessStatusCode(getTableResult.status)
+		)
 		if (!isSuccessStatusCode(getTableResult.status)) continue
 
 		let tableData = (getTableResult as ApiResponse<GetTableResponseData>).data
 
 		// Check if the table has any changes
-		if (tableData.etag == await DatabaseOperations.GetTableEtag(tableId)) {
+		if (tableData.etag == (await DatabaseOperations.GetTableEtag(tableId))) {
 			continue
 		}
 
@@ -249,7 +286,10 @@ export async function Sync(): Promise<boolean> {
 	for (let tableId of [...new Set(sortedTableIds)]) {
 		removedTableObjectUuids.set(tableId, [])
 
-		for (let tableObject of await DatabaseOperations.GetAllTableObjects(tableId, true)) {
+		for (let tableObject of await DatabaseOperations.GetAllTableObjects(
+			tableId,
+			true
+		)) {
 			removedTableObjectUuids.get(tableId).push(tableObject.Uuid)
 		}
 	}
@@ -268,25 +308,39 @@ export async function Sync(): Promise<boolean> {
 			if (i != -1) removedTableObjects.splice(i, 1)
 
 			// Is the table object in the database?
-			let currentTableObject = await DatabaseOperations.GetTableObject(obj.uuid)
+			let currentTableObject = await DatabaseOperations.GetTableObject(
+				obj.uuid
+			)
 
 			if (currentTableObject != null) {
 				// Has the etag changed?
 				if (obj.etag == currentTableObject.Etag) {
 					// Is it a file and is it already downloaded?
-					if (currentTableObject.IsFile && currentTableObject.File == null) {
+					if (
+						currentTableObject.IsFile &&
+						currentTableObject.File == null
+					) {
 						// Download the file
 						fileDownloads.push({
 							uuid: currentTableObject.Uuid
 						})
 					}
-				} else if (currentTableObject.UploadStatus == TableObjectUploadStatus.UpToDate) {
+				} else if (
+					currentTableObject.UploadStatus ==
+					TableObjectUploadStatus.UpToDate
+				) {
 					// Get the updated table object from the server
-					let getTableObjectResponse = await GetTableObject({ uuid: currentTableObject.Uuid })
+					let getTableObjectResponse = await GetTableObject({
+						uuid: currentTableObject.Uuid
+					})
 					if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
-					let tableObject = (getTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
-					await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
+					let tableObject = (
+						getTableObjectResponse as ApiResponse<TableObjectResponseData>
+					).data.tableObject
+					await tableObject.SetUploadStatus(
+						TableObjectUploadStatus.UpToDate
+					)
 
 					// Is it a file?
 					if (tableObject.IsFile) {
@@ -299,16 +353,21 @@ export async function Sync(): Promise<boolean> {
 							etag: obj.etag
 						})
 					} else {
-						if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+						if (Dav.callbacks.UpdateTableObject)
+							Dav.callbacks.UpdateTableObject(tableObject)
 						tableChanged = true
 					}
 				}
 			} else {
 				// Get the table object
-				let getTableObjectResponse = await GetTableObject({ uuid: obj.uuid })
+				let getTableObjectResponse = await GetTableObject({
+					uuid: obj.uuid
+				})
 				if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
-				let tableObject = (getTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+				let tableObject = (
+					getTableObjectResponse as ApiResponse<TableObjectResponseData>
+				).data.tableObject
 				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
 
 				// Is it a file?
@@ -318,7 +377,9 @@ export async function Sync(): Promise<boolean> {
 						uuid: tableObject.Uuid
 					})
 				} else {
-					if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+					if (Dav.callbacks.UpdateTableObject)
+						Dav.callbacks.UpdateTableObject(tableObject)
+
 					tableChanged = true
 				}
 			}
@@ -328,22 +389,30 @@ export async function Sync(): Promise<boolean> {
 		currentTablePages.set(tableId, currentTablePages.get(tableId) + 1)
 
 		if (currentTablePages.get(tableId) > tablePages.get(tableId)) {
-			if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, true)
+			if (Dav.callbacks.UpdateAllOfTable)
+				Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, true)
 
 			// Save the new table etag
 			await DatabaseOperations.SetTableEtag(tableId, tableEtags.get(tableId))
 		}
 
-		if (Dav.callbacks.UpdateAllOfTable) Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, false)
+		if (Dav.callbacks.UpdateAllOfTable)
+			Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, false)
 
 		// Get the next page
-		let getTableResult = await GetTable({ id: tableId, page: currentTablePages.get(tableId) })
+		let getTableResult = await GetTable({
+			id: tableId,
+			page: currentTablePages.get(tableId)
+		})
 		if (!isSuccessStatusCode(getTableResult.status)) {
 			getTableResultsOkay.set(tableId, false)
 			continue
 		}
 
-		tableResults.set(tableId, (getTableResult as ApiResponse<GetTableResponseData>).data)
+		tableResults.set(
+			tableId,
+			(getTableResult as ApiResponse<GetTableResponseData>).data
+		)
 	}
 
 	// RemovedTableObjects now includes all table objects that were deleted on the server but not locally
@@ -354,10 +423,12 @@ export async function Sync(): Promise<boolean> {
 
 		for (let uuid of removedTableObjects) {
 			let obj = await DatabaseOperations.GetTableObject(uuid)
-			if (obj == null || obj.UploadStatus == TableObjectUploadStatus.New) continue
+			if (obj == null || obj.UploadStatus == TableObjectUploadStatus.New)
+				continue
 
 			await obj.DeleteImmediately()
-			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(obj)
+			if (Dav.callbacks.DeleteTableObject)
+				Dav.callbacks.DeleteTableObject(obj)
 		}
 	}
 
@@ -381,8 +452,11 @@ export async function SyncPush(): Promise<boolean> {
 	isSyncing = true
 
 	// Get all table objects from the database
-	let tableObjects: TableObject[] = await DatabaseOperations.GetAllTableObjects(-1, true)
-	let filteredTableObjects = tableObjects.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate).reverse()
+	let tableObjects: TableObject[] =
+		await DatabaseOperations.GetAllTableObjects(-1, true)
+	let filteredTableObjects = tableObjects
+		.filter(obj => obj.UploadStatus != TableObjectUploadStatus.UpToDate)
+		.reverse()
 
 	for (let tableObject of filteredTableObjects) {
 		switch (tableObject.UploadStatus) {
@@ -396,16 +470,21 @@ export async function SyncPush(): Promise<boolean> {
 						let fileSize = tableObject.File.size
 
 						if (
-							user.UsedStorage + fileSize > user.TotalStorage
-							&& user.TotalStorage != 0
-						) continue
+							user.UsedStorage + fileSize > user.TotalStorage &&
+							user.TotalStorage != 0
+						) {
+							continue
+						}
 					}
 				}
 
 				let createResult = await CreateTableObjectOnServer(tableObject)
 
 				if (createResult.success) {
-					if (Object.keys(tableObject.Properties).length > maxPropertiesUploadCount) {
+					if (
+						Object.keys(tableObject.Properties).length >
+						maxPropertiesUploadCount
+					) {
 						tableObject.UploadStatus = TableObjectUploadStatus.Updated
 						syncAgain = true
 					} else {
@@ -419,7 +498,9 @@ export async function SyncPush(): Promise<boolean> {
 					let errors = (createResult.message as ApiErrorResponse).errors
 
 					// Check if the table object already exists
-					let i = errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
+					let i = errors.findIndex(
+						error => error.code == ErrorCodes.UuidAlreadyInUse
+					)
 					if (i != -1) {
 						// Set the upload status to UpToDate
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
@@ -439,7 +520,9 @@ export async function SyncPush(): Promise<boolean> {
 					let errors = (updateResult.message as ApiErrorResponse).errors
 
 					// Check if the table object does not exist
-					let i = errors.findIndex(error => error.code == ErrorCodes.TableObjectDoesNotExist)
+					let i = errors.findIndex(
+						error => error.code == ErrorCodes.TableObjectDoesNotExist
+					)
 					if (i != -1) {
 						// Delete the table object
 						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
@@ -456,9 +539,10 @@ export async function SyncPush(): Promise<boolean> {
 					// Check the errors
 					let errors = (deleteResult.message as ApiErrorResponse).errors
 
-					let i = errors.findIndex(error =>
-						error.code == ErrorCodes.TableObjectDoesNotExist
-						|| error.code == ErrorCodes.ActionNotAllowed
+					let i = errors.findIndex(
+						error =>
+							error.code == ErrorCodes.TableObjectDoesNotExist ||
+							error.code == ErrorCodes.ActionNotAllowed
 					)
 					if (i != -1) {
 						// Delete the table object
@@ -476,9 +560,11 @@ export async function SyncPush(): Promise<boolean> {
 					// Check the errors
 					let errors = (removeResult.message as ApiErrorResponse).errors
 
-					let i = errors.findIndex(error =>
-						error.code == ErrorCodes.TableObjectUserAccessDoesNotExist
-						|| error.code == ErrorCodes.TableObjectDoesNotExist
+					let i = errors.findIndex(
+						error =>
+							error.code ==
+								ErrorCodes.TableObjectUserAccessDoesNotExist ||
+							error.code == ErrorCodes.TableObjectDoesNotExist
 					)
 					if (i != -1) {
 						// Delete the table object
@@ -506,7 +592,9 @@ export async function StartWebsocketConnection() {
 	let createWebsocketConnectionResponse = await CreateWebsocketConnection()
 	if (createWebsocketConnectionResponse.status != 201) return
 
-	let token = (createWebsocketConnectionResponse as ApiResponse<WebsocketConnectionResponseData>).data.token
+	let token = (
+		createWebsocketConnectionResponse as ApiResponse<WebsocketConnectionResponseData>
+	).data.token
 	let baseUrl = Dav.apiBaseUrl.replace("http", "ws")
 
 	webSocket = new WebSocket(`${baseUrl}/cable?token=${token}`)
@@ -523,7 +611,7 @@ export async function StartWebsocketConnection() {
 		webSocket.send(json)
 	}
 
-	webSocket.onmessage = async (e) => {
+	webSocket.onmessage = async e => {
 		let json = JSON.parse(e.data)
 
 		if (json.type == "ping" || json.message == null) {
@@ -546,15 +634,19 @@ export async function StartWebsocketConnection() {
 			let getTableObjectResponse = await GetTableObject({ uuid })
 			if (getTableObjectResponse.status != 200) return
 
-			let tableObject = (getTableObjectResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+			let tableObject = (
+				getTableObjectResponse as ApiResponse<TableObjectResponseData>
+			).data.tableObject
 
 			await DatabaseOperations.SetTableObject(tableObject)
-			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+			if (Dav.callbacks.UpdateTableObject)
+				Dav.callbacks.UpdateTableObject(tableObject)
 		} else if (change == 2) {
 			let tableObject = await DatabaseOperations.GetTableObject(uuid)
-			if(tableObject == null) return
+			if (tableObject == null) return
 
-			if (Dav.callbacks.DeleteTableObject) Dav.callbacks.DeleteTableObject(tableObject)
+			if (Dav.callbacks.DeleteTableObject)
+				Dav.callbacks.DeleteTableObject(tableObject)
 
 			// Remove the table object in the database
 			DatabaseOperations.RemoveTableObject(uuid)
@@ -574,17 +666,20 @@ export async function DownloadFiles() {
 
 	while (fileDownloads.length > 0) {
 		let fileDownload = fileDownloads.pop()
-		let tableObject = await DatabaseOperations.GetTableObject(fileDownload.uuid)
+		let tableObject = await DatabaseOperations.GetTableObject(
+			fileDownload.uuid
+		)
 		if (tableObject == null || !tableObject.IsFile) continue
 
-		if (!await tableObject.DownloadFile()) continue
+		if (!(await tableObject.DownloadFile())) continue
 
 		// Update the table object with the new etag
 		if (fileDownload.etag != null) {
 			await tableObject.SetEtag(fileDownload.etag)
 		}
 
-		if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject, true)
+		if (Dav.callbacks.UpdateTableObject)
+			Dav.callbacks.UpdateTableObject(tableObject, true)
 	}
 
 	downloadingFiles = false
@@ -598,13 +693,17 @@ export async function DownloadTableObject(uuid: string) {
 	let getResponse = await GetTableObject({ uuid })
 	if (!isSuccessStatusCode(getResponse.status)) return
 
-	let tableObject = (getResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+	let tableObject = (getResponse as ApiResponse<TableObjectResponseData>).data
+		.tableObject
 
 	if (tableObjectFromDatabase != null) {
 		// Has the etag changed?
 		if (tableObjectFromDatabase.Etag == tableObject.Etag) {
 			// Is it a file and is it already downloaded?
-			if (tableObjectFromDatabase.IsFile && tableObjectFromDatabase.File == null) {
+			if (
+				tableObjectFromDatabase.IsFile &&
+				tableObjectFromDatabase.File == null
+			) {
 				// Download the file
 				fileDownloads.unshift({
 					uuid: tableObject.Uuid
@@ -624,7 +723,8 @@ export async function DownloadTableObject(uuid: string) {
 				// Set the old etag
 				await tableObject.SetEtag(tableObjectFromDatabase.Etag)
 			} else {
-				if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+				if (Dav.callbacks.UpdateTableObject)
+					Dav.callbacks.UpdateTableObject(tableObject)
 			}
 		}
 	} else {
@@ -637,7 +737,8 @@ export async function DownloadTableObject(uuid: string) {
 				etag: tableObject.Etag
 			})
 		} else {
-			if (Dav.callbacks.UpdateTableObject) Dav.callbacks.UpdateTableObject(tableObject)
+			if (Dav.callbacks.UpdateTableObject)
+				Dav.callbacks.UpdateTableObject(tableObject)
 		}
 	}
 
@@ -650,7 +751,7 @@ export async function DownloadTableObject(uuid: string) {
 //#region Utility functions
 async function CreateTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean, message: TableObject | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: TableObject | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	if (tableObject.IsFile) {
@@ -667,7 +768,9 @@ async function CreateTableObjectOnServer(
 		if (!isSuccessStatusCode(createTableObjectResponse.status)) {
 			// Check if the table object already exists
 			let errorResponse = createTableObjectResponse as ApiErrorResponse
-			let i = errorResponse.errors.findIndex(error => error.code == ErrorCodes.UuidAlreadyInUse)
+			let i = errorResponse.errors.findIndex(
+				error => error.code == ErrorCodes.UuidAlreadyInUse
+			)
 
 			if (i == -1) {
 				return {
@@ -686,10 +789,15 @@ async function CreateTableObjectOnServer(
 			})
 
 			if (isSuccessStatusCode(setTableObjectFileResponse.status)) {
-				let setTableObjectFileResponseData = (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data
+				let setTableObjectFileResponseData = (
+					setTableObjectFileResponse as ApiResponse<TableObjectResponseData>
+				).data
 
 				// Save the new table etag
-				await DatabaseOperations.SetTableEtag(tableObject.TableId, setTableObjectFileResponseData.tableEtag)
+				await DatabaseOperations.SetTableEtag(
+					tableObject.TableId,
+					setTableObjectFileResponseData.tableEtag
+				)
 
 				return {
 					success: true,
@@ -721,10 +829,15 @@ async function CreateTableObjectOnServer(
 		})
 
 		if (isSuccessStatusCode(createTableObjectResponse.status)) {
-			let createTableObjectResponseData = (createTableObjectResponse as ApiResponse<TableObjectResponseData>).data
+			let createTableObjectResponseData = (
+				createTableObjectResponse as ApiResponse<TableObjectResponseData>
+			).data
 
 			// Save the new etag
-			await DatabaseOperations.SetTableEtag(tableObject.TableId, createTableObjectResponseData.tableEtag)
+			await DatabaseOperations.SetTableEtag(
+				tableObject.TableId,
+				createTableObjectResponseData.tableEtag
+			)
 
 			return {
 				success: true,
@@ -746,7 +859,7 @@ async function CreateTableObjectOnServer(
 
 async function UpdateTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean, message: TableObject | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: TableObject | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	if (tableObject.IsFile && tableObject.File != null) {
@@ -765,12 +878,18 @@ async function UpdateTableObjectOnServer(
 		}
 
 		// Check if the ext has changed
-		let tableObjectResponseData = (setTableObjectFileResponse as ApiResponse<TableObjectResponseData>).data
-		let tableObjectResponseDataExt = tableObjectResponseData.tableObject.GetPropertyValue(extPropertyName)
+		let tableObjectResponseData = (
+			setTableObjectFileResponse as ApiResponse<TableObjectResponseData>
+		).data
+		let tableObjectResponseDataExt =
+			tableObjectResponseData.tableObject.GetPropertyValue(extPropertyName)
 		let tableObjectExt = tableObject.GetPropertyValue(extPropertyName)
 
 		// Save the new table etag
-		await DatabaseOperations.SetTableEtag(tableObject.TableId, tableObjectResponseData.tableEtag)
+		await DatabaseOperations.SetTableEtag(
+			tableObject.TableId,
+			tableObjectResponseData.tableEtag
+		)
 
 		if (tableObjectResponseDataExt != tableObjectExt) {
 			// Update the table object with the new ext
@@ -782,10 +901,15 @@ async function UpdateTableObjectOnServer(
 			})
 
 			if (isSuccessStatusCode(updateTableObjectResponse.status)) {
-				let updateTableObjectResponseData = (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data
+				let updateTableObjectResponseData = (
+					updateTableObjectResponse as ApiResponse<TableObjectResponseData>
+				).data
 
 				// Save the new table etag
-				await DatabaseOperations.SetTableEtag(tableObject.TableId, updateTableObjectResponseData.tableEtag)
+				await DatabaseOperations.SetTableEtag(
+					tableObject.TableId,
+					updateTableObjectResponseData.tableEtag
+				)
 
 				return {
 					success: true,
@@ -820,10 +944,15 @@ async function UpdateTableObjectOnServer(
 		})
 
 		if (isSuccessStatusCode(updateTableObjectResponse.status)) {
-			let updateTableObjectResponseData = (updateTableObjectResponse as ApiResponse<TableObjectResponseData>).data
+			let updateTableObjectResponseData = (
+				updateTableObjectResponse as ApiResponse<TableObjectResponseData>
+			).data
 
 			// Save the new table etag
-			await DatabaseOperations.SetTableEtag(tableObject.TableId, updateTableObjectResponseData.tableEtag)
+			await DatabaseOperations.SetTableEtag(
+				tableObject.TableId,
+				updateTableObjectResponseData.tableEtag
+			)
 
 			return {
 				success: true,
@@ -845,7 +974,7 @@ async function UpdateTableObjectOnServer(
 
 async function DeleteTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean, message: {} | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: {} | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let deleteTableObjectResponse = await DeleteTableObject({
@@ -867,7 +996,7 @@ async function DeleteTableObjectOnServer(
 
 async function RemoveTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean, message: {} | ApiErrorResponse }> {
+): Promise<{ success: boolean; message: {} | ApiErrorResponse }> {
 	if (Dav.accessToken == null) return { success: false, message: null }
 
 	let removeTableObjectResponse = await RemoveTableObject({
