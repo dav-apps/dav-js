@@ -1,10 +1,10 @@
-import { assert } from 'chai'
-import localforage from 'localforage'
-import { Environment, TableObjectUploadStatus } from '../../lib/types.js'
-import { testerXTestAppAccessToken } from '../constants.js'
-import { Dav } from '../../lib/Dav.js'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
-import { TableObject } from '../../lib/models/TableObject.js'
+import { assert } from "chai"
+import localforage from "localforage"
+import { Environment, TableObjectUploadStatus } from "../../lib/types.js"
+import { testerXTestAppAccessToken } from "../constants.js"
+import { Dav } from "../../lib/Dav.js"
+import * as DatabaseOperations from "../../lib/providers/DatabaseOperations.js"
+import { TableObject } from "../../lib/models/TableObject.js"
 
 beforeEach(async () => {
 	// Reset global variables
@@ -39,7 +39,7 @@ describe("Constructor", () => {
 		let etag = "siodgjiosgdhiosgsghiod"
 		let belongsToUser = false
 		let purchase = "oasidhasidashd"
-		
+
 		// Act
 		let tableObject = new TableObject({
 			Uuid: uuid,
@@ -60,8 +60,14 @@ describe("Constructor", () => {
 		assert.equal(tableObject.Etag, etag)
 		assert.equal(tableObject.BelongsToUser, belongsToUser)
 		assert.equal(tableObject.Purchase, purchase)
-		assert.equal(tableObject.GetPropertyValue(firstPropertyName), firstPropertyValue)
-		assert.equal(tableObject.GetPropertyValue(secondPropertyName), secondPropertyValue)
+		assert.equal(
+			tableObject.GetPropertyValue(firstPropertyName),
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.GetPropertyValue(secondPropertyName),
+			secondPropertyValue
+		)
 	})
 
 	it("should set default values for optional properties", () => {
@@ -98,7 +104,10 @@ describe("SetUploadStatus function", () => {
 		// Assert
 		assert.equal(tableObject.UploadStatus, newUploadStatus)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.UploadStatus, newUploadStatus)
 	})
@@ -121,7 +130,10 @@ describe("SetEtag function", () => {
 		// Assert
 		assert.equal(tableObject.Etag, newEtag)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Etag, newEtag)
 	})
@@ -149,10 +161,16 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.isUndefined(tableObject.Properties[propertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
 	})
 
@@ -177,10 +195,16 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.isUndefined(tableObject.Properties[propertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
 	})
 
@@ -208,10 +232,16 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.isUndefined(tableObject.Properties[propertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
 	})
 
@@ -239,10 +269,16 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.isUndefined(tableObject.Properties[propertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName].local)
 	})
 
@@ -271,11 +307,20 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.equal(tableObject.Properties[propertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].local,
+			local
+		)
 	})
 
 	it("should set the property value of the table object with options and with different value types and save it in the database if the property does not exist", async () => {
@@ -303,11 +348,20 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.equal(tableObject.Properties[propertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].local,
+			local
+		)
 	})
 
 	it("should set the property value of the table object with options and save it in the database if the property already exists", async () => {
@@ -338,11 +392,20 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.equal(tableObject.Properties[propertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].local,
+			local
+		)
 	})
 
 	it("should set the property value of the table object with options and with different value types and save it in the database if the property already exists", async () => {
@@ -373,11 +436,20 @@ describe("SetPropertyValue function", () => {
 		assert.equal(tableObject.Properties[propertyName].value, propertyValue)
 		assert.equal(tableObject.Properties[propertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].value, propertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[propertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].value,
+			propertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[propertyName].local,
+			local
+		)
 	})
 })
 
@@ -414,22 +486,49 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
 		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
 		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[firstPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[secondPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local
+		)
 	})
 
 	it("should set the property values of the table object with different value types and save it in the database if the properties do not exist", async () => {
@@ -464,22 +563,49 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
 		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
 		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[firstPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[secondPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local
+		)
 	})
 
 	it("should set the property values of the table object and save it in the database if the properties already exist", async () => {
@@ -519,22 +645,49 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
 		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
 		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[firstPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[secondPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local
+		)
 	})
 
 	it("should set the property value of the table object with different value types and save it in the database if the properties already exist", async () => {
@@ -574,22 +727,49 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.isUndefined(tableObject.Properties[firstPropertyName].local)
 		assert.isUndefined(tableObject.Properties[secondPropertyName].local)
 		assert.isUndefined(tableObject.Properties[thirdPropertyName].local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.isUndefined(tableObjectFromDatabase.Properties[firstPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[secondPropertyName].local)
-		assert.isUndefined(tableObjectFromDatabase.Properties[thirdPropertyName].local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[firstPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[secondPropertyName].local
+		)
+		assert.isUndefined(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local
+		)
 	})
 
 	it("should set the property values of the table object with options and save it in the database if the properties do not exist", async () => {
@@ -634,22 +814,52 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.equal(tableObject.Properties[firstPropertyName].local, local)
 		assert.equal(tableObject.Properties[secondPropertyName].local, local)
 		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local,
+			local
+		)
 	})
 
 	it("should set the property value of the table object with options and with different value types and save it in the database if the properties do not exist", async () => {
@@ -694,22 +904,52 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.equal(tableObject.Properties[firstPropertyName].local, local)
 		assert.equal(tableObject.Properties[secondPropertyName].local, local)
 		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local,
+			local
+		)
 	})
 
 	it("should set the property values of the table object with options and save it in the database if the properties already exist", async () => {
@@ -759,22 +999,52 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.equal(tableObject.Properties[firstPropertyName].local, local)
 		assert.equal(tableObject.Properties[secondPropertyName].local, local)
 		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local,
+			local
+		)
 	})
 
 	it("should set the property value of the table object with options and with different value types and save it in the database if the properties already exist", async () => {
@@ -824,22 +1094,52 @@ describe("SetPropertyValues function", () => {
 
 		// Assert
 		assert.equal(Object.keys(tableObject.Properties).length, 3)
-		assert.equal(tableObject.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObject.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObject.Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObject.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObject.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 		assert.equal(tableObject.Properties[firstPropertyName].local, local)
 		assert.equal(tableObject.Properties[secondPropertyName].local, local)
 		assert.equal(tableObject.Properties[thirdPropertyName].local, local)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 3)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].value, thirdPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].local, local)
-		assert.equal(tableObjectFromDatabase.Properties[thirdPropertyName].local, local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].local,
+			local
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[thirdPropertyName].local,
+			local
+		)
 	})
 })
 
@@ -864,13 +1164,13 @@ describe("GetPropertyValue function", () => {
 
 	it("should return null if the property does not exist", () => {
 		// Arrange
-		var tableObject = new TableObject();
+		var tableObject = new TableObject()
 
 		// Act
-		var value = tableObject.GetPropertyValue("page1");
+		var value = tableObject.GetPropertyValue("page1")
 
 		// Assert
-		assert.isNull(value);
+		assert.isNull(value)
 	})
 })
 
@@ -894,7 +1194,10 @@ describe("RemoveProperty function", () => {
 		assert.equal(Object.keys(tableObject.Properties).length, 0)
 		assert.isUndefined(tableObject.Properties[propertyName])
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 0)
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName])
@@ -922,7 +1225,10 @@ describe("RemoveProperty function", () => {
 		assert.equal(Object.keys(tableObject.Properties).length, 1)
 		assert.isNull(tableObject.Properties[propertyName].value)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
 		assert.isNull(tableObjectFromDatabase.Properties[propertyName].value)
@@ -950,7 +1256,10 @@ describe("RemoveProperty function", () => {
 		assert.equal(Object.keys(tableObject.Properties).length, 0)
 		assert.isUndefined(tableObject.Properties[propertyName])
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 0)
 		assert.isUndefined(tableObjectFromDatabase.Properties[propertyName])
@@ -963,7 +1272,7 @@ describe("Delete function", () => {
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
 		tableObject.Properties = {
-			"test": { value: "test" }
+			test: { value: "test" }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -972,7 +1281,10 @@ describe("Delete function", () => {
 		await tableObject.Delete()
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNull(tableObjectFromDatabase)
 	})
 
@@ -984,7 +1296,7 @@ describe("Delete function", () => {
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
 		tableObject.Properties = {
-			"test": { value: "test" }
+			test: { value: "test" }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -995,9 +1307,15 @@ describe("Delete function", () => {
 		// Assert
 		assert.equal(tableObject.UploadStatus, TableObjectUploadStatus.Deleted)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
-		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.Deleted)
+		assert.equal(
+			tableObjectFromDatabase.UploadStatus,
+			TableObjectUploadStatus.Deleted
+		)
 	})
 })
 
@@ -1007,7 +1325,7 @@ describe("DeleteImmediately function", () => {
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
 		tableObject.Properties = {
-			"test": { value: "test" }
+			test: { value: "test" }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -1016,7 +1334,10 @@ describe("DeleteImmediately function", () => {
 		await tableObject.DeleteImmediately()
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNull(tableObjectFromDatabase)
 	})
 })
@@ -1027,7 +1348,7 @@ describe("Remove function", () => {
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
 		tableObject.Properties = {
-			"test": { value: "test" }
+			test: { value: "test" }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -1036,7 +1357,10 @@ describe("Remove function", () => {
 		await tableObject.Remove()
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNull(tableObjectFromDatabase)
 	})
 
@@ -1048,7 +1372,7 @@ describe("Remove function", () => {
 		let tableObject = new TableObject()
 		tableObject.TableId = 13
 		tableObject.Properties = {
-			"test": { value: "test" }
+			test: { value: "test" }
 		}
 
 		await DatabaseOperations.SetTableObject(tableObject)
@@ -1059,8 +1383,14 @@ describe("Remove function", () => {
 		// Assert
 		assert.equal(tableObject.UploadStatus, TableObjectUploadStatus.Removed)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
-		assert.equal(tableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.Removed)
+		assert.equal(
+			tableObjectFromDatabase.UploadStatus,
+			TableObjectUploadStatus.Removed
+		)
 	})
 })

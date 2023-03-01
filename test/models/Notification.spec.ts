@@ -1,10 +1,10 @@
-import { assert } from 'chai'
-import localforage from 'localforage'
-import { Environment, GenericUploadStatus } from '../../lib/types.js'
-import { testerXTestAppAccessToken } from '../constants.js'
-import { Dav } from '../../lib/Dav.js'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
-import { Notification } from '../../lib/models/Notification.js'
+import { assert } from "chai"
+import localforage from "localforage"
+import { Environment, GenericUploadStatus } from "../../lib/types.js"
+import { testerXTestAppAccessToken } from "../constants.js"
+import { Dav } from "../../lib/Dav.js"
+import * as DatabaseOperations from "../../lib/providers/DatabaseOperations.js"
+import { Notification } from "../../lib/models/Notification.js"
 
 beforeEach(async () => {
 	// Reset global variables
@@ -87,7 +87,9 @@ describe("Delete function", () => {
 		await notification.Delete()
 
 		// Assert
-		let notificationFromDatabase = await DatabaseOperations.GetNotification(notification.Uuid)
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(
+			notification.Uuid
+		)
 		assert.isNull(notificationFromDatabase)
 	})
 
@@ -111,9 +113,14 @@ describe("Delete function", () => {
 		// Assert
 		assert.equal(notification.UploadStatus, GenericUploadStatus.Deleted)
 
-		let notificationFromDatabase = await DatabaseOperations.GetNotification(notification.Uuid)
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(
+			notification.Uuid
+		)
 		assert.isNotNull(notificationFromDatabase)
-		assert.equal(notificationFromDatabase.UploadStatus, GenericUploadStatus.Deleted)
+		assert.equal(
+			notificationFromDatabase.UploadStatus,
+			GenericUploadStatus.Deleted
+		)
 	})
 })
 
@@ -132,6 +139,8 @@ describe("DeleteImmediately function", async () => {
 	await notification.DeleteImmediately()
 
 	// Assert
-	let notificationFromDatabase = await DatabaseOperations.GetNotification(notification.Uuid)
+	let notificationFromDatabase = await DatabaseOperations.GetNotification(
+		notification.Uuid
+	)
 	assert.isNotNaN(notificationFromDatabase)
 })
