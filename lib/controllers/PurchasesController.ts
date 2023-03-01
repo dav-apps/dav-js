@@ -1,17 +1,17 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse, Currency } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
-import { Auth } from '../models/Auth.js'
-import { Purchase } from '../models/Purchase.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse, Currency } from "../types.js"
+import { ConvertErrorToApiErrorResponse, HandleApiError } from "../utils.js"
+import { Auth } from "../models/Auth.js"
+import { Purchase } from "../models/Purchase.js"
 
 export async function GetPurchase(params: {
-	auth: Auth,
+	auth: Auth
 	uuid: string
 }): Promise<ApiResponse<Purchase> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}`,
 			headers: {
 				Authorization: params.auth.token
@@ -40,15 +40,16 @@ export async function GetPurchase(params: {
 }
 
 export async function DeletePurchase(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'delete',
+			method: "delete",
 			url: `${Dav.apiBaseUrl}/purchase/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 

@@ -1,8 +1,12 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
-import { Table } from '../models/Table.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
+import { Table } from "../models/Table.js"
 
 export interface GetTableResponseData {
 	table: Table
@@ -15,16 +19,17 @@ export interface GetTableResponseData {
 }
 
 export async function CreateTable(params: {
-	accessToken?: string,
-	appId: number,
+	accessToken?: string
+	appId: number
 	name: string
 }): Promise<ApiResponse<Table> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/table`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				app_id: params.appId,
@@ -53,17 +58,18 @@ export async function CreateTable(params: {
 }
 
 export async function GetTable(params: {
-	accessToken?: string,
-	id: number,
-	count?: number,
+	accessToken?: string
+	id: number
+	count?: number
 	page?: number
 }): Promise<ApiResponse<GetTableResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/table/${params.id}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			params: PrepareRequestParams({
 				count: params.count,

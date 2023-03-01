@@ -1,7 +1,11 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse, Currency } from '../types.js'
-import {ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse, Currency } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
 
 export interface CreateCheckoutSessionResponseData {
 	sessionUrl: string
@@ -10,23 +14,26 @@ export interface CreateCheckoutSessionResponseData {
 export type CreateCheckoutSessionMode = "setup" | "subscription" | "payment"
 
 export async function CreateCheckoutSession(params: {
-	accessToken?: string,
-	mode?: CreateCheckoutSessionMode,
-	plan?: number,
-	currency?: Currency,
-	productName?: string,
-	productImage?: string,
-	tableObjects?: string[],
-	successUrl: string,
+	accessToken?: string
+	mode?: CreateCheckoutSessionMode
+	plan?: number
+	currency?: Currency
+	productName?: string
+	productImage?: string
+	tableObjects?: string[]
+	successUrl: string
 	cancelUrl: string
 }): Promise<ApiResponse<CreateCheckoutSessionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/checkout_session`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
-				'Content-Type': 'application/json'
+				Authorization:
+					params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken,
+				"Content-Type": "application/json"
 			},
 			data: PrepareRequestParams({
 				mode: params.mode,

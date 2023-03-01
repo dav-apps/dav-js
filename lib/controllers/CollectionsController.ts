@@ -1,8 +1,11 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { Auth } from '../models/Auth.js'
-import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, PrepareRequestParams } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { Auth } from "../models/Auth.js"
+import { ApiResponse, ApiErrorResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	PrepareRequestParams
+} from "../utils.js"
 
 export interface CollectionResponseData {
 	Id: number
@@ -11,18 +14,18 @@ export interface CollectionResponseData {
 }
 
 export async function SetTableObjectsOfCollection(params: {
-	auth: Auth,
-	name: string,
-	tableId: number,
+	auth: Auth
+	name: string
+	tableId: number
 	tableObjects: string[]
 }): Promise<ApiResponse<CollectionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/collection/table_objects`,
 			headers: {
 				Authorization: params.auth.token,
-				'Content-Type': 'application/json'
+				"Content-Type": "application/json"
 			},
 			data: PrepareRequestParams({
 				name: params.name,

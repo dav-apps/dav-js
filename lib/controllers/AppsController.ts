@@ -1,23 +1,28 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
-import { App } from '../models/App.js'
-import { ConvertObjectArrayToApps } from '../models/App.js'
-import { ConvertObjectArrayToTables } from '../models/Table.js'
-import { ConvertObjectArrayToApis } from '../models/Api.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
+import { App } from "../models/App.js"
+import { ConvertObjectArrayToApps } from "../models/App.js"
+import { ConvertObjectArrayToTables } from "../models/Table.js"
+import { ConvertObjectArrayToApis } from "../models/Api.js"
 
 export async function CreateApp(params: {
-	accessToken?: string,
-	name: string,
+	accessToken?: string
+	name: string
 	description: string
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/app`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				name: params.name,
@@ -49,10 +54,12 @@ export async function CreateApp(params: {
 	}
 }
 
-export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> {
+export async function GetApps(): Promise<
+	ApiResponse<App[]> | ApiErrorResponse
+> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/apps`
 		})
 
@@ -66,15 +73,16 @@ export async function GetApps(): Promise<ApiResponse<App[]> | ApiErrorResponse> 
 }
 
 export async function GetApp(params: {
-	accessToken?: string,
+	accessToken?: string
 	id: number
 }): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -106,21 +114,22 @@ export async function GetApp(params: {
 }
 
 export async function UpdateApp(params: {
-	accessToken?: string,
-	id: number,
-	name?: string,
-	description?: string,
-	published?: boolean,
-	webLink?: string,
-	googlePlayLink?: string,
+	accessToken?: string
+	id: number
+	name?: string
+	description?: string
+	published?: boolean
+	webLink?: string
+	googlePlayLink?: string
 	microsoftStoreLink?: string
-}): Promise<ApiResponse<App> | ApiErrorResponse>{
+}): Promise<ApiResponse<App> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/app/${params.id}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				name: params.name,

@@ -1,9 +1,17 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { maxPropertiesUploadCount } from '../constants.js'
-import { ApiErrorResponse, ApiResponse, TableObjectUploadStatus } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
-import { TableObject } from '../models/TableObject.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { maxPropertiesUploadCount } from "../constants.js"
+import {
+	ApiErrorResponse,
+	ApiResponse,
+	TableObjectUploadStatus
+} from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
+import { TableObject } from "../models/TableObject.js"
 
 export interface TableObjectResponseData {
 	tableEtag: string
@@ -11,10 +19,10 @@ export interface TableObjectResponseData {
 }
 
 export async function CreateTableObject(params: {
-	accessToken?: string,
-	uuid?: string,
-	tableId: number,
-	file?: boolean,
+	accessToken?: string
+	uuid?: string
+	tableId: number
+	file?: boolean
 	properties?: { [name: string]: string | boolean | number }
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
@@ -30,7 +38,10 @@ export async function CreateTableObject(params: {
 			if (propertyKeys.length > maxPropertiesUploadCount) {
 				// Get the first 100 keys
 				let properties = {}
-				let keys = Object.keys(params.properties).slice(0, maxPropertiesUploadCount)
+				let keys = Object.keys(params.properties).slice(
+					0,
+					maxPropertiesUploadCount
+				)
 
 				for (let key of keys) {
 					properties[key] = params.properties[key]
@@ -43,10 +54,11 @@ export async function CreateTableObject(params: {
 		}
 
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/table_object`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data
 		})
@@ -85,15 +97,16 @@ export async function CreateTableObject(params: {
 }
 
 export async function GetTableObject(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -130,8 +143,8 @@ export async function GetTableObject(params: {
 }
 
 export async function UpdateTableObject(params: {
-	accessToken?: string,
-	uuid: string,
+	accessToken?: string
+	uuid: string
 	properties: { [name: string]: string | boolean | number }
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
@@ -153,10 +166,13 @@ export async function UpdateTableObject(params: {
 				}
 
 				response = await axios({
-					method: 'put',
+					method: "put",
 					url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 					headers: {
-						Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+						Authorization:
+							params.accessToken != null
+								? params.accessToken
+								: Dav.accessToken
 					},
 					data: {
 						properties: selectedProperties
@@ -165,10 +181,13 @@ export async function UpdateTableObject(params: {
 			}
 		} else {
 			response = await axios({
-				method: 'put',
+				method: "put",
 				url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 				headers: {
-					Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+					Authorization:
+						params.accessToken != null
+							? params.accessToken
+							: Dav.accessToken
 				},
 				data: {
 					properties: params.properties
@@ -209,15 +228,16 @@ export async function UpdateTableObject(params: {
 }
 
 export async function DeleteTableObject(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'delete',
+			method: "delete",
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -238,18 +258,21 @@ export async function DeleteTableObject(params: {
 }
 
 export async function SetTableObjectFile(params: {
-	accessToken?: string,
-	uuid: string,
-	data: string,
+	accessToken?: string
+	uuid: string
+	data: string
 	type: string
 }): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
-				'Content-Type': params.type
+				Authorization:
+					params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken,
+				"Content-Type": params.type
 			},
 			data: params.data
 		})
@@ -287,17 +310,18 @@ export async function SetTableObjectFile(params: {
 }
 
 export async function GetTableObjectFile(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
-			responseType: 'blob'
+			responseType: "blob"
 		})
 
 		return {
@@ -317,15 +341,16 @@ export async function GetTableObjectFile(params: {
 }
 
 export async function RemoveTableObject(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'delete',
+			method: "delete",
 			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/access`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 

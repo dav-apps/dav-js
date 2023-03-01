@@ -1,23 +1,31 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
-import { Notification, ConvertObjectArrayToNotifications } from '../models/Notification.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
+import {
+	Notification,
+	ConvertObjectArrayToNotifications
+} from "../models/Notification.js"
 
 export async function CreateNotification(params: {
-	accessToken?: string,
-	uuid?: string,
-	time: number,
-	interval: number,
-	title: string,
+	accessToken?: string
+	uuid?: string
+	time: number
+	interval: number
+	title: string
 	body: string
 }): Promise<ApiResponse<Notification> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/notification`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				uuid: params.uuid,
@@ -52,10 +60,13 @@ export async function GetNotifications(params?: {
 }): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/notifications`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			}
 		})
 
@@ -76,19 +87,20 @@ export async function GetNotifications(params?: {
 }
 
 export async function UpdateNotification(params: {
-	accessToken?: string,
-	uuid: string,
-	time?: number,
-	interval?: number,
-	title?: string,
+	accessToken?: string
+	uuid: string
+	time?: number
+	interval?: number
+	title?: string
 	body?: string
-}): Promise<ApiResponse<Notification> | ApiErrorResponse>{
+}): Promise<ApiResponse<Notification> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				time: params.time,
@@ -122,15 +134,16 @@ export async function UpdateNotification(params: {
 }
 
 export async function DeleteNotification(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse>{
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'delete',
+			method: "delete",
 			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 

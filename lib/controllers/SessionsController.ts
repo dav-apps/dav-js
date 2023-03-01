@@ -1,26 +1,29 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { Auth } from '../models/Auth.js'
-import { ApiErrorResponse, ApiResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, PrepareRequestParams } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { Auth } from "../models/Auth.js"
+import { ApiErrorResponse, ApiResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	PrepareRequestParams
+} from "../utils.js"
 
 export interface SessionResponseData {
-	accessToken: string,
+	accessToken: string
 	websiteAccessToken?: string
 }
 
 export async function CreateSession(params: {
-	auth: Auth,
-	email: string,
-	password: string,
-	appId: number,
-	apiKey: string,
-	deviceName?: string,
+	auth: Auth
+	email: string
+	password: string
+	appId: number
+	apiKey: string
+	deviceName?: string
 	deviceOs?: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/session`,
 			headers: {
 				Authorization: params.auth.token
@@ -48,16 +51,16 @@ export async function CreateSession(params: {
 }
 
 export async function CreateSessionFromAccessToken(params: {
-	auth: Auth,
-	accessToken: string,
-	appId: number,
-	apiKey: string,
-	deviceName?: string,
+	auth: Auth
+	accessToken: string
+	appId: number
+	apiKey: string
+	deviceName?: string
 	deviceOs?: string
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/session/access_token`,
 			headers: {
 				Authorization: params.auth.token
@@ -87,7 +90,7 @@ export async function RenewSession(params: {
 }): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/session/renew`,
 			headers: {
 				Authorization: params.accessToken
@@ -110,7 +113,7 @@ export async function DeleteSession(params: {
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'delete',
+			method: "delete",
 			url: `${Dav.apiBaseUrl}/session`,
 			headers: {
 				Authorization: params.accessToken

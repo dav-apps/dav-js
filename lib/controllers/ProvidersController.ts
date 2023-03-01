@@ -1,7 +1,11 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
 
 export interface ProviderResponseData {
 	id: number
@@ -10,15 +14,16 @@ export interface ProviderResponseData {
 }
 
 export async function CreateProvider(params: {
-	accessToken?: string,
+	accessToken?: string
 	country: string
 }): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				country: params.country
@@ -50,10 +55,13 @@ export async function GetProvider(params?: {
 }): Promise<ApiResponse<ProviderResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/provider`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			}
 		})
 

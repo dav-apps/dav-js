@@ -1,22 +1,31 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { WebPushSubscription } from '../models/WebPushSubscription.js'
-import { ApiResponse, ApiErrorResponse, WebPushSubscriptionUploadStatus } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { WebPushSubscription } from "../models/WebPushSubscription.js"
+import {
+	ApiResponse,
+	ApiErrorResponse,
+	WebPushSubscriptionUploadStatus
+} from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
 
 export async function CreateWebPushSubscription(params: {
-	accessToken?: string,
-	uuid?: string,
-	endpoint: string,
-	p256dh: string,
+	accessToken?: string
+	uuid?: string
+	endpoint: string
+	p256dh: string
 	auth: string
 }): Promise<ApiResponse<WebPushSubscription> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/web_push_subscription`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				uuid: params.uuid,
@@ -49,15 +58,16 @@ export async function CreateWebPushSubscription(params: {
 }
 
 export async function GetWebPushSubscription(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<WebPushSubscription> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/web_push_subscription/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 
@@ -83,15 +93,16 @@ export async function GetWebPushSubscription(params: {
 }
 
 export async function DeleteWebPushSubscription(params: {
-	accessToken?: string,
+	accessToken?: string
 	uuid: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'delete',
+			method: "delete",
 			url: `${Dav.apiBaseUrl}/web_push_subscription/${params.uuid}`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			}
 		})
 

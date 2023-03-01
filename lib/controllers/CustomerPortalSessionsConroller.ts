@@ -1,7 +1,7 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiErrorResponse, ApiResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiErrorResponse, ApiResponse } from "../types.js"
+import { ConvertErrorToApiErrorResponse, HandleApiError } from "../utils.js"
 
 export interface CreateCustomerPortalSessionResponseData {
 	sessionUrl: string
@@ -9,13 +9,18 @@ export interface CreateCustomerPortalSessionResponseData {
 
 export async function CreateCustomerPortalSession(params?: {
 	accessToken?: string
-}): Promise<ApiResponse<CreateCustomerPortalSessionResponseData> | ApiErrorResponse> {
+}): Promise<
+	ApiResponse<CreateCustomerPortalSessionResponseData> | ApiErrorResponse
+> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/customer_portal_session`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			}
 		})
 

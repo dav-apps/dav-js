@@ -1,34 +1,38 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
-import { Auth } from '../models/Auth.js'
-import { User } from '../models/User.js'
-import { ConvertObjectArrayToApps } from '../models/App.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
+import { Auth } from "../models/Auth.js"
+import { User } from "../models/User.js"
+import { ConvertObjectArrayToApps } from "../models/App.js"
 
 export interface SignupResponseData {
-	user: User,
-	accessToken: string,
+	user: User
+	accessToken: string
 	websiteAccessToken?: string
 }
 
-export interface CreateStripeCustomerForUserResponseData{
+export interface CreateStripeCustomerForUserResponseData {
 	stripeCustomerId: string
 }
 
 export async function Signup(params: {
-	auth: Auth,
-	email: string,
-	firstName: string,
-	password: string,
-	appId: number,
-	apiKey: string,
-	deviceName?: string,
+	auth: Auth
+	email: string
+	firstName: string
+	password: string
+	appId: number
+	apiKey: string
+	deviceName?: string
 	deviceOs?: string
 }): Promise<ApiResponse<SignupResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/signup`,
 			headers: {
 				Authorization: params.auth.token
@@ -78,10 +82,13 @@ export async function GetUser(params?: {
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			}
 		})
 
@@ -123,12 +130,12 @@ export async function GetUser(params?: {
 }
 
 export async function GetUserById(params: {
-	auth: Auth,
+	auth: Auth
 	id: number
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/user/${params.id}`,
 			headers: {
 				Authorization: params.auth.token
@@ -161,17 +168,18 @@ export async function GetUserById(params: {
 }
 
 export async function UpdateUser(params: {
-	accessToken?: string,
-	email?: string,
-	firstName?: string,
+	accessToken?: string
+	email?: string
+	firstName?: string
 	password?: string
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/user`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			data: PrepareRequestParams({
 				email: params.email,
@@ -192,7 +200,9 @@ export async function UpdateUser(params: {
 				response.data.stripe_customer_id,
 				response.data.plan,
 				response.data.subscription_status,
-				response.data.period_end == null ? null : new Date(response.data.period_end),
+				response.data.period_end == null
+					? null
+					: new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
 				response.data.profile_image,
@@ -213,17 +223,20 @@ export async function UpdateUser(params: {
 }
 
 export async function SetProfileImageOfUser(params: {
-	accessToken?: string,
-	data: string,
+	accessToken?: string
+	data: string
 	type: string
 }): Promise<ApiResponse<User> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/user/profile_image`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken,
-				'Content-Type': params.type
+				Authorization:
+					params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken,
+				"Content-Type": params.type
 			},
 			data: params.data
 		})
@@ -240,7 +253,9 @@ export async function SetProfileImageOfUser(params: {
 				response.data.stripe_customer_id,
 				response.data.plan,
 				response.data.subscription_status,
-				response.data.period_end == null ? null : new Date(response.data.period_end),
+				response.data.period_end == null
+					? null
+					: new Date(response.data.period_end),
 				response.data.dev,
 				response.data.provider,
 				response.data.profile_image,
@@ -265,12 +280,15 @@ export async function GetProfileImageOfUser(params?: {
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/user/profile_image`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			},
-			responseType: 'blob'
+			responseType: "blob"
 		})
 
 		return {
@@ -290,17 +308,17 @@ export async function GetProfileImageOfUser(params?: {
 }
 
 export async function GetProfileImageOfUserById(params: {
-	auth: Auth,
+	auth: Auth
 	id: number
 }): Promise<ApiResponse<Blob> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/profile_image`,
 			headers: {
 				Authorization: params.auth.token
 			},
-			responseType: 'blob'
+			responseType: "blob"
 		})
 
 		return {
@@ -314,13 +332,18 @@ export async function GetProfileImageOfUserById(params: {
 
 export async function CreateStripeCustomerForUser(params?: {
 	accessToken?: string
-}): Promise<ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse> {
+}): Promise<
+	ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse
+> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/stripe`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			}
 		})
 
@@ -343,12 +366,12 @@ export async function CreateStripeCustomerForUser(params?: {
 }
 
 export async function SendConfirmationEmail(params: {
-	auth: Auth,
+	auth: Auth
 	id: number
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/send_confirmation_email`,
 			headers: {
 				Authorization: params.auth.token
@@ -365,12 +388,12 @@ export async function SendConfirmationEmail(params: {
 }
 
 export async function SendPasswordResetEmail(params: {
-	auth: Auth,
+	auth: Auth
 	email: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/send_password_reset_email`,
 			headers: {
 				Authorization: params.auth.token
@@ -390,13 +413,13 @@ export async function SendPasswordResetEmail(params: {
 }
 
 export async function ConfirmUser(params: {
-	auth: Auth,
-	id: number,
+	auth: Auth
+	id: number
 	emailConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/confirm`,
 			headers: {
 				Authorization: params.auth.token
@@ -416,13 +439,13 @@ export async function ConfirmUser(params: {
 }
 
 export async function SaveNewEmail(params: {
-	auth: Auth,
-	id: number,
+	auth: Auth
+	id: number
 	emailConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_email`,
 			headers: {
 				Authorization: params.auth.token
@@ -442,13 +465,13 @@ export async function SaveNewEmail(params: {
 }
 
 export async function SaveNewPassword(params: {
-	auth: Auth,
-	id: number,
+	auth: Auth
+	id: number
 	passwordConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_password`,
 			headers: {
 				Authorization: params.auth.token
@@ -468,13 +491,13 @@ export async function SaveNewPassword(params: {
 }
 
 export async function ResetEmail(params: {
-	auth: Auth,
-	id: number,
+	auth: Auth
+	id: number
 	emailConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/reset_email`,
 			headers: {
 				Authorization: params.auth.token
@@ -494,14 +517,14 @@ export async function ResetEmail(params: {
 }
 
 export async function SetPassword(params: {
-	auth: Auth,
-	id: number,
-	password: string,
+	auth: Auth
+	id: number
+	password: string
 	passwordConfirmationToken: string
 }): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'put',
+			method: "put",
 			url: `${Dav.apiBaseUrl}/user/${params.id}/password`,
 			headers: {
 				Authorization: params.auth.token

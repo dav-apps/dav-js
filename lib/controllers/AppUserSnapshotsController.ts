@@ -1,7 +1,11 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiResponse, ApiErrorResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError, PrepareRequestParams } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiResponse, ApiErrorResponse } from "../types.js"
+import {
+	ConvertErrorToApiErrorResponse,
+	HandleApiError,
+	PrepareRequestParams
+} from "../utils.js"
 
 export interface GetAppUserSnapshotsResponseData {
 	snapshots: AppUserSnapshot[]
@@ -12,26 +16,27 @@ export interface AppUserSnapshot {
 	dailyActive: number
 	weeklyActive: number
 	monthlyActive: number
-   yearlyActive: number
-   freePlan: number
-   plusPlan: number
-   proPlan: number
-   emailConfirmed: number
-   emailUnconfirmed: number
+	yearlyActive: number
+	freePlan: number
+	plusPlan: number
+	proPlan: number
+	emailConfirmed: number
+	emailUnconfirmed: number
 }
 
 export async function GetAppUserSnapshots(params: {
-	accessToken?: string,
-	id: number,
-	start?: number,
+	accessToken?: string
+	id: number
+	start?: number
 	end?: number
 }): Promise<ApiResponse<GetAppUserSnapshotsResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'get',
+			method: "get",
 			url: `${Dav.apiBaseUrl}/app/${params.id}/user_snapshots`,
 			headers: {
-				Authorization: params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params.accessToken != null ? params.accessToken : Dav.accessToken
 			},
 			params: PrepareRequestParams({
 				start: params.start,
@@ -47,19 +52,19 @@ export async function GetAppUserSnapshots(params: {
 				dailyActive: snapshot.daily_active,
 				weeklyActive: snapshot.weekly_active,
 				monthlyActive: snapshot.monthly_active,
-            yearlyActive: snapshot.yearly_active,
-            freePlan: snapshot.free_plan,
-            plusPlan: snapshot.plus_plan,
-            proPlan: snapshot.pro_plan,
-            emailConfirmed: snapshot.email_confirmed,
-            emailUnconfirmed: snapshot.email_unconfirmed
+				yearlyActive: snapshot.yearly_active,
+				freePlan: snapshot.free_plan,
+				plusPlan: snapshot.plus_plan,
+				proPlan: snapshot.pro_plan,
+				emailConfirmed: snapshot.email_confirmed,
+				emailUnconfirmed: snapshot.email_unconfirmed
 			})
 		}
 
 		return {
 			status: response.status,
 			data: {
-            snapshots
+				snapshots
 			}
 		}
 	} catch (error) {

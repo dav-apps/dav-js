@@ -1,9 +1,9 @@
-import axios from 'axios'
-import { Dav } from '../Dav.js'
-import { ApiErrorResponse, ApiResponse } from '../types.js'
-import { ConvertErrorToApiErrorResponse, HandleApiError } from '../utils.js'
+import axios from "axios"
+import { Dav } from "../Dav.js"
+import { ApiErrorResponse, ApiResponse } from "../types.js"
+import { ConvertErrorToApiErrorResponse, HandleApiError } from "../utils.js"
 
-export interface WebsocketConnectionResponseData{
+export interface WebsocketConnectionResponseData {
 	token: string
 }
 
@@ -12,10 +12,13 @@ export async function CreateWebsocketConnection(params?: {
 }): Promise<ApiResponse<WebsocketConnectionResponseData> | ApiErrorResponse> {
 	try {
 		let response = await axios({
-			method: 'post',
+			method: "post",
 			url: `${Dav.apiBaseUrl}/websocket_connection`,
 			headers: {
-				Authorization: params != null && params.accessToken != null ? params.accessToken : Dav.accessToken
+				Authorization:
+					params != null && params.accessToken != null
+						? params.accessToken
+						: Dav.accessToken
 			}
 		})
 
