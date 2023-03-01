@@ -1,4 +1,4 @@
-export class PromiseHolder<T>{
+export class PromiseHolder<T> {
 	private promise: Promise<T>
 	private resolve: Function
 
@@ -7,7 +7,7 @@ export class PromiseHolder<T>{
 	}
 
 	public Setup() {
-		this.promise = new Promise(resolve => this.resolve = resolve)
+		this.promise = new Promise(resolve => (this.resolve = resolve))
 	}
 
 	public async AwaitResult(): Promise<T> {

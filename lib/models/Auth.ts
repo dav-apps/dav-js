@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js'
+import CryptoJS from "crypto-js"
 
 export class Auth {
 	public apiKey: string
@@ -6,11 +6,7 @@ export class Auth {
 	public uuid: string
 	public token: string
 
-	constructor(params: {
-		apiKey: string,
-		secretKey: string,
-		uuid: string
-	}) {
+	constructor(params: { apiKey: string; secretKey: string; uuid: string }) {
 		this.apiKey = params.apiKey
 		this.secretKey = params.secretKey
 		this.uuid = params.uuid

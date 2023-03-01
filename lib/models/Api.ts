@@ -1,6 +1,6 @@
-import { ApiEndpoint, ConvertObjectArrayToApiEndpoints } from './ApiEndpoint.js'
-import { ApiFunction, ConvertObjectArrayToApiFunctions } from './ApiFunction.js'
-import { ApiError, ConvertObjectArrayToApiErrors } from './ApiError.js'
+import { ApiEndpoint, ConvertObjectArrayToApiEndpoints } from "./ApiEndpoint.js"
+import { ApiFunction, ConvertObjectArrayToApiFunctions } from "./ApiFunction.js"
+import { ApiError, ConvertObjectArrayToApiErrors } from "./ApiError.js"
 
 export class Api {
 	constructor(
@@ -9,7 +9,7 @@ export class Api {
 		public Endpoints: ApiEndpoint[],
 		public Functions: ApiFunction[],
 		public Errors: ApiError[]
-	) { }
+	) {}
 }
 
 export function ConvertObjectArrayToApis(objArray: any[]): Api[] {
@@ -17,13 +17,15 @@ export function ConvertObjectArrayToApis(objArray: any[]): Api[] {
 
 	if (objArray != null) {
 		for (let obj of objArray) {
-			apis.push(new Api(
-				obj.id,
-				obj.name,
-				ConvertObjectArrayToApiEndpoints(obj.endpoints),
-				ConvertObjectArrayToApiFunctions(obj.functions),
-				ConvertObjectArrayToApiErrors(obj.errors)
-			))
+			apis.push(
+				new Api(
+					obj.id,
+					obj.name,
+					ConvertObjectArrayToApiEndpoints(obj.endpoints),
+					ConvertObjectArrayToApiFunctions(obj.functions),
+					ConvertObjectArrayToApiErrors(obj.errors)
+				)
+			)
 		}
 	}
 

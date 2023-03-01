@@ -4,5 +4,5 @@ export class TableObjectUserAccess {
 		public TableObjectId: number,
 		public UserId: number,
 		public TableAlias: number
-	) { }
+	) {}
 }

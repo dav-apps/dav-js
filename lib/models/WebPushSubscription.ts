@@ -1,4 +1,4 @@
-import { WebPushSubscriptionUploadStatus } from '../types.js'
+import { WebPushSubscriptionUploadStatus } from "../types.js"
 
 export class WebPushSubscription {
 	constructor(
@@ -7,5 +7,5 @@ export class WebPushSubscription {
 		public P256dh: string,
 		public Auth: string,
 		public UploadStatus: WebPushSubscriptionUploadStatus = WebPushSubscriptionUploadStatus.New
-	) { }
+	) {}
 }

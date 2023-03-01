@@ -1,5 +1,5 @@
-import { Plan, SubscriptionStatus } from '../types.js'
-import { App } from './App.js'
+import { Plan, SubscriptionStatus } from "../types.js"
+import { App } from "./App.js"
 
 export class User {
 	constructor(
@@ -18,5 +18,5 @@ export class User {
 		public ProfileImage: string,
 		public ProfileImageEtag: string,
 		public Apps: App[] = []
-	) { }
+	) {}
 }

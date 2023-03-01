@@ -1,4 +1,4 @@
-import { Currency } from '../types.js'
+import { Currency } from "../types.js"
 
 export class Purchase {
 	constructor(
@@ -13,5 +13,5 @@ export class Purchase {
 		public Price: number,
 		public Currency: Currency,
 		public Completed: boolean
-	) { }
+	) {}
 }

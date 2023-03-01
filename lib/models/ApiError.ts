@@ -3,7 +3,7 @@ export class ApiError {
 		public Id: number,
 		public Code: number,
 		public Message: string
-	) { }
+	) {}
 }
 
 export function ConvertObjectArrayToApiErrors(objArray: any[]): ApiError[] {
@@ -11,11 +11,7 @@ export function ConvertObjectArrayToApiErrors(objArray: any[]): ApiError[] {
 
 	if (objArray != null) {
 		for (let obj of objArray) {
-			errors.push(new ApiError(
-				obj.id,
-				obj.code,
-				obj.message
-			))
+			errors.push(new ApiError(obj.id, obj.code, obj.message))
 		}
 	}
 
