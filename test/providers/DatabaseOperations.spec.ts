@@ -1,5 +1,5 @@
-import { assert } from 'chai'
-import localforage from 'localforage'
+import { assert } from "chai"
+import localforage from "localforage"
 import {
 	Environment,
 	DatabaseSession,
@@ -8,15 +8,23 @@ import {
 	GenericUploadStatus,
 	WebPushSubscriptionUploadStatus,
 	TableObjectUploadStatus
-} from '../../lib/types.js'
-import { sessionKey, userKey, webPushSubscriptionKey } from '../../lib/constants.js'
-import { generateUuid, getTableEtagKey, getNotificationKey } from '../../lib/utils.js'
-import { Dav } from '../../lib/Dav.js'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
-import { TableObject } from '../../lib/models/TableObject.js'
-import { Notification } from '../../lib/models/Notification.js'
-import { App } from '../../lib/models/App.js'
-import { WebPushSubscription } from '../../lib/models/WebPushSubscription.js'
+} from "../../lib/types.js"
+import {
+	sessionKey,
+	userKey,
+	webPushSubscriptionKey
+} from "../../lib/constants.js"
+import {
+	generateUuid,
+	getTableEtagKey,
+	getNotificationKey
+} from "../../lib/utils.js"
+import { Dav } from "../../lib/Dav.js"
+import * as DatabaseOperations from "../../lib/providers/DatabaseOperations.js"
+import { TableObject } from "../../lib/models/TableObject.js"
+import { Notification } from "../../lib/models/Notification.js"
+import { App } from "../../lib/models/App.js"
+import { WebPushSubscription } from "../../lib/models/WebPushSubscription.js"
 
 beforeEach(async () => {
 	// Reset global variables
@@ -44,7 +52,9 @@ describe("SetSession function", () => {
 		await DatabaseOperations.SetSession(session)
 
 		// Assert
-		let sessionFromDatabase = await localforage.getItem(sessionKey) as DatabaseSession
+		let sessionFromDatabase = (await localforage.getItem(
+			sessionKey
+		)) as DatabaseSession
 		assert.isNotNull(sessionFromDatabase)
 		assert.equal(sessionFromDatabase.AccessToken, accessToken)
 		assert.equal(sessionFromDatabase.UploadStatus, uploadStatus)
@@ -111,23 +121,27 @@ describe("SetUser function", () => {
 			Provider: false,
 			ProfileImage: null,
 			ProfileImageEtag: null,
-			Apps: [new App(
-				15,
-				"TestApp",
-				"Hello World",
-				false,
-				"https://testapp.dav-apps.tech",
-				null,
-				null,
-				2344234
-			)]
+			Apps: [
+				new App(
+					15,
+					"TestApp",
+					"Hello World",
+					false,
+					"https://testapp.dav-apps.tech",
+					null,
+					null,
+					2344234
+				)
+			]
 		}
 
 		// Act
 		await DatabaseOperations.SetUser(user)
 
 		// Assert
-		let userFromDatabase = await localforage.getItem(userKey) as DatabaseUser
+		let userFromDatabase = (await localforage.getItem(
+			userKey
+		)) as DatabaseUser
 		assert.isNotNull(userFromDatabase)
 		assert.equal(userFromDatabase.Id, user.Id)
 		assert.equal(userFromDatabase.Email, user.Email)
@@ -143,16 +157,28 @@ describe("SetUser function", () => {
 		assert.equal(userFromDatabase.Provider, user.Provider)
 		assert.equal(userFromDatabase.ProfileImage, user.ProfileImage)
 		assert.equal(userFromDatabase.ProfileImageEtag, user.ProfileImageEtag)
-		
+
 		assert.equal(userFromDatabase.Apps.length, user.Apps.length)
 		assert.equal(userFromDatabase.Apps[0].Id, user.Apps[0].Id)
 		assert.equal(userFromDatabase.Apps[0].Name, user.Apps[0].Name)
-		assert.equal(userFromDatabase.Apps[0].Description, user.Apps[0].Description)
+		assert.equal(
+			userFromDatabase.Apps[0].Description,
+			user.Apps[0].Description
+		)
 		assert.equal(userFromDatabase.Apps[0].Published, user.Apps[0].Published)
 		assert.equal(userFromDatabase.Apps[0].WebLink, user.Apps[0].WebLink)
-		assert.equal(userFromDatabase.Apps[0].GooglePlayLink, user.Apps[0].GooglePlayLink)
-		assert.equal(userFromDatabase.Apps[0].MicrosoftStoreLink, user.Apps[0].MicrosoftStoreLink)
-		assert.equal(userFromDatabase.Apps[0].UsedStorage, user.Apps[0].UsedStorage)
+		assert.equal(
+			userFromDatabase.Apps[0].GooglePlayLink,
+			user.Apps[0].GooglePlayLink
+		)
+		assert.equal(
+			userFromDatabase.Apps[0].MicrosoftStoreLink,
+			user.Apps[0].MicrosoftStoreLink
+		)
+		assert.equal(
+			userFromDatabase.Apps[0].UsedStorage,
+			user.Apps[0].UsedStorage
+		)
 	})
 })
 
@@ -174,16 +200,18 @@ describe("GetUser function", () => {
 			Provider: false,
 			ProfileImage: null,
 			ProfileImageEtag: null,
-			Apps: [new App(
-				15,
-				"TestApp",
-				"Hello World",
-				false,
-				"https://testapp.dav-apps.tech",
-				null,
-				null,
-				2344234
-			)]
+			Apps: [
+				new App(
+					15,
+					"TestApp",
+					"Hello World",
+					false,
+					"https://testapp.dav-apps.tech",
+					null,
+					null,
+					2344234
+				)
+			]
 		}
 
 		await localforage.setItem(userKey, user)
@@ -207,16 +235,28 @@ describe("GetUser function", () => {
 		assert.equal(userFromDatabase.Provider, user.Provider)
 		assert.equal(userFromDatabase.ProfileImage, user.ProfileImage)
 		assert.equal(userFromDatabase.ProfileImageEtag, user.ProfileImageEtag)
-		
+
 		assert.equal(userFromDatabase.Apps.length, user.Apps.length)
 		assert.equal(userFromDatabase.Apps[0].Id, user.Apps[0].Id)
 		assert.equal(userFromDatabase.Apps[0].Name, user.Apps[0].Name)
-		assert.equal(userFromDatabase.Apps[0].Description, user.Apps[0].Description)
+		assert.equal(
+			userFromDatabase.Apps[0].Description,
+			user.Apps[0].Description
+		)
 		assert.equal(userFromDatabase.Apps[0].Published, user.Apps[0].Published)
 		assert.equal(userFromDatabase.Apps[0].WebLink, user.Apps[0].WebLink)
-		assert.equal(userFromDatabase.Apps[0].GooglePlayLink, user.Apps[0].GooglePlayLink)
-		assert.equal(userFromDatabase.Apps[0].MicrosoftStoreLink, user.Apps[0].MicrosoftStoreLink)
-		assert.equal(userFromDatabase.Apps[0].UsedStorage, user.Apps[0].UsedStorage)
+		assert.equal(
+			userFromDatabase.Apps[0].GooglePlayLink,
+			user.Apps[0].GooglePlayLink
+		)
+		assert.equal(
+			userFromDatabase.Apps[0].MicrosoftStoreLink,
+			user.Apps[0].MicrosoftStoreLink
+		)
+		assert.equal(
+			userFromDatabase.Apps[0].UsedStorage,
+			user.Apps[0].UsedStorage
+		)
 	})
 })
 
@@ -238,16 +278,18 @@ describe("RemoveUser function", () => {
 			Provider: false,
 			ProfileImage: null,
 			ProfileImageEtag: null,
-			Apps: [new App(
-				15,
-				"TestApp",
-				"Hello World",
-				false,
-				"https://testapp.dav-apps.tech",
-				null,
-				null,
-				2344234
-			)]
+			Apps: [
+				new App(
+					15,
+					"TestApp",
+					"Hello World",
+					false,
+					"https://testapp.dav-apps.tech",
+					null,
+					null,
+					2344234
+				)
+			]
 		}
 
 		await DatabaseOperations.SetUser(user)
@@ -271,7 +313,9 @@ describe("SetTableEtag function", () => {
 		await DatabaseOperations.SetTableEtag(tableId, etag)
 
 		// Assert
-		let etagFromDatabase = await localforage.getItem(getTableEtagKey(tableId)) as string
+		let etagFromDatabase = (await localforage.getItem(
+			getTableEtagKey(tableId)
+		)) as string
 		assert.isNotNull(etagFromDatabase)
 		assert.equal(etagFromDatabase, etag)
 	})
@@ -310,21 +354,27 @@ describe("SetNotification function", () => {
 		await DatabaseOperations.SetNotification(notification)
 
 		// Assert
-		let notificationFromDatabase = await localforage.getItem(getNotificationKey(notification.Uuid)) as Notification
+		let notificationFromDatabase = (await localforage.getItem(
+			getNotificationKey(notification.Uuid)
+		)) as Notification
 		assert.isNotNull(notificationFromDatabase)
 		assert.equal(notificationFromDatabase.Uuid, notification.Uuid)
 		assert.equal(notificationFromDatabase.Time, notification.Time)
 		assert.equal(notificationFromDatabase.Interval, notification.Interval)
 		assert.equal(notificationFromDatabase.Title, notification.Title)
 		assert.equal(notificationFromDatabase.Body, notification.Body)
-		assert.equal(notificationFromDatabase.UploadStatus, notification.UploadStatus)
+		assert.equal(
+			notificationFromDatabase.UploadStatus,
+			notification.UploadStatus
+		)
 	})
 })
 
 describe("GetAllNotifications function", () => {
 	it("should return empty array if there are no notifications", async () => {
 		// Act
-		let notificationsFromDatabase = await DatabaseOperations.GetAllNotifications()
+		let notificationsFromDatabase =
+			await DatabaseOperations.GetAllNotifications()
 
 		// Assert
 		assert.equal(notificationsFromDatabase.length, 0)
@@ -354,24 +404,37 @@ describe("GetAllNotifications function", () => {
 		await DatabaseOperations.SetNotification(secondNotification)
 
 		// Act
-		let notificationsFromDatabase = await DatabaseOperations.GetAllNotifications()
+		let notificationsFromDatabase =
+			await DatabaseOperations.GetAllNotifications()
 
 		// Assert
 		assert.equal(notificationsFromDatabase.length, 2)
-		
+
 		assert.equal(notificationsFromDatabase[0].Uuid, firstNotification.Uuid)
 		assert.equal(notificationsFromDatabase[0].Time, firstNotification.Time)
-		assert.equal(notificationsFromDatabase[0].Interval, firstNotification.Interval)
+		assert.equal(
+			notificationsFromDatabase[0].Interval,
+			firstNotification.Interval
+		)
 		assert.equal(notificationsFromDatabase[0].Title, firstNotification.Title)
 		assert.equal(notificationsFromDatabase[0].Body, firstNotification.Body)
-		assert.equal(notificationsFromDatabase[0].UploadStatus, firstNotification.UploadStatus)
+		assert.equal(
+			notificationsFromDatabase[0].UploadStatus,
+			firstNotification.UploadStatus
+		)
 
 		assert.equal(notificationsFromDatabase[1].Uuid, secondNotification.Uuid)
 		assert.equal(notificationsFromDatabase[1].Time, secondNotification.Time)
-		assert.equal(notificationsFromDatabase[1].Interval, secondNotification.Interval)
+		assert.equal(
+			notificationsFromDatabase[1].Interval,
+			secondNotification.Interval
+		)
 		assert.equal(notificationsFromDatabase[1].Title, secondNotification.Title)
 		assert.equal(notificationsFromDatabase[1].Body, secondNotification.Body)
-		assert.equal(notificationsFromDatabase[1].UploadStatus, secondNotification.UploadStatus)
+		assert.equal(
+			notificationsFromDatabase[1].UploadStatus,
+			secondNotification.UploadStatus
+		)
 	})
 })
 
@@ -390,7 +453,9 @@ describe("GetNotification function", () => {
 		await DatabaseOperations.SetNotification(notification)
 
 		// Act
-		let notificationFromDatabase = await DatabaseOperations.GetNotification(notification.Uuid)
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(
+			notification.Uuid
+		)
 
 		// Assert
 		assert.isNotNull(notificationFromDatabase)
@@ -399,12 +464,17 @@ describe("GetNotification function", () => {
 		assert.equal(notificationFromDatabase.Interval, notification.Interval)
 		assert.equal(notificationFromDatabase.Title, notification.Title)
 		assert.equal(notificationFromDatabase.Body, notification.Body)
-		assert.equal(notificationFromDatabase.UploadStatus, notification.UploadStatus)
+		assert.equal(
+			notificationFromDatabase.UploadStatus,
+			notification.UploadStatus
+		)
 	})
 
 	it("should return null if the notification does not exist", async () => {
 		// Act
-		let notificationFromDatabase = await DatabaseOperations.GetNotification(generateUuid())
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(
+			generateUuid()
+		)
 
 		// Assert
 		assert.isNull(notificationFromDatabase)
@@ -426,7 +496,9 @@ describe("NotificationExists function", () => {
 		await DatabaseOperations.SetNotification(notification)
 
 		// Act
-		let exists = await DatabaseOperations.NotificationExists(notification.Uuid)
+		let exists = await DatabaseOperations.NotificationExists(
+			notification.Uuid
+		)
 
 		// Assert
 		assert.isTrue(exists)
@@ -459,7 +531,9 @@ describe("RemoveNotification function", () => {
 		await DatabaseOperations.RemoveNotification(notification.Uuid)
 
 		// Assert
-		let notificationFromDatabase = await DatabaseOperations.GetNotification(notification.Uuid)
+		let notificationFromDatabase = await DatabaseOperations.GetNotification(
+			notification.Uuid
+		)
 		assert.isNull(notificationFromDatabase)
 	})
 })
@@ -492,7 +566,8 @@ describe("RemoveAllNotifications function", () => {
 		await DatabaseOperations.RemoveAllNotifications()
 
 		// Assert
-		let notificationsFromDatabase = await DatabaseOperations.GetAllNotifications()
+		let notificationsFromDatabase =
+			await DatabaseOperations.GetAllNotifications()
 		assert.equal(notificationsFromDatabase.length, 0)
 	})
 })
@@ -512,13 +587,30 @@ describe("SetWebPushSubscription function", () => {
 		await DatabaseOperations.SetWebPushSubscription(webPushSubscription)
 
 		// Assert
-		let webPushSubscriptionFromDatabase = await localforage.getItem(webPushSubscriptionKey) as WebPushSubscription
+		let webPushSubscriptionFromDatabase = (await localforage.getItem(
+			webPushSubscriptionKey
+		)) as WebPushSubscription
 		assert.isNotNull(webPushSubscriptionFromDatabase)
-		assert.equal(webPushSubscriptionFromDatabase.Uuid, webPushSubscription.Uuid)
-		assert.equal(webPushSubscriptionFromDatabase.Endpoint, webPushSubscription.Endpoint)
-		assert.equal(webPushSubscriptionFromDatabase.P256dh, webPushSubscription.P256dh)
-		assert.equal(webPushSubscriptionFromDatabase.Auth, webPushSubscription.Auth)
-		assert.equal(webPushSubscriptionFromDatabase.UploadStatus, webPushSubscription.UploadStatus)
+		assert.equal(
+			webPushSubscriptionFromDatabase.Uuid,
+			webPushSubscription.Uuid
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.Endpoint,
+			webPushSubscription.Endpoint
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.P256dh,
+			webPushSubscription.P256dh
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.Auth,
+			webPushSubscription.Auth
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.UploadStatus,
+			webPushSubscription.UploadStatus
+		)
 	})
 })
 
@@ -536,20 +628,37 @@ describe("GetWebPushSubscription function", () => {
 		await localforage.setItem(webPushSubscriptionKey, webPushSubscription)
 
 		// Act
-		let webPushSubscriptionFromDatabase = await DatabaseOperations.GetWebPushSubscription()
+		let webPushSubscriptionFromDatabase =
+			await DatabaseOperations.GetWebPushSubscription()
 
 		// Assert
 		assert.isNotNull(webPushSubscriptionFromDatabase)
-		assert.equal(webPushSubscriptionFromDatabase.Uuid, webPushSubscription.Uuid)
-		assert.equal(webPushSubscriptionFromDatabase.Endpoint, webPushSubscription.Endpoint)
-		assert.equal(webPushSubscriptionFromDatabase.P256dh, webPushSubscription.P256dh)
-		assert.equal(webPushSubscriptionFromDatabase.Auth, webPushSubscription.Auth)
-		assert.equal(webPushSubscriptionFromDatabase.UploadStatus, webPushSubscription.UploadStatus)
+		assert.equal(
+			webPushSubscriptionFromDatabase.Uuid,
+			webPushSubscription.Uuid
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.Endpoint,
+			webPushSubscription.Endpoint
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.P256dh,
+			webPushSubscription.P256dh
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.Auth,
+			webPushSubscription.Auth
+		)
+		assert.equal(
+			webPushSubscriptionFromDatabase.UploadStatus,
+			webPushSubscription.UploadStatus
+		)
 	})
 
 	it("should return null if the WebPushSubscription does not exist", async () => {
 		// Act
-		let webPushSubscriptionFromDatabase = await DatabaseOperations.GetWebPushSubscription()
+		let webPushSubscriptionFromDatabase =
+			await DatabaseOperations.GetWebPushSubscription()
 
 		// Assert
 		assert.isNull(webPushSubscriptionFromDatabase)
@@ -573,7 +682,8 @@ describe("RemoveWebPushSubscription function", () => {
 		await DatabaseOperations.RemoveWebPushSubscription()
 
 		// Assert
-		let webPushSubscriptionFromDatabase = await DatabaseOperations.GetWebPushSubscription()
+		let webPushSubscriptionFromDatabase =
+			await DatabaseOperations.GetWebPushSubscription()
 		assert.isNull(webPushSubscriptionFromDatabase)
 	})
 })
@@ -605,12 +715,17 @@ describe("SetTableObject function", () => {
 		}
 
 		// Act
-		let createdTableObjectUuid = await DatabaseOperations.SetTableObject(tableObject)
+		let createdTableObjectUuid = await DatabaseOperations.SetTableObject(
+			tableObject
+		)
 
 		// Assert
 		assert.equal(createdTableObjectUuid, uuid)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
@@ -619,8 +734,14 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
 	})
 
 	it("should save the table object with different value types in the database and return the uuid", async () => {
@@ -649,12 +770,17 @@ describe("SetTableObject function", () => {
 		}
 
 		// Act
-		let createdTableObjectUuid = await DatabaseOperations.SetTableObject(tableObject)
+		let createdTableObjectUuid = await DatabaseOperations.SetTableObject(
+			tableObject
+		)
 
 		// Assert
 		assert.equal(createdTableObjectUuid, uuid)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObject.Uuid, tableObject.TableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObject.Uuid,
+			tableObject.TableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
 		assert.equal(tableObjectFromDatabase.UploadStatus, uploadStatus)
@@ -663,8 +789,14 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
 	})
 
 	it("should overwrite existing table object in the database and return the uuid", async () => {
@@ -680,7 +812,7 @@ describe("SetTableObject function", () => {
 		firstTableObject.BelongsToUser = true
 		firstTableObject.Purchase = null
 		firstTableObject.Properties = {
-			"test": { value: "Hallo Welt" }
+			test: { value: "Hallo Welt" }
 		}
 
 		await DatabaseOperations.SetTableObject(firstTableObject)
@@ -707,12 +839,17 @@ describe("SetTableObject function", () => {
 		}
 
 		// Act
-		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(secondTableObject)
+		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(
+			secondTableObject
+		)
 
 		// Assert
 		assert.equal(updatedTableObjectUuid, uuid)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Uuid, uuid)
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
@@ -722,8 +859,14 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
 	})
 
 	it("should overwrite existing table object with different value types in the database and return the uuid", async () => {
@@ -739,7 +882,7 @@ describe("SetTableObject function", () => {
 		firstTableObject.BelongsToUser = false
 		firstTableObject.Purchase = "dfhosidshodif"
 		firstTableObject.Properties = {
-			"test": { value: 9203 }
+			test: { value: 9203 }
 		}
 
 		await DatabaseOperations.SetTableObject(firstTableObject)
@@ -766,12 +909,17 @@ describe("SetTableObject function", () => {
 		}
 
 		// Act
-		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(secondTableObject)
-		
+		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(
+			secondTableObject
+		)
+
 		// Assert
 		assert.equal(updatedTableObjectUuid, uuid)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Uuid, uuid)
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
@@ -781,8 +929,14 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
 	})
 
 	it("should adopt local properties of the existing table object, overwrite the table object in the database and return the uuid", async () => {
@@ -813,9 +967,15 @@ describe("SetTableObject function", () => {
 		firstTableObject.BelongsToUser = belongsToUser
 		firstTableObject.Purchase = purchase
 		firstTableObject.Properties = {
-			[firstLocalPropertyName]: { value: firstLocalPropertyValue, local: true },
+			[firstLocalPropertyName]: {
+				value: firstLocalPropertyValue,
+				local: true
+			},
 			[firstPropertyName]: { value: "asdadsasd" },
-			[secondLocalPropertyName]: { value: secondLocalPropertyValue, local: true },
+			[secondLocalPropertyName]: {
+				value: secondLocalPropertyValue,
+				local: true
+			},
 			[secondPropertyName]: { value: "iaosfobags" }
 		}
 
@@ -834,12 +994,18 @@ describe("SetTableObject function", () => {
 		}
 
 		// Act
-		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(secondTableObject, false)
+		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(
+			secondTableObject,
+			false
+		)
 
 		// Assert
 		assert.equal(updatedTableObjectUuid, uuid)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Uuid, uuid)
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
@@ -849,12 +1015,28 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 4)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[firstLocalPropertyName].value, firstLocalPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondLocalPropertyName].value, secondLocalPropertyValue)
-		assert.isTrue(tableObjectFromDatabase.Properties[firstLocalPropertyName].local)
-		assert.isTrue(tableObjectFromDatabase.Properties[secondLocalPropertyName].local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstLocalPropertyName].value,
+			firstLocalPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondLocalPropertyName].value,
+			secondLocalPropertyValue
+		)
+		assert.isTrue(
+			tableObjectFromDatabase.Properties[firstLocalPropertyName].local
+		)
+		assert.isTrue(
+			tableObjectFromDatabase.Properties[secondLocalPropertyName].local
+		)
 	})
 
 	it("should adopt local properties of the existing table object with different value types, overwrite the table object in the database and return the uuid", async () => {
@@ -885,9 +1067,15 @@ describe("SetTableObject function", () => {
 		firstTableObject.BelongsToUser = belongsToUser
 		firstTableObject.Purchase = purchase
 		firstTableObject.Properties = {
-			[firstLocalPropertyName]: { value: firstLocalPropertyValue, local: true },
+			[firstLocalPropertyName]: {
+				value: firstLocalPropertyValue,
+				local: true
+			},
 			[firstPropertyName]: { value: 9874 },
-			[secondLocalPropertyName]: { value: secondLocalPropertyValue, local: true },
+			[secondLocalPropertyName]: {
+				value: secondLocalPropertyValue,
+				local: true
+			},
 			[secondPropertyName]: { value: 9872.9147 }
 		}
 
@@ -906,12 +1094,18 @@ describe("SetTableObject function", () => {
 		}
 
 		// Act
-		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(secondTableObject, false)
+		let updatedTableObjectUuid = await DatabaseOperations.SetTableObject(
+			secondTableObject,
+			false
+		)
 
 		// Assert
 		assert.equal(updatedTableObjectUuid, uuid)
 
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Uuid, uuid)
 		assert.equal(tableObjectFromDatabase.TableId, tableId)
@@ -921,12 +1115,28 @@ describe("SetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 4)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondPropertyName].value, secondPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[firstLocalPropertyName].value, firstLocalPropertyValue)
-		assert.equal(tableObjectFromDatabase.Properties[secondLocalPropertyName].value, secondLocalPropertyValue)
-		assert.isTrue(tableObjectFromDatabase.Properties[firstLocalPropertyName].local)
-		assert.isTrue(tableObjectFromDatabase.Properties[secondLocalPropertyName].local)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstLocalPropertyName].value,
+			firstLocalPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.Properties[secondLocalPropertyName].value,
+			secondLocalPropertyValue
+		)
+		assert.isTrue(
+			tableObjectFromDatabase.Properties[firstLocalPropertyName].local
+		)
+		assert.isTrue(
+			tableObjectFromDatabase.Properties[secondLocalPropertyName].local
+		)
 	})
 })
 
@@ -1015,7 +1225,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(createdTableObjectUuids[1], uuid2)
 		assert.equal(createdTableObjectUuids[2], uuid3)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid1, tableId1)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, uploadStatus1)
@@ -1023,11 +1234,21 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.BelongsToUser, belongsToUser1)
 		assert.equal(firstTableObjectFromDatabase.Purchase, purchase1)
 
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondPropertyName1].value, secondPropertyValue1)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstPropertyName1].value,
+			firstPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondPropertyName1].value,
+			secondPropertyValue1
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid2, tableId2)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, uploadStatus2)
@@ -1035,11 +1256,21 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.BelongsToUser, belongsToUser2)
 		assert.equal(secondTableObjectFromDatabase.Purchase, purchase2)
 
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName2].value, secondPropertyValue2)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstPropertyName2].value,
+			firstPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondPropertyName2].value,
+			secondPropertyValue2
+		)
 
-		let thirdTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid3, tableId3)
+		let thirdTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid3, tableId3)
 		assert.isNotNull(thirdTableObjectFromDatabase)
 		assert.equal(thirdTableObjectFromDatabase.TableId, tableId3)
 		assert.equal(thirdTableObjectFromDatabase.UploadStatus, uploadStatus3)
@@ -1047,9 +1278,18 @@ describe("SetTableObjects function", () => {
 		assert.equal(thirdTableObjectFromDatabase.BelongsToUser, belongsToUser3)
 		assert.equal(thirdTableObjectFromDatabase.Purchase, purchase3)
 
-		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(thirdTableObjectFromDatabase.Properties[firstPropertyName3].value, firstPropertyValue3)
-		assert.equal(thirdTableObjectFromDatabase.Properties[secondPropertyName3].value, secondPropertyValue3)
+		assert.equal(
+			Object.keys(thirdTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			thirdTableObjectFromDatabase.Properties[firstPropertyName3].value,
+			firstPropertyValue3
+		)
+		assert.equal(
+			thirdTableObjectFromDatabase.Properties[secondPropertyName3].value,
+			secondPropertyValue3
+		)
 	})
 
 	it("should save the table objects with different value types in the database and return the uuids", async () => {
@@ -1136,7 +1376,8 @@ describe("SetTableObjects function", () => {
 		assert.equal(createdTableObjectUuids[1], uuid2)
 		assert.equal(createdTableObjectUuids[2], uuid3)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid1, tableId1)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, uploadStatus1)
@@ -1144,11 +1385,21 @@ describe("SetTableObjects function", () => {
 		assert.equal(firstTableObjectFromDatabase.BelongsToUser, belongsToUser1)
 		assert.equal(firstTableObjectFromDatabase.Purchase, purchase1)
 
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondPropertyName1].value, secondPropertyValue1)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstPropertyName1].value,
+			firstPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondPropertyName1].value,
+			secondPropertyValue1
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid2, tableId2)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, uploadStatus2)
@@ -1156,11 +1407,21 @@ describe("SetTableObjects function", () => {
 		assert.equal(secondTableObjectFromDatabase.BelongsToUser, belongsToUser2)
 		assert.equal(secondTableObjectFromDatabase.Purchase, purchase2)
 
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName2].value, secondPropertyValue2)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstPropertyName2].value,
+			firstPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondPropertyName2].value,
+			secondPropertyValue2
+		)
 
-		let thirdTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid3, tableId3)
+		let thirdTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid3, tableId3)
 		assert.isNotNull(thirdTableObjectFromDatabase)
 		assert.equal(thirdTableObjectFromDatabase.TableId, tableId3)
 		assert.equal(thirdTableObjectFromDatabase.UploadStatus, uploadStatus3)
@@ -1168,9 +1429,18 @@ describe("SetTableObjects function", () => {
 		assert.equal(thirdTableObjectFromDatabase.BelongsToUser, belongsToUser3)
 		assert.equal(thirdTableObjectFromDatabase.Purchase, purchase3)
 
-		assert.equal(Object.keys(thirdTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(thirdTableObjectFromDatabase.Properties[firstPropertyName3].value, firstPropertyValue3)
-		assert.equal(thirdTableObjectFromDatabase.Properties[secondPropertyName3].value, secondPropertyValue3)
+		assert.equal(
+			Object.keys(thirdTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			thirdTableObjectFromDatabase.Properties[firstPropertyName3].value,
+			firstPropertyValue3
+		)
+		assert.equal(
+			thirdTableObjectFromDatabase.Properties[secondPropertyName3].value,
+			secondPropertyValue3
+		)
 	})
 
 	it("should overwrite existing table objects in the database and return the uuids", async () => {
@@ -1188,7 +1458,7 @@ describe("SetTableObjects function", () => {
 		tableObject1.BelongsToUser = true
 		tableObject1.Purchase = null
 		tableObject1.Properties = {
-			"test": { value: "Hello World" }
+			test: { value: "Hello World" }
 		}
 
 		let tableObject2 = new TableObject()
@@ -1199,13 +1469,10 @@ describe("SetTableObjects function", () => {
 		tableObject2.BelongsToUser = false
 		tableObject2.Purchase = "shiodfhosdf"
 		tableObject2.Properties = {
-			"bla": { value: "Lorem ipsum dolor sit amet" }
+			bla: { value: "Lorem ipsum dolor sit amet" }
 		}
 
-		await DatabaseOperations.SetTableObjects([
-			tableObject1,
-			tableObject2
-		])
+		await DatabaseOperations.SetTableObjects([tableObject1, tableObject2])
 
 		let newUploadStatus1 = TableObjectUploadStatus.New
 		let newUploadStatus2 = TableObjectUploadStatus.Deleted
@@ -1259,29 +1526,55 @@ describe("SetTableObjects function", () => {
 		assert.equal(updatedTableObjectUuids[0], uuid1)
 		assert.equal(updatedTableObjectUuids[1], uuid2)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid1, tableId1)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
-		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(
+			firstTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser1
+		)
 		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value, firstNewPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondNewPropertyName1].value, secondNewPropertyValue1)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value,
+			firstNewPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondNewPropertyName1].value,
+			secondNewPropertyValue1
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid2, tableId2)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
-		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(
+			secondTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser2
+		)
 		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value, firstNewPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondNewPropertyName2].value, secondNewPropertyValue2)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value,
+			firstNewPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondNewPropertyName2].value,
+			secondNewPropertyValue2
+		)
 	})
 
 	it("should overwrite existing table objects with different value types in the database and return the uuids", async () => {
@@ -1299,7 +1592,7 @@ describe("SetTableObjects function", () => {
 		tableObject1.BelongsToUser = true
 		tableObject1.Purchase = null
 		tableObject1.Properties = {
-			"test": { value: 93885 }
+			test: { value: 93885 }
 		}
 
 		let tableObject2 = new TableObject()
@@ -1310,13 +1603,10 @@ describe("SetTableObjects function", () => {
 		tableObject2.BelongsToUser = false
 		tableObject2.Purchase = "oishdhoisdfhoisdf"
 		tableObject2.Properties = {
-			"bla": { value: 9289.2324 }
+			bla: { value: 9289.2324 }
 		}
 
-		await DatabaseOperations.SetTableObjects([
-			tableObject1,
-			tableObject2
-		])
+		await DatabaseOperations.SetTableObjects([tableObject1, tableObject2])
 
 		let newUploadStatus1 = TableObjectUploadStatus.New
 		let newUploadStatus2 = TableObjectUploadStatus.Deleted
@@ -1370,29 +1660,55 @@ describe("SetTableObjects function", () => {
 		assert.equal(updatedTableObjectUuids[0], uuid1)
 		assert.equal(updatedTableObjectUuids[1], uuid2)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid1, tableId1)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
-		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(
+			firstTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser1
+		)
 		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value, firstNewPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondNewPropertyName1].value, secondNewPropertyValue1)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstNewPropertyName1].value,
+			firstNewPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondNewPropertyName1].value,
+			secondNewPropertyValue1
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid2, tableId2)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
-		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(
+			secondTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser2
+		)
 		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value, firstNewPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondNewPropertyName2].value, secondNewPropertyValue2)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstNewPropertyName2].value,
+			firstNewPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondNewPropertyName2].value,
+			secondNewPropertyValue2
+		)
 	})
 
 	it("should adopt local properties of the existing table objects, overwrite the table objects in the database and return the uuids", async () => {
@@ -1439,9 +1755,15 @@ describe("SetTableObjects function", () => {
 		tableObject1.BelongsToUser = true
 		tableObject1.Purchase = "ohisdfhosdfhosdf"
 		tableObject1.Properties = {
-			[firstLocalPropertyName1]: { value: firstLocalPropertyValue1, local: true },
+			[firstLocalPropertyName1]: {
+				value: firstLocalPropertyValue1,
+				local: true
+			},
 			[firstPropertyName1]: { value: "asasdasd" },
-			[secondLocalPropertyName1]: { value: secondLocalPropertyValue1, local: true },
+			[secondLocalPropertyName1]: {
+				value: secondLocalPropertyValue1,
+				local: true
+			},
 			[secondPropertyName1]: { value: "ibdasibdgsibsdgo" }
 		}
 
@@ -1453,16 +1775,19 @@ describe("SetTableObjects function", () => {
 		tableObject2.BelongsToUser = false
 		tableObject2.Purchase = "osdhiosdhiosdfhiosdf"
 		tableObject2.Properties = {
-			[firstLocalPropertyName2]: { value: firstLocalPropertyValue2, local: true },
+			[firstLocalPropertyName2]: {
+				value: firstLocalPropertyValue2,
+				local: true
+			},
 			[firstPropertyName2]: { value: "asdasdasdp" },
-			[secondLocalPropertyName2]: { value: secondLocalPropertyValue2, local: true },
+			[secondLocalPropertyName2]: {
+				value: secondLocalPropertyValue2,
+				local: true
+			},
 			[secondPropertyName2]: { value: "aobadj asa3" }
 		}
 
-		await DatabaseOperations.SetTableObjects([
-			tableObject1,
-			tableObject2
-		])
+		await DatabaseOperations.SetTableObjects([tableObject1, tableObject2])
 
 		let newTableObject1 = new TableObject()
 		newTableObject1.Uuid = uuid1
@@ -1489,49 +1814,99 @@ describe("SetTableObjects function", () => {
 		}
 
 		// Act
-		let updatedTableObjectUuids = await DatabaseOperations.SetTableObjects([
-			newTableObject1,
-			newTableObject2
-		], false)
+		let updatedTableObjectUuids = await DatabaseOperations.SetTableObjects(
+			[newTableObject1, newTableObject2],
+			false
+		)
 
 		// Assert
 		assert.equal(updatedTableObjectUuids.length, 2)
 		assert.equal(updatedTableObjectUuids[0], uuid1)
 		assert.equal(updatedTableObjectUuids[1], uuid2)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid1, tableId1)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.Uuid, uuid1)
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
-		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(
+			firstTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser1
+		)
 		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 4)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondPropertyName1].value, secondPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].value, firstLocalPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].value, secondLocalPropertyValue1)
-		assert.isTrue(firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].local)
-		assert.isTrue(firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].local)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			4
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstPropertyName1].value,
+			firstPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondPropertyName1].value,
+			secondPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].value,
+			firstLocalPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondLocalPropertyName1]
+				.value,
+			secondLocalPropertyValue1
+		)
+		assert.isTrue(
+			firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].local
+		)
+		assert.isTrue(
+			firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].local
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid2, tableId2)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.Uuid, uuid2)
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
-		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(
+			secondTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser2
+		)
 		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 4)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName2].value, secondPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].value, firstLocalPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondLocalPropertyName2].value, secondLocalPropertyValue2)
-		assert.isTrue(secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].local)
-		assert.isTrue(secondTableObjectFromDatabase.Properties[secondLocalPropertyName2].local)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			4
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstPropertyName2].value,
+			firstPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondPropertyName2].value,
+			secondPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstLocalPropertyName2]
+				.value,
+			firstLocalPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondLocalPropertyName2]
+				.value,
+			secondLocalPropertyValue2
+		)
+		assert.isTrue(
+			secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].local
+		)
+		assert.isTrue(
+			secondTableObjectFromDatabase.Properties[secondLocalPropertyName2]
+				.local
+		)
 	})
 
 	it("should adopt local properties of the existing table objects with different value types, overwrite the table objects in the database and return the uuids", async () => {
@@ -1578,9 +1953,15 @@ describe("SetTableObjects function", () => {
 		tableObject1.BelongsToUser = true
 		tableObject1.Purchase = "ohisdfhosdfhosdf"
 		tableObject1.Properties = {
-			[firstLocalPropertyName1]: { value: firstLocalPropertyValue1, local: true },
+			[firstLocalPropertyName1]: {
+				value: firstLocalPropertyValue1,
+				local: true
+			},
 			[firstPropertyName1]: { value: 3672884 },
-			[secondLocalPropertyName1]: { value: secondLocalPropertyValue1, local: true },
+			[secondLocalPropertyName1]: {
+				value: secondLocalPropertyValue1,
+				local: true
+			},
 			[secondPropertyName1]: { value: 9235982 }
 		}
 
@@ -1592,16 +1973,19 @@ describe("SetTableObjects function", () => {
 		tableObject2.BelongsToUser = false
 		tableObject2.Purchase = "osdhiosdhiosdfhiosdf"
 		tableObject2.Properties = {
-			[firstLocalPropertyName2]: { value: firstLocalPropertyValue2, local: true },
+			[firstLocalPropertyName2]: {
+				value: firstLocalPropertyValue2,
+				local: true
+			},
 			[firstPropertyName2]: { value: 2394782 },
-			[secondLocalPropertyName2]: { value: secondLocalPropertyValue2, local: true },
+			[secondLocalPropertyName2]: {
+				value: secondLocalPropertyValue2,
+				local: true
+			},
 			[secondPropertyName2]: { value: 120840 }
 		}
 
-		await DatabaseOperations.SetTableObjects([
-			tableObject1,
-			tableObject2
-		])
+		await DatabaseOperations.SetTableObjects([tableObject1, tableObject2])
 
 		let newTableObject1 = new TableObject()
 		newTableObject1.Uuid = uuid1
@@ -1628,49 +2012,99 @@ describe("SetTableObjects function", () => {
 		}
 
 		// Act
-		let updatedTableObjectUuids = await DatabaseOperations.SetTableObjects([
-			newTableObject1,
-			newTableObject2
-		], false)
+		let updatedTableObjectUuids = await DatabaseOperations.SetTableObjects(
+			[newTableObject1, newTableObject2],
+			false
+		)
 
 		// Assert
 		assert.equal(updatedTableObjectUuids.length, 2)
 		assert.equal(updatedTableObjectUuids[0], uuid1)
 		assert.equal(updatedTableObjectUuids[1], uuid2)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid1, tableId1)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid1, tableId1)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.Uuid, uuid1)
 		assert.equal(firstTableObjectFromDatabase.TableId, tableId1)
 		assert.equal(firstTableObjectFromDatabase.UploadStatus, newUploadStatus1)
 		assert.equal(firstTableObjectFromDatabase.Etag, newEtag1)
-		assert.equal(firstTableObjectFromDatabase.BelongsToUser, newBelongsToUser1)
+		assert.equal(
+			firstTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser1
+		)
 		assert.equal(firstTableObjectFromDatabase.Purchase, newPurchase1)
 
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 4)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstPropertyName1].value, firstPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondPropertyName1].value, secondPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].value, firstLocalPropertyValue1)
-		assert.equal(firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].value, secondLocalPropertyValue1)
-		assert.isTrue(firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].local)
-		assert.isTrue(firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].local)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			4
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstPropertyName1].value,
+			firstPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondPropertyName1].value,
+			secondPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].value,
+			firstLocalPropertyValue1
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.Properties[secondLocalPropertyName1]
+				.value,
+			secondLocalPropertyValue1
+		)
+		assert.isTrue(
+			firstTableObjectFromDatabase.Properties[firstLocalPropertyName1].local
+		)
+		assert.isTrue(
+			firstTableObjectFromDatabase.Properties[secondLocalPropertyName1].local
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid2, tableId2)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(uuid2, tableId2)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.Uuid, uuid2)
 		assert.equal(secondTableObjectFromDatabase.TableId, tableId2)
 		assert.equal(secondTableObjectFromDatabase.UploadStatus, newUploadStatus2)
 		assert.equal(secondTableObjectFromDatabase.Etag, newEtag2)
-		assert.equal(secondTableObjectFromDatabase.BelongsToUser, newBelongsToUser2)
+		assert.equal(
+			secondTableObjectFromDatabase.BelongsToUser,
+			newBelongsToUser2
+		)
 		assert.equal(secondTableObjectFromDatabase.Purchase, newPurchase2)
 
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 4)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstPropertyName2].value, firstPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondPropertyName2].value, secondPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].value, firstLocalPropertyValue2)
-		assert.equal(secondTableObjectFromDatabase.Properties[secondLocalPropertyName2].value, secondLocalPropertyValue2)
-		assert.isTrue(secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].local)
-		assert.isTrue(secondTableObjectFromDatabase.Properties[secondLocalPropertyName2].local)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			4
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstPropertyName2].value,
+			firstPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondPropertyName2].value,
+			secondPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[firstLocalPropertyName2]
+				.value,
+			firstLocalPropertyValue2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.Properties[secondLocalPropertyName2]
+				.value,
+			secondLocalPropertyValue2
+		)
+		assert.isTrue(
+			secondTableObjectFromDatabase.Properties[firstLocalPropertyName2].local
+		)
+		assert.isTrue(
+			secondTableObjectFromDatabase.Properties[secondLocalPropertyName2]
+				.local
+		)
 	})
 })
 
@@ -1781,7 +2215,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
 		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
-		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(
+			tableObjects[0].Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
 
 		assert.equal(tableObjects[1].Uuid, thirdUuid)
 		assert.equal(tableObjects[1].TableId, thirdTableId)
@@ -1790,7 +2227,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].BelongsToUser, thirdBelongsToUser)
 		assert.equal(tableObjects[1].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
-		assert.equal(tableObjects[1].Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObjects[1].Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 	})
 
 	it("should return all table objects", async () => {
@@ -1899,7 +2339,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
 		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
-		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(
+			tableObjects[0].Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
 
 		assert.equal(tableObjects[1].Uuid, secondUuid)
 		assert.equal(tableObjects[1].TableId, secondTableId)
@@ -1908,7 +2351,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].BelongsToUser, secondBelongsToUser)
 		assert.equal(tableObjects[1].Purchase, secondPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
-		assert.equal(tableObjects[1].Properties[secondPropertyName].value, secondPropertyValue)
+		assert.equal(
+			tableObjects[1].Properties[secondPropertyName].value,
+			secondPropertyValue
+		)
 
 		assert.equal(tableObjects[2].Uuid, thirdUuid)
 		assert.equal(tableObjects[2].TableId, thirdTableId)
@@ -1917,7 +2363,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[2].BelongsToUser, thirdBelongsToUser)
 		assert.equal(tableObjects[2].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[2].Properties).length, 1)
-		assert.equal(tableObjects[2].Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObjects[2].Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 
 		assert.equal(tableObjects[3].Uuid, fourthUuid)
 		assert.equal(tableObjects[3].TableId, fourthTableId)
@@ -1926,7 +2375,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[3].BelongsToUser, fourthBelongsToUser)
 		assert.equal(tableObjects[3].Purchase, fourthPurchase)
 		assert.equal(Object.keys(tableObjects[3].Properties).length, 1)
-		assert.equal(tableObjects[3].Properties[fourthPropertyName].value, fourthPropertyValue)
+		assert.equal(
+			tableObjects[3].Properties[fourthPropertyName].value,
+			fourthPropertyValue
+		)
 	})
 
 	it("should return all table objects of a table that are not deleted", async () => {
@@ -2023,7 +2475,9 @@ describe("GetAllTableObjects function", () => {
 		])
 
 		// Act
-		let tableObjects = await DatabaseOperations.GetAllTableObjects(firstTableId)
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(
+			firstTableId
+		)
 
 		// Assert
 		assert.equal(tableObjects.length, 1)
@@ -2035,7 +2489,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].BelongsToUser, firstBelongsToUser)
 		assert.equal(tableObjects[0].Purchase, firstPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
-		assert.equal(tableObjects[0].Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(
+			tableObjects[0].Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
 	})
 
 	it("should return all table objects of a table", async () => {
@@ -2132,7 +2589,10 @@ describe("GetAllTableObjects function", () => {
 		])
 
 		// Act
-		let tableObjects = await DatabaseOperations.GetAllTableObjects(thirdTableId, true)
+		let tableObjects = await DatabaseOperations.GetAllTableObjects(
+			thirdTableId,
+			true
+		)
 
 		// Assert
 		assert.equal(tableObjects.length, 2)
@@ -2144,7 +2604,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[0].BelongsToUser, thirdBelongsToUser)
 		assert.equal(tableObjects[0].Purchase, thirdPurchase)
 		assert.equal(Object.keys(tableObjects[0].Properties).length, 1)
-		assert.equal(tableObjects[0].Properties[thirdPropertyName].value, thirdPropertyValue)
+		assert.equal(
+			tableObjects[0].Properties[thirdPropertyName].value,
+			thirdPropertyValue
+		)
 
 		assert.equal(tableObjects[1].Uuid, fourthUuid)
 		assert.equal(tableObjects[1].TableId, fourthTableId)
@@ -2153,7 +2616,10 @@ describe("GetAllTableObjects function", () => {
 		assert.equal(tableObjects[1].BelongsToUser, fourthBelongsToUser)
 		assert.equal(tableObjects[1].Purchase, fourthPurchase)
 		assert.equal(Object.keys(tableObjects[1].Properties).length, 1)
-		assert.equal(tableObjects[1].Properties[fourthPropertyName].value, fourthPropertyValue)
+		assert.equal(
+			tableObjects[1].Properties[fourthPropertyName].value,
+			fourthPropertyValue
+		)
 	})
 })
 
@@ -2190,7 +2656,10 @@ describe("GetTableObject function", () => {
 		await DatabaseOperations.SetTableObject(tableObject)
 
 		// Act
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 
 		// Assert
 		assert.isNotNull(tableObjectFromDatabase)
@@ -2202,7 +2671,10 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
 	})
 
 	it("should return the table object without tableId", async () => {
@@ -2237,7 +2709,9 @@ describe("GetTableObject function", () => {
 		await DatabaseOperations.SetTableObject(tableObject)
 
 		// Act
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid
+		)
 
 		// Assert
 		assert.isNotNull(tableObjectFromDatabase)
@@ -2249,7 +2723,10 @@ describe("GetTableObject function", () => {
 		assert.equal(tableObjectFromDatabase.BelongsToUser, belongsToUser)
 		assert.equal(tableObjectFromDatabase.Purchase, purchase)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 1)
-		assert.equal(tableObjectFromDatabase.Properties[firstPropertyName].value, firstPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.Properties[firstPropertyName].value,
+			firstPropertyValue
+		)
 	})
 
 	it("should return null if the table object does not exist", async () => {
@@ -2257,7 +2734,9 @@ describe("GetTableObject function", () => {
 		let uuid = generateUuid()
 
 		// Act
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid
+		)
 
 		// Assert
 		assert.isNull(tableObjectFromDatabase)
@@ -2284,7 +2763,10 @@ describe("TableObjectExists function", () => {
 		await DatabaseOperations.SetTableObject(tableObject)
 
 		// Act
-		let tableObjectExists = await DatabaseOperations.TableObjectExists(uuid, tableId)
+		let tableObjectExists = await DatabaseOperations.TableObjectExists(
+			uuid,
+			tableId
+		)
 
 		// Assert
 		assert.isTrue(tableObjectExists)
@@ -2343,7 +2825,7 @@ describe("RemoveTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			Properties: {
-				"test": { value: "blablabla" }
+				test: { value: "blablabla" }
 			}
 		})
 
@@ -2353,7 +2835,10 @@ describe("RemoveTableObject function", () => {
 		await DatabaseOperations.RemoveTableObject(uuid, tableId)
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 		assert.isNull(tableObjectFromDatabase)
 	})
 
@@ -2372,7 +2857,7 @@ describe("RemoveTableObject function", () => {
 			Uuid: uuid,
 			TableId: tableId,
 			Properties: {
-				"test": { value: "blablabla" }
+				test: { value: "blablabla" }
 			}
 		})
 
@@ -2382,7 +2867,10 @@ describe("RemoveTableObject function", () => {
 		await DatabaseOperations.RemoveTableObject(uuid)
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid, tableId)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			uuid,
+			tableId
+		)
 		assert.isNull(tableObjectFromDatabase)
 	})
 })

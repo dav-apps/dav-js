@@ -1,5 +1,5 @@
-import { assert } from 'chai'
-import localforage from 'localforage'
+import { assert } from "chai"
+import localforage from "localforage"
 import {
 	ApiResponse,
 	ApiErrorResponse,
@@ -8,14 +8,14 @@ import {
 	DatabaseUser,
 	Plan,
 	TableObjectUploadStatus
-} from '../../lib/types.js'
-import { generateUuid } from '../../lib/utils.js'
-import * as Constants from '../constants.js'
-import { defaultProfileImageUrl } from '../../lib/constants.js'
-import * as ErrorCodes from '../../lib/errorCodes.js'
-import { Dav } from '../../lib/Dav.js'
-import { App } from '../../lib/models/App.js'
-import { TableObject } from '../../lib/models/TableObject.js'
+} from "../../lib/types.js"
+import { generateUuid } from "../../lib/utils.js"
+import * as Constants from "../constants.js"
+import { defaultProfileImageUrl } from "../../lib/constants.js"
+import * as ErrorCodes from "../../lib/errorCodes.js"
+import { Dav } from "../../lib/Dav.js"
+import { App } from "../../lib/models/App.js"
+import { TableObject } from "../../lib/models/TableObject.js"
 import {
 	SessionSyncPush,
 	LoadUser,
@@ -23,12 +23,12 @@ import {
 	Sync,
 	SyncPush,
 	DownloadTableObject
-} from '../../lib/providers/SyncManager.js'
-import * as DatabaseOperations from '../../lib/providers/DatabaseOperations.js'
-import * as SessionsController from '../../lib/controllers/SessionsController.js'
-import * as TablesController from '../../lib/controllers/TablesController.js'
-import * as TableObjectsController from '../../lib/controllers/TableObjectsController.js'
-import { TableObjectResponseData } from '../../lib/controllers/TableObjectsController.js'
+} from "../../lib/providers/SyncManager.js"
+import * as DatabaseOperations from "../../lib/providers/DatabaseOperations.js"
+import * as SessionsController from "../../lib/controllers/SessionsController.js"
+import * as TablesController from "../../lib/controllers/TablesController.js"
+import * as TableObjectsController from "../../lib/controllers/TableObjectsController.js"
+import { TableObjectResponseData } from "../../lib/controllers/TableObjectsController.js"
 
 beforeEach(async () => {
 	// Reset global variables
@@ -57,17 +57,22 @@ async function deleteTableObjectsOfTable(tableId: number) {
 		console.error("Error in getting table")
 		console.error((getTableResponse as ApiErrorResponse).errors)
 	} else {
-		let tableObjects = (getTableResponse as ApiResponse<TablesController.GetTableResponseData>).data.tableObjects
+		let tableObjects = (
+			getTableResponse as ApiResponse<TablesController.GetTableResponseData>
+		).data.tableObjects
 
 		for (let tableObject of tableObjects) {
-			let deleteTableObjectResponse = await TableObjectsController.DeleteTableObject({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: tableObject.uuid
-			})
+			let deleteTableObjectResponse =
+				await TableObjectsController.DeleteTableObject({
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: tableObject.uuid
+				})
 
 			if (deleteTableObjectResponse.status != 204) {
 				console.error("Error in deleting table object")
-				console.error((deleteTableObjectResponse as ApiErrorResponse).errors)
+				console.error(
+					(deleteTableObjectResponse as ApiErrorResponse).errors
+				)
 			}
 		}
 	}
@@ -84,7 +89,9 @@ describe("SessionSyncPush function", () => {
 			apiKey: Constants.testerDevAuth.apiKey
 		})
 		assert.equal(createSessionResponse.status, 201)
-		const accessToken = (createSessionResponse as ApiResponse<SessionsController.SessionResponseData>).data.accessToken
+		const accessToken = (
+			createSessionResponse as ApiResponse<SessionsController.SessionResponseData>
+		).data.accessToken
 
 		await DatabaseOperations.SetSession({
 			AccessToken: accessToken,
@@ -103,7 +110,8 @@ describe("SessionSyncPush function", () => {
 		})
 		assert.equal(deleteSessionResponse.status, 404)
 
-		const deleteSessionErrors = (deleteSessionResponse as ApiErrorResponse).errors
+		const deleteSessionErrors = (deleteSessionResponse as ApiErrorResponse)
+			.errors
 		assert.equal(deleteSessionErrors[0].code, ErrorCodes.SessionDoesNotExist)
 	})
 
@@ -153,16 +161,18 @@ describe("LoadUser function", () => {
 			Provider: false,
 			ProfileImage: null,
 			ProfileImageEtag: "iofosdgsdgsdgsdg",
-			Apps: [new App(
-				12,
-				"TestApp",
-				"This is a test app",
-				true,
-				"https://testapp.dav-apps.tech",
-				"https://play.google.com/store/asdasd",
-				null,
-				1231414
-			)]
+			Apps: [
+				new App(
+					12,
+					"TestApp",
+					"This is a test app",
+					true,
+					"https://testapp.dav-apps.tech",
+					"https://play.google.com/store/asdasd",
+					null,
+					1231414
+				)
+			]
 		}
 
 		await DatabaseOperations.SetUser(user)
@@ -351,7 +361,10 @@ describe("Sync function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -376,8 +389,10 @@ describe("Sync function", () => {
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
 			properties: {
-				[firstTableObjectFirstPropertyName]: firstTableObjectFirstPropertyValue,
-				[firstTableObjectSecondPropertyName]: firstTableObjectSecondPropertyValue
+				[firstTableObjectFirstPropertyName]:
+					firstTableObjectFirstPropertyValue,
+				[firstTableObjectSecondPropertyName]:
+					firstTableObjectSecondPropertyValue
 			}
 		})
 
@@ -386,8 +401,10 @@ describe("Sync function", () => {
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
 			properties: {
-				[secondTableObjectFirstPropertyName]: secondTableObjectFirstPropertyValue,
-				[secondTableObjectSecondPropertyName]: secondTableObjectSecondPropertyValue
+				[secondTableObjectFirstPropertyName]:
+					secondTableObjectFirstPropertyValue,
+				[secondTableObjectSecondPropertyName]:
+					secondTableObjectSecondPropertyValue
 			}
 		})
 
@@ -398,35 +415,73 @@ describe("Sync function", () => {
 		let allTableObjects = await DatabaseOperations.GetAllTableObjects()
 		assert.equal(allTableObjects.length, 2)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(firstTableObjectUuid)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.Uuid, firstTableObjectUuid)
-		assert.equal(firstTableObjectFromDatabase.TableId, firstTableObjectTableId)
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectFirstPropertyName), firstTableObjectFirstPropertyValue)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectSecondPropertyName), firstTableObjectSecondPropertyValue)
+		assert.equal(
+			firstTableObjectFromDatabase.TableId,
+			firstTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectFirstPropertyName
+			),
+			firstTableObjectFirstPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectSecondPropertyName
+			),
+			firstTableObjectSecondPropertyValue
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(secondTableObjectUuid)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.Uuid, secondTableObjectUuid)
-		assert.equal(secondTableObjectFromDatabase.TableId, secondTableObjectTableId)
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectFirstPropertyName), secondTableObjectFirstPropertyValue)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectSecondPropertyName), secondTableObjectSecondPropertyValue)
+		assert.equal(
+			secondTableObjectFromDatabase.TableId,
+			secondTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectFirstPropertyName
+			),
+			secondTableObjectFirstPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectSecondPropertyName
+			),
+			secondTableObjectSecondPropertyValue
+		)
 
 		// Arrange (2)
 		let firstTableObjectFirstUpdatedPropertyValue = "First updated value"
-		let firstTableObjectSecondUpdatedPropertyValue = "Erster aktualisierter Wert"
+		let firstTableObjectSecondUpdatedPropertyValue =
+			"Erster aktualisierter Wert"
 
 		let secondTableObjectFirstUpdatedPropertyValue = "Second updated value"
-		let secondTableObjectSecondUpdatedPropertyValue = "Zweiter aktualisierter Wert"
+		let secondTableObjectSecondUpdatedPropertyValue =
+			"Zweiter aktualisierter Wert"
 
 		await TableObjectsController.UpdateTableObject({
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstTableObjectUuid,
 			properties: {
-				[firstTableObjectFirstPropertyName]: firstTableObjectFirstUpdatedPropertyValue,
-				[firstTableObjectSecondPropertyName]: firstTableObjectSecondUpdatedPropertyValue
+				[firstTableObjectFirstPropertyName]:
+					firstTableObjectFirstUpdatedPropertyValue,
+				[firstTableObjectSecondPropertyName]:
+					firstTableObjectSecondUpdatedPropertyValue
 			}
 		})
 
@@ -434,8 +489,10 @@ describe("Sync function", () => {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondTableObjectUuid,
 			properties: {
-				[secondTableObjectFirstPropertyName]: secondTableObjectFirstUpdatedPropertyValue,
-				[secondTableObjectSecondPropertyName]: secondTableObjectSecondUpdatedPropertyValue
+				[secondTableObjectFirstPropertyName]:
+					secondTableObjectFirstUpdatedPropertyValue,
+				[secondTableObjectSecondPropertyName]:
+					secondTableObjectSecondUpdatedPropertyValue
 			}
 		})
 
@@ -446,21 +503,57 @@ describe("Sync function", () => {
 		allTableObjects = await DatabaseOperations.GetAllTableObjects()
 		assert.equal(allTableObjects.length, 2)
 
-		firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			firstTableObjectUuid
+		)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.Uuid, firstTableObjectUuid)
-		assert.equal(firstTableObjectFromDatabase.TableId, firstTableObjectTableId)
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectFirstPropertyName), firstTableObjectFirstUpdatedPropertyValue)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectSecondPropertyName), firstTableObjectSecondUpdatedPropertyValue)
+		assert.equal(
+			firstTableObjectFromDatabase.TableId,
+			firstTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectFirstPropertyName
+			),
+			firstTableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectSecondPropertyName
+			),
+			firstTableObjectSecondUpdatedPropertyValue
+		)
 
-		secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+		secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			secondTableObjectUuid
+		)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.Uuid, secondTableObjectUuid)
-		assert.equal(secondTableObjectFromDatabase.TableId, secondTableObjectTableId)
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectFirstPropertyName), secondTableObjectFirstUpdatedPropertyValue)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectSecondPropertyName), secondTableObjectSecondUpdatedPropertyValue)
+		assert.equal(
+			secondTableObjectFromDatabase.TableId,
+			secondTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectFirstPropertyName
+			),
+			secondTableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectSecondPropertyName
+			),
+			secondTableObjectSecondUpdatedPropertyValue
+		)
 	})
 
 	it("should remove the table objects that are not on the server", async () => {
@@ -468,7 +561,10 @@ describe("Sync function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -500,8 +596,10 @@ describe("Sync function", () => {
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
 			properties: {
-				[firstTableObjectFirstPropertyName]: firstTableObjectFirstPropertyValue,
-				[firstTableObjectSecondPropertyName]: firstTableObjectSecondPropertyValue
+				[firstTableObjectFirstPropertyName]:
+					firstTableObjectFirstPropertyValue,
+				[firstTableObjectSecondPropertyName]:
+					firstTableObjectSecondPropertyValue
 			}
 		})
 
@@ -510,20 +608,28 @@ describe("Sync function", () => {
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
 			properties: {
-				[secondTableObjectFirstPropertyName]: secondTableObjectFirstPropertyValue,
-				[secondTableObjectSecondPropertyName]: secondTableObjectSecondPropertyValue
+				[secondTableObjectFirstPropertyName]:
+					secondTableObjectFirstPropertyValue,
+				[secondTableObjectSecondPropertyName]:
+					secondTableObjectSecondPropertyValue
 			}
 		})
 
-		await DatabaseOperations.SetTableObject(new TableObject({
-			Uuid: localTableObjectUuid,
-			TableId: localTableObjectTableId,
-			Properties: {
-				[localTableObjectFirstPropertyName]: { value: localTableObjectFirstPropertyValue },
-				[localTableObjectSecondPropertyName]: { value: localTableObjectSecondPropertyValue }
-			},
-			UploadStatus: TableObjectUploadStatus.UpToDate
-		}))
+		await DatabaseOperations.SetTableObject(
+			new TableObject({
+				Uuid: localTableObjectUuid,
+				TableId: localTableObjectTableId,
+				Properties: {
+					[localTableObjectFirstPropertyName]: {
+						value: localTableObjectFirstPropertyValue
+					},
+					[localTableObjectSecondPropertyName]: {
+						value: localTableObjectSecondPropertyValue
+					}
+				},
+				UploadStatus: TableObjectUploadStatus.UpToDate
+			})
+		)
 
 		// Act
 		await Sync()
@@ -532,21 +638,55 @@ describe("Sync function", () => {
 		let allTableObjects = await DatabaseOperations.GetAllTableObjects()
 		assert.equal(allTableObjects.length, 2)
 
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(firstTableObjectUuid)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.Uuid, firstTableObjectUuid)
-		assert.equal(firstTableObjectFromDatabase.TableId, firstTableObjectTableId)
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectFirstPropertyName), firstTableObjectFirstPropertyValue)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectSecondPropertyName), firstTableObjectSecondPropertyValue)
+		assert.equal(
+			firstTableObjectFromDatabase.TableId,
+			firstTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectFirstPropertyName
+			),
+			firstTableObjectFirstPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectSecondPropertyName
+			),
+			firstTableObjectSecondPropertyValue
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(secondTableObjectUuid)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.Uuid, secondTableObjectUuid)
-		assert.equal(secondTableObjectFromDatabase.TableId, secondTableObjectTableId)
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectFirstPropertyName), secondTableObjectFirstPropertyValue)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectSecondPropertyName), secondTableObjectSecondPropertyValue)
+		assert.equal(
+			secondTableObjectFromDatabase.TableId,
+			secondTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectFirstPropertyName
+			),
+			secondTableObjectFirstPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectSecondPropertyName
+			),
+			secondTableObjectSecondPropertyValue
+		)
 	})
 })
 
@@ -556,7 +696,10 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -581,8 +724,12 @@ describe("SyncPush function", () => {
 				Uuid: firstTableObjectUuid,
 				TableId: firstTableObjectTableId,
 				Properties: {
-					[firstTableObjectFirstPropertyName]: { value: firstTableObjectFirstPropertyValue },
-					[firstTableObjectSecondPropertyName]: { value: firstTableObjectSecondPropertyValue }
+					[firstTableObjectFirstPropertyName]: {
+						value: firstTableObjectFirstPropertyValue
+					},
+					[firstTableObjectSecondPropertyName]: {
+						value: firstTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.New
 			}),
@@ -590,8 +737,12 @@ describe("SyncPush function", () => {
 				Uuid: secondTableObjectUuid,
 				TableId: secondTableObjectTableId,
 				Properties: {
-					[secondTableObjectFirstPropertyName]: { value: secondTableObjectFirstPropertyValue },
-					[secondTableObjectSecondPropertyName]: { value: secondTableObjectSecondPropertyValue }
+					[secondTableObjectFirstPropertyName]: {
+						value: secondTableObjectFirstPropertyValue
+					},
+					[secondTableObjectSecondPropertyName]: {
+						value: secondTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.New
 			})
@@ -601,39 +752,79 @@ describe("SyncPush function", () => {
 		await SyncPush()
 
 		// Assert
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(firstTableObjectUuid)
 		assert.isNotNull(firstTableObjectFromDatabase)
-		assert.equal(firstTableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(
+			firstTableObjectFromDatabase.UploadStatus,
+			TableObjectUploadStatus.UpToDate
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(secondTableObjectUuid)
 		assert.isNotNull(secondTableObjectFromDatabase)
-		assert.equal(secondTableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(
+			secondTableObjectFromDatabase.UploadStatus,
+			TableObjectUploadStatus.UpToDate
+		)
 
-		let firstTableObjectFromServerResponse = await TableObjectsController.GetTableObject({
-			accessToken: Constants.testerXTestAppAccessToken,
-			uuid: firstTableObjectUuid
-		})
+		let firstTableObjectFromServerResponse =
+			await TableObjectsController.GetTableObject({
+				accessToken: Constants.testerXTestAppAccessToken,
+				uuid: firstTableObjectUuid
+			})
 		assert.equal(firstTableObjectFromServerResponse.status, 200)
 
-		let firstTableObjectFromServer = (firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+		let firstTableObjectFromServer = (
+			firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
+		).data.tableObject
 		assert.equal(firstTableObjectFromServer.Uuid, firstTableObjectUuid)
 		assert.equal(firstTableObjectFromServer.TableId, firstTableObjectTableId)
 		assert.equal(Object.keys(firstTableObjectFromServer.Properties).length, 2)
-		assert.equal(firstTableObjectFromServer.GetPropertyValue(firstTableObjectFirstPropertyName), firstTableObjectFirstPropertyValue)
-		assert.equal(firstTableObjectFromServer.GetPropertyValue(firstTableObjectSecondPropertyName), firstTableObjectSecondPropertyValue)
+		assert.equal(
+			firstTableObjectFromServer.GetPropertyValue(
+				firstTableObjectFirstPropertyName
+			),
+			firstTableObjectFirstPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromServer.GetPropertyValue(
+				firstTableObjectSecondPropertyName
+			),
+			firstTableObjectSecondPropertyValue
+		)
 
-		let secondTableObjectFromServerResponse = await TableObjectsController.GetTableObject({
-			accessToken: Constants.testerXTestAppAccessToken,
-			uuid: secondTableObjectUuid
-		})
+		let secondTableObjectFromServerResponse =
+			await TableObjectsController.GetTableObject({
+				accessToken: Constants.testerXTestAppAccessToken,
+				uuid: secondTableObjectUuid
+			})
 		assert.equal(secondTableObjectFromServerResponse.status, 200)
 
-		let secondTableObjectFromServer = (secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+		let secondTableObjectFromServer = (
+			secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
+		).data.tableObject
 		assert.equal(secondTableObjectFromServer.Uuid, secondTableObjectUuid)
-		assert.equal(secondTableObjectFromServer.TableId, secondTableObjectTableId)
-		assert.equal(Object.keys(secondTableObjectFromServer.Properties).length, 2)
-		assert.equal(secondTableObjectFromServer.GetPropertyValue(secondTableObjectFirstPropertyName), secondTableObjectFirstPropertyValue)
-		assert.equal(secondTableObjectFromServer.GetPropertyValue(secondTableObjectSecondPropertyName), secondTableObjectSecondPropertyValue)
+		assert.equal(
+			secondTableObjectFromServer.TableId,
+			secondTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(secondTableObjectFromServer.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromServer.GetPropertyValue(
+				secondTableObjectFirstPropertyName
+			),
+			secondTableObjectFirstPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromServer.GetPropertyValue(
+				secondTableObjectSecondPropertyName
+			),
+			secondTableObjectSecondPropertyValue
+		)
 	})
 
 	it("should update table objects on the server", async () => {
@@ -641,7 +832,10 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -666,8 +860,10 @@ describe("SyncPush function", () => {
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
 			properties: {
-				[firstTableObjectFirstPropertyName]: firstTableObjectFirstPropertyValue,
-				[firstTableObjectSecondPropertyName]: firstTableObjectSecondPropertyValue
+				[firstTableObjectFirstPropertyName]:
+					firstTableObjectFirstPropertyValue,
+				[firstTableObjectSecondPropertyName]:
+					firstTableObjectSecondPropertyValue
 			}
 		})
 
@@ -676,24 +872,32 @@ describe("SyncPush function", () => {
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
 			properties: {
-				[secondTableObjectFirstPropertyName]: secondTableObjectFirstPropertyValue,
-				[secondTableObjectSecondPropertyName]: secondTableObjectSecondPropertyValue
+				[secondTableObjectFirstPropertyName]:
+					secondTableObjectFirstPropertyValue,
+				[secondTableObjectSecondPropertyName]:
+					secondTableObjectSecondPropertyValue
 			}
 		})
 
 		let firstTableObjectFirstUpdatedPropertyValue = "First updated value"
-		let firstTableObjectSecondUpdatedPropertyValue = "Erster aktualisierter Wert"
+		let firstTableObjectSecondUpdatedPropertyValue =
+			"Erster aktualisierter Wert"
 
 		let secondTableObjectFirstUpdatedPropertyValue = "Second updated value"
-		let secondTableObjectSecondUpdatedPropertyValue = "Zweiter aktualisierter Wert"
+		let secondTableObjectSecondUpdatedPropertyValue =
+			"Zweiter aktualisierter Wert"
 
 		await DatabaseOperations.SetTableObjects([
 			new TableObject({
 				Uuid: firstTableObjectUuid,
 				TableId: firstTableObjectTableId,
 				Properties: {
-					[firstTableObjectFirstPropertyName]: { value: firstTableObjectFirstUpdatedPropertyValue },
-					[firstTableObjectSecondPropertyName]: { value: firstTableObjectSecondUpdatedPropertyValue }
+					[firstTableObjectFirstPropertyName]: {
+						value: firstTableObjectFirstUpdatedPropertyValue
+					},
+					[firstTableObjectSecondPropertyName]: {
+						value: firstTableObjectSecondUpdatedPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Updated
 			}),
@@ -701,8 +905,12 @@ describe("SyncPush function", () => {
 				Uuid: secondTableObjectUuid,
 				TableId: secondTableObjectTableId,
 				Properties: {
-					[secondTableObjectFirstPropertyName]: { value: secondTableObjectFirstUpdatedPropertyValue },
-					[secondTableObjectSecondPropertyName]: { value: secondTableObjectSecondUpdatedPropertyValue }
+					[secondTableObjectFirstPropertyName]: {
+						value: secondTableObjectFirstUpdatedPropertyValue
+					},
+					[secondTableObjectSecondPropertyName]: {
+						value: secondTableObjectSecondUpdatedPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Updated
 			})
@@ -712,49 +920,121 @@ describe("SyncPush function", () => {
 		await SyncPush()
 
 		// Assert
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(firstTableObjectUuid)
 		assert.isNotNull(firstTableObjectFromDatabase)
 		assert.equal(firstTableObjectFromDatabase.Uuid, firstTableObjectUuid)
-		assert.equal(firstTableObjectFromDatabase.TableId, firstTableObjectTableId)
-		assert.equal(Object.keys(firstTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectFirstPropertyName), firstTableObjectFirstUpdatedPropertyValue)
-		assert.equal(firstTableObjectFromDatabase.GetPropertyValue(firstTableObjectSecondPropertyName), firstTableObjectSecondUpdatedPropertyValue)
-		assert.equal(firstTableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(
+			firstTableObjectFromDatabase.TableId,
+			firstTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(firstTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectFirstPropertyName
+			),
+			firstTableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.GetPropertyValue(
+				firstTableObjectSecondPropertyName
+			),
+			firstTableObjectSecondUpdatedPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromDatabase.UploadStatus,
+			TableObjectUploadStatus.UpToDate
+		)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(secondTableObjectUuid)
 		assert.isNotNull(secondTableObjectFromDatabase)
 		assert.equal(secondTableObjectFromDatabase.Uuid, secondTableObjectUuid)
-		assert.equal(secondTableObjectFromDatabase.TableId, secondTableObjectTableId)
-		assert.equal(Object.keys(secondTableObjectFromDatabase.Properties).length, 2)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectFirstPropertyName), secondTableObjectFirstUpdatedPropertyValue)
-		assert.equal(secondTableObjectFromDatabase.GetPropertyValue(secondTableObjectSecondPropertyName), secondTableObjectSecondUpdatedPropertyValue)
-		assert.equal(secondTableObjectFromDatabase.UploadStatus, TableObjectUploadStatus.UpToDate)
+		assert.equal(
+			secondTableObjectFromDatabase.TableId,
+			secondTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(secondTableObjectFromDatabase.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectFirstPropertyName
+			),
+			secondTableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.GetPropertyValue(
+				secondTableObjectSecondPropertyName
+			),
+			secondTableObjectSecondUpdatedPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromDatabase.UploadStatus,
+			TableObjectUploadStatus.UpToDate
+		)
 
-		let firstTableObjectFromServerResponse = await TableObjectsController.GetTableObject({
-			accessToken: Constants.testerXTestAppAccessToken,
-			uuid: firstTableObjectUuid
-		})
+		let firstTableObjectFromServerResponse =
+			await TableObjectsController.GetTableObject({
+				accessToken: Constants.testerXTestAppAccessToken,
+				uuid: firstTableObjectUuid
+			})
 		assert.equal(firstTableObjectFromServerResponse.status, 200)
 
-		let firstTableObjectFromServer = (firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+		let firstTableObjectFromServer = (
+			firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
+		).data.tableObject
 		assert.equal(firstTableObjectFromServer.Uuid, firstTableObjectUuid)
 		assert.equal(firstTableObjectFromServer.TableId, firstTableObjectTableId)
 		assert.equal(Object.keys(firstTableObjectFromServer.Properties).length, 2)
-		assert.equal(firstTableObjectFromServer.GetPropertyValue(firstTableObjectFirstPropertyName), firstTableObjectFirstUpdatedPropertyValue)
-		assert.equal(firstTableObjectFromServer.GetPropertyValue(firstTableObjectSecondPropertyName), firstTableObjectSecondUpdatedPropertyValue)
+		assert.equal(
+			firstTableObjectFromServer.GetPropertyValue(
+				firstTableObjectFirstPropertyName
+			),
+			firstTableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			firstTableObjectFromServer.GetPropertyValue(
+				firstTableObjectSecondPropertyName
+			),
+			firstTableObjectSecondUpdatedPropertyValue
+		)
 
-		let secondTableObjectFromServerResponse = await TableObjectsController.GetTableObject({
-			accessToken: Constants.testerXTestAppAccessToken,
-			uuid: secondTableObjectUuid
-		})
+		let secondTableObjectFromServerResponse =
+			await TableObjectsController.GetTableObject({
+				accessToken: Constants.testerXTestAppAccessToken,
+				uuid: secondTableObjectUuid
+			})
 		assert.equal(secondTableObjectFromServerResponse.status, 200)
 
-		let secondTableObjectFromServer = (secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>).data.tableObject
+		let secondTableObjectFromServer = (
+			secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
+		).data.tableObject
 		assert.equal(secondTableObjectFromServer.Uuid, secondTableObjectUuid)
-		assert.equal(secondTableObjectFromServer.TableId, secondTableObjectTableId)
-		assert.equal(Object.keys(secondTableObjectFromServer.Properties).length, 2)
-		assert.equal(secondTableObjectFromServer.GetPropertyValue(secondTableObjectFirstPropertyName), secondTableObjectFirstUpdatedPropertyValue)
-		assert.equal(secondTableObjectFromServer.GetPropertyValue(secondTableObjectSecondPropertyName), secondTableObjectSecondUpdatedPropertyValue)
+		assert.equal(
+			secondTableObjectFromServer.TableId,
+			secondTableObjectTableId
+		)
+		assert.equal(
+			Object.keys(secondTableObjectFromServer.Properties).length,
+			2
+		)
+		assert.equal(
+			secondTableObjectFromServer.GetPropertyValue(
+				secondTableObjectFirstPropertyName
+			),
+			secondTableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			secondTableObjectFromServer.GetPropertyValue(
+				secondTableObjectSecondPropertyName
+			),
+			secondTableObjectSecondUpdatedPropertyValue
+		)
 	})
 
 	it("should delete table objects on the server", async () => {
@@ -762,7 +1042,10 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -787,8 +1070,10 @@ describe("SyncPush function", () => {
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
 			properties: {
-				[firstTableObjectFirstPropertyName]: firstTableObjectFirstPropertyValue,
-				[firstTableObjectSecondPropertyName]: firstTableObjectSecondPropertyValue
+				[firstTableObjectFirstPropertyName]:
+					firstTableObjectFirstPropertyValue,
+				[firstTableObjectSecondPropertyName]:
+					firstTableObjectSecondPropertyValue
 			}
 		})
 
@@ -797,8 +1082,10 @@ describe("SyncPush function", () => {
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
 			properties: {
-				[secondTableObjectFirstPropertyName]: secondTableObjectFirstPropertyValue,
-				[secondTableObjectSecondPropertyName]: secondTableObjectSecondPropertyValue
+				[secondTableObjectFirstPropertyName]:
+					secondTableObjectFirstPropertyValue,
+				[secondTableObjectSecondPropertyName]:
+					secondTableObjectSecondPropertyValue
 			}
 		})
 
@@ -807,8 +1094,12 @@ describe("SyncPush function", () => {
 				Uuid: firstTableObjectUuid,
 				TableId: firstTableObjectTableId,
 				Properties: {
-					[firstTableObjectFirstPropertyName]: { value: firstTableObjectFirstPropertyValue },
-					[firstTableObjectSecondPropertyName]: { value: firstTableObjectSecondPropertyValue }
+					[firstTableObjectFirstPropertyName]: {
+						value: firstTableObjectFirstPropertyValue
+					},
+					[firstTableObjectSecondPropertyName]: {
+						value: firstTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Deleted
 			}),
@@ -816,8 +1107,12 @@ describe("SyncPush function", () => {
 				Uuid: secondTableObjectUuid,
 				TableId: secondTableObjectTableId,
 				Properties: {
-					[secondTableObjectFirstPropertyName]: { value: secondTableObjectFirstPropertyValue },
-					[secondTableObjectSecondPropertyName]: { value: secondTableObjectSecondPropertyValue }
+					[secondTableObjectFirstPropertyName]: {
+						value: secondTableObjectFirstPropertyValue
+					},
+					[secondTableObjectSecondPropertyName]: {
+						value: secondTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Deleted
 			})
@@ -827,25 +1122,37 @@ describe("SyncPush function", () => {
 		await SyncPush()
 
 		// Assert
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(firstTableObjectUuid)
 		assert.isNull(firstTableObjectFromDatabase)
-		
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(secondTableObjectUuid)
 		assert.isNull(secondTableObjectFromDatabase)
 
-		let firstTableObjectFromServerResponse = await TableObjectsController.GetTableObject({
-			accessToken: Constants.testerXTestAppAccessToken,
-			uuid: firstTableObjectUuid
-		})
+		let firstTableObjectFromServerResponse =
+			await TableObjectsController.GetTableObject({
+				accessToken: Constants.testerXTestAppAccessToken,
+				uuid: firstTableObjectUuid
+			})
 		assert.equal(firstTableObjectFromServerResponse.status, 404)
-		assert.equal((firstTableObjectFromServerResponse as ApiErrorResponse).errors[0].code, ErrorCodes.TableObjectDoesNotExist)
+		assert.equal(
+			(firstTableObjectFromServerResponse as ApiErrorResponse).errors[0]
+				.code,
+			ErrorCodes.TableObjectDoesNotExist
+		)
 
-		let secondTableObjectFromServerResponse = await TableObjectsController.GetTableObject({
-			accessToken: Constants.testerXTestAppAccessToken,
-			uuid: secondTableObjectUuid
-		})
+		let secondTableObjectFromServerResponse =
+			await TableObjectsController.GetTableObject({
+				accessToken: Constants.testerXTestAppAccessToken,
+				uuid: secondTableObjectUuid
+			})
 		assert.equal(secondTableObjectFromServerResponse.status, 404)
-		assert.equal((secondTableObjectFromServerResponse as ApiErrorResponse).errors[0].code, ErrorCodes.TableObjectDoesNotExist)
+		assert.equal(
+			(secondTableObjectFromServerResponse as ApiErrorResponse).errors[0]
+				.code,
+			ErrorCodes.TableObjectDoesNotExist
+		)
 	})
 
 	it("should delete updated, deleted and removed table objects that do not exist on the server", async () => {
@@ -853,7 +1160,10 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -885,8 +1195,12 @@ describe("SyncPush function", () => {
 				Uuid: firstTableObjectUuid,
 				TableId: firstTableObjectTableId,
 				Properties: {
-					[firstTableObjectFirstPropertyName]: { value: firstTableObjectFirstPropertyValue },
-					[firstTableObjectSecondPropertyName]: { value: firstTableObjectSecondPropertyValue }
+					[firstTableObjectFirstPropertyName]: {
+						value: firstTableObjectFirstPropertyValue
+					},
+					[firstTableObjectSecondPropertyName]: {
+						value: firstTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Updated
 			}),
@@ -894,8 +1208,12 @@ describe("SyncPush function", () => {
 				Uuid: secondTableObjectUuid,
 				TableId: secondTableObjectTableId,
 				Properties: {
-					[secondTableObjectFirstPropertyName]: { value: secondTableObjectFirstPropertyValue },
-					[secondTableObjectSecondPropertyName]: { value: secondTableObjectSecondPropertyValue }
+					[secondTableObjectFirstPropertyName]: {
+						value: secondTableObjectFirstPropertyValue
+					},
+					[secondTableObjectSecondPropertyName]: {
+						value: secondTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Deleted
 			}),
@@ -903,8 +1221,12 @@ describe("SyncPush function", () => {
 				Uuid: thirdTableObjectUuid,
 				TableId: thirdTableObjectTableId,
 				Properties: {
-					[thirdTableObjectFirstPropertyName]: { value: thirdTableObjectFirstPropertyValue },
-					[thirdTableObjectSecondPropertyName]: { value: thirdTableObjectSecondPropertyValue }
+					[thirdTableObjectFirstPropertyName]: {
+						value: thirdTableObjectFirstPropertyValue
+					},
+					[thirdTableObjectSecondPropertyName]: {
+						value: thirdTableObjectSecondPropertyValue
+					}
 				},
 				UploadStatus: TableObjectUploadStatus.Removed
 			})
@@ -914,13 +1236,16 @@ describe("SyncPush function", () => {
 		await SyncPush()
 
 		// Assert
-		let firstTableObjectFromDatabase = await DatabaseOperations.GetTableObject(firstTableObjectUuid)
+		let firstTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(firstTableObjectUuid)
 		assert.isNull(firstTableObjectFromDatabase)
 
-		let secondTableObjectFromDatabase = await DatabaseOperations.GetTableObject(secondTableObjectUuid)
+		let secondTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(secondTableObjectUuid)
 		assert.isNull(secondTableObjectFromDatabase)
 
-		let thirdTableObjectFromDatabase = await DatabaseOperations.GetTableObject(thirdTableObjectUuid)
+		let thirdTableObjectFromDatabase =
+			await DatabaseOperations.GetTableObject(thirdTableObjectUuid)
 		assert.isNull(thirdTableObjectFromDatabase)
 	})
 })
@@ -931,7 +1256,10 @@ describe("DownloadTableObject function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -957,13 +1285,23 @@ describe("DownloadTableObject function", () => {
 		await DownloadTableObject(tableObjectUuid)
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObjectUuid)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObjectUuid
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Uuid, tableObjectUuid)
 		assert.equal(tableObjectFromDatabase.TableId, tableObjectTableId)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
-		assert.equal(tableObjectFromDatabase.GetPropertyValue(tableObjectFirstPropertyName), tableObjectFirstPropertyValue)
-		assert.equal(tableObjectFromDatabase.GetPropertyValue(tableObjectSecondPropertyName), tableObjectSecondPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.GetPropertyValue(tableObjectFirstPropertyName),
+			tableObjectFirstPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.GetPropertyValue(
+				tableObjectSecondPropertyName
+			),
+			tableObjectSecondPropertyValue
+		)
 	})
 
 	it("should download the table object and update it in the database", async () => {
@@ -971,7 +1309,10 @@ describe("DownloadTableObject function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [Constants.testAppFirstTestTableId, Constants.testAppSecondTestTableId]
+			tableIds: [
+				Constants.testAppFirstTestTableId,
+				Constants.testAppSecondTestTableId
+			]
 		})
 
 		Dav.isLoggedIn = true
@@ -984,14 +1325,20 @@ describe("DownloadTableObject function", () => {
 		let tableObjectSecondPropertyName = "page2"
 		let tableObjectSecondPropertyValue = "Hallo Welt"
 
-		await DatabaseOperations.SetTableObject(new TableObject({
-			Uuid: tableObjectUuid,
-			TableId: tableObjectTableId,
-			Properties: {
-				[tableObjectFirstPropertyName]: { value: tableObjectFirstPropertyValue },
-				[tableObjectSecondPropertyName]: { value: tableObjectSecondPropertyValue }
-			}
-		}))
+		await DatabaseOperations.SetTableObject(
+			new TableObject({
+				Uuid: tableObjectUuid,
+				TableId: tableObjectTableId,
+				Properties: {
+					[tableObjectFirstPropertyName]: {
+						value: tableObjectFirstPropertyValue
+					},
+					[tableObjectSecondPropertyName]: {
+						value: tableObjectSecondPropertyValue
+					}
+				}
+			})
+		)
 
 		let tableObjectFirstUpdatedPropertyValue = "First updated value"
 		let tableObjectSecondUpdatedPropertyValue = "Erster aktualisierter Wert"
@@ -1000,8 +1347,10 @@ describe("DownloadTableObject function", () => {
 			uuid: tableObjectUuid,
 			tableId: tableObjectTableId,
 			properties: {
-				[tableObjectFirstPropertyName]: tableObjectFirstUpdatedPropertyValue,
-				[tableObjectSecondPropertyName]: tableObjectSecondUpdatedPropertyValue
+				[tableObjectFirstPropertyName]:
+					tableObjectFirstUpdatedPropertyValue,
+				[tableObjectSecondPropertyName]:
+					tableObjectSecondUpdatedPropertyValue
 			}
 		})
 
@@ -1009,12 +1358,22 @@ describe("DownloadTableObject function", () => {
 		await DownloadTableObject(tableObjectUuid)
 
 		// Assert
-		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(tableObjectUuid)
+		let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(
+			tableObjectUuid
+		)
 		assert.isNotNull(tableObjectFromDatabase)
 		assert.equal(tableObjectFromDatabase.Uuid, tableObjectUuid)
 		assert.equal(tableObjectFromDatabase.TableId, tableObjectTableId)
 		assert.equal(Object.keys(tableObjectFromDatabase.Properties).length, 2)
-		assert.equal(tableObjectFromDatabase.GetPropertyValue(tableObjectFirstPropertyName), tableObjectFirstUpdatedPropertyValue)
-		assert.equal(tableObjectFromDatabase.GetPropertyValue(tableObjectSecondPropertyName), tableObjectSecondUpdatedPropertyValue)
+		assert.equal(
+			tableObjectFromDatabase.GetPropertyValue(tableObjectFirstPropertyName),
+			tableObjectFirstUpdatedPropertyValue
+		)
+		assert.equal(
+			tableObjectFromDatabase.GetPropertyValue(
+				tableObjectSecondPropertyName
+			),
+			tableObjectSecondUpdatedPropertyValue
+		)
 	})
 })
