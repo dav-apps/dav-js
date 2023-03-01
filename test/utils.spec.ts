@@ -1,9 +1,9 @@
-import { assert } from 'chai'
-import { SortTableIds } from '../lib/utils.js'
+import { assert } from "chai"
+import { SortTableIds } from "../lib/utils.js"
 
 describe("SortTableIds function", () => {
 	it("should return the correct array when there are no parallel table ids", () => {
-      /*
+		/*
          Input:
             tableIds:            1, 2, 3, 4
             parallelTableIds:    
@@ -22,7 +22,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 1, 2, 2, 3, 3, 4, 4], sortedTableIds)
@@ -48,7 +52,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 1, 2, 2, 3, 3, 4, 4], sortedTableIds)
@@ -74,7 +82,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 1, 2, 3, 2, 3, 4, 4], sortedTableIds)
@@ -100,7 +112,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 2, 2, 3, 3, 4, 1, 4], sortedTableIds)
@@ -126,7 +142,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 4)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 2, 3, 3, 4, 1, 4, 1, 4, 4], sortedTableIds)
@@ -152,7 +172,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 2, 1, 2, 2, 2, 3, 3, 3, 4, 4], sortedTableIds)
@@ -178,7 +202,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 0)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([], sortedTableIds)
@@ -204,7 +232,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 1)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([4], sortedTableIds)
@@ -230,7 +262,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 0)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 1, 1, 1, 1, 1], sortedTableIds)
@@ -256,10 +292,17 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(4, 0)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
-		assert.deepEqual([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2, 3], sortedTableIds)
+		assert.deepEqual(
+			[1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2, 3],
+			sortedTableIds
+		)
 	})
 
 	it("should return the correct array when there are multiple parallel tables", () => {
@@ -283,7 +326,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(5, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 2, 3, 4, 4, 4, 4, 5, 1, 2, 3, 5], sortedTableIds)
@@ -310,10 +357,17 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(5, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
-		assert.deepEqual([1, 2, 3, 4, 4, 4, 5, 1, 2, 3, 5, 1, 2, 3, 2, 3, 2, 2], sortedTableIds)
+		assert.deepEqual(
+			[1, 2, 3, 4, 4, 4, 5, 1, 2, 3, 5, 1, 2, 3, 2, 3, 2, 2],
+			sortedTableIds
+		)
 	})
 
 	it("should return the correct array when there are pages for non-existent tables", () => {
@@ -337,7 +391,11 @@ describe("SortTableIds function", () => {
 		tableIdPages.set(5, 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(tableIds, parallelTableIds, tableIdPages)
+		let sortedTableIds = SortTableIds(
+			tableIds,
+			parallelTableIds,
+			tableIdPages
+		)
 
 		// Assert
 		assert.deepEqual([1, 2, 1, 2, 3, 3, 4, 4], sortedTableIds)

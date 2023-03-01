@@ -1,6 +1,6 @@
-import { TableObject } from '../lib/models/TableObject.js'
-import { Auth } from '../lib/models/Auth.js'
-import { Plan } from '../lib/types.js'
+import { TableObject } from "../lib/models/TableObject.js"
+import { Auth } from "../lib/models/Auth.js"
+import { Plan } from "../lib/types.js"
 
 export const testerXTestAppAccessToken = "ckktuu0gs00008iw3ctnrofzf"
 
@@ -42,15 +42,15 @@ export const secondNotificationPropertyName = "message"
 export var firstTestDataTableObject = new TableObject({
 	Uuid: "642e6407-f357-4e03-b9c2-82f754931161",
 	Properties: {
-		[firstPropertyName]: {value: "Hello World"},
-		[secondPropertyName]: {value: "Hallo Welt"}
+		[firstPropertyName]: { value: "Hello World" },
+		[secondPropertyName]: { value: "Hallo Welt" }
 	}
 })
 
 export var secondTestDataTableObject = new TableObject({
 	Uuid: "8d29f002-9511-407b-8289-5ebdcb5a5559",
 	Properties: {
-		[firstPropertyName]: {value: "Table"},
-		[secondPropertyName]: {value: "Tabelle"}
+		[firstPropertyName]: { value: "Table" },
+		[secondPropertyName]: { value: "Tabelle" }
 	}
 })

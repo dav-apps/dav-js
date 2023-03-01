@@ -1,8 +1,8 @@
-import { assert } from 'chai'
-import { Dav } from '../lib/Dav.js'
-import * as DatabaseOperations from '../lib/providers/DatabaseOperations.js'
-import { Environment, SessionUploadStatus } from '../lib/types.js'
-import * as Constants from './constants.js'
+import { assert } from "chai"
+import { Dav } from "../lib/Dav.js"
+import * as DatabaseOperations from "../lib/providers/DatabaseOperations.js"
+import { Environment, SessionUploadStatus } from "../lib/types.js"
+import * as Constants from "./constants.js"
 
 describe("Dav class", () => {
 	describe("Logout function", () => {
@@ -12,7 +12,7 @@ describe("Dav class", () => {
 				environment: Environment.Test,
 				appId: Constants.testAppId
 			})
-	
+
 			Dav.isLoggedIn = true
 			Dav.accessToken = Constants.testerXTestAppAccessToken
 
@@ -48,8 +48,14 @@ describe("Dav class", () => {
 
 			let sessionFromDatabase = await DatabaseOperations.GetSession()
 			assert.isNotNull(sessionFromDatabase)
-			assert.equal(sessionFromDatabase.AccessToken, Constants.testerXTestAppAccessToken)
-			assert.equal(sessionFromDatabase.UploadStatus, SessionUploadStatus.Deleted)
+			assert.equal(
+				sessionFromDatabase.AccessToken,
+				Constants.testerXTestAppAccessToken
+			)
+			assert.equal(
+				sessionFromDatabase.UploadStatus,
+				SessionUploadStatus.Deleted
+			)
 		})
 	})
 })
