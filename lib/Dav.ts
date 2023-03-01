@@ -4,52 +4,52 @@ import {
 	SessionUploadStatus,
 	Plan,
 	SubscriptionStatus
-} from './types.js'
+} from "./types.js"
 import {
 	apiBaseUrlDevelopment,
 	apiBaseUrlProduction,
 	websiteUrlDevelopment,
 	websiteUrlProduction,
 	defaultProfileImageUrl
-} from './constants.js'
-import * as DatabaseOperations from './providers/DatabaseOperations.js'
-import * as SyncManager from './providers/SyncManager.js'
-import * as NotificationManager from './providers/NotificationManager.js'
-import { App } from './models/App.js'
+} from "./constants.js"
+import * as DatabaseOperations from "./providers/DatabaseOperations.js"
+import * as SyncManager from "./providers/SyncManager.js"
+import * as NotificationManager from "./providers/NotificationManager.js"
+import { App } from "./models/App.js"
 
 export class Dav {
 	static isLoggedIn: boolean = false
 	static user: {
-		Id: number,
-		Email: string,
-		FirstName: string,
-		Confirmed: boolean,
-		TotalStorage: number,
-		UsedStorage: number,
-		StripeCustomerId: string,
-		Plan: Plan,
-		SubscriptionStatus: SubscriptionStatus,
-		PeriodEnd: Date,
-		Dev: boolean,
-		Provider: boolean,
-		ProfileImage: string,
+		Id: number
+		Email: string
+		FirstName: string
+		Confirmed: boolean
+		TotalStorage: number
+		UsedStorage: number
+		StripeCustomerId: string
+		Plan: Plan
+		SubscriptionStatus: SubscriptionStatus
+		PeriodEnd: Date
+		Dev: boolean
+		Provider: boolean
+		ProfileImage: string
 		Apps: App[]
 	} = {
-			Id: 0,
-			Email: "",
-			FirstName: "",
-			Confirmed: false,
-			TotalStorage: 0,
-			UsedStorage: 0,
-			StripeCustomerId: null,
-			Plan: Plan.Free,
-			SubscriptionStatus: SubscriptionStatus.Active,
-			PeriodEnd: null,
-			Dev: false,
-			Provider: false,
-			ProfileImage: defaultProfileImageUrl,
-			Apps: []
-		}
+		Id: 0,
+		Email: "",
+		FirstName: "",
+		Confirmed: false,
+		TotalStorage: 0,
+		UsedStorage: 0,
+		StripeCustomerId: null,
+		Plan: Plan.Free,
+		SubscriptionStatus: SubscriptionStatus.Active,
+		PeriodEnd: null,
+		Dev: false,
+		Provider: false,
+		ProfileImage: defaultProfileImageUrl,
+		Apps: []
+	}
 
 	static environment: Environment = Environment.Development
 	static server: boolean = false
@@ -58,11 +58,11 @@ export class Dav {
 	static parallelTableIds: number[] = []
 	static notificationOptions: NotificationOptions = { icon: null, badge: null }
 	static callbacks: {
-		UpdateAllOfTable?: Function,
-		UpdateTableObject?: Function,
-		DeleteTableObject?: Function,
-		UserLoaded?: Function,
-		UserDownloaded?: Function,
+		UpdateAllOfTable?: Function
+		UpdateTableObject?: Function
+		DeleteTableObject?: Function
+		UserLoaded?: Function
+		UserDownloaded?: Function
 		SyncFinished?: Function
 	} = {}
 
@@ -75,18 +75,18 @@ export class Dav {
 	private static isLoadingUser = false
 
 	constructor(params?: {
-		environment?: Environment,
-		server?: boolean,
-		appId?: number,
-		tableIds?: number[],
-		parallelTableIds?: number[],
-		notificationOptions?: NotificationOptions,
+		environment?: Environment
+		server?: boolean
+		appId?: number
+		tableIds?: number[]
+		parallelTableIds?: number[]
+		notificationOptions?: NotificationOptions
 		callbacks?: {
-			UpdateAllOfTable?: Function,
-			UpdateTableObject?: Function,
-			DeleteTableObject?: Function,
-			UserLoaded?: Function,
-			UserDownloaded?: Function,
+			UpdateAllOfTable?: Function
+			UpdateTableObject?: Function
+			DeleteTableObject?: Function
+			UserLoaded?: Function
+			UserDownloaded?: Function
 			SyncFinished?: Function
 		}
 	}) {
@@ -95,14 +95,22 @@ export class Dav {
 			if (params.server != null) Dav.server = params.server
 			if (params.appId != null) Dav.appId = params.appId
 			if (params.tableIds != null) Dav.tableIds = params.tableIds
-			if (params.parallelTableIds != null) Dav.parallelTableIds = params.parallelTableIds
-			if (params.notificationOptions != null) Dav.notificationOptions = params.notificationOptions
+			if (params.parallelTableIds != null)
+				Dav.parallelTableIds = params.parallelTableIds
+			if (params.notificationOptions != null)
+				Dav.notificationOptions = params.notificationOptions
 			if (params.callbacks != null) Dav.callbacks = params.callbacks
 		}
 
 		// Set the other static variables
-		Dav.apiBaseUrl = Dav.environment == Environment.Production ? apiBaseUrlProduction : apiBaseUrlDevelopment
-		Dav.websiteUrl = Dav.environment == Environment.Production ? websiteUrlProduction : websiteUrlDevelopment
+		Dav.apiBaseUrl =
+			Dav.environment == Environment.Production
+				? apiBaseUrlProduction
+				: apiBaseUrlDevelopment
+		Dav.websiteUrl =
+			Dav.environment == Environment.Production
+				? websiteUrlProduction
+				: websiteUrlDevelopment
 		if (Dav.server || Dav.environment == Environment.Test) return
 
 		// Init the service worker
@@ -119,9 +127,9 @@ export class Dav {
 		let session = await DatabaseOperations.GetSession()
 
 		if (
-			session == null
-			|| session.AccessToken == null
-			|| session.UploadStatus == SessionUploadStatus.Deleted
+			session == null ||
+			session.AccessToken == null ||
+			session.UploadStatus == SessionUploadStatus.Deleted
 		) {
 			if (this.callbacks.UserLoaded) this.callbacks.UserLoaded()
 			await SyncManager.SessionSyncPush()
@@ -145,7 +153,7 @@ export class Dav {
 		this.isSyncing = true
 
 		// Sync the user
-		if (!await SyncManager.UserSync()) {
+		if (!(await SyncManager.UserSync())) {
 			this.isSyncing = false
 			return
 		}
@@ -176,7 +184,10 @@ export class Dav {
 		if (accessToken == null) return
 
 		// Save the access token in the database
-		await DatabaseOperations.SetSession({ AccessToken: accessToken, UploadStatus: SessionUploadStatus.UpToDate })
+		await DatabaseOperations.SetSession({
+			AccessToken: accessToken,
+			UploadStatus: SessionUploadStatus.UpToDate
+		})
 		await this.LoadUser()
 		this.SyncData()
 	}
@@ -205,11 +216,19 @@ export class Dav {
 	}
 
 	static ShowLoginPage(apiKey: string, callbackUrl: string) {
-		window.location.href = `${Dav.websiteUrl}/login?type=session&apiKey=${apiKey}&appId=${Dav.appId}&redirectUrl=${encodeURIComponent(callbackUrl)}`
+		window.location.href = `${
+			Dav.websiteUrl
+		}/login?type=session&apiKey=${apiKey}&appId=${
+			Dav.appId
+		}&redirectUrl=${encodeURIComponent(callbackUrl)}`
 	}
 
 	static ShowSignupPage(apiKey: string, callbackUrl: string) {
-		window.location.href = `${Dav.websiteUrl}/signup?type=session&apiKey=${apiKey}&appId=${Dav.appId}&redirectUrl=${encodeURIComponent(callbackUrl)}`
+		window.location.href = `${
+			Dav.websiteUrl
+		}/signup?type=session&apiKey=${apiKey}&appId=${
+			Dav.appId
+		}&redirectUrl=${encodeURIComponent(callbackUrl)}`
 	}
 
 	static ShowUserPage(anker: string = "", newTab: boolean = false) {
@@ -223,6 +242,8 @@ export class Dav {
 	}
 
 	static GetUserPageLink(anker: string = "") {
-		return `${Dav.websiteUrl}/login?redirect=user${anker ? encodeURIComponent(`#${anker}`) : ''}`
+		return `${Dav.websiteUrl}/login?redirect=user${
+			anker ? encodeURIComponent(`#${anker}`) : ""
+		}`
 	}
 }

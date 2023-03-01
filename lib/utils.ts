@@ -1,24 +1,34 @@
-import { Dav } from './Dav.js'
-import { ApiResponse, ApiErrorResponse } from './types.js'
-import * as ErrorCodes from './errorCodes.js'
-import * as DatabaseOperations from './providers/DatabaseOperations.js'
-import { RenewSession, SessionResponseData } from './controllers/SessionsController.js'
+import { Dav } from "./Dav.js"
+import { ApiResponse, ApiErrorResponse } from "./types.js"
+import * as ErrorCodes from "./errorCodes.js"
+import * as DatabaseOperations from "./providers/DatabaseOperations.js"
+import {
+	RenewSession,
+	SessionResponseData
+} from "./controllers/SessionsController.js"
 
 export function generateUuid() {
 	var d = new Date().getTime()
-	if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-		d += performance.now()		//use high-precision timer if available
+
+	if (
+		typeof performance !== "undefined" &&
+		typeof performance.now === "function"
+	) {
+		d += performance.now() //use high-precision timer if available
 	}
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+
+	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
 		var r = (d + Math.random() * 16) % 16 | 0
 		d = Math.floor(d / 16)
-		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+		return (c === "x" ? r : (r & 0x3) | 0x8).toString(16)
 	})
 }
 
-export function urlBase64ToUint8Array(base64String) {
-	const padding = '='.repeat((4 - base64String.length % 4) % 4)
-	const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/')
+export function urlBase64ToUint8Array(base64String: string) {
+	const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
+	const base64 = (base64String + padding)
+		.replace(/\-/g, "+")
+		.replace(/_/g, "/")
 
 	const rawData = window.atob(base64)
 	const outputArray = new Uint8Array(rawData.length)
@@ -62,7 +72,7 @@ export function ConvertErrorToApiErrorResponse(error: any): ApiErrorResponse {
 		}
 	} else {
 		// JavaScript error
-		return {status: -1, errors: []}
+		return { status: -1, errors: [] }
 	}
 }
 
@@ -70,14 +80,18 @@ export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 	let errorResponse = ConvertErrorToApiErrorResponse(error)
 
 	if (
-		errorResponse.errors
-		&& errorResponse.errors.length > 0
-		&& errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
+		errorResponse.errors &&
+		errorResponse.errors.length > 0 &&
+		errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
 	) {
-		let renewSessionResult = await RenewSession({ accessToken: Dav.accessToken })
-		
+		let renewSessionResult = await RenewSession({
+			accessToken: Dav.accessToken
+		})
+
 		if (renewSessionResult.status == 200) {
-			let accessToken = (renewSessionResult as ApiResponse<SessionResponseData>).data.accessToken
+			let accessToken = (
+				renewSessionResult as ApiResponse<SessionResponseData>
+			).data.accessToken
 
 			// Save the new access token in the database
 			await SetAccessToken(accessToken)
@@ -95,7 +109,7 @@ export async function SetAccessToken(accessToken: string) {
 
 	// Save the access token in the database
 	let session = await DatabaseOperations.GetSession()
-	if(session == null) return
+	if (session == null) return
 
 	session.AccessToken = accessToken
 	await DatabaseOperations.SetSession(session)
@@ -137,10 +151,16 @@ export function SortTableIds(
 			continue
 		}
 
-		if (parallelTableIds.includes(currentTableId) && parallelTableIds.length > 1) {
+		if (
+			parallelTableIds.includes(currentTableId) &&
+			parallelTableIds.length > 1
+		) {
 			// Add just one page of the current table
 			sortedTableIds.push(currentTableId)
-			tableIdPagesCopy.set(currentTableId, tableIdPagesCopy.get(currentTableId) - 1)
+			tableIdPagesCopy.set(
+				currentTableId,
+				tableIdPagesCopy.get(currentTableId) - 1
+			)
 
 			// Remove the table id from the pages if there are no pages left
 			if (tableIdPagesCopy.get(currentTableId) <= 0) {
@@ -159,7 +179,7 @@ export function SortTableIds(
 			}
 		} else {
 			// Add all pages of the current table
-			for (let i = 0; i < tableIdPagesCopy.get(currentTableId); i++){
+			for (let i = 0; i < tableIdPagesCopy.get(currentTableId); i++) {
 				sortedTableIds.push(currentTableId)
 			}
 
@@ -185,17 +205,17 @@ function getSumOfValuesInMap(map: Map<number, number>) {
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
-	return await Notification.requestPermission() == "granted"
+	return (await Notification.requestPermission()) == "granted"
 }
 
-export async function BlobToBase64(file: Blob, defaultValue: string = null): Promise<string> {
-	if (
-		file == null
-		|| typeof FileReader == 'undefined'
-	) return defaultValue
+export async function BlobToBase64(
+	file: Blob,
+	defaultValue: string = null
+): Promise<string> {
+	if (file == null || typeof FileReader == "undefined") return defaultValue
 
 	let fileReader = new FileReader()
-	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
+	let readFilePromise: Promise<ProgressEvent> = new Promise(resolve => {
 		fileReader.onloadend = resolve
 		fileReader.readAsDataURL(file)
 	})
@@ -204,7 +224,7 @@ export async function BlobToBase64(file: Blob, defaultValue: string = null): Pro
 }
 
 export async function GetBlobData(file: Blob) {
-	let readFilePromise: Promise<ProgressEvent> = new Promise((resolve) => {
+	let readFilePromise: Promise<ProgressEvent> = new Promise(resolve => {
 		let fileReader = new FileReader()
 		fileReader.onloadend = resolve
 		fileReader.readAsArrayBuffer(file)
@@ -215,14 +235,16 @@ export async function GetBlobData(file: Blob) {
 
 export async function requestStoragePersistence(): Promise<boolean> {
 	if (
-		!navigator.storage
-		|| !navigator.storage.persist
-		|| !navigator.storage.persisted
-	) return false
-	
+		!navigator.storage ||
+		!navigator.storage.persist ||
+		!navigator.storage.persisted
+	) {
+		return false
+	}
+
 	// Check if the storage is already persisting
 	if (await navigator.storage.persisted()) return true
-	
+
 	// Ask for storage persistence
 	return await navigator.storage.persist()
 }
@@ -241,7 +263,7 @@ export function PrepareRequestParams(params: Object, joinArrays = false) {
 
 		if (joinArrays && Array.isArray(value)) {
 			if (value.length == 0) continue
-			value = value.join(',')
+			value = value.join(",")
 		}
 
 		newParams[key] = value

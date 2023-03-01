@@ -1,4 +1,4 @@
-import { App } from './models/App.js'
+import { App } from "./models/App.js"
 
 //#region Generic types
 export enum Environment {
@@ -102,7 +102,7 @@ export interface OldTableObjectProperties {
 
 export interface TableObjectProperty {
 	value: string | boolean | number
-	local?: boolean	// default: false
+	local?: boolean // default: false
 }
 
 export interface Property {
@@ -140,7 +140,7 @@ export interface DatabaseNotification {
 }
 
 export interface NotificationOptions {
-	icon: string,
+	icon: string
 	badge: string
 }
 
