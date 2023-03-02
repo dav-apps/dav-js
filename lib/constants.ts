@@ -1,7 +1,11 @@
 export const apiBaseUrlDevelopment = "http://localhost:3111/v1"
+export const apiBaseUrlStaging =
+	"https://dav-backend-tfpik.ondigitalocean.app/staging/v1"
 export const apiBaseUrlProduction =
 	"https://dav-backend-tfpik.ondigitalocean.app/v1"
 export const websiteUrlDevelopment = "http://localhost:3000"
+export const websiteUrlStaging =
+	"https://dav-website-staging-o3oot.ondigitalocean.app"
 export const websiteUrlProduction = "https://dav-apps.tech"
 export const defaultProfileImageUrl =
 	"https://dav-backend.fra1.cdn.digitaloceanspaces.com/profileImages/default.png"

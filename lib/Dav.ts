@@ -7,8 +7,10 @@ import {
 } from "./types.js"
 import {
 	apiBaseUrlDevelopment,
+	apiBaseUrlStaging,
 	apiBaseUrlProduction,
 	websiteUrlDevelopment,
+	websiteUrlStaging,
 	websiteUrlProduction,
 	defaultProfileImageUrl
 } from "./constants.js"
@@ -103,15 +105,24 @@ export class Dav {
 		}
 
 		// Set the other static variables
-		Dav.apiBaseUrl =
-			Dav.environment == Environment.Production
-				? apiBaseUrlProduction
-				: apiBaseUrlDevelopment
-		Dav.websiteUrl =
-			Dav.environment == Environment.Production
-				? websiteUrlProduction
-				: websiteUrlDevelopment
-		if (Dav.server || Dav.environment == Environment.Test) return
+		switch (Dav.environment) {
+			case Environment.Staging:
+				Dav.apiBaseUrl = apiBaseUrlStaging
+				Dav.websiteUrl = websiteUrlStaging
+				break
+			case Environment.Production:
+				Dav.apiBaseUrl = apiBaseUrlProduction
+				Dav.websiteUrl = websiteUrlProduction
+				break
+			default:
+				Dav.apiBaseUrl = apiBaseUrlDevelopment
+				Dav.websiteUrl = websiteUrlDevelopment
+				break
+		}
+
+		if (Dav.server || Dav.environment == Environment.Test) {
+			return
+		}
 
 		// Init the service worker
 		SyncManager.InitServiceWorker()

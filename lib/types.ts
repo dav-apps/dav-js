@@ -2,8 +2,9 @@ import { App } from "./models/App.js"
 
 //#region Generic types
 export enum Environment {
-	Development,
 	Test,
+	Development,
+	Staging,
 	Production
 }
 
