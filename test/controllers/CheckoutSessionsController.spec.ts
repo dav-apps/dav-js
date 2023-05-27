@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../index.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -9,12 +10,10 @@ import {
 	CreateCheckoutSessionMode
 } from "../../lib/controllers/CheckoutSessionsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateCheckoutSession function", () => {
@@ -37,30 +36,22 @@ describe("CreateCheckoutSession function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.mode, mode)
 			assert.equal(data.plan, plan)
 			assert.equal(data.success_url, successUrl)
 			assert.equal(data.cancel_url, cancelUrl)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					session_url: sessionUrl
 				}
-			})
+			]
 		})
 
 		// Act
@@ -97,27 +88,19 @@ describe("CreateCheckoutSession function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.mode, mode)
 			assert.equal(data.plan, plan)
 			assert.equal(data.success_url, successUrl)
 			assert.equal(data.cancel_url, cancelUrl)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -125,7 +108,7 @@ describe("CreateCheckoutSession function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -162,81 +145,62 @@ describe("CreateCheckoutSession function", () => {
 			}
 		}
 
-		// First createCheckoutSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createCheckoutSession request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.mode, mode)
+				assert.equal(data.plan, plan)
+				assert.equal(data.success_url, successUrl)
+				assert.equal(data.cancel_url, cancelUrl)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.mode, mode)
-			assert.equal(data.plan, plan)
-			assert.equal(data.success_url, successUrl)
-			assert.equal(data.cancel_url, cancelUrl)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createCheckoutSession request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second createCheckoutSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.mode, mode)
+				assert.equal(data.plan, plan)
+				assert.equal(data.success_url, successUrl)
+				assert.equal(data.cancel_url, cancelUrl)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.mode, mode)
-			assert.equal(data.plan, plan)
-			assert.equal(data.success_url, successUrl)
-			assert.equal(data.cancel_url, cancelUrl)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					session_url: sessionUrl
-				}
+				return [
+					expectedResult.status,
+					{
+						session_url: sessionUrl
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await CreateCheckoutSession({
