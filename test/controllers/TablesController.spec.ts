@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -10,12 +11,10 @@ import {
 	GetTableResponseData
 } from "../../lib/controllers/TablesController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateTable function", () => {
@@ -34,30 +33,22 @@ describe("CreateTable function", () => {
 			data: new Table(id, appId, name)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.name, name)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					app_id: appId,
 					name
 				}
-			})
+			]
 		})
 
 		// Act
@@ -92,25 +83,17 @@ describe("CreateTable function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.name, name)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -118,7 +101,7 @@ describe("CreateTable function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -149,79 +132,60 @@ describe("CreateTable function", () => {
 			data: new Table(id, appId, name)
 		}
 
-		// First createTable request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createTable request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.app_id, appId)
+				assert.equal(data.name, name)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.app_id, appId)
-			assert.equal(data.name, name)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createTable request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second createTable request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.app_id, appId)
+				assert.equal(data.name, name)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.app_id, appId)
-			assert.equal(data.name, name)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					app_id: appId,
-					name
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						app_id: appId,
+						name
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await CreateTable({
@@ -275,20 +239,15 @@ describe("GetTable function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.equal(config.params.count, count)
+			assert.equal(config.params.page, page)
 
-			assert.equal(request.config.params.count, count)
-			assert.equal(request.config.params.page, page)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					app_id: appId,
 					name,
@@ -305,7 +264,7 @@ describe("GetTable function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -364,20 +323,15 @@ describe("GetTable function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.equal(config.params.count, count)
+			assert.equal(config.params.page, page)
 
-			assert.equal(request.config.params.count, count)
-			assert.equal(request.config.params.page, page)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -385,7 +339,7 @@ describe("GetTable function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -439,81 +393,68 @@ describe("GetTable function", () => {
 			}
 		}
 
-		// First getTable request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getTable request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
+				assert.equal(config.params.count, count)
+				assert.equal(config.params.page, page)
 
-			assert.equal(request.config.params.count, count)
-			assert.equal(request.config.params.page, page)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getTable request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getTable request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				assert.equal(config.params.count, count)
+				assert.equal(config.params.page, page)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			assert.equal(request.config.params.count, count)
-			assert.equal(request.config.params.page, page)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					app_id: appId,
-					name,
-					pages,
-					etag,
-					table_objects: [
-						{
-							uuid: firstTableObjectUuid,
-							etag: firstTableObjectEtag
-						},
-						{
-							uuid: secondTableObjectUuid,
-							etag: secondTableObjectEtag
-						}
-					]
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						app_id: appId,
+						name,
+						pages,
+						etag,
+						table_objects: [
+							{
+								uuid: firstTableObjectUuid,
+								etag: firstTableObjectEtag
+							},
+							{
+								uuid: secondTableObjectUuid,
+								etag: secondTableObjectEtag
+							}
+						]
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetTable({
