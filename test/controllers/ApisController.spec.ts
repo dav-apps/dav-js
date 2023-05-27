@@ -7,14 +7,10 @@ import * as ErrorCodes from "../../lib/errorCodes.js"
 import { Api } from "../../lib/models/Api.js"
 import { CreateApi } from "../../lib/controllers/ApisController.js"
 
-let mock: MockAdapter
+let mock: MockAdapter = new MockAdapter(axios)
 
 beforeEach(() => {
-	mock = new MockAdapter(axios)
-})
-
-afterEach(() => {
-	mock.restore()
+	mock.reset()
 })
 
 describe("CreateApi function", () => {

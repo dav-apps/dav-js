@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -13,12 +14,10 @@ import {
 import { Table } from "../../lib/models/Table.js"
 import { Api } from "../../lib/models/Api.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateApp function", () => {
@@ -37,25 +36,17 @@ describe("CreateApp function", () => {
 			data: new App(id, name, description, false, null, null, null)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.name, name)
 			assert.equal(data.description, description)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					name,
 					description,
@@ -64,7 +55,7 @@ describe("CreateApp function", () => {
 					google_play_link: null,
 					microsoft_store_link: null
 				}
-			})
+			]
 		})
 
 		// Act
@@ -109,25 +100,17 @@ describe("CreateApp function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.name, name)
 			assert.equal(data.description, description)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -135,7 +118,7 @@ describe("CreateApp function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -166,83 +149,64 @@ describe("CreateApp function", () => {
 			data: new App(id, name, description, false, null, null, null)
 		}
 
-		// First createApp request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createApp request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.name, name)
+				assert.equal(data.description, description)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.name, name)
-			assert.equal(data.description, description)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createApp request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second createApp request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.name, name)
+				assert.equal(data.description, description)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.name, name)
-			assert.equal(data.description, description)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					name,
-					description,
-					published: false,
-					web_link: null,
-					google_play_link: null,
-					microsoft_store_link: null
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						name,
+						description,
+						published: false,
+						web_link: null,
+						google_play_link: null,
+						microsoft_store_link: null
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await CreateApp({
@@ -314,16 +278,10 @@ describe("GetApps function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+		mock.onGet(url).reply(config => {
+			return [
+				expectedResult.status,
+				{
 					apps: [
 						{
 							id: firstAppId,
@@ -347,7 +305,7 @@ describe("GetApps function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -406,16 +364,10 @@ describe("GetApps function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+		mock.onGet(url).reply(config => {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -423,7 +375,7 @@ describe("GetApps function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -471,17 +423,12 @@ describe("GetApp function", () => {
 			)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					name,
 					description,
@@ -502,7 +449,7 @@ describe("GetApp function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -556,17 +503,12 @@ describe("GetApp function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -574,7 +516,7 @@ describe("GetApp function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -623,79 +565,66 @@ describe("GetApp function", () => {
 			)
 		}
 
-		// First getApp request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getApp request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getApp request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getApp request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					name,
-					description,
-					published,
-					web_link: webLink,
-					google_play_link: googlePlayLink,
-					microsoft_store_link: microsoftStoreLink,
-					tables: [
-						{
-							id: tableId,
-							name: tableName
-						}
-					],
-					apis: [
-						{
-							id: apiId,
-							name: apiName
-						}
-					]
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						name,
+						description,
+						published,
+						web_link: webLink,
+						google_play_link: googlePlayLink,
+						microsoft_store_link: microsoftStoreLink,
+						tables: [
+							{
+								id: tableId,
+								name: tableName
+							}
+						],
+						apis: [
+							{
+								id: apiId,
+								name: apiName
+							}
+						]
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetApp({
@@ -759,19 +688,11 @@ describe("UpdateApp function", () => {
 			)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.name, name)
 			assert.equal(data.description, description)
 			assert.equal(data.published, published)
@@ -779,9 +700,9 @@ describe("UpdateApp function", () => {
 			assert.equal(data.google_play_link, googlePlayLink)
 			assert.equal(data.microsoft_store_link, microsoftStoreLink)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					name,
 					description,
@@ -790,7 +711,7 @@ describe("UpdateApp function", () => {
 					google_play_link: googlePlayLink,
 					microsoft_store_link: microsoftStoreLink
 				}
-			})
+			]
 		})
 
 		// Act
@@ -845,19 +766,11 @@ describe("UpdateApp function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.name, name)
 			assert.equal(data.description, description)
 			assert.equal(data.published, published)
@@ -865,9 +778,9 @@ describe("UpdateApp function", () => {
 			assert.equal(data.google_play_link, googlePlayLink)
 			assert.equal(data.microsoft_store_link, microsoftStoreLink)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -875,7 +788,7 @@ describe("UpdateApp function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -923,91 +836,72 @@ describe("UpdateApp function", () => {
 			)
 		}
 
-		// First updateApp request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPut(url)
+			.replyOnce(config => {
+				// First updateApp request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.name, name)
+				assert.equal(data.description, description)
+				assert.equal(data.published, published)
+				assert.equal(data.web_link, webLink)
+				assert.equal(data.google_play_link, googlePlayLink)
+				assert.equal(data.microsoft_store_link, microsoftStoreLink)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.name, name)
-			assert.equal(data.description, description)
-			assert.equal(data.published, published)
-			assert.equal(data.web_link, webLink)
-			assert.equal(data.google_play_link, googlePlayLink)
-			assert.equal(data.microsoft_store_link, microsoftStoreLink)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPut(url)
+			.replyOnce(config => {
+				// Second updateApp request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second updateApp request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.name, name)
+				assert.equal(data.description, description)
+				assert.equal(data.published, published)
+				assert.equal(data.web_link, webLink)
+				assert.equal(data.google_play_link, googlePlayLink)
+				assert.equal(data.microsoft_store_link, microsoftStoreLink)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.name, name)
-			assert.equal(data.description, description)
-			assert.equal(data.published, published)
-			assert.equal(data.web_link, webLink)
-			assert.equal(data.google_play_link, googlePlayLink)
-			assert.equal(data.microsoft_store_link, microsoftStoreLink)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					name,
-					description,
-					published,
-					web_link: webLink,
-					google_play_link: googlePlayLink,
-					microsoft_store_link: microsoftStoreLink
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						name,
+						description,
+						published,
+						web_link: webLink,
+						google_play_link: googlePlayLink,
+						microsoft_store_link: microsoftStoreLink
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await UpdateApp({
