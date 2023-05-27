@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -9,12 +10,10 @@ import {
 	GetDevResponseData
 } from "../../lib/controllers/DevsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("GetDev function", () => {
@@ -67,17 +66,12 @@ describe("GetDev function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					apps: [
 						{
@@ -100,7 +94,7 @@ describe("GetDev function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -174,17 +168,12 @@ describe("GetDev function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -192,7 +181,7 @@ describe("GetDev function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -254,81 +243,68 @@ describe("GetDev function", () => {
 			}
 		}
 
-		// First getDev request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getDev request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getDev request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getDev request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					apps: [
-						{
-							id: firstAppId,
-							name: firstAppName,
-							description: firstAppDescription,
-							published: firstAppPublished,
-							web_link: firstAppWebLink,
-							google_play_link: firstAppGooglePlayLink,
-							microsoft_store_link: firstAppMicrosoftStoreLink
-						},
-						{
-							id: secondAppId,
-							name: secondAppName,
-							description: secondAppDescription,
-							published: secondAppPublished,
-							web_link: secondAppWebLink,
-							google_play_link: secondAppGooglePlayLink,
-							microsoft_store_link: secondAppMicrosoftStoreLink
-						}
-					]
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						apps: [
+							{
+								id: firstAppId,
+								name: firstAppName,
+								description: firstAppDescription,
+								published: firstAppPublished,
+								web_link: firstAppWebLink,
+								google_play_link: firstAppGooglePlayLink,
+								microsoft_store_link: firstAppMicrosoftStoreLink
+							},
+							{
+								id: secondAppId,
+								name: secondAppName,
+								description: secondAppDescription,
+								published: secondAppPublished,
+								web_link: secondAppWebLink,
+								google_play_link: secondAppGooglePlayLink,
+								microsoft_store_link: secondAppMicrosoftStoreLink
+							}
+						]
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetDev()) as ApiResponse<GetDevResponseData>
