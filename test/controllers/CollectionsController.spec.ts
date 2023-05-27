@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import {
 	SetTableObjectsOfCollection,
@@ -9,12 +10,10 @@ import { davDevAuth } from "../constants.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("SetTableObjectsOfCollection function", () => {
@@ -35,26 +34,18 @@ describe("SetTableObjectsOfCollection function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					table_id: tableId,
 					name
 				}
-			})
+			]
 		})
 
 		// Act
@@ -90,21 +81,13 @@ describe("SetTableObjectsOfCollection function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -112,7 +95,7 @@ describe("SetTableObjectsOfCollection function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
