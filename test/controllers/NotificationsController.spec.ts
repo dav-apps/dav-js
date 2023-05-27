@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -11,12 +12,10 @@ import {
 	DeleteNotification
 } from "../../lib/controllers/NotificationsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateNotification function", () => {
@@ -43,28 +42,20 @@ describe("CreateNotification function", () => {
 			})
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.uuid, uuid)
 			assert.equal(data.time, time)
 			assert.equal(data.interval, interval)
 			assert.equal(data.title, title)
 			assert.equal(data.body, body)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id: 12,
 					user_id: 12,
 					app_id: 12,
@@ -74,7 +65,7 @@ describe("CreateNotification function", () => {
 					title,
 					body
 				}
-			})
+			]
 		})
 
 		// Act
@@ -117,28 +108,20 @@ describe("CreateNotification function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.uuid, uuid)
 			assert.equal(data.time, time)
 			assert.equal(data.interval, interval)
 			assert.equal(data.title, title)
 			assert.equal(data.body, body)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -146,7 +129,7 @@ describe("CreateNotification function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -188,90 +171,71 @@ describe("CreateNotification function", () => {
 			})
 		}
 
-		// First createNotification request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createNotification request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.uuid, uuid)
+				assert.equal(data.time, time)
+				assert.equal(data.interval, interval)
+				assert.equal(data.title, title)
+				assert.equal(data.body, body)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.uuid, uuid)
-			assert.equal(data.time, time)
-			assert.equal(data.interval, interval)
-			assert.equal(data.title, title)
-			assert.equal(data.body, body)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createNotification request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second createNotification request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.uuid, uuid)
+				assert.equal(data.time, time)
+				assert.equal(data.interval, interval)
+				assert.equal(data.title, title)
+				assert.equal(data.body, body)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.uuid, uuid)
-			assert.equal(data.time, time)
-			assert.equal(data.interval, interval)
-			assert.equal(data.title, title)
-			assert.equal(data.body, body)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id: 12,
-					user_id: 12,
-					app_id: 12,
-					uuid,
-					time,
-					interval,
-					title,
-					body
-				}
+				return [
+					expectedResult.status,
+					{
+						id: 12,
+						user_id: 12,
+						app_id: 12,
+						uuid,
+						time,
+						interval,
+						title,
+						body
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await CreateNotification({
@@ -331,17 +295,12 @@ describe("GetNotifications function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					notifications: [
 						{
 							id: 12,
@@ -365,7 +324,7 @@ describe("GetNotifications function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -404,17 +363,12 @@ describe("GetNotifications function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -422,7 +376,7 @@ describe("GetNotifications function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -473,82 +427,69 @@ describe("GetNotifications function", () => {
 			]
 		}
 
-		// First getNotifications request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getNotifications request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getNotifications request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getNotifications request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					notifications: [
-						{
-							id: 12,
-							user_id: 12,
-							app_id: 12,
-							uuid: firstNotificationUuid,
-							time: firstNotificationTime,
-							interval: firstNotificationInterval,
-							title: firstNotificationTitle,
-							body: firstNotificationBody
-						},
-						{
-							id: 12,
-							user_id: 12,
-							app_id: 12,
-							uuid: secondNotificationUuid,
-							time: secondNotificationTime,
-							interval: secondNotificationInterval,
-							title: secondNotificationTitle,
-							body: secondNotificationBody
-						}
-					]
-				}
+				return [
+					expectedResult.status,
+					{
+						notifications: [
+							{
+								id: 12,
+								user_id: 12,
+								app_id: 12,
+								uuid: firstNotificationUuid,
+								time: firstNotificationTime,
+								interval: firstNotificationInterval,
+								title: firstNotificationTitle,
+								body: firstNotificationBody
+							},
+							{
+								id: 12,
+								user_id: 12,
+								app_id: 12,
+								uuid: secondNotificationUuid,
+								time: secondNotificationTime,
+								interval: secondNotificationInterval,
+								title: secondNotificationTitle,
+								body: secondNotificationBody
+							}
+						]
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetNotifications()) as ApiResponse<Notification[]>
@@ -595,27 +536,19 @@ describe("UpdateNotification function", () => {
 			})
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.time, time)
 			assert.equal(data.interval, interval)
 			assert.equal(data.title, title)
 			assert.equal(data.body, body)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id: 12,
 					user_id: 12,
 					app_id: 12,
@@ -625,7 +558,7 @@ describe("UpdateNotification function", () => {
 					title,
 					body
 				}
-			})
+			]
 		})
 
 		// Act
@@ -668,27 +601,19 @@ describe("UpdateNotification function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.time, time)
 			assert.equal(data.interval, interval)
 			assert.equal(data.title, title)
 			assert.equal(data.body, body)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -696,7 +621,7 @@ describe("UpdateNotification function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -738,88 +663,69 @@ describe("UpdateNotification function", () => {
 			})
 		}
 
-		// First updateNotification request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPut(url)
+			.replyOnce(config => {
+				// First updateNotification request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.time, time)
+				assert.equal(data.interval, interval)
+				assert.equal(data.title, title)
+				assert.equal(data.body, body)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.time, time)
-			assert.equal(data.interval, interval)
-			assert.equal(data.title, title)
-			assert.equal(data.body, body)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPut(url)
+			.replyOnce(config => {
+				// Second updateNotification request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second updateNotification request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.time, time)
+				assert.equal(data.interval, interval)
+				assert.equal(data.title, title)
+				assert.equal(data.body, body)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.time, time)
-			assert.equal(data.interval, interval)
-			assert.equal(data.title, title)
-			assert.equal(data.body, body)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id: 12,
-					user_id: 12,
-					app_id: 12,
-					uuid,
-					time,
-					interval,
-					title,
-					body
-				}
+				return [
+					expectedResult.status,
+					{
+						id: 12,
+						user_id: 12,
+						app_id: 12,
+						uuid,
+						time,
+						interval,
+						title,
+						body
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await UpdateNotification({
@@ -854,18 +760,10 @@ describe("DeleteNotification function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onDelete(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -895,17 +793,12 @@ describe("DeleteNotification function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onDelete(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -913,7 +806,7 @@ describe("DeleteNotification function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -941,59 +834,43 @@ describe("DeleteNotification function", () => {
 			data: {}
 		}
 
-		// First deleteNotification request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onDelete(url)
+			.replyOnce(config => {
+				// First deleteNotification request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onDelete(url)
+			.replyOnce(config => {
+				// Second deleteNotification request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second deleteNotification request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
+				return [expectedResult.status, {}]
 			})
-		})
 
 		// Act
 		let result = (await DeleteNotification({
