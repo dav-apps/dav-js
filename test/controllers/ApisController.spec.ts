@@ -1,17 +1,20 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
 import { Api } from "../../lib/models/Api.js"
 import { CreateApi } from "../../lib/controllers/ApisController.js"
 
+let mock: MockAdapter
+
 beforeEach(() => {
-	moxios.install()
+	mock = new MockAdapter(axios)
 })
 
 afterEach(() => {
-	moxios.uninstall()
+	mock.restore()
 })
 
 describe("CreateApi function", () => {
@@ -30,25 +33,18 @@ describe("CreateApi function", () => {
 			data: new Api(id, name, [], [], [])
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
+		mock.onPost(url).reply(config => {
 			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.name, name)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					app_id: appId,
 					name,
@@ -56,7 +52,7 @@ describe("CreateApi function", () => {
 					functions: [],
 					errors: []
 				}
-			})
+			]
 		})
 
 		// Act
@@ -93,25 +89,18 @@ describe("CreateApi function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
+		mock.onPost(url).reply(config => {
 			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.name, name)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -119,7 +108,7 @@ describe("CreateApi function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -150,82 +139,63 @@ describe("CreateApi function", () => {
 			data: new Api(id, name, [], [], [])
 		}
 
-		// First createApi request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createApi request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.app_id, appId)
+				assert.equal(data.name, name)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.app_id, appId)
-			assert.equal(data.name, name)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createApi request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second createApi request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.app_id, appId)
+				assert.equal(data.name, name)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.app_id, appId)
-			assert.equal(data.name, name)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					app_id: appId,
-					name,
-					endpoints: [],
-					functions: [],
-					errors: []
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						app_id: appId,
+						name,
+						endpoints: [],
+						functions: [],
+						errors: []
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await CreateApi({
