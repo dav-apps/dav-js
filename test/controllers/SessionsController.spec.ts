@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import { davDevAuth } from "../constants.js"
@@ -12,12 +13,10 @@ import {
 	SessionResponseData
 } from "../../lib/controllers/SessionsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateSession function", () => {
@@ -42,19 +41,11 @@ describe("CreateSession function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, email)
 			assert.equal(data.password, password)
 			assert.equal(data.app_id, appId)
@@ -62,13 +53,13 @@ describe("CreateSession function", () => {
 			assert.equal(data.device_name, deviceName)
 			assert.equal(data.device_os, deviceOs)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					access_token: accessToken,
 					website_access_token: websiteAccessToken
 				}
-			})
+			]
 		})
 
 		// Act
@@ -112,19 +103,11 @@ describe("CreateSession function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, email)
 			assert.equal(data.password, password)
 			assert.equal(data.app_id, appId)
@@ -132,9 +115,9 @@ describe("CreateSession function", () => {
 			assert.equal(data.device_name, deviceName)
 			assert.equal(data.device_os, deviceOs)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -142,7 +125,7 @@ describe("CreateSession function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -182,31 +165,23 @@ describe("CreateSessionFromAccessToken function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.access_token, accessToken)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
 			assert.equal(data.device_os, deviceOs)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					access_token: responseAccessToken
 				}
-			})
+			]
 		})
 
 		// Act
@@ -244,28 +219,20 @@ describe("CreateSessionFromAccessToken function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.access_token, accessToken)
 			assert.equal(data.app_id, appId)
 			assert.equal(data.api_key, apiKey)
 			assert.equal(data.device_name, deviceName)
 			assert.equal(data.device_os, deviceOs)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -273,7 +240,7 @@ describe("CreateSessionFromAccessToken function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -307,20 +274,15 @@ describe("RenewSession function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					access_token: newAccessToken
 				}
-			})
+			]
 		})
 
 		// Act
@@ -348,17 +310,12 @@ describe("RenewSession function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -366,7 +323,7 @@ describe("RenewSession function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -392,18 +349,10 @@ describe("DeleteSession function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onDelete(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -430,17 +379,12 @@ describe("DeleteSession function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onDelete(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -448,7 +392,7 @@ describe("DeleteSession function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
