@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -10,12 +11,10 @@ import {
 	DeleteWebPushSubscription
 } from "../../lib/controllers/WebPushSubscriptionsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateWebPushSubscription function", () => {
@@ -35,27 +34,19 @@ describe("CreateWebPushSubscription function", () => {
 			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.uuid, uuid)
 			assert.equal(data.endpoint, endpoint)
 			assert.equal(data.p256dh, p256dh)
 			assert.equal(data.auth, auth)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id: 12,
 					user_id: 12,
 					uuid,
@@ -63,7 +54,7 @@ describe("CreateWebPushSubscription function", () => {
 					p256dh,
 					auth
 				}
-			})
+			]
 		})
 
 		// Act
@@ -103,27 +94,19 @@ describe("CreateWebPushSubscription function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.uuid, uuid)
 			assert.equal(data.endpoint, endpoint)
 			assert.equal(data.p256dh, p256dh)
 			assert.equal(data.auth, auth)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -131,7 +114,7 @@ describe("CreateWebPushSubscription function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -165,86 +148,67 @@ describe("CreateWebPushSubscription function", () => {
 			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
-		// First createWebPushSubscription request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createWebPushSubscription request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.uuid, uuid)
+				assert.equal(data.endpoint, endpoint)
+				assert.equal(data.p256dh, p256dh)
+				assert.equal(data.auth, auth)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.uuid, uuid)
-			assert.equal(data.endpoint, endpoint)
-			assert.equal(data.p256dh, p256dh)
-			assert.equal(data.auth, auth)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createWebPushSubscription request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second createWebPushSubscription request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.uuid, uuid)
+				assert.equal(data.endpoint, endpoint)
+				assert.equal(data.p256dh, p256dh)
+				assert.equal(data.auth, auth)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.uuid, uuid)
-			assert.equal(data.endpoint, endpoint)
-			assert.equal(data.p256dh, p256dh)
-			assert.equal(data.auth, auth)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id: 12,
-					user_id: 12,
-					uuid,
-					endpoint,
-					p256dh,
-					auth
-				}
+				return [
+					expectedResult.status,
+					{
+						id: 12,
+						user_id: 12,
+						uuid,
+						endpoint,
+						p256dh,
+						auth
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await CreateWebPushSubscription({
@@ -280,17 +244,12 @@ describe("GetWebPushSubscription function", () => {
 			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id: 12,
 					user_id: 12,
 					uuid,
@@ -298,7 +257,7 @@ describe("GetWebPushSubscription function", () => {
 					p256dh,
 					auth
 				}
-			})
+			]
 		})
 
 		// Act
@@ -332,17 +291,12 @@ describe("GetWebPushSubscription function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -350,7 +304,7 @@ describe("GetWebPushSubscription function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -381,66 +335,53 @@ describe("GetWebPushSubscription function", () => {
 			data: new WebPushSubscription(uuid, endpoint, p256dh, auth)
 		}
 
-		// First getWebPushSubscription request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getWebPushSubscription request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getWebPushSubscription request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getWebPushSubscription request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id: 12,
-					user_id: 12,
-					uuid,
-					endpoint,
-					p256dh,
-					auth
-				}
+				return [
+					expectedResult.status,
+					{
+						id: 12,
+						user_id: 12,
+						uuid,
+						endpoint,
+						p256dh,
+						auth
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetWebPushSubscription({
@@ -470,18 +411,10 @@ describe("DeleteWebPushSubscription function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onDelete(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -511,17 +444,12 @@ describe("DeleteWebPushSubscription function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onDelete(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -529,7 +457,7 @@ describe("DeleteWebPushSubscription function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -557,59 +485,43 @@ describe("DeleteWebPushSubscription function", () => {
 			data: {}
 		}
 
-		// First deleteWebPushSubscription request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onDelete(url)
+			.replyOnce(config => {
+				// First deleteWebPushSubscription request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onDelete(url)
+			.replyOnce(config => {
+				// Second deleteWebPushSubscription request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second deleteWebPushSubscription request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "delete")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
+				return [expectedResult.status, {}]
 			})
-		})
 
 		// Act
 		let result = (await DeleteWebPushSubscription({
