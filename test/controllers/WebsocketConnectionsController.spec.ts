@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -8,12 +9,10 @@ import {
 	WebsocketConnectionResponseData
 } from "../../lib/controllers/WebsocketConnectionsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("CreateWebsocketConnection function", () => {
@@ -32,20 +31,15 @@ describe("CreateWebsocketConnection function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					token
 				}
-			})
+			]
 		})
 
 		// Act
@@ -73,17 +67,12 @@ describe("CreateWebsocketConnection function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -91,7 +80,7 @@ describe("CreateWebsocketConnection function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -119,61 +108,48 @@ describe("CreateWebsocketConnection function", () => {
 			}
 		}
 
-		// First createWebsocketConnection request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createWebsocketConnection request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createWebsocketConnection request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second createWebsocketConnection request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					token
-				}
+				return [
+					expectedResult.status,
+					{
+						token
+					}
+				]
 			})
-		})
 
 		// Act
 		let result =
