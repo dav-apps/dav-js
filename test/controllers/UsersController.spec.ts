@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import {
 	ApiResponse,
@@ -28,12 +29,10 @@ import {
 	CreateStripeCustomerForUserResponseData
 } from "../../lib/controllers/UsersController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("Signup function", () => {
@@ -89,19 +88,11 @@ describe("Signup function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, email)
 			assert.equal(data.first_name, firstName)
 			assert.equal(data.password, password)
@@ -110,9 +101,9 @@ describe("Signup function", () => {
 			assert.equal(data.device_name, deviceName)
 			assert.equal(data.device_os, deviceOs)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					user: {
 						id,
 						email,
@@ -133,7 +124,7 @@ describe("Signup function", () => {
 					access_token: accessToken,
 					website_access_token: websiteAccessToken
 				}
-			})
+			]
 		})
 
 		// Act
@@ -225,19 +216,11 @@ describe("Signup function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, email)
 			assert.equal(data.first_name, firstName)
 			assert.equal(data.password, password)
@@ -246,9 +229,9 @@ describe("Signup function", () => {
 			assert.equal(data.device_name, deviceName)
 			assert.equal(data.device_os, deviceOs)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -256,7 +239,7 @@ describe("Signup function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -338,17 +321,12 @@ describe("GetUser function", () => {
 			)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					email,
 					first_name: firstName,
@@ -375,7 +353,7 @@ describe("GetUser function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -451,17 +429,12 @@ describe("GetUser function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -469,7 +442,7 @@ describe("GetUser function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -541,85 +514,72 @@ describe("GetUser function", () => {
 			)
 		}
 
-		// First getUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getUser request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getUser request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					email,
-					first_name: firstName,
-					confirmed,
-					total_storage: totalStorage,
-					used_storage: usedStorage,
-					stripe_customer_id: stripeCustomerId,
-					plan,
-					subscription_status: subscriptionStatus,
-					period_end: periodEnd,
-					dev,
-					provider,
-					profile_image: profileImage,
-					profile_image_etag: profileImageEtag,
-					apps: [
-						{
-							id: appId,
-							name: appName,
-							description: appDescription,
-							published: appPublished,
-							web_link: appWebLink,
-							google_play_link: appGooglePlayLink,
-							microsoft_store_link: appMicrosoftStoreLink
-						}
-					]
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						email,
+						first_name: firstName,
+						confirmed,
+						total_storage: totalStorage,
+						used_storage: usedStorage,
+						stripe_customer_id: stripeCustomerId,
+						plan,
+						subscription_status: subscriptionStatus,
+						period_end: periodEnd,
+						dev,
+						provider,
+						profile_image: profileImage,
+						profile_image_etag: profileImageEtag,
+						apps: [
+							{
+								id: appId,
+								name: appName,
+								description: appDescription,
+								published: appPublished,
+								web_link: appWebLink,
+								google_play_link: appGooglePlayLink,
+								microsoft_store_link: appMicrosoftStoreLink
+							}
+						]
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetUser()) as ApiResponse<User>
@@ -737,17 +697,12 @@ describe("GetUserById function", () => {
 			)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					email,
 					first_name: firstName,
@@ -774,7 +729,7 @@ describe("GetUserById function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -802,7 +757,7 @@ describe("GetUserById function", () => {
 		)
 		assert.equal(
 			result.data.PeriodEnd.toString(),
-			expectedResult.data.PeriodEnd.toString()
+			expectedResult.data.PeriodEnd.toISOString()
 		)
 		assert.equal(result.data.Dev, expectedResult.data.Dev)
 		assert.equal(result.data.Provider, expectedResult.data.Provider)
@@ -853,17 +808,12 @@ describe("GetUserById function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -871,7 +821,7 @@ describe("GetUserById function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -932,26 +882,18 @@ describe("UpdateUser function", () => {
 			)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, newEmail)
 			assert.equal(data.first_name, newFirstName)
 			assert.equal(data.password, password)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					email,
 					first_name: newFirstName,
@@ -967,7 +909,7 @@ describe("UpdateUser function", () => {
 					profile_image: profileImage,
 					profile_image_etag: profileImageEtag
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1027,26 +969,18 @@ describe("UpdateUser function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, newEmail)
 			assert.equal(data.first_name, newFirstName)
 			assert.equal(data.password, password)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -1054,7 +988,7 @@ describe("UpdateUser function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1115,92 +1049,73 @@ describe("UpdateUser function", () => {
 			)
 		}
 
-		// First updateUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPut(url)
+			.replyOnce(config => {
+				// First updateUser request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
+				let data = JSON.parse(config.data)
+				assert.equal(data.email, newEmail)
+				assert.equal(data.first_name, newFirstName)
+				assert.equal(data.password, password)
 
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.email, newEmail)
-			assert.equal(data.first_name, newFirstName)
-			assert.equal(data.password, password)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPut(url)
+			.replyOnce(config => {
+				// Second updateUser request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], "application/json")
 
-		// Second updateUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				let data = JSON.parse(config.data)
+				assert.equal(data.email, newEmail)
+				assert.equal(data.first_name, newFirstName)
+				assert.equal(data.password, password)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
-			assert.equal(data.email, newEmail)
-			assert.equal(data.first_name, newFirstName)
-			assert.equal(data.password, password)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					email,
-					first_name: newFirstName,
-					confirmed,
-					total_storage: totalStorage,
-					used_storage: usedStorage,
-					stripe_customer_id: stripeCustomerId,
-					plan,
-					subscription_status: subscriptionStatus,
-					period_end: periodEnd,
-					dev,
-					provider,
-					profile_image: profileImage,
-					profile_image_etag: profileImageEtag
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						email,
+						first_name: newFirstName,
+						confirmed,
+						total_storage: totalStorage,
+						used_storage: usedStorage,
+						stripe_customer_id: stripeCustomerId,
+						plan,
+						subscription_status: subscriptionStatus,
+						period_end: periodEnd,
+						dev,
+						provider,
+						profile_image: profileImage,
+						profile_image_etag: profileImageEtag
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await UpdateUser({
@@ -1285,20 +1200,15 @@ describe("SetProfileImageOfUser function", () => {
 			)
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], type)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], type)
+			assert.equal(data, config.data)
 
-			assert.equal(data, request.config.data)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					id,
 					email,
 					first_name: firstName,
@@ -1314,7 +1224,7 @@ describe("SetProfileImageOfUser function", () => {
 					profile_image: profileImage,
 					profile_image_etag: profileImageEtag
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1372,20 +1282,15 @@ describe("SetProfileImageOfUser function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
+			assert.include(config.headers["Content-Type"], type)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], type)
+			assert.equal(data, config.data)
 
-			assert.equal(data, request.config.data)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -1393,7 +1298,7 @@ describe("SetProfileImageOfUser function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1453,80 +1358,67 @@ describe("SetProfileImageOfUser function", () => {
 			)
 		}
 
-		// First setProfileImageOfUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPut(url)
+			.replyOnce(config => {
+				// First setProfileImageOfUser request
+				assert.equal(config.headers.Authorization, accessToken)
+				assert.include(config.headers["Content-Type"], type)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-			assert.include(request.config.headers["Content-Type"], type)
+				assert.equal(data, config.data)
 
-			assert.equal(data, request.config.data)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPut(url)
+			.replyOnce(config => {
+				// Second setProfileImageOfUser request
+				assert.equal(config.headers.Authorization, newAccessToken)
+				assert.include(config.headers["Content-Type"], type)
 
-		// Second setProfileImageOfUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				assert.equal(data, config.data)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-			assert.include(request.config.headers["Content-Type"], type)
-
-			assert.equal(data, request.config.data)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					id,
-					email,
-					first_name: firstName,
-					confirmed,
-					total_storage: totalStorage,
-					used_storage: usedStorage,
-					stripe_customer_id: stripeCustomerId,
-					plan,
-					subscription_status: subscriptionStatus,
-					period_end: periodEnd,
-					dev,
-					provider,
-					profile_image: profileImage,
-					profile_image_etag: profileImageEtag
-				}
+				return [
+					expectedResult.status,
+					{
+						id,
+						email,
+						first_name: firstName,
+						confirmed,
+						total_storage: totalStorage,
+						used_storage: usedStorage,
+						stripe_customer_id: stripeCustomerId,
+						plan,
+						subscription_status: subscriptionStatus,
+						period_end: periodEnd,
+						dev,
+						provider,
+						profile_image: profileImage,
+						profile_image_etag: profileImageEtag
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await SetProfileImageOfUser({
@@ -1582,20 +1474,15 @@ describe("CreateStripeCustomerForUser function", () => {
 				}
 			}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					stripe_customer_id: stripeCustomerId
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1626,17 +1513,12 @@ describe("CreateStripeCustomerForUser function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -1644,7 +1526,7 @@ describe("CreateStripeCustomerForUser function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1673,61 +1555,48 @@ describe("CreateStripeCustomerForUser function", () => {
 				}
 			}
 
-		// First createStripeCustomerForUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onPost(url)
+			.replyOnce(config => {
+				// First createStripeCustomerForUser request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onPost(url)
+			.replyOnce(config => {
+				// Second createStripeCustomerForUser request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second createStripeCustomerForUser request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					stripe_customer_id: stripeCustomerId
-				}
+				return [
+					expectedResult.status,
+					{
+						stripe_customer_id: stripeCustomerId
+					}
+				]
 			})
-		})
 
 		// Act
 		let result =
@@ -1754,18 +1623,10 @@ describe("SendConfirmationEmail function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -1794,17 +1655,12 @@ describe("SendConfirmationEmail function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -1812,7 +1668,7 @@ describe("SendConfirmationEmail function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1840,21 +1696,13 @@ describe("SendPasswordResetEmail function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, email)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -1883,20 +1731,15 @@ describe("SendPasswordResetEmail function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email, email)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -1904,7 +1747,7 @@ describe("SendPasswordResetEmail function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -1933,25 +1776,14 @@ describe("ConfirmUser function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -1982,24 +1814,16 @@ describe("ConfirmUser function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -2007,7 +1831,7 @@ describe("ConfirmUser function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -2037,25 +1861,14 @@ describe("SaveNewEmail function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -2086,24 +1899,16 @@ describe("SaveNewEmail function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -2111,7 +1916,7 @@ describe("SaveNewEmail function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -2141,28 +1946,17 @@ describe("SaveNewPassword function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(
 				data.password_confirmation_token,
 				passwordConfirmationToken
 			)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -2193,27 +1987,19 @@ describe("SaveNewPassword function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(
 				data.password_confirmation_token,
 				passwordConfirmationToken
 			)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -2221,7 +2007,7 @@ describe("SaveNewPassword function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -2251,25 +2037,14 @@ describe("ResetEmail function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -2300,24 +2075,16 @@ describe("ResetEmail function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPost(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "post")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.email_confirmation_token, emailConfirmationToken)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -2325,7 +2092,7 @@ describe("ResetEmail function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -2356,29 +2123,18 @@ describe("SetPassword function", () => {
 			data: {}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.password, password)
 			assert.equal(
 				data.password_confirmation_token,
 				passwordConfirmationToken
 			)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {}
-			})
+			return [expectedResult.status, {}]
 		})
 
 		// Act
@@ -2411,28 +2167,20 @@ describe("SetPassword function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onPut(url).reply(config => {
+			assert.equal(config.headers.Authorization, davDevAuth.token)
+			assert.include(config.headers["Content-Type"], "application/json")
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, davDevAuth.token)
-			assert.include(
-				request.config.headers["Content-Type"],
-				"application/json"
-			)
-
-			let data = JSON.parse(request.config.data)
+			let data = JSON.parse(config.data)
 			assert.equal(data.password, password)
 			assert.equal(
 				data.password_confirmation_token,
 				passwordConfirmationToken
 			)
 
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -2440,7 +2188,7 @@ describe("SetPassword function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
