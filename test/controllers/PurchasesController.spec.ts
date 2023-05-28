@@ -1,6 +1,5 @@
 import { assert } from "chai"
-import axios from "axios"
-import MockAdapter from "axios-mock-adapter"
+import { mock } from "../utils.js"
 import { Dav } from "../../lib/Dav.js"
 import { davDevAuth } from "../constants.js"
 import { ApiResponse, ApiErrorResponse, Currency } from "../../lib/types.js"
@@ -10,8 +9,6 @@ import {
 	GetPurchase,
 	DeletePurchase
 } from "../../lib/controllers/PurchasesController.js"
-
-let mock: MockAdapter = new MockAdapter(axios)
 
 beforeEach(() => {
 	mock.reset()

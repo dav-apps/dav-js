@@ -1,13 +1,10 @@
 import { assert } from "chai"
-import axios from "axios"
-import MockAdapter from "axios-mock-adapter"
+import { mock } from "../utils.js"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
 import { Api } from "../../lib/models/Api.js"
 import { CreateApi } from "../../lib/controllers/ApisController.js"
-
-let mock: MockAdapter = new MockAdapter(axios)
 
 beforeEach(() => {
 	mock.reset()
