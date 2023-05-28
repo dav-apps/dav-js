@@ -1,5 +1,6 @@
 import { assert } from "chai"
-import moxios from "moxios"
+import axios from "axios"
+import MockAdapter from "axios-mock-adapter"
 import { Dav } from "../../lib/Dav.js"
 import { ApiResponse, ApiErrorResponse } from "../../lib/types.js"
 import * as ErrorCodes from "../../lib/errorCodes.js"
@@ -8,12 +9,10 @@ import {
 	GetUserSnapshotsResponseData
 } from "../../lib/controllers/UserSnapshotsController.js"
 
-beforeEach(() => {
-	moxios.install()
-})
+let mock: MockAdapter = new MockAdapter(axios)
 
-afterEach(() => {
-	moxios.uninstall()
+beforeEach(() => {
+	mock.reset()
 })
 
 describe("GetUserSnapshots function", () => {
@@ -78,20 +77,15 @@ describe("GetUserSnapshots function", () => {
 			}
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.equal(start, config.params.start)
+			assert.equal(end, config.params.end)
 
-			assert.equal(start, request.config.params.start)
-			assert.equal(end, request.config.params.end)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					snapshots: [
 						{
 							time: firstUserSnapshotTime.toString(),
@@ -119,7 +113,7 @@ describe("GetUserSnapshots function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -234,20 +228,15 @@ describe("GetUserSnapshots function", () => {
 			]
 		}
 
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock.onGet(url).reply(config => {
+			assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
+			assert.equal(start, config.params.start)
+			assert.equal(end, config.params.end)
 
-			assert.equal(start, request.config.params.start)
-			assert.equal(end, request.config.params.end)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
+			return [
+				expectedResult.status,
+				{
 					errors: [
 						{
 							code: expectedResult.errors[0].code,
@@ -255,7 +244,7 @@ describe("GetUserSnapshots function", () => {
 						}
 					]
 				}
-			})
+			]
 		})
 
 		// Act
@@ -332,92 +321,79 @@ describe("GetUserSnapshots function", () => {
 			}
 		}
 
-		// First getUserSnapshots request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+		mock
+			.onGet(url)
+			.replyOnce(config => {
+				// First getUserSnapshots request
+				assert.equal(config.headers.Authorization, accessToken)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, accessToken)
+				assert.equal(start, config.params.start)
+				assert.equal(end, config.params.end)
 
-			assert.equal(start, request.config.params.start)
-			assert.equal(end, request.config.params.end)
-
-			request.respondWith({
-				status: 403,
-				response: {
-					errors: [
-						{
-							code: ErrorCodes.AccessTokenMustBeRenewed,
-							message: "Access token must be renewed"
-						}
-					]
-				}
+				return [
+					403,
+					{
+						errors: [
+							{
+								code: ErrorCodes.AccessTokenMustBeRenewed,
+								message: "Access token must be renewed"
+							}
+						]
+					}
+				]
 			})
-		})
+			.onPut(`${Dav.apiBaseUrl}/session/renew`)
+			.replyOnce(config => {
+				// renewSession request
+				assert.equal(config.headers.Authorization, accessToken)
 
-		// renewSession request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
-
-			// Assert for the request
-			assert.equal(request.config.url, `${Dav.apiBaseUrl}/session/renew`)
-			assert.equal(request.config.method, "put")
-			assert.equal(request.config.headers.Authorization, accessToken)
-
-			request.respondWith({
-				status: 200,
-				response: {
-					access_token: newAccessToken
-				}
+				return [
+					200,
+					{
+						access_token: newAccessToken
+					}
+				]
 			})
-		})
+			.onGet(url)
+			.replyOnce(config => {
+				// Second getUserSnapshots request
+				assert.equal(config.headers.Authorization, newAccessToken)
 
-		// Second getUserSnapshots request
-		moxios.wait(() => {
-			let request = moxios.requests.mostRecent()
+				assert.equal(start, config.params.start)
+				assert.equal(end, config.params.end)
 
-			// Assert for the request
-			assert.equal(request.config.url, url)
-			assert.equal(request.config.method, "get")
-			assert.equal(request.config.headers.Authorization, newAccessToken)
-
-			assert.equal(start, request.config.params.start)
-			assert.equal(end, request.config.params.end)
-
-			request.respondWith({
-				status: expectedResult.status,
-				response: {
-					snapshots: [
-						{
-							time: firstUserSnapshotTime,
-							daily_active: firstUserSnapshotDailyActive,
-							weekly_active: firstUserSnapshotWeeklyActive,
-							monthly_active: firstUserSnapshotMonthlyActive,
-							yearly_active: firstUserSnapshotYearlyActive,
-							free_plan: firstUserSnapshotFreePlan,
-							plus_plan: firstUserSnapshotPlusPlan,
-							pro_plan: firstUserSnapshotProPlan,
-							email_confirmed: firstUserSnapshotEmailConfirmed,
-							email_unconfirmed: firstUserSnapshotEmailUnconfirmed
-						},
-						{
-							time: secondUserSnapshotTime,
-							daily_active: secondUserSnapshotDailyActive,
-							weekly_active: secondUserSnapshotWeeklyActive,
-							monthly_active: secondUserSnapshotMonthlyActive,
-							yearly_active: secondUserSnapshotYearlyActive,
-							free_plan: secondUserSnapshotFreePlan,
-							plus_plan: secondUserSnapshotPlusPlan,
-							pro_plan: secondUserSnapshotProPlan,
-							email_confirmed: secondUserSnapshotEmailConfirmed,
-							email_unconfirmed: secondUserSnapshotEmailUnconfirmed
-						}
-					]
-				}
+				return [
+					expectedResult.status,
+					{
+						snapshots: [
+							{
+								time: firstUserSnapshotTime,
+								daily_active: firstUserSnapshotDailyActive,
+								weekly_active: firstUserSnapshotWeeklyActive,
+								monthly_active: firstUserSnapshotMonthlyActive,
+								yearly_active: firstUserSnapshotYearlyActive,
+								free_plan: firstUserSnapshotFreePlan,
+								plus_plan: firstUserSnapshotPlusPlan,
+								pro_plan: firstUserSnapshotProPlan,
+								email_confirmed: firstUserSnapshotEmailConfirmed,
+								email_unconfirmed: firstUserSnapshotEmailUnconfirmed
+							},
+							{
+								time: secondUserSnapshotTime,
+								daily_active: secondUserSnapshotDailyActive,
+								weekly_active: secondUserSnapshotWeeklyActive,
+								monthly_active: secondUserSnapshotMonthlyActive,
+								yearly_active: secondUserSnapshotYearlyActive,
+								free_plan: secondUserSnapshotFreePlan,
+								plus_plan: secondUserSnapshotPlusPlan,
+								pro_plan: secondUserSnapshotProPlan,
+								email_confirmed: secondUserSnapshotEmailConfirmed,
+								email_unconfirmed: secondUserSnapshotEmailUnconfirmed
+							}
+						]
+					}
+				]
 			})
-		})
 
 		// Act
 		let result = (await GetUserSnapshots({
