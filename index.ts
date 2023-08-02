@@ -23,6 +23,7 @@ export {
 	BlobToBase64,
 	ConvertErrorToApiErrorResponse,
 	HandleApiError,
+	renewSession,
 	isSuccessStatusCode,
 	PrepareRequestParams
 } from "./lib/utils.js"

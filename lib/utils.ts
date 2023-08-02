@@ -84,23 +84,29 @@ export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 		errorResponse.errors.length > 0 &&
 		errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
 	) {
-		let renewSessionResult = await RenewSession({
-			accessToken: Dav.accessToken
-		})
-
-		if (renewSessionResult.status == 200) {
-			let accessToken = (
-				renewSessionResult as ApiResponse<SessionResponseData>
-			).data.accessToken
-
-			// Save the new access token in the database
-			await SetAccessToken(accessToken)
-			return null
-		} else {
-			return renewSessionResult as ApiErrorResponse
-		}
+		return await renewSession()
 	} else {
 		return errorResponse
+	}
+}
+
+/**
+ * Calls the renew session endpoint with the old access token
+ * and saves the new access token in the database
+ */
+export async function renewSession(): Promise<ApiErrorResponse> {
+	let renewSessionResult = await RenewSession({ accessToken: Dav.accessToken })
+
+	if (isSuccessStatusCode(renewSessionResult.status)) {
+		let newAccessToken = (
+			renewSessionResult as ApiResponse<SessionResponseData>
+		).data.accessToken
+
+		// Save the new access token in the database
+		await SetAccessToken(newAccessToken)
+		return null
+	} else {
+		return renewSessionResult as ApiErrorResponse
 	}
 }
 
