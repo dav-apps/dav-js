@@ -16,6 +16,7 @@ import {
 } from "../utils.js"
 import {
 	defaultProfileImageUrl,
+	profileImageBaseUrl,
 	extPropertyName,
 	tableObjectUpdateChannelName,
 	maxPropertiesUploadCount
@@ -131,10 +132,9 @@ export async function LoadUser() {
 		PeriodEnd: user.PeriodEnd,
 		Dev: user.Dev,
 		Provider: user.Provider,
-		ProfileImage: await BlobToBase64(
-			user.ProfileImage,
-			defaultProfileImageUrl
-		),
+		ProfileImage:
+			(await BlobToBase64(user.ProfileImage, defaultProfileImageUrl)) ||
+			`${profileImageBaseUrl}/${user.Id}`,
 		Apps: user.Apps
 	}
 

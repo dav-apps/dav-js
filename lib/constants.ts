@@ -7,8 +7,9 @@ export const websiteUrlDevelopment = "http://localhost:3000"
 export const websiteUrlStaging =
 	"https://dav-website-staging-o3oot.ondigitalocean.app"
 export const websiteUrlProduction = "https://dav-apps.tech"
-export const defaultProfileImageUrl =
-	"https://dav-backend.fra1.cdn.digitaloceanspaces.com/profileImages/default.png"
+export const profileImageBaseUrl =
+	"https://dav-backend.fra1.cdn.digitaloceanspaces.com/profileImages"
+export const defaultProfileImageUrl = `${profileImageBaseUrl}/default.png`
 export const sessionKey = "session"
 export const userKey = "user2"
 export const notificationsKey = "notifications"
