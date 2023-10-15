@@ -212,10 +212,9 @@ export async function UserSync(): Promise<boolean> {
 		PeriodEnd: userResponseData.PeriodEnd,
 		Dev: userResponseData.Dev,
 		Provider: userResponseData.Provider,
-		ProfileImage: await BlobToBase64(
-			newUser.ProfileImage,
-			defaultProfileImageUrl
-		),
+		ProfileImage:
+			(await BlobToBase64(newUser.ProfileImage, defaultProfileImageUrl)) ||
+			`${profileImageBaseUrl}/${userResponseData.Id}`,
 		Apps: userResponseData.Apps
 	}
 
