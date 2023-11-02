@@ -104,6 +104,11 @@ export async function renewSession(): Promise<ApiErrorResponse> {
 
 		// Save the new access token in the database
 		await SetAccessToken(newAccessToken)
+
+		if (Dav.callbacks.AccessTokenRenewed) {
+			Dav.callbacks.AccessTokenRenewed(newAccessToken)
+		}
+
 		return null
 	} else {
 		return renewSessionResult as ApiErrorResponse

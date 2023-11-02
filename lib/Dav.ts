@@ -65,6 +65,7 @@ export class Dav {
 		DeleteTableObject?: Function
 		UserLoaded?: Function
 		UserDownloaded?: Function
+		AccessTokenRenewed?: Function
 		SyncFinished?: Function
 	} = {}
 
@@ -89,6 +90,7 @@ export class Dav {
 			DeleteTableObject?: Function
 			UserLoaded?: Function
 			UserDownloaded?: Function
+			AccessTokenRenewed?: Function
 			SyncFinished?: Function
 		}
 	}) {
