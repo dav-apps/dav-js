@@ -29,7 +29,7 @@ export interface DatabaseSession {
 	UploadStatus: SessionUploadStatus
 }
 
-export type Currency = "eur"
+export type Currency = "eur" | "usd"
 //#endregion
 
 //#region Response types
