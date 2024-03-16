@@ -3,7 +3,6 @@ import { webPushPublicKey } from "../constants.js"
 import {
 	ApiResponse,
 	ApiErrorResponse,
-	Environment,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus
 } from "../types.js"
@@ -29,19 +28,24 @@ var isSyncingWebPushSubscription = false
 var isSyncingNotifications = false
 var syncNotificationsAgain = false
 
-export async function SetupWebPushSubscription(): Promise<boolean> {
-	if (
-		Dav.accessToken == null ||
-		Dav.environment != Environment.Production ||
-		!("serviceWorker" in navigator) ||
-		!("PushManager" in window)
-	) {
+export async function CanSetupWebPushSubscription(): Promise<boolean> {
+	// Check if the browser supports push
+	if (!("serviceWorker" in navigator) && !("PushManager" in window)) {
 		return false
 	}
 
+	// Check if user is logged in
+	if (Dav.accessToken == null) return false
+
 	// Check if there is already a webPushSubscription
 	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
-	if (webPushSubscription != null) return true
+	if (webPushSubscription != null) return false
+
+	return true
+}
+
+export async function SetupWebPushSubscription(): Promise<boolean> {
+	if (!(await CanSetupWebPushSubscription())) return false
 
 	// Ask for permission for sending notifications
 	if (!requestNotificationPermission()) return false
@@ -54,7 +58,8 @@ export async function SetupWebPushSubscription(): Promise<boolean> {
 	})
 
 	const subscriptionJson = subscription.toJSON()
-	webPushSubscription = new WebPushSubscription(
+
+	let webPushSubscription = new WebPushSubscription(
 		generateUuid(),
 		subscriptionJson.endpoint,
 		subscriptionJson.keys["p256dh"],

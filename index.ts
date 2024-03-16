@@ -7,7 +7,8 @@ export {
 	ApiErrorResponse,
 	SubscriptionStatus,
 	Property,
-	Currency
+	Currency,
+	Plan
 } from "./lib/types.js"
 
 // constants
@@ -45,7 +46,10 @@ export { PromiseHolder } from "./lib/models/PromiseHolder.js"
 // providers
 export { DownloadTableObject } from "./lib/providers/SyncManager.js"
 
-export { SetupWebPushSubscription } from "./lib/providers/NotificationManager.js"
+export {
+	CanSetupWebPushSubscription,
+	SetupWebPushSubscription
+} from "./lib/providers/NotificationManager.js"
 
 export {
 	GetUser,
