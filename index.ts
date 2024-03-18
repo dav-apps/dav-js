@@ -47,6 +47,7 @@ export { PromiseHolder } from "./lib/models/PromiseHolder.js"
 export { DownloadTableObject } from "./lib/providers/SyncManager.js"
 
 export {
+	HasWebPushSubscription,
 	CanSetupWebPushSubscription,
 	SetupWebPushSubscription
 } from "./lib/providers/NotificationManager.js"

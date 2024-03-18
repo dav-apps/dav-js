@@ -28,6 +28,11 @@ var isSyncingWebPushSubscription = false
 var isSyncingNotifications = false
 var syncNotificationsAgain = false
 
+export async function HasWebPushSubscription(): Promise<boolean> {
+	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
+	return webPushSubscription != null
+}
+
 export async function CanSetupWebPushSubscription(): Promise<boolean> {
 	// Check if the browser supports push
 	if (!("serviceWorker" in navigator) && !("PushManager" in window)) {
@@ -38,8 +43,7 @@ export async function CanSetupWebPushSubscription(): Promise<boolean> {
 	if (Dav.accessToken == null) return false
 
 	// Check if there is already a webPushSubscription
-	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
-	if (webPushSubscription != null) return false
+	if (await HasWebPushSubscription()) return false
 
 	return true
 }
