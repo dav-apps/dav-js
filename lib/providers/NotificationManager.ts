@@ -42,9 +42,6 @@ export async function CanSetupWebPushSubscription(): Promise<boolean> {
 	// Check if user is logged in
 	if (Dav.accessToken == null) return false
 
-	// Check if there is already a webPushSubscription
-	if (await HasWebPushSubscription()) return false
-
 	return true
 }
 
@@ -53,6 +50,9 @@ export async function SetupWebPushSubscription(): Promise<boolean> {
 
 	// Ask for permission for sending notifications
 	if (!requestNotificationPermission()) return false
+
+	// Check if there is already a webPushSubscription
+	if (await HasWebPushSubscription()) return true
 
 	// Create the subscription
 	const registration = await navigator.serviceWorker.getRegistration()
