@@ -1,6 +1,16 @@
 import { Table, ConvertObjectArrayToTables } from "./Table.js"
 import { Api, ConvertObjectArrayToApis } from "./Api.js"
 
+export interface AppResource {
+	id: number
+	name: string
+	description: string
+	webLink: string
+	googlePlayLink: string
+	microsoftStoreLink: string
+	published: boolean
+}
+
 export class App {
 	constructor(
 		public Id: number,

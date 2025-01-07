@@ -33,6 +33,7 @@
 	"dependencies": {
 		"axios": "^1.6.8",
 		"crypto-js": "^4.2.0",
+		"graphql-request": "^7.1.2",
 		"localforage": "^1.10.0",
 		"localforage-startswith": "^1.4.0"
 	},

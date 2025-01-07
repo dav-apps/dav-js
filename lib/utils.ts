@@ -1,11 +1,9 @@
+import { ClientError } from "graphql-request"
 import { Dav } from "./Dav.js"
-import { ApiResponse, ApiErrorResponse } from "./types.js"
+import { ApiResponse, ApiErrorResponse, ErrorCode } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
-import {
-	RenewSession,
-	SessionResponseData
-} from "./controllers/SessionsController.js"
+import * as SessionsController from "./controllers/SessionsController.js"
 
 export function generateUuid() {
 	var d = new Date().getTime()
@@ -63,6 +61,23 @@ export function getNotificationKey(uuid?: string) {
 	}
 }
 
+export function getErrorCodesOfGraphQLError(e: ClientError): ErrorCode[] {
+	let errors = e.response.errors
+	if (errors == null) return []
+
+	let errorCodes: ErrorCode[] = []
+
+	for (let error of errors) {
+		const errorCode = error.extensions?.code as string
+
+		if (errorCode != null) {
+			errorCodes.push(errorCode as ErrorCode)
+		}
+	}
+
+	return errorCodes
+}
+
 export function ConvertErrorToApiErrorResponse(error: any): ApiErrorResponse {
 	if (error.response) {
 		// API error
@@ -90,16 +105,26 @@ export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 	}
 }
 
+export async function handleGraphQLErrors(
+	errorCodes: ErrorCode[]
+): Promise<void | ErrorCode[]> {
+	if (errorCodes.includes("SESSION_ENDED")) {
+		return await renewSession2()
+	}
+}
+
 /**
  * Calls the renew session endpoint with the old access token
  * and saves the new access token in the database
  */
 export async function renewSession(): Promise<ApiErrorResponse> {
-	let renewSessionResult = await RenewSession({ accessToken: Dav.accessToken })
+	let renewSessionResult = await SessionsController.RenewSession({
+		accessToken: Dav.accessToken
+	})
 
 	if (isSuccessStatusCode(renewSessionResult.status)) {
 		let newAccessToken = (
-			renewSessionResult as ApiResponse<SessionResponseData>
+			renewSessionResult as ApiResponse<SessionsController.SessionResponseData>
 		).data.accessToken
 
 		// Save the new access token in the database
@@ -112,6 +137,28 @@ export async function renewSession(): Promise<ApiErrorResponse> {
 		return null
 	} else {
 		return renewSessionResult as ApiErrorResponse
+	}
+}
+
+export async function renewSession2(): Promise<null | ErrorCode[]> {
+	let renewSessionResponse = await SessionsController.renewSession(
+		`accessToken`,
+		{ accessToken: Dav.accessToken }
+	)
+
+	if (Array.isArray(renewSessionResponse)) {
+		return renewSessionResponse as ErrorCode[]
+	} else {
+		let newAccessToken = renewSessionResponse.accessToken
+
+		// Save the new access token in the database
+		await SetAccessToken(newAccessToken)
+
+		if (Dav.callbacks.AccessTokenRenewed) {
+			Dav.callbacks.AccessTokenRenewed(newAccessToken)
+		}
+
+		return null
 	}
 }
 

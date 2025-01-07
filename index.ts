@@ -5,6 +5,7 @@ export {
 	Environment,
 	ApiResponse,
 	ApiErrorResponse,
+	ErrorCode,
 	SubscriptionStatus,
 	Property,
 	Currency,

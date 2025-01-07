@@ -1,15 +1,70 @@
 import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse } from "../types.js"
+import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
+	getErrorCodesOfGraphQLError,
 	HandleApiError,
+	handleGraphQLErrors,
 	PrepareRequestParams
 } from "../utils.js"
-import { App } from "../models/App.js"
+import { App, AppResource } from "../models/App.js"
 import { ConvertObjectArrayToApps } from "../models/App.js"
 import { ConvertObjectArrayToTables } from "../models/Table.js"
 import { ConvertObjectArrayToApis } from "../models/Api.js"
+
+export async function retrieveApp(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		id: number
+	}
+): Promise<App | ErrorCode[]> {
+	try {
+		let response = await request<{ retrieveApp: AppResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query RetrieveApp($id: Int!) {
+					retrieveApp(id: $id) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		if (response.retrieveApp == null) {
+			return null
+		} else {
+			return new App(
+				response.retrieveApp.id,
+				response.retrieveApp.name,
+				response.retrieveApp.description,
+				response.retrieveApp.published,
+				response.retrieveApp.webLink,
+				response.retrieveApp.googlePlayLink,
+				response.retrieveApp.microsoftStoreLink
+			)
+		}
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await retrieveApp(queryData, variables)
+	}
+}
 
 export async function CreateApp(params: {
 	accessToken?: string

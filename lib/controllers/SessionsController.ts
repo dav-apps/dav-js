@@ -1,9 +1,11 @@
 import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
 import { Auth } from "../models/Auth.js"
-import { ApiErrorResponse, ApiResponse } from "../types.js"
+import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
+	getErrorCodesOfGraphQLError,
 	PrepareRequestParams
 } from "../utils.js"
 
@@ -82,6 +84,38 @@ export async function CreateSessionFromAccessToken(params: {
 		}
 	} catch (error) {
 		return ConvertErrorToApiErrorResponse(error)
+	}
+}
+
+export async function renewSession(
+	queryData: string,
+	variables: {
+		accessToken: string
+	}
+): Promise<SessionResponseData | ErrorCode[]> {
+	try {
+		let response = await request<{ renewSession: SessionResponseData }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation RenewSession {
+					renewSession {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables.accessToken
+			}
+		)
+
+		if (response.renewSession == null) {
+			return null
+		} else {
+			response.renewSession
+		}
+	} catch (error) {
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 

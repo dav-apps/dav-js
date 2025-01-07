@@ -47,6 +47,8 @@ export interface ApiResponseError {
 	code: number
 	message: string
 }
+
+export type ErrorCode = "SESSION_ENDED"
 //#endregion
 
 //#region User types

@@ -9,6 +9,9 @@ import {
 	apiBaseUrlDevelopment,
 	apiBaseUrlStaging,
 	apiBaseUrlProduction,
+	newApiBaseUrlDevelopment,
+	newApiBaseUrlStaging,
+	newApiBaseUrlProduction,
 	websiteUrlDevelopment,
 	websiteUrlStaging,
 	websiteUrlProduction,
@@ -70,6 +73,7 @@ export class Dav {
 	} = {}
 
 	static apiBaseUrl: string = apiBaseUrlDevelopment
+	static newApiBaseUrl: string = newApiBaseUrlDevelopment
 	static websiteUrl: string = websiteUrlDevelopment
 	static accessToken: string
 	static skipSyncPushInTests: boolean = true
@@ -110,14 +114,17 @@ export class Dav {
 		switch (Dav.environment) {
 			case Environment.Staging:
 				Dav.apiBaseUrl = apiBaseUrlStaging
+				Dav.newApiBaseUrl = newApiBaseUrlStaging
 				Dav.websiteUrl = websiteUrlStaging
 				break
 			case Environment.Production:
 				Dav.apiBaseUrl = apiBaseUrlProduction
+				Dav.newApiBaseUrl = newApiBaseUrlProduction
 				Dav.websiteUrl = websiteUrlProduction
 				break
 			default:
 				Dav.apiBaseUrl = apiBaseUrlDevelopment
+				Dav.newApiBaseUrl = newApiBaseUrlDevelopment
 				Dav.websiteUrl = websiteUrlDevelopment
 				break
 		}
