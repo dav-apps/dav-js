@@ -1,4 +1,5 @@
-import { Table, ConvertObjectArrayToTables } from "./Table.js"
+import { TableResource, Table, ConvertObjectArrayToTables } from "./Table.js"
+import { List } from "../types.js"
 
 export interface AppResource {
 	id: number
@@ -8,6 +9,7 @@ export interface AppResource {
 	googlePlayLink: string
 	microsoftStoreLink: string
 	published: boolean
+	tables: List<TableResource>
 }
 
 export class App {

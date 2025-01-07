@@ -11,7 +11,7 @@ import {
 } from "../utils.js"
 import { App, AppResource } from "../models/App.js"
 import { ConvertObjectArrayToApps } from "../models/App.js"
-import { ConvertObjectArrayToTables } from "../models/Table.js"
+import { ConvertObjectArrayToTables, Table } from "../models/Table.js"
 
 export async function retrieveApp(
 	queryData: string,
@@ -41,6 +41,14 @@ export async function retrieveApp(
 		if (response.retrieveApp == null) {
 			return null
 		} else {
+			let tables: Table[] = []
+
+			if (response.retrieveApp.tables != null) {
+				for (let table of response.retrieveApp.tables.items) {
+					tables.push(new Table(table.id, 0, table.name))
+				}
+			}
+
 			return new App(
 				response.retrieveApp.id,
 				response.retrieveApp.name,
@@ -48,7 +56,9 @@ export async function retrieveApp(
 				response.retrieveApp.published,
 				response.retrieveApp.webLink,
 				response.retrieveApp.googlePlayLink,
-				response.retrieveApp.microsoftStoreLink
+				response.retrieveApp.microsoftStoreLink,
+				0,
+				tables
 			)
 		}
 	} catch (error) {

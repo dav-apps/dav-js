@@ -49,6 +49,11 @@ export interface ApiResponseError {
 }
 
 export type ErrorCode = "SESSION_ENDED"
+
+export interface List<T> {
+	total: number
+	items: T[]
+}
 //#endregion
 
 //#region User types
