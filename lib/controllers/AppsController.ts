@@ -12,7 +12,6 @@ import {
 import { App, AppResource } from "../models/App.js"
 import { ConvertObjectArrayToApps } from "../models/App.js"
 import { ConvertObjectArrayToTables } from "../models/Table.js"
-import { ConvertObjectArrayToApis } from "../models/Api.js"
 
 export async function retrieveApp(
 	queryData: string,
@@ -152,8 +151,7 @@ export async function GetApp(params: {
 				response.data.google_play_link,
 				response.data.microsoft_store_link,
 				null,
-				ConvertObjectArrayToTables(response.data.tables),
-				ConvertObjectArrayToApis(response.data.apis)
+				ConvertObjectArrayToTables(response.data.tables)
 			)
 		}
 	} catch (error) {

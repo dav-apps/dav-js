@@ -1,5 +1,4 @@
 import { Table, ConvertObjectArrayToTables } from "./Table.js"
-import { Api, ConvertObjectArrayToApis } from "./Api.js"
 
 export interface AppResource {
 	id: number
@@ -21,8 +20,7 @@ export class App {
 		public GooglePlayLink: string,
 		public MicrosoftStoreLink: string,
 		public UsedStorage: number = 0,
-		public Tables: Table[] = [],
-		public Apis: Api[] = []
+		public Tables: Table[] = []
 	) {}
 }
 
@@ -41,8 +39,7 @@ export function ConvertObjectArrayToApps(objArray: any[]): App[] {
 					obj.google_play_link,
 					obj.microsoft_store_link,
 					obj.used_storage,
-					ConvertObjectArrayToTables(obj.tables),
-					ConvertObjectArrayToApis(obj.apis)
+					ConvertObjectArrayToTables(obj.tables)
 				)
 			)
 		}

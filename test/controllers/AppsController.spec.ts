@@ -11,7 +11,6 @@ import {
 	UpdateApp
 } from "../../lib/controllers/AppsController.js"
 import { Table } from "../../lib/models/Table.js"
-import { Api } from "../../lib/models/Api.js"
 
 beforeEach(() => {
 	mock.reset()
@@ -415,8 +414,7 @@ describe("GetApp function", () => {
 				googlePlayLink,
 				microsoftStoreLink,
 				null,
-				[new Table(tableId, id, tableName)],
-				[new Api(apiId, apiName, [], [], [])]
+				[new Table(tableId, id, tableName)]
 			)
 		}
 
@@ -476,10 +474,6 @@ describe("GetApp function", () => {
 			result.data.Tables[0].Name,
 			expectedResult.data.Tables[0].Name
 		)
-
-		assert.equal(result.data.Apis.length, 1)
-		assert.equal(result.data.Apis[0].Id, expectedResult.data.Apis[0].Id)
-		assert.equal(result.data.Apis[0].Name, expectedResult.data.Apis[0].Name)
 	})
 
 	it("should call getApp endpoint with error", async () => {
@@ -557,8 +551,7 @@ describe("GetApp function", () => {
 				googlePlayLink,
 				microsoftStoreLink,
 				null,
-				[new Table(tableId, id, tableName)],
-				[new Api(apiId, apiName, [], [], [])]
+				[new Table(tableId, id, tableName)]
 			)
 		}
 
@@ -650,10 +643,6 @@ describe("GetApp function", () => {
 			result.data.Tables[0].Name,
 			expectedResult.data.Tables[0].Name
 		)
-
-		assert.equal(result.data.Apis.length, 1)
-		assert.equal(result.data.Apis[0].Id, expectedResult.data.Apis[0].Id)
-		assert.equal(result.data.Apis[0].Name, expectedResult.data.Apis[0].Name)
 	})
 })
 

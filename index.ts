@@ -38,10 +38,6 @@ export { Table } from "./lib/models/Table.js"
 export { TableObject } from "./lib/models/TableObject.js"
 export { Notification } from "./lib/models/Notification.js"
 export { Purchase } from "./lib/models/Purchase.js"
-export { Api } from "./lib/models/Api.js"
-export { ApiEndpoint } from "./lib/models/ApiEndpoint.js"
-export { ApiFunction } from "./lib/models/ApiFunction.js"
-export { ApiError } from "./lib/models/ApiError.js"
 export { PromiseHolder } from "./lib/models/PromiseHolder.js"
 
 // providers
@@ -109,9 +105,6 @@ export {
 	GetAppUserSnapshotsResponseData,
 	AppUserSnapshot
 } from "./lib/controllers/AppUserSnapshotsController.js"
-
-import * as ApisController from "./lib/controllers/ApisController.js"
-export { ApisController }
 
 import * as CheckoutSessionsController from "./lib/controllers/CheckoutSessionsController.js"
 export { CheckoutSessionsController }
