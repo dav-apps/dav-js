@@ -10,8 +10,7 @@ import {
 	PrepareRequestParams
 } from "../utils.js"
 import { App, AppResource } from "../models/App.js"
-import { ConvertObjectArrayToApps } from "../models/App.js"
-import { ConvertObjectArrayToTables, Table } from "../models/Table.js"
+import { Table } from "../models/Table.js"
 
 export async function retrieveApp(
 	queryData: string,
@@ -160,64 +159,6 @@ export async function CreateApp(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await CreateApp(params)
-	}
-}
-
-export async function GetApps(): Promise<
-	ApiResponse<App[]> | ApiErrorResponse
-> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/apps`
-		})
-
-		return {
-			status: response.status,
-			data: ConvertObjectArrayToApps(response.data.apps)
-		}
-	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
-	}
-}
-
-export async function GetApp(params: {
-	accessToken?: string
-	id: number
-}): Promise<ApiResponse<App> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/app/${params.id}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			}
-		})
-
-		return {
-			status: response.status,
-			data: new App(
-				response.data.id,
-				response.data.name,
-				response.data.description,
-				response.data.published,
-				response.data.web_link,
-				response.data.google_play_link,
-				response.data.microsoft_store_link,
-				null,
-				ConvertObjectArrayToTables(response.data.tables)
-			)
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetApp(params)
 	}
 }
 
