@@ -69,38 +69,56 @@ export async function createSession(
 	}
 }
 
-export async function CreateSessionFromAccessToken(params: {
-	auth: Auth
-	accessToken: string
-	appId: number
-	apiKey: string
-	deviceName?: string
-	deviceOs?: string
-}): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
+export async function createSessionFromAccessToken(
+	queryData: string,
+	variables: {
+		auth: Auth
+		accessToken: string
+		appId: number
+		apiKey: string
+		deviceName?: string
+		deviceOs?: string
+	}
+): Promise<SessionResponseData | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/session/access_token`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{
+			createSessionFromAccessToken: SessionResponseData
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateSessionFromAccessToken(
+					$accessToken: String!
+					$appId: Int!
+					$apiKey: String!
+					$deviceName: String
+					$deviceOs: String
+				) {
+					createSessionFromAccessToken(
+						accessToken: $accessToken
+						appId: $appId
+						apiKey: $apiKey
+						deviceName: $deviceName
+						deviceOs: $deviceOs
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				accessToken: variables.accessToken,
+				appId: variables.appId,
+				apiKey: variables.apiKey,
+				deviceName: variables.deviceName,
+				deviceOs: variables.deviceOs
 			},
-			data: PrepareRequestParams({
-				access_token: params.accessToken,
-				app_id: params.appId,
-				api_key: params.apiKey,
-				device_name: params.deviceName,
-				device_os: params.deviceOs
-			})
-		})
-
-		return {
-			status: response.status,
-			data: {
-				accessToken: response.data.access_token
+			{
+				Authorization: variables.auth.token
 			}
-		}
+		)
+
+		return response.createSessionFromAccessToken
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
