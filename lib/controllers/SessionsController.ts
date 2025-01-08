@@ -5,8 +5,7 @@ import { Auth } from "../models/Auth.js"
 import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
-	getErrorCodesOfGraphQLError,
-	PrepareRequestParams
+	getErrorCodesOfGraphQLError
 } from "../utils.js"
 
 export interface SessionResponseData {
@@ -147,29 +146,6 @@ export async function renewSession(
 		return response.renewSession
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
-	}
-}
-
-export async function RenewSession(params: {
-	accessToken: string
-}): Promise<ApiResponse<SessionResponseData> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "put",
-			url: `${Dav.apiBaseUrl}/session/renew`,
-			headers: {
-				Authorization: params.accessToken
-			}
-		})
-
-		return {
-			status: response.status,
-			data: {
-				accessToken: response.data.access_token
-			}
-		}
-	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
 	}
 }
 

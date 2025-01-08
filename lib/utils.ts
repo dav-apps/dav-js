@@ -99,7 +99,7 @@ export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 		errorResponse.errors.length > 0 &&
 		errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
 	) {
-		return await renewSession()
+		return null
 	} else {
 		return errorResponse
 	}
@@ -109,38 +109,15 @@ export async function handleGraphQLErrors(
 	errorCodes: ErrorCode[]
 ): Promise<void | ErrorCode[]> {
 	if (errorCodes.includes("SESSION_ENDED")) {
-		return await renewSession2()
+		return await renewSession()
 	}
 }
 
 /**
- * Calls the renew session endpoint with the old access token
+ * Calls the renew session mutation with the old access token
  * and saves the new access token in the database
  */
-export async function renewSession(): Promise<ApiErrorResponse> {
-	let renewSessionResult = await SessionsController.RenewSession({
-		accessToken: Dav.accessToken
-	})
-
-	if (isSuccessStatusCode(renewSessionResult.status)) {
-		let newAccessToken = (
-			renewSessionResult as ApiResponse<SessionsController.SessionResponseData>
-		).data.accessToken
-
-		// Save the new access token in the database
-		await SetAccessToken(newAccessToken)
-
-		if (Dav.callbacks.AccessTokenRenewed) {
-			Dav.callbacks.AccessTokenRenewed(newAccessToken)
-		}
-
-		return null
-	} else {
-		return renewSessionResult as ApiErrorResponse
-	}
-}
-
-export async function renewSession2(): Promise<null | ErrorCode[]> {
+export async function renewSession(): Promise<null | ErrorCode[]> {
 	let renewSessionResponse = await SessionsController.renewSession(
 		`accessToken`,
 		{ accessToken: Dav.accessToken }
