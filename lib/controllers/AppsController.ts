@@ -1,7 +1,7 @@
 import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
+import { ApiResponse, ApiErrorResponse, ErrorCode, List } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
 	getErrorCodesOfGraphQLError,
@@ -72,6 +72,51 @@ export async function retrieveApp(
 		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
 		return await retrieveApp(queryData, variables)
+	}
+}
+
+export async function listApps(
+	queryData: string,
+	variables: {
+		published?: boolean
+	}
+): Promise<App[] | ErrorCode[]> {
+	try {
+		let response = await request<{ listApps: List<AppResource> }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query ListApps($published: Boolean) {
+					listApps(published: $published) {
+						${queryData}
+					}
+				}
+			`,
+			variables
+		)
+
+		if (response.listApps == null) {
+			return null
+		} else {
+			let apps: App[] = []
+
+			for (let app of response.listApps.items) {
+				apps.push(
+					new App(
+						app.id,
+						app.name,
+						app.description,
+						app.published,
+						app.webLink,
+						app.googlePlayLink,
+						app.microsoftStoreLink
+					)
+				)
+			}
+
+			return apps
+		}
+	} catch (error) {
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
