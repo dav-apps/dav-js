@@ -48,7 +48,7 @@ export interface ApiResponseError {
 	message: string
 }
 
-export type ErrorCode = "SESSION_ENDED"
+export type ErrorCode = "SESSION_ENDED" | "SESSION_DOES_NOT_EXIST"
 
 export interface List<T> {
 	total: number

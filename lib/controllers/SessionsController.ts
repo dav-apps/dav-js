@@ -149,23 +149,30 @@ export async function renewSession(
 	}
 }
 
-export async function DeleteSession(params: {
-	accessToken: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function deleteSession(
+	queryData: string,
+	variables: {
+		accessToken: string
+	}
+): Promise<SessionResponseData | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "delete",
-			url: `${Dav.apiBaseUrl}/session`,
-			headers: {
-				Authorization: params.accessToken
+		let response = await request<{ deleteSession: SessionResponseData }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation DeleteSession {
+					deleteSession {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables.accessToken
 			}
-		})
+		)
 
-		return {
-			status: response.status,
-			data: {}
-		}
+		return response.deleteSession
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }

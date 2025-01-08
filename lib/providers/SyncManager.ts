@@ -46,7 +46,7 @@ import {
 	CreateWebsocketConnection,
 	WebsocketConnectionResponseData
 } from "../controllers/WebsocketConnectionsController.js"
-import { DeleteSession } from "../controllers/SessionsController.js"
+import * as SessionsController from "../controllers/SessionsController.js"
 
 var isSyncing = false
 var syncAgain = false
@@ -85,31 +85,18 @@ export async function SessionSyncPush() {
 	}
 
 	// Delete the session on the server
-	let deleteResponse = await DeleteSession({
+	await SessionsController.deleteSession(`accessToken`, {
 		accessToken: session.AccessToken
 	})
 
-	if (isSuccessStatusCode(deleteResponse.status)) {
-		// Remove the session
-		await DatabaseOperations.RemoveSession()
+	// Remove the session
+	await DatabaseOperations.RemoveSession()
 
-		// Remove the web push subscription
-		await DatabaseOperations.RemoveWebPushSubscription()
+	// Remove the web push subscription
+	await DatabaseOperations.RemoveWebPushSubscription()
 
-		// Remove the notifications
-		await DatabaseOperations.RemoveAllNotifications()
-	} else {
-		// Check the error
-		let errors = (deleteResponse as ApiErrorResponse).errors
-		let i = errors.findIndex(
-			error => error.code == ErrorCodes.SessionDoesNotExist
-		)
-
-		if (i != -1) {
-			// Remove the session
-			await DatabaseOperations.RemoveSession()
-		}
-	}
+	// Remove the notifications
+	await DatabaseOperations.RemoveAllNotifications()
 }
 
 export async function LoadUser() {
