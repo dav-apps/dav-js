@@ -16,7 +16,6 @@ import {
 	UpdateUser,
 	SetProfileImageOfUser,
 	CreateStripeCustomerForUser,
-	SendConfirmationEmail,
 	SendPasswordResetEmail,
 	ConfirmUser,
 	SaveNewEmail,
@@ -1377,79 +1376,6 @@ describe("CreateStripeCustomerForUser function", () => {
 			result.data.stripeCustomerId,
 			expectedResult.data.stripeCustomerId
 		)
-	})
-})
-
-describe("SendConfirmationEmail function", () => {
-	it("should call sendConfirmationEmail endpoint", async () => {
-		// Arrange
-		let id = 123
-
-		let url = `${Dav.apiBaseUrl}/user/${id}/send_confirmation_email`
-
-		let expectedResult: ApiResponse<{}> = {
-			status: 204,
-			data: {}
-		}
-
-		mock.onPost(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-
-			return [expectedResult.status, {}]
-		})
-
-		// Act
-		let result = (await SendConfirmationEmail({
-			auth: davDevAuth,
-			id
-		})) as ApiResponse<{}>
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-	})
-
-	it("should call sendConfirmationEmail endpoint with error", async () => {
-		// Arrange
-		let id = 123
-
-		let url = `${Dav.apiBaseUrl}/user/${id}/send_confirmation_email`
-
-		let expectedResult: ApiErrorResponse = {
-			status: 403,
-			errors: [
-				{
-					code: ErrorCodes.ActionNotAllowed,
-					message: "Action not allowed"
-				}
-			]
-		}
-
-		mock.onPost(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-
-			return [
-				expectedResult.status,
-				{
-					errors: [
-						{
-							code: expectedResult.errors[0].code,
-							message: expectedResult.errors[0].message
-						}
-					]
-				}
-			]
-		})
-
-		// Act
-		let result = (await SendConfirmationEmail({
-			auth: davDevAuth,
-			id
-		})) as ApiErrorResponse
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
-		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
 	})
 })
 
