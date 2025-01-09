@@ -543,29 +543,64 @@ export async function ConfirmUser(params: {
 	}
 }
 
-export async function SaveNewEmail(params: {
-	auth: Auth
-	id: number
-	emailConfirmationToken: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function saveNewEmailOfUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		id: number
+		emailConfirmationToken: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_email`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{ saveNewEmailOfUser: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation SaveNewEmailOfUser(
+					$id: Int!
+					$emailConfirmationToken: String!
+				) {
+					saveNewEmailOfUser(
+						id: $id
+						emailConfirmationToken: $emailConfirmationToken
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id,
+				emailConfirmationToken: variables.emailConfirmationToken
 			},
-			data: PrepareRequestParams({
-				email_confirmation_token: params.emailConfirmationToken
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {}
+		if (response.saveNewEmailOfUser == null) {
+			return null
+		} else {
+			return new User(
+				response.saveNewEmailOfUser.id,
+				response.saveNewEmailOfUser.email,
+				response.saveNewEmailOfUser.firstName,
+				response.saveNewEmailOfUser.confirmed,
+				response.saveNewEmailOfUser.totalStorage,
+				response.saveNewEmailOfUser.usedStorage,
+				response.saveNewEmailOfUser.stripeCustomerId,
+				response.saveNewEmailOfUser.plan,
+				response.saveNewEmailOfUser.subscriptionStatus,
+				response.saveNewEmailOfUser.periodEnd == null
+					? null
+					: new Date(response.saveNewEmailOfUser.periodEnd),
+				false,
+				false,
+				null,
+				null,
+				[]
+			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
