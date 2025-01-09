@@ -569,29 +569,64 @@ export async function SaveNewEmail(params: {
 	}
 }
 
-export async function SaveNewPassword(params: {
-	auth: Auth
-	id: number
-	passwordConfirmationToken: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function saveNewPasswordOfUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		id: number
+		passwordConfirmationToken: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/user/${params.id}/save_new_password`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{ saveNewPasswordOfUser: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation SaveNewPasswordOfUser(
+					$id: Int!
+					$passwordConfirmationToken: String!
+				) {
+					saveNewPasswordOfUser(
+						id: $id
+						passwordConfirmationToken: $passwordConfirmationToken
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id,
+				passwordConfirmationToken: variables.passwordConfirmationToken
 			},
-			data: PrepareRequestParams({
-				password_confirmation_token: params.passwordConfirmationToken
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {}
+		if (response.saveNewPasswordOfUser == null) {
+			return null
+		} else {
+			return new User(
+				response.saveNewPasswordOfUser.id,
+				response.saveNewPasswordOfUser.email,
+				response.saveNewPasswordOfUser.firstName,
+				response.saveNewPasswordOfUser.confirmed,
+				response.saveNewPasswordOfUser.totalStorage,
+				response.saveNewPasswordOfUser.usedStorage,
+				response.saveNewPasswordOfUser.stripeCustomerId,
+				response.saveNewPasswordOfUser.plan,
+				response.saveNewPasswordOfUser.subscriptionStatus,
+				response.saveNewPasswordOfUser.periodEnd == null
+					? null
+					: new Date(response.saveNewPasswordOfUser.periodEnd),
+				false,
+				false,
+				null,
+				null,
+				[]
+			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
