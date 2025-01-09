@@ -20,7 +20,6 @@ import {
 	SaveNewEmail,
 	SaveNewPassword,
 	ResetEmail,
-	SetPassword,
 	CreateStripeCustomerForUserResponseData
 } from "../../lib/controllers/UsersController.js"
 
@@ -1715,103 +1714,6 @@ describe("ResetEmail function", () => {
 			auth: davDevAuth,
 			id,
 			emailConfirmationToken
-		})) as ApiErrorResponse
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
-		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
-	})
-})
-
-describe("SetPassword function", () => {
-	it("should call setPassword endpoint", async () => {
-		// Arrange
-		let id = 2
-		let password = "123456"
-		let passwordConfirmationToken = "asdasdasasdasdasd"
-
-		let url = `${Dav.apiBaseUrl}/user/${id}/password`
-
-		let expectedResult: ApiResponse<{}> = {
-			status: 204,
-			data: {}
-		}
-
-		mock.onPut(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-			assert.include(config.headers["Content-Type"], "application/json")
-
-			let data = JSON.parse(config.data)
-			assert.equal(data.password, password)
-			assert.equal(
-				data.password_confirmation_token,
-				passwordConfirmationToken
-			)
-
-			return [expectedResult.status, {}]
-		})
-
-		// Act
-		let result = (await SetPassword({
-			auth: davDevAuth,
-			id,
-			password,
-			passwordConfirmationToken
-		})) as ApiResponse<{}>
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-	})
-
-	it("should call setPassword endpoint with error", async () => {
-		// Arrange
-		let id = 2
-		let password = "123456"
-		let passwordConfirmationToken = "asdasdasasdasdasd"
-
-		let url = `${Dav.apiBaseUrl}/user/${id}/password`
-
-		let expectedResult: ApiErrorResponse = {
-			status: 403,
-			errors: [
-				{
-					code: ErrorCodes.ActionNotAllowed,
-					message: "Action not allowed"
-				}
-			]
-		}
-
-		mock.onPut(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-			assert.include(config.headers["Content-Type"], "application/json")
-
-			let data = JSON.parse(config.data)
-			assert.equal(data.password, password)
-			assert.equal(
-				data.password_confirmation_token,
-				passwordConfirmationToken
-			)
-
-			return [
-				expectedResult.status,
-				{
-					errors: [
-						{
-							code: expectedResult.errors[0].code,
-							message: expectedResult.errors[0].message
-						}
-					]
-				}
-			]
-		})
-
-		// Act
-		let result = (await SetPassword({
-			auth: davDevAuth,
-			id,
-			password,
-			passwordConfirmationToken
 		})) as ApiErrorResponse
 
 		// Assert for the response

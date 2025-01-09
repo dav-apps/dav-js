@@ -621,30 +621,69 @@ export async function ResetEmail(params: {
 	}
 }
 
-export async function SetPassword(params: {
-	auth: Auth
-	id: number
-	password: string
-	passwordConfirmationToken: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function setPasswordOfUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		id: number
+		password: string
+		passwordConfirmationToken: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "put",
-			url: `${Dav.apiBaseUrl}/user/${params.id}/password`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{
+			setPasswordOfUser: UserResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation SetPasswordOfUser(
+					$id: Int!
+					$password: String!
+					$passwordConfirmationToken: String!
+				) {
+					setPasswordOfUser(
+						id: $id
+						password: $password
+						passwordConfirmationToken: $passwordConfirmationToken
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id,
+				password: variables.password,
+				passwordConfirmationToken: variables.passwordConfirmationToken
 			},
-			data: PrepareRequestParams({
-				password: params.password,
-				password_confirmation_token: params.passwordConfirmationToken
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {}
+		if (response.setPasswordOfUser == null) {
+			return null
+		} else {
+			return new User(
+				response.setPasswordOfUser.id,
+				response.setPasswordOfUser.email,
+				response.setPasswordOfUser.firstName,
+				response.setPasswordOfUser.confirmed,
+				response.setPasswordOfUser.totalStorage,
+				response.setPasswordOfUser.usedStorage,
+				response.setPasswordOfUser.stripeCustomerId,
+				response.setPasswordOfUser.plan,
+				response.setPasswordOfUser.subscriptionStatus,
+				response.setPasswordOfUser.periodEnd == null
+					? null
+					: new Date(response.setPasswordOfUser.periodEnd),
+				false,
+				false,
+				null,
+				null,
+				[]
+			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
