@@ -595,29 +595,64 @@ export async function SaveNewPassword(params: {
 	}
 }
 
-export async function ResetEmail(params: {
-	auth: Auth
-	id: number
-	emailConfirmationToken: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function resetEmailOfUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		id: number
+		emailConfirmationToken: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/user/${params.id}/reset_email`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{ resetEmailOfUser: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation ResetEmailOfUser(
+					$id: Int!
+					$emailConfirmationToken: String!
+				) {
+					resetEmailOfUser(
+						id: $id
+						emailConfirmationToken: $emailConfirmationToken
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id,
+				emailConfirmationToken: variables.emailConfirmationToken
 			},
-			data: PrepareRequestParams({
-				email_confirmation_token: params.emailConfirmationToken
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {}
+		if (response.resetEmailOfUser == null) {
+			return null
+		} else {
+			return new User(
+				response.resetEmailOfUser.id,
+				response.resetEmailOfUser.email,
+				response.resetEmailOfUser.firstName,
+				response.resetEmailOfUser.confirmed,
+				response.resetEmailOfUser.totalStorage,
+				response.resetEmailOfUser.usedStorage,
+				response.resetEmailOfUser.stripeCustomerId,
+				response.resetEmailOfUser.plan,
+				response.resetEmailOfUser.subscriptionStatus,
+				response.resetEmailOfUser.periodEnd == null
+					? null
+					: new Date(response.resetEmailOfUser.periodEnd),
+				false,
+				false,
+				null,
+				null,
+				[]
+			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
