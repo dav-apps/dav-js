@@ -16,7 +16,6 @@ import {
 	UpdateUser,
 	SetProfileImageOfUser,
 	CreateStripeCustomerForUser,
-	ConfirmUser,
 	CreateStripeCustomerForUserResponseData
 } from "../../lib/controllers/UsersController.js"
 
@@ -1371,90 +1370,5 @@ describe("CreateStripeCustomerForUser function", () => {
 			result.data.stripeCustomerId,
 			expectedResult.data.stripeCustomerId
 		)
-	})
-})
-
-describe("ConfirmUser function", () => {
-	it("should call confirmUser endpoint", async () => {
-		// Arrange
-		let id = 12
-		let emailConfirmationToken = "skodahiosfahiofahiosfahiofas"
-
-		let url = `${Dav.apiBaseUrl}/user/${id}/confirm`
-
-		let expectedResult: ApiResponse<{}> = {
-			status: 204,
-			data: {}
-		}
-
-		mock.onPost(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-			assert.include(config.headers["Content-Type"], "application/json")
-
-			let data = JSON.parse(config.data)
-			assert.equal(data.email_confirmation_token, emailConfirmationToken)
-
-			return [expectedResult.status, {}]
-		})
-
-		// Act
-		let result = (await ConfirmUser({
-			auth: davDevAuth,
-			id,
-			emailConfirmationToken
-		})) as ApiResponse<{}>
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-	})
-
-	it("should call confirmUser endpoint with error", async () => {
-		// Arrange
-		let id = 12
-		let emailConfirmationToken = "skodahiosfahiofahiosfahiofas"
-
-		let url = `${Dav.apiBaseUrl}/user/${id}/confirm`
-
-		let expectedResult: ApiErrorResponse = {
-			status: 403,
-			errors: [
-				{
-					code: ErrorCodes.ActionNotAllowed,
-					message: "Action not allowed"
-				}
-			]
-		}
-
-		mock.onPost(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-			assert.include(config.headers["Content-Type"], "application/json")
-
-			let data = JSON.parse(config.data)
-			assert.equal(data.email_confirmation_token, emailConfirmationToken)
-
-			return [
-				expectedResult.status,
-				{
-					errors: [
-						{
-							code: expectedResult.errors[0].code,
-							message: expectedResult.errors[0].message
-						}
-					]
-				}
-			]
-		})
-
-		// Act
-		let result = (await ConfirmUser({
-			auth: davDevAuth,
-			id,
-			emailConfirmationToken
-		})) as ApiErrorResponse
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
-		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
 	})
 })

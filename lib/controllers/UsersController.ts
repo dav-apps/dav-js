@@ -517,29 +517,64 @@ export async function sendPasswordResetEmailForUser(
 	}
 }
 
-export async function ConfirmUser(params: {
-	auth: Auth
-	id: number
-	emailConfirmationToken: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function confirmUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		id: number
+		emailConfirmationToken: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/user/${params.id}/confirm`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{ confirmUser: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation ConfirmUser(
+					$id: Int!
+					$emailConfirmationToken: String!
+				) {
+					confirmUser(
+						id: $id
+						emailConfirmationToken: $emailConfirmationToken
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id,
+				emailConfirmationToken: variables.emailConfirmationToken
 			},
-			data: PrepareRequestParams({
-				email_confirmation_token: params.emailConfirmationToken
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {}
+		if (response.confirmUser == null) {
+			return null
+		} else {
+			return new User(
+				response.confirmUser.id,
+				response.confirmUser.email,
+				response.confirmUser.firstName,
+				response.confirmUser.confirmed,
+				response.confirmUser.totalStorage,
+				response.confirmUser.usedStorage,
+				response.confirmUser.stripeCustomerId,
+				response.confirmUser.plan,
+				response.confirmUser.subscriptionStatus,
+				response.confirmUser.periodEnd == null
+					? null
+					: new Date(response.confirmUser.periodEnd),
+				false,
+				false,
+				null,
+				null,
+				[]
+			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
