@@ -1,12 +1,8 @@
-import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
 import { Auth } from "../models/Auth.js"
-import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
-	getErrorCodesOfGraphQLError
-} from "../utils.js"
+import { ErrorCode } from "../types.js"
+import { getErrorCodesOfGraphQLError } from "../utils.js"
 
 export interface SessionResponseData {
 	accessToken: string
@@ -21,8 +17,8 @@ export async function createSession(
 		password: string
 		appId: number
 		apiKey: string
-		deviceName: string
-		deviceOs: string
+		deviceName?: string
+		deviceOs?: string
 	}
 ): Promise<SessionResponseData | ErrorCode[]> {
 	try {

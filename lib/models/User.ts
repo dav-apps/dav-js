@@ -1,6 +1,19 @@
 import { Plan, SubscriptionStatus } from "../types.js"
 import { App } from "./App.js"
 
+export interface UserResource {
+	id: number
+	email: string
+	firstName: string
+	confirmed: boolean
+	totalStorage: number
+	usedStorage: number
+	stripeCustomerId: string
+	plan: Plan
+	subscriptionStatus: SubscriptionStatus
+	periodEnd: string
+}
+
 export class User {
 	constructor(
 		public Id: number,

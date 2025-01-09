@@ -1,14 +1,22 @@
 import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse } from "../types.js"
+import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
+	getErrorCodesOfGraphQLError,
 	HandleApiError,
 	PrepareRequestParams
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
-import { User } from "../models/User.js"
+import { UserResource, User } from "../models/User.js"
 import { ConvertObjectArrayToApps } from "../models/App.js"
+
+export interface CreateUserResponseData {
+	user: User
+	accessToken: string
+	websiteAccessToken?: string
+}
 
 export interface SignupResponseData {
 	user: User
@@ -20,60 +28,94 @@ export interface CreateStripeCustomerForUserResponseData {
 	stripeCustomerId: string
 }
 
-export async function Signup(params: {
-	auth: Auth
-	email: string
-	firstName: string
-	password: string
-	appId: number
-	apiKey: string
-	deviceName?: string
-	deviceOs?: string
-}): Promise<ApiResponse<SignupResponseData> | ApiErrorResponse> {
+export async function createUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		email: string
+		firstName: string
+		password: string
+		appId: number
+		apiKey: string
+		deviceName?: string
+		deviceOs?: string
+	}
+): Promise<CreateUserResponseData | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/signup`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{
+			createUser: {
+				user: UserResource
+				accessToken: string
+				websiteAccessToken?: string
+			}
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateUser(
+					$email: String!
+					$firstName: String!
+					$password: String!
+					$appId: Int!
+					$apiKey: String!
+					$deviceName: String
+					$deviceOs: String
+				) {
+					createUser(
+						email: $email
+						firstName: $firstName
+						password: $password
+						appId: $appId
+						apiKey: $apiKey
+						deviceName: $deviceName
+						deviceOs: $deviceOs
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				email: variables.email,
+				firstName: variables.firstName,
+				password: variables.password,
+				appId: variables.appId,
+				apiKey: variables.apiKey,
+				deviceName: variables.deviceName,
+				deviceOs: variables.deviceOs
 			},
-			data: PrepareRequestParams({
-				email: params.email,
-				first_name: params.firstName,
-				password: params.password,
-				app_id: params.appId,
-				api_key: params.apiKey,
-				device_name: params.deviceName,
-				device_os: params.deviceOs
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {
+		if (response.createUser == null) {
+			return null
+		} else {
+			return {
 				user: new User(
-					response.data.user.id,
-					response.data.user.email,
-					response.data.user.first_name,
-					response.data.user.confirmed,
-					response.data.user.total_storage,
-					response.data.user.used_storage,
-					response.data.user.stripe_customer_id,
-					response.data.user.plan,
-					response.data.user.subscription_status,
+					response.createUser.user.id,
+					response.createUser.user.email,
+					response.createUser.user.firstName,
+					response.createUser.user.confirmed,
+					response.createUser.user.totalStorage,
+					response.createUser.user.usedStorage,
+					response.createUser.user.stripeCustomerId,
+					response.createUser.user.plan,
+					response.createUser.user.subscriptionStatus,
+					response.createUser.user.periodEnd == null
+						? null
+						: new Date(response.createUser.user.periodEnd),
+					false,
+					false,
 					null,
-					response.data.user.dev,
-					response.data.user.provider,
-					response.data.user.profile_image,
-					response.data.user.profile_image_etag,
+					null,
 					[]
 				),
-				accessToken: response.data.access_token,
-				websiteAccessToken: response.data.website_access_token
+				accessToken: response.createUser.accessToken,
+				websiteAccessToken: response.createUser.websiteAccessToken
 			}
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
