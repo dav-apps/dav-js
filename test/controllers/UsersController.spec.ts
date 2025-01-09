@@ -16,7 +16,6 @@ import {
 	UpdateUser,
 	SetProfileImageOfUser,
 	CreateStripeCustomerForUser,
-	SendPasswordResetEmail,
 	ConfirmUser,
 	SaveNewEmail,
 	SaveNewPassword,
@@ -1376,85 +1375,6 @@ describe("CreateStripeCustomerForUser function", () => {
 			result.data.stripeCustomerId,
 			expectedResult.data.stripeCustomerId
 		)
-	})
-})
-
-describe("SendPasswordResetEmail function", () => {
-	it("should call sendPasswordResetEmail endpoint", async () => {
-		// Arrange
-		let email = "test@example.com"
-
-		let url = `${Dav.apiBaseUrl}/user/send_password_reset_email`
-
-		let expectedResult: ApiResponse<{}> = {
-			status: 204,
-			data: {}
-		}
-
-		mock.onPost(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-
-			let data = JSON.parse(config.data)
-			assert.equal(data.email, email)
-
-			return [expectedResult.status, {}]
-		})
-
-		// Act
-		let result = (await SendPasswordResetEmail({
-			auth: davDevAuth,
-			email
-		})) as ApiResponse<{}>
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-	})
-
-	it("should call sendPasswordResetEmail endpoint with error", async () => {
-		// Arrange
-		let email = "test@example.com"
-
-		let url = `${Dav.apiBaseUrl}/user/send_password_reset_email`
-
-		let expectedResult: ApiErrorResponse = {
-			status: 403,
-			errors: [
-				{
-					code: ErrorCodes.ActionNotAllowed,
-					message: "Action not allowed"
-				}
-			]
-		}
-
-		mock.onPost(url).reply(config => {
-			assert.equal(config.headers.Authorization, davDevAuth.token)
-
-			let data = JSON.parse(config.data)
-			assert.equal(data.email, email)
-
-			return [
-				expectedResult.status,
-				{
-					errors: [
-						{
-							code: expectedResult.errors[0].code,
-							message: expectedResult.errors[0].message
-						}
-					]
-				}
-			]
-		})
-
-		// Act
-		let result = (await SendPasswordResetEmail({
-			auth: davDevAuth,
-			email
-		})) as ApiErrorResponse
-
-		// Assert for the response
-		assert.equal(result.status, expectedResult.status)
-		assert.equal(result.errors[0].code, expectedResult.errors[0].code)
-		assert.equal(result.errors[0].message, expectedResult.errors[0].message)
 	})
 })
 

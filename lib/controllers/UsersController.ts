@@ -462,28 +462,58 @@ export async function sendConfirmationEmailForUser(
 	}
 }
 
-export async function SendPasswordResetEmail(params: {
-	auth: Auth
-	email: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function sendPasswordResetEmailForUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		email: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/user/send_password_reset_email`,
-			headers: {
-				Authorization: params.auth.token
+		let response = await request<{
+			sendPasswordResetEmailForUser: UserResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation SendPasswordResetEmailForUser($email: String!) {
+					sendPasswordResetEmailForUser(email: $email) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				email: variables.email
 			},
-			data: PrepareRequestParams({
-				email: params.email
-			})
-		})
+			{
+				Authorization: variables.auth.token
+			}
+		)
 
-		return {
-			status: response.status,
-			data: {}
+		if (response.sendPasswordResetEmailForUser == null) {
+			return null
+		} else {
+			return new User(
+				response.sendPasswordResetEmailForUser.id,
+				response.sendPasswordResetEmailForUser.email,
+				response.sendPasswordResetEmailForUser.firstName,
+				response.sendPasswordResetEmailForUser.confirmed,
+				response.sendPasswordResetEmailForUser.totalStorage,
+				response.sendPasswordResetEmailForUser.usedStorage,
+				response.sendPasswordResetEmailForUser.stripeCustomerId,
+				response.sendPasswordResetEmailForUser.plan,
+				response.sendPasswordResetEmailForUser.subscriptionStatus,
+				response.sendPasswordResetEmailForUser.periodEnd == null
+					? null
+					: new Date(response.sendPasswordResetEmailForUser.periodEnd),
+				false,
+				false,
+				null,
+				null,
+				[]
+			)
 		}
 	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
+		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
 }
 
