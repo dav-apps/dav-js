@@ -11,7 +11,8 @@ export {
 	SubscriptionStatus,
 	Property,
 	Currency,
-	Plan
+	Plan,
+	UserSnapshotResource
 } from "./lib/types.js"
 
 // constants
@@ -37,6 +38,7 @@ export {
 // models
 export { Auth } from "./lib/models/Auth.js"
 export { User } from "./lib/models/User.js"
+export { Dev } from "./lib/models/Dev.js"
 export { App } from "./lib/models/App.js"
 export { Table } from "./lib/models/Table.js"
 export { TableObject } from "./lib/models/TableObject.js"
@@ -94,10 +96,6 @@ export { CollectionsController }
 
 import * as UserSnapshotsController from "./lib/controllers/UserSnapshotsController.js"
 export { UserSnapshotsController }
-export {
-	GetUserSnapshotsResponseData,
-	UserSnapshot
-} from "./lib/controllers/UserSnapshotsController.js"
 
 import * as AppUserSnapshotsController from "./lib/controllers/AppUserSnapshotsController.js"
 export { AppUserSnapshotsController }

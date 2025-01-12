@@ -1,79 +1,48 @@
-import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse } from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
-	HandleApiError,
-	PrepareRequestParams
-} from "../utils.js"
+import { List, ErrorCode, UserSnapshotResource } from "../types.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
-export interface GetUserSnapshotsResponseData {
-	snapshots: UserSnapshot[]
-}
-
-export interface UserSnapshot {
-	time: Date
-	dailyActive: number
-	weeklyActive: number
-	monthlyActive: number
-	yearlyActive: number
-	freePlan: number
-	plusPlan: number
-	proPlan: number
-	emailConfirmed: number
-	emailUnconfirmed: number
-}
-
-export async function GetUserSnapshots(params: {
-	accessToken?: string
-	start?: number
-	end?: number
-}): Promise<ApiResponse<GetUserSnapshotsResponseData> | ApiErrorResponse> {
+export async function listUserSnapshots(
+	queryData: string,
+	variables?: {
+		accessToken?: string
+		start?: number
+		end?: number
+	}
+): Promise<UserSnapshotResource[] | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/user_snapshots`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let response = await request<{
+			listUserSnapshots: List<UserSnapshotResource>
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				query ListUserSnapshots($start: Int, $end: Int) {
+					listUserSnapshots(start: $start, end: $end) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				start: variables?.start,
+				end: variables?.end
 			},
-			params: PrepareRequestParams({
-				start: params.start,
-				end: params.end
-			})
-		})
-
-		let snapshots: UserSnapshot[] = []
-
-		for (let snapshot of response.data.snapshots) {
-			snapshots.push({
-				time: new Date(snapshot.time),
-				dailyActive: snapshot.daily_active,
-				weeklyActive: snapshot.weekly_active,
-				monthlyActive: snapshot.monthly_active,
-				yearlyActive: snapshot.yearly_active,
-				freePlan: snapshot.free_plan,
-				plusPlan: snapshot.plus_plan,
-				proPlan: snapshot.pro_plan,
-				emailConfirmed: snapshot.email_confirmed,
-				emailUnconfirmed: snapshot.email_unconfirmed
-			})
-		}
-
-		return {
-			status: response.status,
-			data: {
-				snapshots
+			{
+				Authorization: variables?.accessToken ?? Dav.accessToken
 			}
-		}
+		)
+
+		return response.listUserSnapshots.items
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await GetUserSnapshots(params)
+		return await listUserSnapshots(queryData, variables)
 	}
 }
