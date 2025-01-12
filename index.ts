@@ -63,10 +63,6 @@ export {
 // controllers
 import * as UsersController from "./lib/controllers/UsersController.js"
 export { UsersController }
-export {
-	SignupResponseData,
-	CreateStripeCustomerForUserResponseData
-} from "./lib/controllers/UsersController.js"
 
 import * as SessionsController from "./lib/controllers/SessionsController.js"
 export { SessionsController }

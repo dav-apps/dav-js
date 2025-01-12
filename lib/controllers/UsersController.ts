@@ -1,17 +1,10 @@
 import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
+import { ApiResponse, ErrorCode, ApiErrorResponse2 } from "../types.js"
 import {
-	ApiResponse,
-	ApiErrorResponse,
-	ErrorCode,
-	ApiErrorResponse2
-} from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
 	convertErrorToApiErrorResponse2,
 	getErrorCodesOfGraphQLError,
-	HandleApiError,
 	handleApiError2,
 	handleGraphQLErrors,
 	convertUserResourceToUser
@@ -23,16 +16,6 @@ export interface CreateUserResponseData {
 	user: User
 	accessToken: string
 	websiteAccessToken?: string
-}
-
-export interface SignupResponseData {
-	user: User
-	accessToken: string
-	websiteAccessToken?: string
-}
-
-export interface CreateStripeCustomerForUserResponseData {
-	stripeCustomerId: string
 }
 
 export async function retrieveUser(
@@ -255,41 +238,6 @@ export async function uploadUserProfileImage(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await uploadUserProfileImage(params)
-	}
-}
-
-export async function CreateStripeCustomerForUser(params?: {
-	accessToken?: string
-}): Promise<
-	ApiResponse<CreateStripeCustomerForUserResponseData> | ApiErrorResponse
-> {
-	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/user/stripe`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
-			}
-		})
-
-		return {
-			status: response.status,
-			data: {
-				stripeCustomerId: response.data.stripe_customer_id
-			}
-		}
-	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await CreateStripeCustomerForUser()
 	}
 }
 
