@@ -176,58 +176,55 @@ export async function GetUserById(params: {
 	}
 }
 
-export async function UpdateUser(params: {
-	accessToken?: string
-	email?: string
-	firstName?: string
-	password?: string
-}): Promise<ApiResponse<User> | ApiErrorResponse> {
+export async function updateUser(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		email?: string
+		firstName?: string
+		password?: string
+	}
+): Promise<User | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "put",
-			url: `${Dav.apiBaseUrl}/user`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let response = await request<{ updateUser: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation UpdateUser(
+					$email: String
+					$firstName: String
+					$password: String
+				) {
+					updateUser(
+						email: $email
+						firstName: $firstName
+						password: $password
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				email: variables.email,
+				firstName: variables.firstName,
+				password: variables.password
 			},
-			data: PrepareRequestParams({
-				email: params.email,
-				first_name: params.firstName,
-				password: params.password
-			})
-		})
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
 
-		return {
-			status: response.status,
-			data: new User(
-				response.data.id,
-				response.data.email,
-				response.data.first_name,
-				response.data.confirmed,
-				response.data.total_storage,
-				response.data.used_storage,
-				response.data.stripe_customer_id,
-				response.data.plan,
-				response.data.subscription_status,
-				response.data.period_end == null
-					? null
-					: new Date(response.data.period_end),
-				response.data.dev,
-				response.data.provider,
-				response.data.profile_image,
-				response.data.profile_image_etag,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.updateUser)
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await UpdateUser(params)
+		return await updateUser(queryData, variables)
 	}
 }
 
