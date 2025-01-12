@@ -1,44 +1,52 @@
-import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse } from "../types.js"
-import { ConvertErrorToApiErrorResponse, HandleApiError } from "../utils.js"
-import { App, ConvertObjectArrayToApps } from "../models/App.js"
+import { ErrorCode, DevResource } from "../types.js"
+import {
+	convertDevResourceToDev,
+	getErrorCodesOfGraphQLError,
+	handleGraphQLErrors
+} from "../utils.js"
+import { Dev } from "../models/Dev.js"
+import { App } from "../models/App.js"
 
 export interface GetDevResponseData {
 	id: number
 	apps: App[]
 }
 
-export async function GetDev(params?: {
-	accessToken?: string
-}): Promise<ApiResponse<GetDevResponseData> | ApiErrorResponse> {
+export async function retrieveDev(
+	queryData: string,
+	variables?: {
+		accessToken?: string
+	}
+): Promise<Dev | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/dev`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
+		let response = await request<{ retrieveDev: DevResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query RetrieveDev {
+					retrieveDev {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables?.accessToken ?? Dav.accessToken
 			}
-		})
+		)
 
-		return {
-			status: response.status,
-			data: {
-				id: response.data.id,
-				apps: ConvertObjectArrayToApps(response.data.apps)
-			}
-		}
+		return convertDevResourceToDev(response.retrieveDev)
 	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await GetDev(params)
+		return await retrieveDev(queryData, variables)
 	}
 }
