@@ -87,6 +87,21 @@ export interface DatabaseUser {
 }
 //#endregion
 
+//#region API response types
+export interface DevResource {
+	id: number
+}
+
+export interface ProviderResource {
+	id: number
+}
+
+export interface UserProfileImageResource {
+	url: string
+	etag: string
+}
+//#endregion
+
 //#region TableObject & Property types
 export interface DatabaseTableObject {
 	Uuid: string

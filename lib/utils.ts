@@ -1,9 +1,12 @@
 import { ClientError } from "graphql-request"
 import { Dav } from "./Dav.js"
-import { ApiResponse, ApiErrorResponse, ErrorCode } from "./types.js"
+import { User, UserResource } from "./models/User.js"
+import { Table, TableResource } from "./models/Table.js"
+import { ApiErrorResponse, ErrorCode } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
 import * as SessionsController from "./controllers/SessionsController.js"
+import { App, AppResource } from "./models/App.js"
 
 export function generateUuid() {
 	var d = new Date().getTime()
@@ -306,3 +309,67 @@ export function PrepareRequestParams(params: Object, joinArrays = false) {
 
 	return newParams
 }
+
+//#region Converter functions
+export function convertUserResourceToUser(userResource: UserResource): User {
+	if (userResource == null) return null
+
+	const apps: App[] = []
+
+	if (userResource.apps != null) {
+		for (let app of userResource.apps.items) {
+			apps.push(convertAppResourceToApp(app))
+		}
+	}
+
+	return new User(
+		userResource.id,
+		userResource.email,
+		userResource.firstName,
+		userResource.confirmed,
+		userResource.totalStorage,
+		userResource.usedStorage,
+		userResource.stripeCustomerId,
+		userResource.plan,
+		userResource.subscriptionStatus,
+		userResource.periodEnd == null ? null : new Date(userResource.periodEnd),
+		userResource.dev != null,
+		userResource.provider != null,
+		userResource.profileImage?.url,
+		userResource.profileImage?.etag,
+		apps
+	)
+}
+
+export function convertAppResourceToApp(appResource: AppResource): App {
+	if (appResource == null) return null
+
+	const tables: Table[] = []
+
+	if (appResource.tables != null) {
+		for (let table of appResource.tables.items) {
+			tables.push(convertTableResourceToTable(table))
+		}
+	}
+
+	return new App(
+		appResource.id,
+		appResource.name,
+		appResource.description,
+		appResource.published,
+		appResource.webLink,
+		appResource.googlePlayLink,
+		appResource.microsoftStoreLink,
+		0,
+		tables
+	)
+}
+
+export function convertTableResourceToTable(
+	tableResource: TableResource
+): Table {
+	if (tableResource == null) return null
+
+	return new Table(tableResource.id, 0, tableResource.name)
+}
+//#endregion

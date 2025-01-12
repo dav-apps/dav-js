@@ -7,7 +7,8 @@ import {
 	getErrorCodesOfGraphQLError,
 	HandleApiError,
 	handleGraphQLErrors,
-	PrepareRequestParams
+	PrepareRequestParams,
+	convertUserResourceToUser
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
 import { UserResource, User } from "../models/User.js"
@@ -49,29 +50,7 @@ export async function retrieveUser(
 			}
 		)
 
-		if (response.retrieveUser == null) {
-			return null
-		} else {
-			return new User(
-				response.retrieveUser.id,
-				response.retrieveUser.email,
-				response.retrieveUser.firstName,
-				response.retrieveUser.confirmed,
-				response.retrieveUser.totalStorage,
-				response.retrieveUser.usedStorage,
-				response.retrieveUser.stripeCustomerId,
-				response.retrieveUser.plan,
-				response.retrieveUser.subscriptionStatus,
-				response.retrieveUser.periodEnd == null
-					? null
-					: new Date(response.retrieveUser.periodEnd),
-				response.retrieveUser.dev != null,
-				response.retrieveUser.provider != null,
-				response.retrieveUser.profileImage?.url,
-				response.retrieveUser.profileImage?.etag,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.retrieveUser)
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -149,25 +128,7 @@ export async function createUser(
 			return null
 		} else {
 			return {
-				user: new User(
-					response.createUser.user.id,
-					response.createUser.user.email,
-					response.createUser.user.firstName,
-					response.createUser.user.confirmed,
-					response.createUser.user.totalStorage,
-					response.createUser.user.usedStorage,
-					response.createUser.user.stripeCustomerId,
-					response.createUser.user.plan,
-					response.createUser.user.subscriptionStatus,
-					response.createUser.user.periodEnd == null
-						? null
-						: new Date(response.createUser.user.periodEnd),
-					false,
-					false,
-					null,
-					null,
-					[]
-				),
+				user: convertUserResourceToUser(response.createUser.user),
 				accessToken: response.createUser.accessToken,
 				websiteAccessToken: response.createUser.websiteAccessToken
 			}
@@ -440,29 +401,7 @@ export async function sendConfirmationEmailForUser(
 			}
 		)
 
-		if (response.sendConfirmationEmailForUser == null) {
-			return null
-		} else {
-			return new User(
-				response.sendConfirmationEmailForUser.id,
-				response.sendConfirmationEmailForUser.email,
-				response.sendConfirmationEmailForUser.firstName,
-				response.sendConfirmationEmailForUser.confirmed,
-				response.sendConfirmationEmailForUser.totalStorage,
-				response.sendConfirmationEmailForUser.usedStorage,
-				response.sendConfirmationEmailForUser.stripeCustomerId,
-				response.sendConfirmationEmailForUser.plan,
-				response.sendConfirmationEmailForUser.subscriptionStatus,
-				response.sendConfirmationEmailForUser.periodEnd == null
-					? null
-					: new Date(response.sendConfirmationEmailForUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.sendConfirmationEmailForUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -495,29 +434,7 @@ export async function sendPasswordResetEmailForUser(
 			}
 		)
 
-		if (response.sendPasswordResetEmailForUser == null) {
-			return null
-		} else {
-			return new User(
-				response.sendPasswordResetEmailForUser.id,
-				response.sendPasswordResetEmailForUser.email,
-				response.sendPasswordResetEmailForUser.firstName,
-				response.sendPasswordResetEmailForUser.confirmed,
-				response.sendPasswordResetEmailForUser.totalStorage,
-				response.sendPasswordResetEmailForUser.usedStorage,
-				response.sendPasswordResetEmailForUser.stripeCustomerId,
-				response.sendPasswordResetEmailForUser.plan,
-				response.sendPasswordResetEmailForUser.subscriptionStatus,
-				response.sendPasswordResetEmailForUser.periodEnd == null
-					? null
-					: new Date(response.sendPasswordResetEmailForUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.sendPasswordResetEmailForUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -556,29 +473,7 @@ export async function confirmUser(
 			}
 		)
 
-		if (response.confirmUser == null) {
-			return null
-		} else {
-			return new User(
-				response.confirmUser.id,
-				response.confirmUser.email,
-				response.confirmUser.firstName,
-				response.confirmUser.confirmed,
-				response.confirmUser.totalStorage,
-				response.confirmUser.usedStorage,
-				response.confirmUser.stripeCustomerId,
-				response.confirmUser.plan,
-				response.confirmUser.subscriptionStatus,
-				response.confirmUser.periodEnd == null
-					? null
-					: new Date(response.confirmUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.confirmUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -617,29 +512,7 @@ export async function saveNewEmailOfUser(
 			}
 		)
 
-		if (response.saveNewEmailOfUser == null) {
-			return null
-		} else {
-			return new User(
-				response.saveNewEmailOfUser.id,
-				response.saveNewEmailOfUser.email,
-				response.saveNewEmailOfUser.firstName,
-				response.saveNewEmailOfUser.confirmed,
-				response.saveNewEmailOfUser.totalStorage,
-				response.saveNewEmailOfUser.usedStorage,
-				response.saveNewEmailOfUser.stripeCustomerId,
-				response.saveNewEmailOfUser.plan,
-				response.saveNewEmailOfUser.subscriptionStatus,
-				response.saveNewEmailOfUser.periodEnd == null
-					? null
-					: new Date(response.saveNewEmailOfUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.saveNewEmailOfUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -678,29 +551,7 @@ export async function saveNewPasswordOfUser(
 			}
 		)
 
-		if (response.saveNewPasswordOfUser == null) {
-			return null
-		} else {
-			return new User(
-				response.saveNewPasswordOfUser.id,
-				response.saveNewPasswordOfUser.email,
-				response.saveNewPasswordOfUser.firstName,
-				response.saveNewPasswordOfUser.confirmed,
-				response.saveNewPasswordOfUser.totalStorage,
-				response.saveNewPasswordOfUser.usedStorage,
-				response.saveNewPasswordOfUser.stripeCustomerId,
-				response.saveNewPasswordOfUser.plan,
-				response.saveNewPasswordOfUser.subscriptionStatus,
-				response.saveNewPasswordOfUser.periodEnd == null
-					? null
-					: new Date(response.saveNewPasswordOfUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.saveNewPasswordOfUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -739,29 +590,7 @@ export async function resetEmailOfUser(
 			}
 		)
 
-		if (response.resetEmailOfUser == null) {
-			return null
-		} else {
-			return new User(
-				response.resetEmailOfUser.id,
-				response.resetEmailOfUser.email,
-				response.resetEmailOfUser.firstName,
-				response.resetEmailOfUser.confirmed,
-				response.resetEmailOfUser.totalStorage,
-				response.resetEmailOfUser.usedStorage,
-				response.resetEmailOfUser.stripeCustomerId,
-				response.resetEmailOfUser.plan,
-				response.resetEmailOfUser.subscriptionStatus,
-				response.resetEmailOfUser.periodEnd == null
-					? null
-					: new Date(response.resetEmailOfUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.resetEmailOfUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -806,29 +635,7 @@ export async function setPasswordOfUser(
 			}
 		)
 
-		if (response.setPasswordOfUser == null) {
-			return null
-		} else {
-			return new User(
-				response.setPasswordOfUser.id,
-				response.setPasswordOfUser.email,
-				response.setPasswordOfUser.firstName,
-				response.setPasswordOfUser.confirmed,
-				response.setPasswordOfUser.totalStorage,
-				response.setPasswordOfUser.usedStorage,
-				response.setPasswordOfUser.stripeCustomerId,
-				response.setPasswordOfUser.plan,
-				response.setPasswordOfUser.subscriptionStatus,
-				response.setPasswordOfUser.periodEnd == null
-					? null
-					: new Date(response.setPasswordOfUser.periodEnd),
-				false,
-				false,
-				null,
-				null,
-				[]
-			)
-		}
+		return convertUserResourceToUser(response.setPasswordOfUser)
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}

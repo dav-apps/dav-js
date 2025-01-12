@@ -7,7 +7,8 @@ import {
 	getErrorCodesOfGraphQLError,
 	HandleApiError,
 	handleGraphQLErrors,
-	PrepareRequestParams
+	PrepareRequestParams,
+	convertAppResourceToApp
 } from "../utils.js"
 import { App, AppResource } from "../models/App.js"
 import { Table } from "../models/Table.js"
@@ -37,29 +38,7 @@ export async function retrieveApp(
 			}
 		)
 
-		if (response.retrieveApp == null) {
-			return null
-		} else {
-			let tables: Table[] = []
-
-			if (response.retrieveApp.tables != null) {
-				for (let table of response.retrieveApp.tables.items) {
-					tables.push(new Table(table.id, 0, table.name))
-				}
-			}
-
-			return new App(
-				response.retrieveApp.id,
-				response.retrieveApp.name,
-				response.retrieveApp.description,
-				response.retrieveApp.published,
-				response.retrieveApp.webLink,
-				response.retrieveApp.googlePlayLink,
-				response.retrieveApp.microsoftStoreLink,
-				0,
-				tables
-			)
-		}
+		return convertAppResourceToApp(response.retrieveApp)
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -99,17 +78,7 @@ export async function listApps(
 			let apps: App[] = []
 
 			for (let app of response.listApps.items) {
-				apps.push(
-					new App(
-						app.id,
-						app.name,
-						app.description,
-						app.published,
-						app.webLink,
-						app.googlePlayLink,
-						app.microsoftStoreLink
-					)
-				)
+				apps.push(convertAppResourceToApp(app))
 			}
 
 			return apps
