@@ -128,6 +128,19 @@ export interface UserSnapshotResource {
 	emailUnconfirmed: number
 }
 
+export interface AppUserSnapshotResource {
+	time: Date
+	dailyActive: number
+	weeklyActive: number
+	monthlyActive: number
+	yearlyActive: number
+	freePlan: number
+	plusPlan: number
+	proPlan: number
+	emailConfirmed: number
+	emailUnconfirmed: number
+}
+
 export interface DevResource {
 	id: number
 	apps: List<AppResource>
