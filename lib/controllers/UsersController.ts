@@ -6,6 +6,7 @@ import {
 	ConvertErrorToApiErrorResponse,
 	getErrorCodesOfGraphQLError,
 	HandleApiError,
+	handleGraphQLErrors,
 	PrepareRequestParams
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
@@ -26,6 +27,63 @@ export interface SignupResponseData {
 
 export interface CreateStripeCustomerForUserResponseData {
 	stripeCustomerId: string
+}
+
+export async function retrieveUser(
+	queryData: string,
+	variables?: { accessToken?: string }
+): Promise<User | ErrorCode[]> {
+	try {
+		const response = await request<{ retrieveUser: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query RetrieveUser {
+					retrieveUser {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables?.accessToken ?? Dav.accessToken
+			}
+		)
+
+		if (response.retrieveUser == null) {
+			return null
+		} else {
+			return new User(
+				response.retrieveUser.id,
+				response.retrieveUser.email,
+				response.retrieveUser.firstName,
+				response.retrieveUser.confirmed,
+				response.retrieveUser.totalStorage,
+				response.retrieveUser.usedStorage,
+				response.retrieveUser.stripeCustomerId,
+				response.retrieveUser.plan,
+				response.retrieveUser.subscriptionStatus,
+				response.retrieveUser.periodEnd == null
+					? null
+					: new Date(response.retrieveUser.periodEnd),
+				response.retrieveUser.dev != null,
+				response.retrieveUser.provider != null,
+				response.retrieveUser.profileImage?.url,
+				response.retrieveUser.profileImage?.etag,
+				[]
+			)
+		}
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await retrieveUser(queryData, variables)
+	}
 }
 
 export async function createUser(
@@ -116,58 +174,6 @@ export async function createUser(
 		}
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
-	}
-}
-
-export async function GetUser(params?: {
-	accessToken?: string
-}): Promise<ApiResponse<User> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/user`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
-			}
-		})
-
-		let periodEnd = undefined
-		if (response.data.period_end != null) {
-			periodEnd = new Date(response.data.period_end)
-		}
-
-		return {
-			status: response.status,
-			data: new User(
-				response.data.id,
-				response.data.email,
-				response.data.first_name,
-				response.data.confirmed,
-				response.data.total_storage,
-				response.data.used_storage,
-				response.data.stripe_customer_id,
-				response.data.plan,
-				response.data.subscription_status,
-				periodEnd,
-				response.data.dev,
-				response.data.provider,
-				response.data.profile_image,
-				response.data.profile_image_etag,
-				ConvertObjectArrayToApps(response.data.apps)
-			)
-		}
-	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetUser()
 	}
 }
 

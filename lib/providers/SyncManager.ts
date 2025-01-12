@@ -23,10 +23,9 @@ import {
 } from "../constants.js"
 import * as ErrorCodes from "../errorCodes.js"
 import { TableObject } from "../models/TableObject.js"
-import { User } from "../models/User.js"
 import * as DatabaseOperations from "./DatabaseOperations.js"
 import {
-	GetUser,
+	retrieveUser,
 	GetProfileImageOfUser
 } from "../controllers/UsersController.js"
 import {
@@ -136,47 +135,82 @@ export async function UserSync(): Promise<boolean> {
 	}
 
 	// Get the user
-	let getUserResponse = await GetUser()
-	if (!isSuccessStatusCode(getUserResponse.status)) {
+	let retrieveUserResponse = await retrieveUser(
+		`
+			id
+			email
+			firstName
+			confirmed
+			totalStorage
+			usedStorage
+			stripeCustomerId
+			plan
+			subscriptionStatus
+			periodEnd
+			dev {
+				id
+			}
+			provider {
+				id
+			}
+			profileImage {
+				url
+				etag
+			}
+			apps {
+				total
+				items {
+					id
+					name
+					description
+					published
+					webLink
+					googlePlayLink
+					microsoftStoreLink
+				}
+			}
+		`
+	)
+
+	if (Array.isArray(retrieveUserResponse)) {
 		// Error handling
-		if (getUserResponse.status != 504) {
+		if (retrieveUserResponse.length > 0) {
 			await Dav.Logout()
 		}
 
 		return false
 	}
 
-	let userResponseData = (getUserResponse as ApiResponse<User>).data
 	let oldUser = await DatabaseOperations.GetUser()
 
 	let newUser: DatabaseUser = {
-		Id: userResponseData.Id,
-		Email: userResponseData.Email,
-		FirstName: userResponseData.FirstName,
-		Confirmed: userResponseData.Confirmed,
-		TotalStorage: userResponseData.TotalStorage,
-		UsedStorage: userResponseData.UsedStorage,
-		StripeCustomerId: userResponseData.StripeCustomerId,
-		Plan: userResponseData.Plan,
-		SubscriptionStatus: userResponseData.SubscriptionStatus,
-		PeriodEnd: userResponseData.PeriodEnd,
-		Dev: userResponseData.Dev,
-		Provider: userResponseData.Provider,
+		Id: retrieveUserResponse.Id,
+		Email: retrieveUserResponse.Email,
+		FirstName: retrieveUserResponse.FirstName,
+		Confirmed: retrieveUserResponse.Confirmed,
+		TotalStorage: retrieveUserResponse.TotalStorage,
+		UsedStorage: retrieveUserResponse.UsedStorage,
+		StripeCustomerId: retrieveUserResponse.StripeCustomerId,
+		Plan: retrieveUserResponse.Plan,
+		SubscriptionStatus: retrieveUserResponse.SubscriptionStatus,
+		PeriodEnd: retrieveUserResponse.PeriodEnd,
+		Dev: retrieveUserResponse.Dev != null,
+		Provider: retrieveUserResponse.Provider != null,
 		ProfileImage: oldUser != null ? oldUser.ProfileImage : null,
 		ProfileImageEtag: oldUser != null ? oldUser.ProfileImageEtag : null,
-		Apps: userResponseData.Apps
+		Apps: retrieveUserResponse.Apps
 	}
 
 	if (
 		oldUser == null ||
-		oldUser.ProfileImageEtag != userResponseData.ProfileImageEtag
+		oldUser.ProfileImageEtag != retrieveUserResponse.ProfileImageEtag
 	) {
 		// Download the new profile image
 		let profileImageResponse = await GetProfileImageOfUser()
 
 		if (isSuccessStatusCode(profileImageResponse.status)) {
 			newUser.ProfileImage = (profileImageResponse as ApiResponse<Blob>).data
-			newUser.ProfileImageEtag = userResponseData.ProfileImageEtag
+			newUser.ProfileImageEtag = retrieveUserResponse.ProfileImageEtag
 		} else {
 			// TODO: Error handling
 		}
@@ -187,22 +221,22 @@ export async function UserSync(): Promise<boolean> {
 
 	// Update the user in Dav
 	Dav.user = {
-		Id: userResponseData.Id,
-		Email: userResponseData.Email,
-		FirstName: userResponseData.FirstName,
-		Confirmed: userResponseData.Confirmed,
-		TotalStorage: userResponseData.TotalStorage,
-		UsedStorage: userResponseData.UsedStorage,
-		StripeCustomerId: userResponseData.StripeCustomerId,
-		Plan: userResponseData.Plan,
-		SubscriptionStatus: userResponseData.SubscriptionStatus,
-		PeriodEnd: userResponseData.PeriodEnd,
-		Dev: userResponseData.Dev,
-		Provider: userResponseData.Provider,
+		Id: retrieveUserResponse.Id,
+		Email: retrieveUserResponse.Email,
+		FirstName: retrieveUserResponse.FirstName,
+		Confirmed: retrieveUserResponse.Confirmed,
+		TotalStorage: retrieveUserResponse.TotalStorage,
+		UsedStorage: retrieveUserResponse.UsedStorage,
+		StripeCustomerId: retrieveUserResponse.StripeCustomerId,
+		Plan: retrieveUserResponse.Plan,
+		SubscriptionStatus: retrieveUserResponse.SubscriptionStatus,
+		PeriodEnd: retrieveUserResponse.PeriodEnd,
+		Dev: retrieveUserResponse.Dev,
+		Provider: retrieveUserResponse.Provider,
 		ProfileImage:
 			(await BlobToBase64(newUser.ProfileImage, defaultProfileImageUrl)) ||
-			`${profileImageBaseUrl}/${userResponseData.Id}`,
-		Apps: userResponseData.Apps
+			`${profileImageBaseUrl}/${retrieveUserResponse.Id}`,
+		Apps: retrieveUserResponse.Apps
 	}
 
 	if (Dav.callbacks.UserDownloaded) Dav.callbacks.UserDownloaded()
