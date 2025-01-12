@@ -71,6 +71,37 @@ export async function retrieveUser(
 	}
 }
 
+export async function retrieveUserById(
+	queryData: string,
+	variables: {
+		auth: Auth
+		id: number
+	}
+): Promise<User | ErrorCode[]> {
+	try {
+		const response = await request<{ retrieveUserById: UserResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query RetrieveUserById($id: Int!) {
+					retrieveUserById(id: $id) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id
+			},
+			{
+				Authorization: variables.auth.token
+			}
+		)
+
+		return convertUserResourceToUser(response.retrieveUserById)
+	} catch (error) {
+		return getErrorCodesOfGraphQLError(error as ClientError)
+	}
+}
+
 export async function createUser(
 	queryData: string,
 	variables: {
@@ -141,44 +172,6 @@ export async function createUser(
 		}
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
-	}
-}
-
-export async function GetUserById(params: {
-	auth: Auth
-	id: number
-}): Promise<ApiResponse<User> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/user/${params.id}`,
-			headers: {
-				Authorization: params.auth.token
-			}
-		})
-
-		return {
-			status: response.status,
-			data: new User(
-				response.data.id,
-				response.data.email,
-				response.data.first_name,
-				response.data.confirmed,
-				response.data.total_storage,
-				response.data.used_storage,
-				response.data.stripe_customer_id,
-				response.data.plan,
-				response.data.subscription_status,
-				response.data.period_end,
-				response.data.dev,
-				response.data.provider,
-				response.data.profile_image,
-				response.data.profile_image_etag,
-				ConvertObjectArrayToApps(response.data.apps)
-			)
-		}
-	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
 	}
 }
 
