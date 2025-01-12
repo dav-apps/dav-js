@@ -1,12 +1,21 @@
 import { ClientError } from "graphql-request"
 import { Dav } from "./Dav.js"
-import { User, UserResource } from "./models/User.js"
-import { Table, TableResource } from "./models/Table.js"
-import { ApiErrorResponse, ApiErrorResponse2, ErrorCode } from "./types.js"
+import { User } from "./models/User.js"
+import { Dev } from "./models/Dev.js"
+import { App } from "./models/App.js"
+import { Table } from "./models/Table.js"
+import {
+	ApiErrorResponse,
+	ApiErrorResponse2,
+	ErrorCode,
+	UserResource,
+	DevResource,
+	AppResource,
+	TableResource
+} from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
 import * as SessionsController from "./controllers/SessionsController.js"
-import { App, AppResource } from "./models/App.js"
 
 export function generateUuid() {
 	var d = new Date().getTime()
@@ -365,6 +374,20 @@ export function convertUserResourceToUser(userResource: UserResource): User {
 		userResource.profileImage?.etag,
 		apps
 	)
+}
+
+export function convertDevResourceToDev(devResource: DevResource): Dev {
+	if (devResource == null) return null
+
+	const apps: App[] = []
+
+	if (devResource.apps != null) {
+		for (let app of devResource.apps.items) {
+			apps.push(convertAppResourceToApp(app))
+		}
+	}
+
+	return new Dev(devResource.id, apps)
 }
 
 export function convertAppResourceToApp(appResource: AppResource): App {

@@ -98,8 +98,42 @@ export interface DatabaseUser {
 //#endregion
 
 //#region API response types
+export interface UserResource {
+	id: number
+	email: string
+	firstName: string
+	confirmed: boolean
+	totalStorage: number
+	usedStorage: number
+	stripeCustomerId: string
+	plan: Plan
+	subscriptionStatus: SubscriptionStatus
+	periodEnd: string
+	dev: DevResource
+	provider: ProviderResource
+	profileImage: UserProfileImageResource
+	apps: List<AppResource>
+}
+
 export interface DevResource {
 	id: number
+	apps: List<AppResource>
+}
+
+export interface AppResource {
+	id: number
+	name: string
+	description: string
+	webLink: string
+	googlePlayLink: string
+	microsoftStoreLink: string
+	published: boolean
+	tables: List<TableResource>
+}
+
+export interface TableResource {
+	id: number
+	name: string
 }
 
 export interface ProviderResource {

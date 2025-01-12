@@ -1,8 +1,3 @@
-export interface TableResource {
-	id: number
-	name: string
-}
-
 export class Table {
 	constructor(public Id: number, public AppId: number, public Name: string) {}
 }

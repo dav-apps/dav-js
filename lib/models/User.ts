@@ -1,29 +1,5 @@
-import {
-	List,
-	Plan,
-	SubscriptionStatus,
-	DevResource,
-	ProviderResource,
-	UserProfileImageResource
-} from "../types.js"
-import { App, AppResource } from "./App.js"
-
-export interface UserResource {
-	id: number
-	email: string
-	firstName: string
-	confirmed: boolean
-	totalStorage: number
-	usedStorage: number
-	stripeCustomerId: string
-	plan: Plan
-	subscriptionStatus: SubscriptionStatus
-	periodEnd: string
-	dev: DevResource
-	provider: ProviderResource
-	profileImage: UserProfileImageResource
-	apps: List<AppResource>
-}
+import { Plan, SubscriptionStatus } from "../types.js"
+import { App } from "./App.js"
 
 export class User {
 	constructor(

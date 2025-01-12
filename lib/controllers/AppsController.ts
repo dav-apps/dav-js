@@ -1,7 +1,13 @@
 import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse, ErrorCode, List } from "../types.js"
+import {
+	ApiResponse,
+	ApiErrorResponse,
+	ErrorCode,
+	List,
+	AppResource
+} from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
 	getErrorCodesOfGraphQLError,
@@ -10,8 +16,7 @@ import {
 	PrepareRequestParams,
 	convertAppResourceToApp
 } from "../utils.js"
-import { App, AppResource } from "../models/App.js"
-import { Table } from "../models/Table.js"
+import { App } from "../models/App.js"
 
 export async function retrieveApp(
 	queryData: string,

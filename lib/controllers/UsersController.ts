@@ -1,7 +1,12 @@
 import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ErrorCode, ApiErrorResponse2 } from "../types.js"
+import {
+	ApiResponse,
+	ErrorCode,
+	ApiErrorResponse2,
+	UserResource
+} from "../types.js"
 import {
 	convertErrorToApiErrorResponse2,
 	getErrorCodesOfGraphQLError,
@@ -10,7 +15,7 @@ import {
 	convertUserResourceToUser
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
-import { UserResource, User } from "../models/User.js"
+import { User } from "../models/User.js"
 
 export interface CreateUserResponseData {
 	user: User
