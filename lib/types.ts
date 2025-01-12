@@ -35,7 +35,7 @@ export type Currency = "eur" | "usd"
 //#region Response types
 export interface ApiResponse<T> {
 	status: number
-	data: T
+	data?: T
 }
 
 export interface ApiErrorResponse {
@@ -43,8 +43,18 @@ export interface ApiErrorResponse {
 	errors: ApiResponseError[]
 }
 
+export interface ApiErrorResponse2 {
+	status: number
+	error?: ApiResponseError2
+}
+
 export interface ApiResponseError {
 	code: number
+	message: string
+}
+
+export interface ApiResponseError2 {
+	code: string
 	message: string
 }
 

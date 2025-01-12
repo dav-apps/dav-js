@@ -1,13 +1,19 @@
 import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse, ErrorCode } from "../types.js"
+import {
+	ApiResponse,
+	ApiErrorResponse,
+	ErrorCode,
+	ApiErrorResponse2
+} from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
+	convertErrorToApiErrorResponse2,
 	getErrorCodesOfGraphQLError,
 	HandleApiError,
+	handleApiError2,
 	handleGraphQLErrors,
-	PrepareRequestParams,
 	convertUserResourceToUser
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
@@ -228,56 +234,35 @@ export async function updateUser(
 	}
 }
 
-export async function SetProfileImageOfUser(params: {
+export async function uploadUserProfileImage(params: {
 	accessToken?: string
+	contentType: string
 	data: string
-	type: string
-}): Promise<ApiResponse<User> | ApiErrorResponse> {
+}): Promise<ApiResponse<{}> | ApiErrorResponse2> {
 	try {
 		let response = await axios({
 			method: "put",
-			url: `${Dav.apiBaseUrl}/user/profile_image`,
+			url: `${Dav.newApiBaseUrl}/user/profileImage`,
 			headers: {
-				Authorization:
-					params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken,
-				"Content-Type": params.type
+				Authorization: params.accessToken ?? Dav.accessToken,
+				"Content-Type": params.contentType
 			},
 			data: params.data
 		})
 
 		return {
 			status: response.status,
-			data: new User(
-				response.data.id,
-				response.data.email,
-				response.data.first_name,
-				response.data.confirmed,
-				response.data.total_storage,
-				response.data.used_storage,
-				response.data.stripe_customer_id,
-				response.data.plan,
-				response.data.subscription_status,
-				response.data.period_end == null
-					? null
-					: new Date(response.data.period_end),
-				response.data.dev,
-				response.data.provider,
-				response.data.profile_image,
-				response.data.profile_image_etag,
-				[]
-			)
+			data: {}
 		}
 	} catch (error) {
 		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+			return convertErrorToApiErrorResponse2(error)
 		}
 
-		let renewSessionError = await HandleApiError(error)
+		let renewSessionError = await handleApiError2(error)
 		if (renewSessionError != null) return renewSessionError
 
-		return await SetProfileImageOfUser(params)
+		return await uploadUserProfileImage(params)
 	}
 }
 

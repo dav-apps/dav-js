@@ -2,7 +2,7 @@ import { ClientError } from "graphql-request"
 import { Dav } from "./Dav.js"
 import { User, UserResource } from "./models/User.js"
 import { Table, TableResource } from "./models/Table.js"
-import { ApiErrorResponse, ErrorCode } from "./types.js"
+import { ApiErrorResponse, ApiErrorResponse2, ErrorCode } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
 import * as SessionsController from "./controllers/SessionsController.js"
@@ -94,6 +94,19 @@ export function ConvertErrorToApiErrorResponse(error: any): ApiErrorResponse {
 	}
 }
 
+export function convertErrorToApiErrorResponse2(error: any): ApiErrorResponse2 {
+	if (error.response) {
+		// API error
+		return {
+			status: error.response.status,
+			error: error.response.data.error
+		}
+	} else {
+		// JavaScript error
+		return { status: -1 }
+	}
+}
+
 export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 	let errorResponse = ConvertErrorToApiErrorResponse(error)
 
@@ -101,6 +114,19 @@ export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 		errorResponse.errors &&
 		errorResponse.errors.length > 0 &&
 		errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
+	) {
+		return null
+	} else {
+		return errorResponse
+	}
+}
+
+export async function handleApiError2(error: any): Promise<ApiErrorResponse2> {
+	let errorResponse = convertErrorToApiErrorResponse2(error)
+
+	if (
+		errorResponse.error != null &&
+		errorResponse.error.code == "SESSION_ENDED"
 	) {
 		return null
 	} else {
