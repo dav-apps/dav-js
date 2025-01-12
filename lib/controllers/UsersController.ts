@@ -18,7 +18,6 @@ import {
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
 import { UserResource, User } from "../models/User.js"
-import { ConvertObjectArrayToApps } from "../models/App.js"
 
 export interface CreateUserResponseData {
 	user: User
@@ -256,61 +255,6 @@ export async function uploadUserProfileImage(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await uploadUserProfileImage(params)
-	}
-}
-
-export async function GetProfileImageOfUser(params?: {
-	accessToken?: string
-}): Promise<ApiResponse<Blob> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/user/profile_image`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
-			},
-			responseType: "blob"
-		})
-
-		return {
-			status: response.status,
-			data: response.data as Blob
-		}
-	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetProfileImageOfUser()
-	}
-}
-
-export async function GetProfileImageOfUserById(params: {
-	auth: Auth
-	id: number
-}): Promise<ApiResponse<Blob> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/user/${params.id}/profile_image`,
-			headers: {
-				Authorization: params.auth.token
-			},
-			responseType: "blob"
-		})
-
-		return {
-			status: response.status,
-			data: response.data as Blob
-		}
-	} catch (error) {
-		return ConvertErrorToApiErrorResponse(error)
 	}
 }
 

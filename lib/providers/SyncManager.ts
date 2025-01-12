@@ -1,4 +1,5 @@
 import CryptoJS from "crypto-js"
+import axios from "axios"
 import { Dav } from "../Dav.js"
 import {
 	ApiErrorResponse,
@@ -24,10 +25,7 @@ import {
 import * as ErrorCodes from "../errorCodes.js"
 import { TableObject } from "../models/TableObject.js"
 import * as DatabaseOperations from "./DatabaseOperations.js"
-import {
-	retrieveUser,
-	GetProfileImageOfUser
-} from "../controllers/UsersController.js"
+import { retrieveUser } from "../controllers/UsersController.js"
 import {
 	GetTable,
 	GetTableResponseData
@@ -206,13 +204,17 @@ export async function UserSync(): Promise<boolean> {
 		oldUser.ProfileImageEtag != retrieveUserResponse.ProfileImageEtag
 	) {
 		// Download the new profile image
-		let profileImageResponse = await GetProfileImageOfUser()
+		try {
+			let profileImageResponse = await axios({
+				method: "get",
+				url: retrieveUserResponse.ProfileImage,
+				responseType: "blob"
+			})
 
-		if (isSuccessStatusCode(profileImageResponse.status)) {
-			newUser.ProfileImage = (profileImageResponse as ApiResponse<Blob>).data
+			newUser.ProfileImage = profileImageResponse.data
 			newUser.ProfileImageEtag = retrieveUserResponse.ProfileImageEtag
-		} else {
-			// TODO: Error handling
+		} catch (error) {
+			console.error("Error in downloading the user profile image", error)
 		}
 	}
 
