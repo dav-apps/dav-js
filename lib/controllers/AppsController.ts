@@ -1,19 +1,9 @@
-import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
+import { ErrorCode, List, AppResource } from "../types.js"
 import {
-	ApiResponse,
-	ApiErrorResponse,
-	ErrorCode,
-	List,
-	AppResource
-} from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
 	getErrorCodesOfGraphQLError,
-	HandleApiError,
 	handleGraphQLErrors,
-	PrepareRequestParams,
 	convertAppResourceToApp
 } from "../utils.js"
 import { App } from "../models/App.js"
@@ -93,54 +83,70 @@ export async function listApps(
 	}
 }
 
-export async function UpdateApp(params: {
-	accessToken?: string
-	id: number
-	name?: string
-	description?: string
-	published?: boolean
-	webLink?: string
-	googlePlayLink?: string
-	microsoftStoreLink?: string
-}): Promise<ApiResponse<App> | ApiErrorResponse> {
+export async function updateApp(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		id: number
+		name?: string
+		description?: string
+		published?: boolean
+		webLink?: string
+		googlePlayLink?: string
+		microsoftStoreLink?: string
+	}
+): Promise<App | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "put",
-			url: `${Dav.apiBaseUrl}/app/${params.id}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let response = await request<{ updateApp: AppResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation UpdateApp(
+					$id: Int!
+					$name: String
+					$description: String
+					$published: Boolean
+					$webLink: String
+					$googlePlayLink: String
+					$microsoftStoreLink: String
+				) {
+					updateApp(
+						id: $id
+						name: $name
+						description: $description
+						published: $published
+						webLink: $webLink
+						googlePlayLink: $googlePlayLink
+						microsoftStoreLink: $microsoftStoreLink
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				id: variables.id,
+				name: variables.name,
+				description: variables.description,
+				published: variables.published,
+				webLink: variables.webLink,
+				googlePlayLink: variables.googlePlayLink,
+				microsoftStoreLink: variables.microsoftStoreLink
 			},
-			data: PrepareRequestParams({
-				name: params.name,
-				description: params.description,
-				published: params.published,
-				web_link: params.webLink,
-				google_play_link: params.googlePlayLink,
-				microsoft_store_link: params.microsoftStoreLink
-			})
-		})
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
 
-		return {
-			status: response.status,
-			data: new App(
-				response.data.id,
-				response.data.name,
-				response.data.description,
-				response.data.published,
-				response.data.web_link,
-				response.data.google_play_link,
-				response.data.microsoft_store_link
-			)
-		}
+		return convertAppResourceToApp(response.updateApp)
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await UpdateApp(params)
+		return await updateApp(queryData, variables)
 	}
 }
