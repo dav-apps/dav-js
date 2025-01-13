@@ -1,66 +1,58 @@
-import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse, Currency } from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
-	HandleApiError,
-	PrepareRequestParams
-} from "../utils.js"
+import { ErrorCode, CheckoutSessionResource, Plan } from "../types.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
-export interface CreateCheckoutSessionResponseData {
-	sessionUrl: string
-}
-
-export type CreateCheckoutSessionMode = "setup" | "subscription" | "payment"
-
-export async function CreateCheckoutSession(params: {
-	accessToken?: string
-	mode?: CreateCheckoutSessionMode
-	plan?: number
-	currency?: Currency
-	productName?: string
-	productImage?: string
-	tableObjects?: string[]
-	successUrl: string
-	cancelUrl: string
-}): Promise<ApiResponse<CreateCheckoutSessionResponseData> | ApiErrorResponse> {
+export async function createSubscriptionCheckoutSession(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		plan: Plan
+		successUrl: string
+		cancelUrl: string
+	}
+): Promise<CheckoutSessionResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/checkout_session`,
-			headers: {
-				Authorization:
-					params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken,
-				"Content-Type": "application/json"
+		let response = await request<{
+			createSubscriptionCheckoutSession: CheckoutSessionResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateSubscriptionCheckoutSession(
+					$plan: Plan!
+					$successUrl: String!
+					$cancelUrl: String!
+				) {
+					createSubscriptionCheckoutSession(
+						plan: $plan
+						successUrl: $successUrl
+						cancelUrl: $cancelUrl
+					) {
+						${queryData}			
+					}
+				}
+			`,
+			{
+				plan: variables.plan,
+				successUrl: variables.successUrl,
+				cancelUrl: variables.cancelUrl
 			},
-			data: PrepareRequestParams({
-				mode: params.mode,
-				plan: params.plan,
-				currency: params.currency,
-				product_name: params.productName,
-				product_image: params.productImage,
-				table_objects: params.tableObjects,
-				success_url: params.successUrl,
-				cancel_url: params.cancelUrl
-			})
-		})
-
-		return {
-			status: response.status,
-			data: {
-				sessionUrl: response.data.session_url
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
 			}
-		}
+		)
+
+		return response.createSubscriptionCheckoutSession
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await CreateCheckoutSession(params)
+		return await createSubscriptionCheckoutSession(queryData, variables)
 	}
 }

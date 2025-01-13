@@ -170,6 +170,10 @@ export interface UserProfileImageResource {
 	url: string
 	etag: string
 }
+
+export interface CheckoutSessionResource {
+	url: string
+}
 //#endregion
 
 //#region TableObject & Property types

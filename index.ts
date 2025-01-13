@@ -13,7 +13,8 @@ export {
 	Currency,
 	Plan,
 	UserSnapshotResource,
-	AppUserSnapshotResource
+	AppUserSnapshotResource,
+	CheckoutSessionResource
 } from "./lib/types.js"
 
 // constants
@@ -103,7 +104,6 @@ export { AppUserSnapshotsController }
 
 import * as CheckoutSessionsController from "./lib/controllers/CheckoutSessionsController.js"
 export { CheckoutSessionsController }
-export { CreateCheckoutSessionResponseData } from "./lib/controllers/CheckoutSessionsController.js"
 
 import * as CustomerPortalSessionsController from "./lib/controllers/CustomerPortalSessionsConroller.js"
 export { CustomerPortalSessionsController }
