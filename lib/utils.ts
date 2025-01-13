@@ -81,8 +81,13 @@ export function getErrorCodesOfGraphQLError(e: ClientError): ErrorCode[] {
 
 	for (let error of errors) {
 		const errorCode = error.extensions?.code as string
+		const errors = (error.extensions?.errors as string[]) ?? []
 
-		if (errorCode != null) {
+		if (errorCode == "VALIDATION_FAILED") {
+			for (let errorCode of errors) {
+				errorCodes.push(errorCode as ErrorCode)
+			}
+		} else if (errorCode != null) {
 			errorCodes.push(errorCode as ErrorCode)
 		}
 	}

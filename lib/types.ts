@@ -58,7 +58,16 @@ export interface ApiResponseError2 {
 	message: string
 }
 
-export type ErrorCode = "SESSION_ENDED" | "SESSION_DOES_NOT_EXIST"
+export type ErrorCode =
+	| "SESSION_ENDED"
+	| "USER_IS_ALREADY_CONFIRMED"
+	| "SESSION_DOES_NOT_EXIST"
+	| "FIRST_NAME_TOO_SHORT"
+	| "FIRST_NAME_TOO_LONG"
+	| "PASSWORD_TOO_SHORT"
+	| "PASSWORD_TOO_LONG"
+	| "EMAIL_INVALID"
+	| "EMAIL_ALREADY_IN_USE"
 
 export interface List<T> {
 	total: number
