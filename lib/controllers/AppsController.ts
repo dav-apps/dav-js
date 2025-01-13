@@ -93,49 +93,6 @@ export async function listApps(
 	}
 }
 
-export async function CreateApp(params: {
-	accessToken?: string
-	name: string
-	description: string
-}): Promise<ApiResponse<App> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/app`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			},
-			data: PrepareRequestParams({
-				name: params.name,
-				description: params.description
-			})
-		})
-
-		return {
-			status: response.status,
-			data: new App(
-				response.data.id,
-				response.data.name,
-				response.data.description,
-				response.data.published,
-				response.data.web_link,
-				response.data.google_play_link,
-				response.data.microsoft_store_link
-			)
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await CreateApp(params)
-	}
-}
-
 export async function UpdateApp(params: {
 	accessToken?: string
 	id: number
