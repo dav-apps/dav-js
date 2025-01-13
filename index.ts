@@ -106,5 +106,5 @@ export { AppUserSnapshotsController }
 import * as CheckoutSessionsController from "./lib/controllers/CheckoutSessionsController.js"
 export { CheckoutSessionsController }
 
-import * as CustomerPortalSessionsController from "./lib/controllers/CustomerPortalSessionsConroller.js"
+import * as CustomerPortalSessionsController from "./lib/controllers/CustomerPortalSessionsController.js"
 export { CustomerPortalSessionsController }
