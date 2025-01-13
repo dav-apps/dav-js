@@ -1,43 +1,43 @@
-import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiErrorResponse, ApiResponse } from "../types.js"
-import { ConvertErrorToApiErrorResponse, HandleApiError } from "../utils.js"
+import { ErrorCode, CustomerPortalSessionResource } from "../types.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
-export interface CreateCustomerPortalSessionResponseData {
-	sessionUrl: string
-}
-
-export async function CreateCustomerPortalSession(params?: {
-	accessToken?: string
-}): Promise<
-	ApiResponse<CreateCustomerPortalSessionResponseData> | ApiErrorResponse
-> {
+export async function createCustomerPortalSession(
+	queryData: string,
+	variables?: {
+		accessToken?: string
+	}
+): Promise<CustomerPortalSessionResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/customer_portal_session`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
+		let response = await request<{
+			createCustomerPortalSession: CustomerPortalSessionResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateCustomerPortalSession {
+					createCustomerPortalSession {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables?.accessToken ?? Dav.accessToken
 			}
-		})
+		)
 
-		return {
-			status: response.status,
-			data: {
-				sessionUrl: response.data.session_url
-			}
-		}
+		return response.createCustomerPortalSession
 	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables?.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await CreateCustomerPortalSession()
+		return await createCustomerPortalSession(queryData, variables)
 	}
 }

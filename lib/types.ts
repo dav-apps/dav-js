@@ -174,6 +174,10 @@ export interface UserProfileImageResource {
 export interface CheckoutSessionResource {
 	url: string
 }
+
+export interface CustomerPortalSessionResource {
+	url: string
+}
 //#endregion
 
 //#region TableObject & Property types
