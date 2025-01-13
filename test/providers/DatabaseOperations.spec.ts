@@ -7,7 +7,8 @@ import {
 	DatabaseUser,
 	GenericUploadStatus,
 	WebPushSubscriptionUploadStatus,
-	TableObjectUploadStatus
+	TableObjectUploadStatus,
+	Plan
 } from "../../lib/types.js"
 import {
 	sessionKey,
@@ -114,7 +115,7 @@ describe("SetUser function", () => {
 			TotalStorage: 10000000,
 			UsedStorage: 100000,
 			StripeCustomerId: "iodsisdgisgd",
-			Plan: 0,
+			Plan: Plan.Free,
 			SubscriptionStatus: null,
 			PeriodEnd: null,
 			Dev: false,
@@ -193,7 +194,7 @@ describe("GetUser function", () => {
 			TotalStorage: 10000000,
 			UsedStorage: 100000,
 			StripeCustomerId: "iodsisdgisgd",
-			Plan: 0,
+			Plan: Plan.Free,
 			SubscriptionStatus: null,
 			PeriodEnd: null,
 			Dev: false,
@@ -271,7 +272,7 @@ describe("RemoveUser function", () => {
 			TotalStorage: 10000000,
 			UsedStorage: 100000,
 			StripeCustomerId: "iodsisdgisgd",
-			Plan: 0,
+			Plan: Plan.Free,
 			SubscriptionStatus: null,
 			PeriodEnd: null,
 			Dev: false,

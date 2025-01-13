@@ -77,14 +77,14 @@ export interface List<T> {
 
 //#region User types
 export enum Plan {
-	Free = 0,
-	Plus = 1,
-	Pro = 2
+	Free = "FREE",
+	Plus = "PLUS",
+	Pro = "PRO"
 }
 
 export enum SubscriptionStatus {
-	Active = 0,
-	Ending = 1
+	Active = "ACTIVE",
+	Ending = "ENDING"
 }
 
 export interface DatabaseUser {
