@@ -4,6 +4,7 @@ import { Dav } from "../Dav.js"
 import {
 	ApiErrorResponse,
 	ApiResponse,
+	ErrorCode,
 	Environment,
 	DatabaseUser,
 	SessionUploadStatus,
@@ -34,7 +35,7 @@ import {
 	CreateTableObject,
 	GetTableObject,
 	UpdateTableObject,
-	DeleteTableObject,
+	deleteTableObject,
 	SetTableObjectFile,
 	RemoveTableObject,
 	TableObjectResponseData
@@ -554,23 +555,19 @@ export async function SyncPush(): Promise<boolean> {
 			case TableObjectUploadStatus.Deleted:
 				let deleteResult = await DeleteTableObjectOnServer(tableObject)
 
-				if (deleteResult.success) {
-					// Delete the table object
-					await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
-				} else if (deleteResult.message != null) {
-					// Check the errors
-					let errors = (deleteResult.message as ApiErrorResponse).errors
-
-					let i = errors.findIndex(
-						error =>
-							error.code == ErrorCodes.TableObjectDoesNotExist ||
-							error.code == ErrorCodes.ActionNotAllowed
-					)
-					if (i != -1) {
+				if (Array.isArray(deleteResult)) {
+					if (
+						deleteResult.includes("TABLE_OBJECT_DOES_NOT_EXIST") ||
+						deleteResult.includes("ACTION_NOT_ALLOWED")
+					) {
 						// Delete the table object
 						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
 					}
+				} else {
+					// Delete the table object
+					await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
 				}
+
 				break
 			case TableObjectUploadStatus.Removed:
 				let removeResult = await RemoveTableObjectOnServer(tableObject)
@@ -996,24 +993,12 @@ async function UpdateTableObjectOnServer(
 
 async function DeleteTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean; message: {} | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
+): Promise<TableObject | ErrorCode[]> {
+	if (Dav.accessToken == null) return null
 
-	let deleteTableObjectResponse = await DeleteTableObject({
+	return await deleteTableObject(`uuid`, {
 		uuid: tableObject.Uuid
 	})
-
-	if (isSuccessStatusCode(deleteTableObjectResponse.status)) {
-		return {
-			success: true,
-			message: {}
-		}
-	}
-
-	return {
-		success: false,
-		message: deleteTableObjectResponse as ApiErrorResponse
-	}
 }
 
 async function RemoveTableObjectOnServer(

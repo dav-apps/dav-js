@@ -66,6 +66,46 @@ export async function createTableObject(
 	}
 }
 
+export async function deleteTableObject(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid: string
+	}
+): Promise<TableObject | ErrorCode[]> {
+	try {
+		let response = await request<{ deleteTableObject: TableObjectResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation DeleteTableObject($uuid: String!) {
+					deleteTableObject(uuid: $uuid) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return convertTableObjectResourceToTableObject(response.deleteTableObject)
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await deleteTableObject(queryData, variables)
+	}
+}
+
 export async function CreateTableObject(params: {
 	accessToken?: string
 	uuid?: string
@@ -272,36 +312,6 @@ export async function UpdateTableObject(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await UpdateTableObject(params)
-	}
-}
-
-export async function DeleteTableObject(params: {
-	accessToken?: string
-	uuid: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "delete",
-			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			}
-		})
-
-		return {
-			status: response.status,
-			data: {}
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await DeleteTableObject(params)
 	}
 }
 
