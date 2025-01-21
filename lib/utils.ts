@@ -4,6 +4,7 @@ import { User } from "./models/User.js"
 import { Dev } from "./models/Dev.js"
 import { App } from "./models/App.js"
 import { Table } from "./models/Table.js"
+import { TableObject } from "./models/TableObject.js"
 import {
 	ApiErrorResponse,
 	ApiErrorResponse2,
@@ -11,7 +12,8 @@ import {
 	UserResource,
 	DevResource,
 	AppResource,
-	TableResource
+	TableResource,
+	TableObjectResource
 } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
@@ -425,5 +427,15 @@ export function convertTableResourceToTable(
 	if (tableResource == null) return null
 
 	return new Table(tableResource.id, 0, tableResource.name)
+}
+
+export function convertTableObjectResourceToTableObject(
+	tableObjectResource: TableObjectResource
+): TableObject {
+	if (tableObjectResource == null) return null
+
+	return new TableObject({
+		Uuid: tableObjectResource.uuid
+	})
 }
 //#endregion

@@ -185,6 +185,10 @@ export interface TableResource {
 	name: string
 }
 
+export interface TableObjectResource {
+	uuid: string
+}
+
 export interface ProviderResource {
 	id: number
 }

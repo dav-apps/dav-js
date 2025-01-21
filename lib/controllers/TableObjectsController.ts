@@ -1,21 +1,69 @@
 import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
 import { maxPropertiesUploadCount } from "../constants.js"
 import {
 	ApiErrorResponse,
 	ApiResponse,
-	TableObjectUploadStatus
+	ErrorCode,
+	TableObjectUploadStatus,
+	TableObjectResource
 } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
 	HandleApiError,
-	PrepareRequestParams
+	PrepareRequestParams,
+	getErrorCodesOfGraphQLError,
+	handleGraphQLErrors,
+	convertTableObjectResourceToTableObject
 } from "../utils.js"
 import { TableObject } from "../models/TableObject.js"
 
 export interface TableObjectResponseData {
 	tableEtag: string
 	tableObject: TableObject
+}
+
+export async function createTableObject(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid?: string
+		tableId: number
+	}
+): Promise<TableObject | ErrorCode[]> {
+	try {
+		let response = await request<{ createTableObject: TableObjectResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateTableObject($uuid: String, $tableId: Int!) {
+					createTableObject(uuid: $uuid, tableId: $tableId) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid,
+				tableId: variables.tableId
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return convertTableObjectResourceToTableObject(response.createTableObject)
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await createTableObject(queryData, variables)
+	}
 }
 
 export async function CreateTableObject(params: {
