@@ -28,8 +28,6 @@ export interface DatabaseSession {
 	AccessToken: string
 	UploadStatus: SessionUploadStatus
 }
-
-export type Currency = "eur" | "usd"
 //#endregion
 
 //#region Response types
@@ -59,14 +57,23 @@ export interface ApiResponseError2 {
 }
 
 export type ErrorCode =
-	| "SESSION_ENDED"
+	| "SESSION_EXPIRED"
+	| "PASSWORD_INCORRECT"
 	| "USER_IS_ALREADY_CONFIRMED"
+	| "USER_DOES_NOT_EXIST"
 	| "SESSION_DOES_NOT_EXIST"
 	| "FIRST_NAME_TOO_SHORT"
 	| "FIRST_NAME_TOO_LONG"
 	| "PASSWORD_TOO_SHORT"
 	| "PASSWORD_TOO_LONG"
+	| "NAME_TOO_SHORT"
+	| "NAME_TOO_LONG"
+	| "DESCRIPTION_TOO_SHORT"
+	| "DESCRIPTION_TOO_LONG"
 	| "EMAIL_INVALID"
+	| "WEB_LINK_INVALID"
+	| "GOOGLE_PLAY_LINK_INVALID"
+	| "MICROSOFT_STORE_LINK_INVALID"
 	| "EMAIL_ALREADY_IN_USE"
 
 export interface List<T> {
@@ -86,6 +93,13 @@ export enum SubscriptionStatus {
 	Active = "ACTIVE",
 	Ending = "ENDING"
 }
+
+export enum TableObjectPriceType {
+	Purchase = "PURCHASE",
+	Order = "ORDER"
+}
+
+export type Currency = "EUR" | "USD"
 
 export interface DatabaseUser {
 	Id: number
@@ -186,6 +200,12 @@ export interface CheckoutSessionResource {
 
 export interface CustomerPortalSessionResource {
 	url: string
+}
+
+export interface PurchaseResource {
+	uuid: string
+	price: number
+	currency: Currency
 }
 //#endregion
 

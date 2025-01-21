@@ -140,7 +140,7 @@ export async function handleApiError2(error: any): Promise<ApiErrorResponse2> {
 
 	if (
 		errorResponse.error != null &&
-		errorResponse.error.code == "SESSION_ENDED"
+		errorResponse.error.code == "SESSION_EXPIRED"
 	) {
 		return null
 	} else {
@@ -151,7 +151,7 @@ export async function handleApiError2(error: any): Promise<ApiErrorResponse2> {
 export async function handleGraphQLErrors(
 	errorCodes: ErrorCode[]
 ): Promise<void | ErrorCode[]> {
-	if (errorCodes.includes("SESSION_ENDED")) {
+	if (errorCodes.includes("SESSION_EXPIRED")) {
 		return await renewSession()
 	}
 }

@@ -9,6 +9,7 @@ export {
 	ErrorCode,
 	ApiResponseError2,
 	SubscriptionStatus,
+	TableObjectPriceType,
 	Property,
 	Currency,
 	Plan,

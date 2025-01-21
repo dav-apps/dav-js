@@ -28,7 +28,7 @@ describe("GetPurchase function", () => {
 		let productImage =
 			"https://api.pocketlib.app/store/book/sdfsdfsfddf/cover"
 		let price = 1313
-		let currency: Currency = "eur"
+		let currency: Currency = "EUR"
 		let completed = false
 
 		let url = `${Dav.apiBaseUrl}/purchase/${uuid}`
