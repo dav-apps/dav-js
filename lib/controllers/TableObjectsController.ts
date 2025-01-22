@@ -7,13 +7,16 @@ import {
 	ApiResponse,
 	ErrorCode,
 	TableObjectUploadStatus,
-	TableObjectResource
+	TableObjectResource,
+	ApiErrorResponse2
 } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
+	convertErrorToApiErrorResponse2,
 	HandleApiError,
 	PrepareRequestParams,
 	getErrorCodesOfGraphQLError,
+	handleApiError2,
 	handleGraphQLErrors,
 	convertTableObjectResourceToTableObject
 } from "../utils.js"
@@ -30,14 +33,23 @@ export async function createTableObject(
 		accessToken?: string
 		uuid?: string
 		tableId: number
+		file?: boolean
 	}
 ): Promise<TableObject | ErrorCode[]> {
 	try {
 		let response = await request<{ createTableObject: TableObjectResource }>(
 			Dav.newApiBaseUrl,
 			gql`
-				mutation CreateTableObject($uuid: String, $tableId: Int!) {
-					createTableObject(uuid: $uuid, tableId: $tableId) {
+				mutation CreateTableObject(
+					$uuid: String
+					$tableId: Int!
+					$file: Boolean
+				) {
+					createTableObject(
+						uuid: $uuid
+						tableId: $tableId
+						file: $file
+					) {
 						${queryData}
 					}
 				}
@@ -103,6 +115,39 @@ export async function deleteTableObject(
 		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
 		return await deleteTableObject(queryData, variables)
+	}
+}
+
+export async function uploadTableObjectFile(params: {
+	accessToken?: string
+	uuid: string
+	contentType: string
+	data: string
+}): Promise<ApiResponse<{}> | ApiErrorResponse2> {
+	try {
+		let response = await axios({
+			method: "put",
+			url: `${Dav.newApiBaseUrl}/tableObject/${params.uuid}/file`,
+			headers: {
+				Authorization: params.accessToken ?? Dav.accessToken,
+				"Content-Type": params.contentType
+			},
+			data: params.data
+		})
+
+		return {
+			status: response.status,
+			data: {}
+		}
+	} catch (error) {
+		if (params.accessToken != null) {
+			return convertErrorToApiErrorResponse2(error)
+		}
+
+		let renewSessionError = await handleApiError2(error)
+		if (renewSessionError != null) return renewSessionError
+
+		return await uploadTableObjectFile(params)
 	}
 }
 
