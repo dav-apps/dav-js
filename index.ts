@@ -92,6 +92,9 @@ export { GetTableResponseData } from "./lib/controllers/TablesController.js"
 import * as TableObjectsController from "./lib/controllers/TableObjectsController.js"
 export { TableObjectsController }
 
+import * as TableObjectPricesController from "./lib/controllers/TableObjectPricesController.js"
+export { TableObjectPricesController }
+
 import * as PurchasesController from "./lib/controllers/PurchasesController.js"
 export { PurchasesController }
 

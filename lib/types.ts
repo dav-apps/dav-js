@@ -191,6 +191,12 @@ export interface TableObjectResource {
 	uuid: string
 }
 
+export interface TableObjectPriceResource {
+	price: number
+	currency: Currency
+	type: TableObjectPriceType
+}
+
 export interface ProviderResource {
 	id: number
 }
