@@ -28,6 +28,46 @@ export interface TableObjectResponseData {
 	tableObject: TableObject
 }
 
+export async function retrieveTableObject(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid: string
+	}
+): Promise<TableObject | ErrorCode[]> {
+	try {
+		let response = await request<{ tableObject: TableObjectResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query RetrieveTableObject($uuid: String!) {
+					retrieveTableObject(uuid: $uuid) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return convertTableObjectResourceToTableObject(response.tableObject)
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await retrieveTableObject(queryData, variables)
+	}
+}
+
 export async function listTableObjectsByProperty(
 	queryData: string,
 	variables: {
