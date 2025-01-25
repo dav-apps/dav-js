@@ -207,6 +207,14 @@ export interface UserProfileImageResource {
 	etag: string
 }
 
+export interface NotificationResource {
+	uuid: string
+	time: number
+	interval: number
+	title: string
+	body: string
+}
+
 export interface CheckoutSessionResource {
 	url: string
 }

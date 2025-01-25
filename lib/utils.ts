@@ -5,6 +5,7 @@ import { Dev } from "./models/Dev.js"
 import { App } from "./models/App.js"
 import { Table } from "./models/Table.js"
 import { TableObject } from "./models/TableObject.js"
+import { Notification as DavNotification } from "./models/Notification.js"
 import {
 	ApiErrorResponse,
 	ApiErrorResponse2,
@@ -13,7 +14,8 @@ import {
 	DevResource,
 	AppResource,
 	TableResource,
-	TableObjectResource
+	TableObjectResource,
+	NotificationResource
 } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
@@ -437,6 +439,20 @@ export function convertTableObjectResourceToTableObject(
 	return new TableObject({
 		Uuid: tableObjectResource.uuid,
 		User: convertUserResourceToUser(tableObjectResource.user)
+	})
+}
+
+export function convertNotificationResourceToNotification(
+	notificationResource: NotificationResource
+): DavNotification {
+	if (notificationResource == null) return null
+
+	return new DavNotification({
+		Uuid: notificationResource.uuid,
+		Time: notificationResource.time,
+		Interval: notificationResource.interval,
+		Title: notificationResource.title,
+		Body: notificationResource.body
 	})
 }
 //#endregion

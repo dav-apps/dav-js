@@ -1,15 +1,89 @@
+import { request, gql, ClientError } from "graphql-request"
 import axios from "axios"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse, GenericUploadStatus } from "../types.js"
+import {
+	ApiResponse,
+	ApiErrorResponse,
+	GenericUploadStatus,
+	ErrorCode,
+	NotificationResource
+} from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
+	getErrorCodesOfGraphQLError,
 	HandleApiError,
-	PrepareRequestParams
+	PrepareRequestParams,
+	convertNotificationResourceToNotification
 } from "../utils.js"
+import { Auth } from "../models/Auth.js"
 import {
 	Notification,
 	ConvertObjectArrayToNotifications
 } from "../models/Notification.js"
+
+export async function createNotificationForUser(
+	queryData: string,
+	variables: {
+		auth: Auth
+		uuid?: string
+		userId: number
+		appId: number
+		time: number
+		interval: number
+		title: string
+		body: string
+		icon?: string
+		image?: string
+		href?: string
+	}
+): Promise<Notification | ErrorCode[]> {
+	try {
+		let response = await request<{
+			createNotificationForUser: NotificationResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateNotificationForUser(
+					$uuid: String
+					$userId: Int!
+					$appId: Int!
+					$time: Int!
+					$interval: Int!
+					$title: String!
+					$body: String!
+					$icon: String
+					$image: String
+					$href: String
+				) {
+					createNotificationForUser(
+						uuid: $uuid
+						userId: $userId
+						appId: $appId
+						time: $time
+						interval: $interval
+						title: $title
+						body: $body
+						icon: $icon
+						image: $image
+						href: $href
+					) {
+						${queryData}
+					}
+				}
+			`,
+			variables,
+			{
+				Authorization: variables.auth.token
+			}
+		)
+
+		return convertNotificationResourceToNotification(
+			response.createNotificationForUser
+		)
+	} catch (error) {
+		return getErrorCodesOfGraphQLError(error as ClientError)
+	}
+}
 
 export async function CreateNotification(params: {
 	accessToken?: string

@@ -78,6 +78,9 @@ import * as DevsController from "./lib/controllers/DevsController.js"
 export { DevsController }
 export { GetDevResponseData } from "./lib/controllers/DevsController.js"
 
+import * as NotificationsController from "./lib/controllers/NotificationsController.js"
+export { NotificationsController }
+
 import * as ProvidersController from "./lib/controllers/ProvidersController.js"
 export { ProvidersController }
 export { ProviderResponseData } from "./lib/controllers/ProvidersController.js"
