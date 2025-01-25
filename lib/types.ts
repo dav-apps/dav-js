@@ -189,6 +189,7 @@ export interface TableResource {
 
 export interface TableObjectResource {
 	uuid: string
+	user: UserResource
 }
 
 export interface TableObjectPriceResource {

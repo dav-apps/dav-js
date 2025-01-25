@@ -435,7 +435,8 @@ export function convertTableObjectResourceToTableObject(
 	if (tableObjectResource == null) return null
 
 	return new TableObject({
-		Uuid: tableObjectResource.uuid
+		Uuid: tableObjectResource.uuid,
+		User: convertUserResourceToUser(tableObjectResource.user)
 	})
 }
 //#endregion

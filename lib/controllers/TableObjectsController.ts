@@ -21,10 +21,84 @@ import {
 	convertTableObjectResourceToTableObject
 } from "../utils.js"
 import { TableObject } from "../models/TableObject.js"
+import { Auth } from "../models/Auth.js"
 
 export interface TableObjectResponseData {
 	tableEtag: string
 	tableObject: TableObject
+}
+
+export async function listTableObjectsByProperty(
+	queryData: string,
+	variables: {
+		auth: Auth
+		userId?: number
+		appId: number
+		tableName?: string
+		propertyName: string
+		propertyValue: string
+		exact?: boolean
+		limit?: number
+		offset?: number
+	}
+): Promise<TableObject[] | ErrorCode[]> {
+	try {
+		let response = await request<{
+			listTableObjectsByProperty: TableObjectResource[]
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				query ListTableObjectsByProperty(
+					$userId: Int
+					$appId: Int!
+					$tableName: String
+					$propertyName: String!
+					$propertyValue: String!
+					$exact: Boolean
+					$limit: Int
+					$offset: Int
+				) {
+					listTableObjectsByProperty(
+						userId: $userId
+						appId: $appId
+						tableName: $tableName
+						propertyName: $propertyName
+						propertyValue: $propertyValue
+						exact: $exact
+						limit: $limit
+						offset: $offset
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				userId: variables.userId,
+				appId: variables.appId,
+				tableName: variables.tableName,
+				propertyName: variables.propertyName,
+				propertyValue: variables.propertyValue,
+				exact: variables.exact,
+				limit: variables.limit,
+				offset: variables.offset
+			},
+			{
+				Authorization: variables.auth.token
+			}
+		)
+
+		let tableObjects: TableObject[] = []
+
+		for (let tableObjectResource of response.listTableObjectsByProperty) {
+			tableObjects.push(
+				convertTableObjectResourceToTableObject(tableObjectResource)
+			)
+		}
+
+		return tableObjects
+	} catch (error) {
+		return getErrorCodesOfGraphQLError(error as ClientError)
+	}
 }
 
 export async function createTableObject(
