@@ -18,7 +18,8 @@ export {
 	AppUserSnapshotResource,
 	CheckoutSessionResource,
 	CustomerPortalSessionResource,
-	OrderResource
+	OrderResource,
+	ShippingAddressResource
 } from "./lib/types.js"
 
 // constants
@@ -92,6 +93,9 @@ export { ProviderResponseData } from "./lib/controllers/ProvidersController.js"
 
 import * as AppsController from "./lib/controllers/AppsController.js"
 export { AppsController }
+
+import * as ShippingAddressesController from "./lib/controllers/ShippingAddressesController.js"
+export { ShippingAddressesController }
 
 import * as TablesController from "./lib/controllers/TablesController.js"
 export { TablesController }

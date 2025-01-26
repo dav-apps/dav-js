@@ -8,7 +8,8 @@ import {
 	ErrorCode,
 	TableObjectUploadStatus,
 	TableObjectResource,
-	ApiErrorResponse2
+	ApiErrorResponse2,
+	List
 } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
@@ -84,7 +85,7 @@ export async function listTableObjectsByProperty(
 ): Promise<TableObject[] | ErrorCode[]> {
 	try {
 		let response = await request<{
-			listTableObjectsByProperty: TableObjectResource[]
+			listTableObjectsByProperty: List<TableObjectResource>
 		}>(
 			Dav.newApiBaseUrl,
 			gql`
@@ -129,10 +130,13 @@ export async function listTableObjectsByProperty(
 
 		let tableObjects: TableObject[] = []
 
-		for (let tableObjectResource of response.listTableObjectsByProperty) {
-			tableObjects.push(
-				convertTableObjectResourceToTableObject(tableObjectResource)
-			)
+		if (response.listTableObjectsByProperty?.items != null) {
+			for (let tableObjectResource of response.listTableObjectsByProperty
+				.items) {
+				tableObjects.push(
+					convertTableObjectResourceToTableObject(tableObjectResource)
+				)
+			}
 		}
 
 		return tableObjects
