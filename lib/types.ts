@@ -200,6 +200,10 @@ export interface TableObjectPriceResource {
 	type: TableObjectPriceType
 }
 
+export interface TableObjectUserAccessResource {
+	tableAlias: number
+}
+
 export interface ProviderResource {
 	id: number
 }

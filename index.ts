@@ -104,6 +104,9 @@ export { GetTableResponseData } from "./lib/controllers/TablesController.js"
 import * as TableObjectsController from "./lib/controllers/TableObjectsController.js"
 export { TableObjectsController }
 
+import * as TableObjectUserAccessesController from "./lib/controllers/TableObjectUserAccessesController.js"
+export { TableObjectUserAccessesController }
+
 import * as TableObjectPricesController from "./lib/controllers/TableObjectPricesController.js"
 export { TableObjectPricesController }
 
