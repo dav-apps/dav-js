@@ -12,11 +12,13 @@ export {
 	TableObjectPriceType,
 	Property,
 	Currency,
+	OrderStatus,
 	Plan,
 	UserSnapshotResource,
 	AppUserSnapshotResource,
 	CheckoutSessionResource,
-	CustomerPortalSessionResource
+	CustomerPortalSessionResource,
+	OrderResource
 } from "./lib/types.js"
 
 // constants
@@ -80,6 +82,9 @@ export { GetDevResponseData } from "./lib/controllers/DevsController.js"
 
 import * as NotificationsController from "./lib/controllers/NotificationsController.js"
 export { NotificationsController }
+
+import * as OrdersController from "./lib/controllers/OrdersController.js"
+export { OrdersController }
 
 import * as ProvidersController from "./lib/controllers/ProvidersController.js"
 export { ProvidersController }

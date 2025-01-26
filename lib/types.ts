@@ -102,6 +102,7 @@ export enum TableObjectPriceType {
 }
 
 export type Currency = "EUR" | "USD"
+export type OrderStatus = "CREATED" | "PREPARATION" | "SHIPPED"
 
 export interface DatabaseUser {
 	Id: number
@@ -228,6 +229,30 @@ export interface PurchaseResource {
 	uuid: string
 	price: number
 	currency: Currency
+}
+
+export interface OrderResource {
+	uuid: string
+	user: UserResource
+	tableObject: TableObjectResource
+	shippingAddress: ShippingAddressResource
+	paymentIntentId: string
+	price: number
+	currency: Currency
+	status: OrderStatus
+}
+
+export interface ShippingAddressResource {
+	uuid: string
+	name: string
+	email: string
+	phone: string
+	city: string
+	country: string
+	line1: string
+	line2: string
+	postalCode: string
+	state: string
 }
 //#endregion
 
