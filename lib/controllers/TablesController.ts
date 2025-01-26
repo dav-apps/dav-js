@@ -18,45 +18,6 @@ export interface GetTableResponseData {
 	}[]
 }
 
-export async function CreateTable(params: {
-	accessToken?: string
-	appId: number
-	name: string
-}): Promise<ApiResponse<Table> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/table`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			},
-			data: PrepareRequestParams({
-				app_id: params.appId,
-				name: params.name
-			})
-		})
-
-		return {
-			status: response.status,
-			data: new Table(
-				response.data.id,
-				response.data.app_id,
-				response.data.name
-			)
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await CreateTable(params)
-	}
-}
-
 export async function GetTable(params: {
 	accessToken?: string
 	id: number

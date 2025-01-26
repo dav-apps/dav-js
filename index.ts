@@ -79,17 +79,12 @@ export { SessionResponseData } from "./lib/controllers/SessionsController.js"
 
 import * as DevsController from "./lib/controllers/DevsController.js"
 export { DevsController }
-export { GetDevResponseData } from "./lib/controllers/DevsController.js"
 
 import * as NotificationsController from "./lib/controllers/NotificationsController.js"
 export { NotificationsController }
 
 import * as OrdersController from "./lib/controllers/OrdersController.js"
 export { OrdersController }
-
-import * as ProvidersController from "./lib/controllers/ProvidersController.js"
-export { ProvidersController }
-export { ProviderResponseData } from "./lib/controllers/ProvidersController.js"
 
 import * as AppsController from "./lib/controllers/AppsController.js"
 export { AppsController }
@@ -112,9 +107,6 @@ export { TableObjectPricesController }
 
 import * as PurchasesController from "./lib/controllers/PurchasesController.js"
 export { PurchasesController }
-
-import * as CollectionsController from "./lib/controllers/CollectionsController.js"
-export { CollectionsController }
 
 import * as UserSnapshotsController from "./lib/controllers/UserSnapshotsController.js"
 export { UserSnapshotsController }

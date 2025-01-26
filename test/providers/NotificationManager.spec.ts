@@ -37,6 +37,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+	/*
 	// Delete the webPushSubscriptions
 	for (let uuid of webPushSubscriptionsToDelete) {
 		let response =
@@ -50,6 +51,7 @@ afterEach(async () => {
 			console.error((response as ApiErrorResponse).errors)
 		}
 	}
+	*/
 
 	webPushSubscriptionsToDelete = []
 

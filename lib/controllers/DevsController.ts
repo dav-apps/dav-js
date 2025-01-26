@@ -7,12 +7,6 @@ import {
 	handleGraphQLErrors
 } from "../utils.js"
 import { Dev } from "../models/Dev.js"
-import { App } from "../models/App.js"
-
-export interface GetDevResponseData {
-	id: number
-	apps: App[]
-}
 
 export async function retrieveDev(
 	queryData: string,
