@@ -9,6 +9,7 @@ import {
 } from "../types.js"
 import { generateUuid } from "../utils.js"
 import { User } from "./User.js"
+import { Purchase } from "./Purchase.js"
 import * as SyncManager from "../providers/SyncManager.js"
 import * as DatabaseOperations from "../providers/DatabaseOperations.js"
 import { GetTableObjectFile } from "../controllers/TableObjectsController.js"
@@ -24,6 +25,7 @@ export class TableObject {
 	public BelongsToUser: boolean = true
 	public Purchase: string
 	public User: User
+	public Purchases: Purchase[] = []
 
 	constructor(params?: {
 		Uuid?: string
@@ -36,6 +38,7 @@ export class TableObject {
 		BelongsToUser?: boolean
 		Purchase?: string
 		User?: User
+		Purchases?: Purchase[]
 	}) {
 		if (params != null) {
 			if (params.Uuid != null) this.Uuid = params.Uuid
@@ -50,6 +53,7 @@ export class TableObject {
 				this.BelongsToUser = params.BelongsToUser
 			if (params.Purchase != null) this.Purchase = params.Purchase
 			if (params.User != null) this.User = params.User
+			if (params.Purchases != null) this.Purchases = params.Purchases
 		}
 	}
 

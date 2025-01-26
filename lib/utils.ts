@@ -6,6 +6,7 @@ import { App } from "./models/App.js"
 import { Table } from "./models/Table.js"
 import { TableObject } from "./models/TableObject.js"
 import { Notification as DavNotification } from "./models/Notification.js"
+import { Purchase } from "./models/Purchase.js"
 import {
 	ApiErrorResponse,
 	ApiErrorResponse2,
@@ -15,7 +16,8 @@ import {
 	AppResource,
 	TableResource,
 	TableObjectResource,
-	NotificationResource
+	NotificationResource,
+	PurchaseResource
 } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
@@ -360,7 +362,7 @@ export function convertUserResourceToUser(userResource: UserResource): User {
 
 	const apps: App[] = []
 
-	if (userResource.apps != null) {
+	if (userResource.apps?.items != null) {
 		for (let app of userResource.apps.items) {
 			apps.push(convertAppResourceToApp(app))
 		}
@@ -390,7 +392,7 @@ export function convertDevResourceToDev(devResource: DevResource): Dev {
 
 	const apps: App[] = []
 
-	if (devResource.apps != null) {
+	if (devResource.apps?.items != null) {
 		for (let app of devResource.apps.items) {
 			apps.push(convertAppResourceToApp(app))
 		}
@@ -404,7 +406,7 @@ export function convertAppResourceToApp(appResource: AppResource): App {
 
 	const tables: Table[] = []
 
-	if (appResource.tables != null) {
+	if (appResource.tables?.items != null) {
 		for (let table of appResource.tables.items) {
 			tables.push(convertTableResourceToTable(table))
 		}
@@ -436,9 +438,18 @@ export function convertTableObjectResourceToTableObject(
 ): TableObject {
 	if (tableObjectResource == null) return null
 
+	const purchases: Purchase[] = []
+
+	if (tableObjectResource.purchases?.items != null) {
+		for (let purchase of tableObjectResource.purchases.items) {
+			purchases.push(convertPurchaseResourceToPurchase(purchase))
+		}
+	}
+
 	return new TableObject({
 		Uuid: tableObjectResource.uuid,
-		User: convertUserResourceToUser(tableObjectResource.user)
+		User: convertUserResourceToUser(tableObjectResource.user),
+		Purchases: purchases
 	})
 }
 
@@ -454,5 +465,23 @@ export function convertNotificationResourceToNotification(
 		Title: notificationResource.title,
 		Body: notificationResource.body
 	})
+}
+
+export function convertPurchaseResourceToPurchase(
+	purchaseResource: PurchaseResource
+) {
+	return new Purchase(
+		0,
+		0,
+		purchaseResource.uuid,
+		null,
+		null,
+		null,
+		null,
+		null,
+		purchaseResource.price,
+		purchaseResource.currency,
+		null
+	)
 }
 //#endregion

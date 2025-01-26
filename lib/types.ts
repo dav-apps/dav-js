@@ -190,6 +190,7 @@ export interface TableResource {
 export interface TableObjectResource {
 	uuid: string
 	user: UserResource
+	purchases: List<PurchaseResource>
 }
 
 export interface TableObjectPriceResource {
