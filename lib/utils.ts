@@ -199,86 +199,86 @@ export async function SetAccessToken(accessToken: string) {
 	await DatabaseOperations.SetSession(session)
 }
 
-export function SortTableIds(
-	tableIds: number[],
-	parallelTableIds: number[],
-	tableIdPages: Map<number, number>
+export function SortTableNames(
+	tableNames: string[],
+	parallelTableNames: string[],
+	tableNamePages: Map<string, number>
 ) {
 	// Clone tableIdPages
-	let tableIdPagesCopy = new Map<number, number>()
+	let tableNamePagesCopy = new Map<string, number>()
 
-	for (let key of tableIdPages.keys()) {
-		if (tableIds.includes(key)) {
-			tableIdPagesCopy.set(key, tableIdPages.get(key))
+	for (let key of tableNamePages.keys()) {
+		if (tableNames.includes(key)) {
+			tableNamePagesCopy.set(key, tableNamePages.get(key))
 		}
 	}
 
 	// Remove all entries in tableIdPages with value = 0
-	for (let key of tableIdPagesCopy.keys()) {
-		if (tableIdPagesCopy.get(key) == 0) {
-			tableIdPagesCopy.delete(key)
+	for (let key of tableNamePagesCopy.keys()) {
+		if (tableNamePagesCopy.get(key) == 0) {
+			tableNamePagesCopy.delete(key)
 		}
 	}
 
-	let sortedTableIds: number[] = []
-	let currentTableIdIndex = 0
+	let sortedTableNames: string[] = []
+	let currentTableNameIndex = 0
 
-	while (getSumOfValuesInMap(tableIdPagesCopy) > 0) {
-		if (currentTableIdIndex >= tableIds.length) {
-			currentTableIdIndex = 0
+	while (getSumOfValuesInMap(tableNamePagesCopy) > 0) {
+		if (currentTableNameIndex >= tableNames.length) {
+			currentTableNameIndex = 0
 		}
 
-		let currentTableId = tableIds[currentTableIdIndex]
+		let currentTableName = tableNames[currentTableNameIndex]
 
-		if (!tableIdPagesCopy.has(currentTableId)) {
-			currentTableIdIndex++
+		if (!tableNamePagesCopy.has(currentTableName)) {
+			currentTableNameIndex++
 			continue
 		}
 
 		if (
-			parallelTableIds.includes(currentTableId) &&
-			parallelTableIds.length > 1
+			parallelTableNames.includes(currentTableName) &&
+			parallelTableNames.length > 1
 		) {
 			// Add just one page of the current table
-			sortedTableIds.push(currentTableId)
-			tableIdPagesCopy.set(
-				currentTableId,
-				tableIdPagesCopy.get(currentTableId) - 1
+			sortedTableNames.push(currentTableName)
+			tableNamePagesCopy.set(
+				currentTableName,
+				tableNamePagesCopy.get(currentTableName) - 1
 			)
 
 			// Remove the table id from the pages if there are no pages left
-			if (tableIdPagesCopy.get(currentTableId) <= 0) {
-				tableIdPagesCopy.delete(currentTableId)
+			if (tableNamePagesCopy.get(currentTableName) <= 0) {
+				tableNamePagesCopy.delete(currentTableName)
 			}
 
 			// Check if this was the last table of parallelTableIds
-			let i = parallelTableIds.indexOf(currentTableId)
-			let isLastParallelTable = i == parallelTableIds.length - 1
+			let i = parallelTableNames.indexOf(currentTableName)
+			let isLastParallelTable = i == parallelTableNames.length - 1
 
 			if (isLastParallelTable) {
 				// Move to the start of the array
-				currentTableIdIndex = 0
+				currentTableNameIndex = 0
 			} else {
-				currentTableIdIndex++
+				currentTableNameIndex++
 			}
 		} else {
 			// Add all pages of the current table
-			for (let i = 0; i < tableIdPagesCopy.get(currentTableId); i++) {
-				sortedTableIds.push(currentTableId)
+			for (let i = 0; i < tableNamePagesCopy.get(currentTableName); i++) {
+				sortedTableNames.push(currentTableName)
 			}
 
 			// Clear the pages of the current table
-			tableIdPagesCopy.delete(currentTableId)
+			tableNamePagesCopy.delete(currentTableName)
 
 			// Go to the next table
-			currentTableIdIndex++
+			currentTableNameIndex++
 		}
 	}
 
-	return sortedTableIds
+	return sortedTableNames
 }
 
-function getSumOfValuesInMap(map: Map<number, number>) {
+function getSumOfValuesInMap(map: Map<string, number>): number {
 	let sum = 0
 
 	for (let key of map.keys()) {
@@ -430,7 +430,7 @@ export function convertTableResourceToTable(
 ): Table {
 	if (tableResource == null) return null
 
-	return new Table(tableResource.id, 0, tableResource.name)
+	return new Table(tableResource.id, 0, tableResource.name, tableResource.etag)
 }
 
 export function convertTableObjectResourceToTableObject(

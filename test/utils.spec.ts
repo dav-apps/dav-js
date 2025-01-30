@@ -1,7 +1,7 @@
 import { assert } from "chai"
-import { SortTableIds } from "../lib/utils.js"
+import { SortTableNames } from "../lib/utils.js"
 
-describe("SortTableIds function", () => {
+describe("SortTableNames function", () => {
 	it("should return the correct array when there are no parallel table ids", () => {
 		/*
          Input:
@@ -13,23 +13,23 @@ describe("SortTableIds function", () => {
             [1, 1, 2, 2, 3, 3, 4, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = []
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 2)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 2)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = []
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 2)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableIds = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 1, 2, 2, 3, 3, 4, 4], sortedTableIds)
+		assert.deepEqual(["1", "1", "2", "2", "3", "3", "4", "4"], sortedTableIds)
 	})
 
 	it("should return the correct array when there is one parallel table id", () => {
@@ -43,23 +43,26 @@ describe("SortTableIds function", () => {
             [1, 1, 2, 2, 3, 3, 4, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 2)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 2)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 2)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 1, 2, 2, 3, 3, 4, 4], sortedTableIds)
+		assert.deepEqual(
+			["1", "1", "2", "2", "3", "3", "4", "4"],
+			sortedTableNames
+		)
 	})
 
 	it("should return the correct array when the parallel table ids are side by side", () => {
@@ -73,23 +76,26 @@ describe("SortTableIds function", () => {
             [1, 1, 2, 3, 2, 3, 4, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [2, 3]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 2)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 2)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["2", "3"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 2)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 1, 2, 3, 2, 3, 4, 4], sortedTableIds)
+		assert.deepEqual(
+			["1", "1", "2", "3", "2", "3", "4", "4"],
+			sortedTableNames
+		)
 	})
 
 	it("should return the correct array when the parallel table ids are not side by side", () => {
@@ -103,23 +109,26 @@ describe("SortTableIds function", () => {
             [1, 2, 2, 3, 3, 4, 1, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 4]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 2)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 2)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "4"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 2)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 2, 2, 3, 3, 4, 1, 4], sortedTableIds)
+		assert.deepEqual(
+			["1", "2", "2", "3", "3", "4", "1", "4"],
+			sortedTableNames
+		)
 	})
 
 	it("should return the correct array when there are different pages and the parallel table ids are not side by side", () => {
@@ -133,23 +142,26 @@ describe("SortTableIds function", () => {
             [1, 2, 3, 3, 4, 1, 4, 1, 4, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 4]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 3)
-		tableIdPages.set(2, 1)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 4)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "4"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 3)
+		tableNamePages.set("2", 1)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 4)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 2, 3, 3, 4, 1, 4, 1, 4, 4], sortedTableIds)
+		assert.deepEqual(
+			["1", "2", "3", "3", "4", "1", "4", "1", "4", "4"],
+			sortedTableNames
+		)
 	})
 
 	it("should return the correct array when there are different pages and the parallel table ids are side by side", () => {
@@ -163,23 +175,26 @@ describe("SortTableIds function", () => {
             [1, 2, 1, 2, 2, 2, 3, 3, 3, 4, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 4)
-		tableIdPages.set(3, 3)
-		tableIdPages.set(4, 2)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 4)
+		tableNamePages.set("3", 3)
+		tableNamePages.set("4", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 2, 1, 2, 2, 2, 3, 3, 3, 4, 4], sortedTableIds)
+		assert.deepEqual(
+			["1", "2", "1", "2", "2", "2", "3", "3", "3", "4", "4"],
+			sortedTableNames
+		)
 	})
 
 	it("should return the correct array when there are no pages", () => {
@@ -193,23 +208,23 @@ describe("SortTableIds function", () => {
             []
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 0)
-		tableIdPages.set(2, 0)
-		tableIdPages.set(3, 0)
-		tableIdPages.set(4, 0)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 0)
+		tableNamePages.set("2", 0)
+		tableNamePages.set("3", 0)
+		tableNamePages.set("4", 0)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([], sortedTableIds)
+		assert.deepEqual([], sortedTableNames)
 	})
 
 	it("should return the correct array when there is one page", () => {
@@ -223,23 +238,23 @@ describe("SortTableIds function", () => {
             [4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 0)
-		tableIdPages.set(2, 0)
-		tableIdPages.set(3, 0)
-		tableIdPages.set(4, 1)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 0)
+		tableNamePages.set("2", 0)
+		tableNamePages.set("3", 0)
+		tableNamePages.set("4", 1)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([4], sortedTableIds)
+		assert.deepEqual(["4"], sortedTableNames)
 	})
 
 	it("should return the correct array when there are lots of pages for one table", () => {
@@ -253,23 +268,23 @@ describe("SortTableIds function", () => {
             [1, 1, 1, 1, 1, 1]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 6)
-		tableIdPages.set(2, 0)
-		tableIdPages.set(3, 0)
-		tableIdPages.set(4, 0)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 6)
+		tableNamePages.set("2", 0)
+		tableNamePages.set("3", 0)
+		tableNamePages.set("4", 0)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 1, 1, 1, 1, 1], sortedTableIds)
+		assert.deepEqual(["1", "1", "1", "1", "1", "1"], sortedTableNames)
 	})
 
 	it("should return the correct array when there are different counts of pages for parallel tables", () => {
@@ -283,25 +298,41 @@ describe("SortTableIds function", () => {
             [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2, 3]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 6)
-		tableIdPages.set(2, 8)
-		tableIdPages.set(3, 1)
-		tableIdPages.set(4, 0)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 6)
+		tableNamePages.set("2", 8)
+		tableNamePages.set("3", 1)
+		tableNamePages.set("4", 0)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
 		assert.deepEqual(
-			[1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 2, 2, 3],
-			sortedTableIds
+			[
+				"1",
+				"2",
+				"1",
+				"2",
+				"1",
+				"2",
+				"1",
+				"2",
+				"1",
+				"2",
+				"1",
+				"2",
+				"2",
+				"2",
+				"3"
+			],
+			sortedTableNames
 		)
 	})
 
@@ -316,24 +347,27 @@ describe("SortTableIds function", () => {
             [1, 2, 3, 4, 4, 4, 4, 5, 1, 2, 3, 5]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4, 5]
-		let parallelTableIds = [1, 2, 3, 5]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 2)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 4)
-		tableIdPages.set(5, 2)
+		let tableNames = ["1", "2", "3", "4", "5"]
+		let parallelTableNames = ["1", "2", "3", "5"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 2)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 4)
+		tableNamePages.set("5", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 2, 3, 4, 4, 4, 4, 5, 1, 2, 3, 5], sortedTableIds)
+		assert.deepEqual(
+			["1", "2", "3", "4", "4", "4", "4", "5", "1", "2", "3", "5"],
+			sortedTableNames
+		)
 	})
 
 	it("should return the correct array when there are multiple parallel tables with different counts of pages", () => {
@@ -347,26 +381,45 @@ describe("SortTableIds function", () => {
             [1, 2, 3, 4, 4, 4, 5, 1, 2, 3, 5, 1, 2, 3, 2, 3, 2, 2]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4, 5]
-		let parallelTableIds = [1, 2, 3, 5]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 3)
-		tableIdPages.set(2, 6)
-		tableIdPages.set(3, 4)
-		tableIdPages.set(4, 3)
-		tableIdPages.set(5, 2)
+		let tableNames = ["1", "2", "3", "4", "5"]
+		let parallelTableNames = ["1", "2", "3", "5"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 3)
+		tableNamePages.set("2", 6)
+		tableNamePages.set("3", 4)
+		tableNamePages.set("4", 3)
+		tableNamePages.set("5", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
 		assert.deepEqual(
-			[1, 2, 3, 4, 4, 4, 5, 1, 2, 3, 5, 1, 2, 3, 2, 3, 2, 2],
-			sortedTableIds
+			[
+				"1",
+				"2",
+				"3",
+				"4",
+				"4",
+				"4",
+				"5",
+				"1",
+				"2",
+				"3",
+				"5",
+				"1",
+				"2",
+				"3",
+				"2",
+				"3",
+				"2",
+				"2"
+			],
+			sortedTableNames
 		)
 	})
 
@@ -381,23 +434,26 @@ describe("SortTableIds function", () => {
             [1, 2, 1, 2, 3, 3, 4, 4]
       */
 		// Arrange
-		let tableIds = [1, 2, 3, 4]
-		let parallelTableIds = [1, 2]
-		let tableIdPages = new Map<number, number>()
-		tableIdPages.set(1, 2)
-		tableIdPages.set(2, 2)
-		tableIdPages.set(3, 2)
-		tableIdPages.set(4, 2)
-		tableIdPages.set(5, 2)
+		let tableNames = ["1", "2", "3", "4"]
+		let parallelTableNames = ["1", "2"]
+		let tableNamePages = new Map<string, number>()
+		tableNamePages.set("1", 2)
+		tableNamePages.set("2", 2)
+		tableNamePages.set("3", 2)
+		tableNamePages.set("4", 2)
+		tableNamePages.set("5", 2)
 
 		// Act
-		let sortedTableIds = SortTableIds(
-			tableIds,
-			parallelTableIds,
-			tableIdPages
+		let sortedTableNames = SortTableNames(
+			tableNames,
+			parallelTableNames,
+			tableNamePages
 		)
 
 		// Assert
-		assert.deepEqual([1, 2, 1, 2, 3, 3, 4, 4], sortedTableIds)
+		assert.deepEqual(
+			["1", "2", "1", "2", "3", "3", "4", "4"],
+			sortedTableNames
+		)
 	})
 })
