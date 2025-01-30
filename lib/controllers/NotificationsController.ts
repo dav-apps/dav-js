@@ -13,13 +13,78 @@ import {
 	getErrorCodesOfGraphQLError,
 	HandleApiError,
 	PrepareRequestParams,
-	convertNotificationResourceToNotification
+	handleGraphQLErrors
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
 import {
 	Notification,
 	ConvertObjectArrayToNotifications
 } from "../models/Notification.js"
+
+export async function createNotification(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid?: string
+		time: number
+		interval: number
+		title: string
+		body: string
+		icon?: string
+		image?: string
+		href?: string
+	}
+): Promise<NotificationResource | ErrorCode[]> {
+	try {
+		let response = await request<{
+			createNotification: NotificationResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateNotification(
+					$uuid: String
+					$time: Int!
+					$interval: Int!
+					$title: String!
+					$body: String!
+					$icon: String
+					$image: String
+					$href: String
+				) {
+					createNotification(
+						uuid: $uuid
+						time: $time
+						interval: $interval
+						title: $title
+						body: $body
+						icon: $icon
+						image: $image
+						href: $href
+					) {
+						${queryData}
+					}
+				}
+			`,
+			variables,
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return response.createNotification
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await createNotification(queryData, variables)
+	}
+}
 
 export async function createNotificationForUser(
 	queryData: string,
@@ -36,7 +101,7 @@ export async function createNotificationForUser(
 		image?: string
 		href?: string
 	}
-): Promise<Notification | ErrorCode[]> {
+): Promise<NotificationResource | ErrorCode[]> {
 	try {
 		let response = await request<{
 			createNotificationForUser: NotificationResource
@@ -77,55 +142,9 @@ export async function createNotificationForUser(
 			}
 		)
 
-		return convertNotificationResourceToNotification(
-			response.createNotificationForUser
-		)
+		return response.createNotificationForUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
-	}
-}
-
-export async function CreateNotification(params: {
-	accessToken?: string
-	uuid?: string
-	time: number
-	interval: number
-	title: string
-	body: string
-}): Promise<ApiResponse<Notification> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/notification`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			},
-			data: PrepareRequestParams({
-				uuid: params.uuid,
-				time: params.time,
-				interval: params.interval,
-				title: params.title,
-				body: params.body
-			})
-		})
-
-		return {
-			status: response.status,
-			data: new Notification({
-				Uuid: response.data.uuid,
-				Time: response.data.time,
-				Interval: response.data.interval,
-				Title: response.data.title,
-				Body: response.data.body,
-				UploadStatus: GenericUploadStatus.UpToDate
-			})
-		}
-	} catch (error) {
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await CreateNotification(params)
 	}
 }
 
