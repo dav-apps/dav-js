@@ -1,64 +1,53 @@
-import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiResponse, ApiErrorResponse } from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
-	HandleApiError,
-	PrepareRequestParams
-} from "../utils.js"
-import { Table } from "../models/Table.js"
+import { ErrorCode, TableResource } from "../types.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
-export interface GetTableResponseData {
-	table: Table
-	pages: number
-	etag: string
-	tableObjects: {
-		uuid: string
-		etag: string
-	}[]
-}
-
-export async function GetTable(params: {
-	accessToken?: string
-	id: number
-	count?: number
-	page?: number
-}): Promise<ApiResponse<GetTableResponseData> | ApiErrorResponse> {
+export async function retrieveTable(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		name: string
+		limit?: number
+		offset?: number
+	}
+): Promise<TableResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/table/${params.id}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let limitParam = queryData.includes("limit") ? "$limit: Int" : ""
+		let offsetParam = queryData.includes("offset") ? "$offset: Int" : ""
+
+		let response = await request<{ retrieveTable: TableResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				query RetrieveTable(
+					$name: String!
+					${limitParam}
+					${offsetParam}
+				) {
+					retrieveTable(name: $name) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				name: variables.name
 			},
-			params: PrepareRequestParams({
-				count: params.count,
-				page: params.page
-			})
-		})
-
-		return {
-			status: response.status,
-			data: {
-				table: new Table(
-					response.data.id,
-					response.data.app_id,
-					response.data.name
-				),
-				pages: response.data.pages,
-				etag: response.data.etag,
-				tableObjects: response.data.table_objects
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
 			}
-		}
+		)
+
+		return response.retrieveTable
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await GetTable(params)
+		return await retrieveTable(queryData, variables)
 	}
 }

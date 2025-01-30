@@ -1,4 +1,4 @@
-import { Table, ConvertObjectArrayToTables } from "./Table.js"
+import { Table } from "./Table.js"
 
 export class App {
 	constructor(
@@ -12,28 +12,4 @@ export class App {
 		public UsedStorage: number = 0,
 		public Tables: Table[] = []
 	) {}
-}
-
-export function ConvertObjectArrayToApps(objArray: any[]): App[] {
-	let apps: App[] = []
-
-	if (objArray != null) {
-		for (let obj of objArray) {
-			apps.push(
-				new App(
-					obj.id,
-					obj.name,
-					obj.description,
-					obj.published,
-					obj.web_link,
-					obj.google_play_link,
-					obj.microsoft_store_link,
-					obj.used_storage,
-					ConvertObjectArrayToTables(obj.tables)
-				)
-			)
-		}
-	}
-
-	return apps
 }

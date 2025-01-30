@@ -94,7 +94,6 @@ export { ShippingAddressesController }
 
 import * as TablesController from "./lib/controllers/TablesController.js"
 export { TablesController }
-export { GetTableResponseData } from "./lib/controllers/TablesController.js"
 
 import * as TableObjectsController from "./lib/controllers/TableObjectsController.js"
 export { TableObjectsController }
