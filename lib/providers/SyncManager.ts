@@ -8,10 +8,11 @@ import {
 	Environment,
 	DatabaseUser,
 	SessionUploadStatus,
-	TableObjectUploadStatus
+	TableObjectUploadStatus,
+	TableResource
 } from "../types.js"
 import {
-	SortTableIds,
+	SortTableNames,
 	BlobToBase64,
 	GetBlobData,
 	isSuccessStatusCode
@@ -27,10 +28,7 @@ import * as ErrorCodes from "../errorCodes.js"
 import { TableObject } from "../models/TableObject.js"
 import * as DatabaseOperations from "./DatabaseOperations.js"
 import { retrieveUser } from "../controllers/UsersController.js"
-import {
-	GetTable,
-	GetTableResponseData
-} from "../controllers/TablesController.js"
+import { retrieveTable } from "../controllers/TablesController.js"
 import {
 	CreateTableObject,
 	GetTableObject,
@@ -250,82 +248,111 @@ export async function Sync(): Promise<boolean> {
 	if (isSyncing || Dav.accessToken == null) return false
 	isSyncing = true
 
-	// Holds the table ids, e.g. 1, 2, 3, 4
-	var tableIds = Dav.tableIds
-	// Holds the parallel table ids, e.g. 2, 3
-	var parallelTableIds = Dav.parallelTableIds
-	// Holds the order of the table ids, sorted by the pages and the parallel table ids, e.g. 1, 2, 3, 2, 3, 4
-	var sortedTableIds: Array<number> = []
-	// Holds the pages of the table; in the format <tableId, pages>
-	var tablePages: Map<number, number> = new Map<number, number>()
-	// Holds the last downloaded page; in the format <tableId, pages>
-	var currentTablePages: Map<number, number> = new Map<number, number>()
-	// Holds the latest table result; in the format <tableId, GetTableResponseData>
-	var tableResults: Map<number, GetTableResponseData> = new Map<
-		number,
-		GetTableResponseData
+	// Holds the table names, e.g. 1, 2, 3, 4
+	let tableNames = Dav.tableNames
+	// Holds the parallel table names, e.g. 2, 3
+	let parallelTableNames = Dav.parallelTableNames
+	// Holds the order of the table names, sorted by the pages and the parallel table names, e.g. 1, 2, 3, 2, 3, 4
+	let sortedTableNames: Array<string> = []
+	// Mapping for the table names to the table ids
+	let tableIds: Map<string, number> = new Map<string, number>()
+	// Holds the pages of the table; in the format <tableName, pages>
+	let tablePages: Map<string, number> = new Map<string, number>()
+	// Holds the last downloaded page; in the format <tableName, pages>
+	let currentTablePages: Map<string, number> = new Map<string, number>()
+	// Holds the latest table result; in the format <tableName, GetTableResponseData>
+	let tableResults: Map<string, TableResource> = new Map<
+		string,
+		TableResource
 	>()
-	// Holds the uuids of the table objects that were removed on the server but not locally; in the format <tableId, Array<string>>
-	var removedTableObjectUuids: Map<number, Array<string>> = new Map<
-		number,
+	// Holds the uuids of the table objects that were removed on the server but not locally; in the format <tableName, Array<string>>
+	let removedTableObjectUuids: Map<string, Array<string>> = new Map<
+		string,
 		Array<string>
 	>()
-	// Is true if all http calls of the specified table are successful; in the format <tableId, Boolean>
-	var getTableResultsOkay: Map<number, boolean> = new Map<number, boolean>()
+	// Is true if all http calls of the specified table are successful; in the format <tableName, Boolean>
+	let getTableResultsOkay: Map<string, boolean> = new Map<string, boolean>()
 	// Holds the new table etags for the tables
-	var tableEtags: Map<number, string> = new Map<number, string>()
+	let tableEtags: Map<string, string> = new Map<string, string>()
 
-	if (tableIds == null || tableIds.length == 0 || parallelTableIds == null)
+	if (
+		tableNames == null ||
+		tableNames.length == 0 ||
+		parallelTableNames == null
+	) {
 		return false
+	}
+
+	const tableObjectsLimit = 100
+	const retrieveTableQueryData = `
+				id
+				etag
+				tableObjects(
+					limit: $limit
+					offset: $offset
+				) {
+					total
+					items {
+						uuid
+					}
+				}
+			`
 
 	// Get the first page of each table
-	for (let tableId of tableIds) {
+	for (let tableName of tableNames) {
 		// Get the first page of the table
-		let getTableResult = await GetTable({ id: tableId })
-		getTableResultsOkay.set(
-			tableId,
-			isSuccessStatusCode(getTableResult.status)
-		)
-		if (!isSuccessStatusCode(getTableResult.status)) continue
+		let retrieveTableResponse = await retrieveTable(retrieveTableQueryData, {
+			name: tableName,
+			limit: tableObjectsLimit
+		})
 
-		let tableData = (getTableResult as ApiResponse<GetTableResponseData>).data
+		let retrieveTableSuccess = !Array.isArray(retrieveTableResponse)
+
+		getTableResultsOkay.set(tableName, retrieveTableSuccess)
+		if (!retrieveTableSuccess) continue
+
+		let table = retrieveTableResponse as TableResource
+		tableIds.set(tableName, table.id)
 
 		// Check if the table has any changes
-		if (tableData.etag == (await DatabaseOperations.GetTableEtag(tableId))) {
+		if (table.etag == (await DatabaseOperations.GetTableEtag(table.id))) {
 			continue
 		}
 
 		// Save the result
-		tableResults.set(tableId, tableData)
-		tablePages.set(tableId, tableData.pages)
-		currentTablePages.set(tableId, 1)
-		tableEtags.set(tableId, tableData.etag)
+		tableResults.set(tableName, table)
+		tablePages.set(
+			tableName,
+			Math.floor(table.tableObjects.total / tableObjectsLimit)
+		)
+		currentTablePages.set(tableName, 1)
+		tableEtags.set(tableName, table.etag)
 	}
 
 	// Generate the sorted tableIds list
-	sortedTableIds = SortTableIds(tableIds, parallelTableIds, tablePages)
+	sortedTableNames = SortTableNames(tableNames, parallelTableNames, tablePages)
 
 	// Populate removedTableObjectUuids
-	for (let tableId of [...new Set(sortedTableIds)]) {
-		removedTableObjectUuids.set(tableId, [])
+	for (let tableName of [...new Set(sortedTableNames)]) {
+		removedTableObjectUuids.set(tableName, [])
 
 		for (let tableObject of await DatabaseOperations.GetAllTableObjects(
-			tableId,
+			tableIds.get(tableName),
 			true
 		)) {
-			removedTableObjectUuids.get(tableId).push(tableObject.Uuid)
+			removedTableObjectUuids.get(tableName).push(tableObject.Uuid)
 		}
 	}
 
 	// Process the table results
-	for (let tableId of sortedTableIds) {
-		if (!getTableResultsOkay.get(tableId)) continue
+	for (let tableName of sortedTableNames) {
+		if (!getTableResultsOkay.get(tableName)) continue
 
-		let removedTableObjects = removedTableObjectUuids.get(tableId)
-		let tableObjects = tableResults.get(tableId).tableObjects
+		let removedTableObjects = removedTableObjectUuids.get(tableName)
+		let tableObjects = tableResults.get(tableName).tableObjects
 		let tableChanged = false
 
-		for (let obj of tableObjects) {
+		for (let obj of tableObjects.items) {
 			// Remove the table objects from removedTableObjectUuids
 			let i = removedTableObjects.findIndex(uuid => uuid == obj.uuid)
 			if (i != -1) removedTableObjects.splice(i, 1)
@@ -356,11 +383,13 @@ export async function Sync(): Promise<boolean> {
 					let getTableObjectResponse = await GetTableObject({
 						uuid: currentTableObject.Uuid
 					})
+
 					if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
 					let tableObject = (
 						getTableObjectResponse as ApiResponse<TableObjectResponseData>
 					).data.tableObject
+
 					await tableObject.SetUploadStatus(
 						TableObjectUploadStatus.UpToDate
 					)
@@ -376,8 +405,10 @@ export async function Sync(): Promise<boolean> {
 							etag: obj.etag
 						})
 					} else {
-						if (Dav.callbacks.UpdateTableObject)
+						if (Dav.callbacks.UpdateTableObject) {
 							Dav.callbacks.UpdateTableObject(tableObject)
+						}
+
 						tableChanged = true
 					}
 				}
@@ -386,11 +417,13 @@ export async function Sync(): Promise<boolean> {
 				let getTableObjectResponse = await GetTableObject({
 					uuid: obj.uuid
 				})
+
 				if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
 
 				let tableObject = (
 					getTableObjectResponse as ApiResponse<TableObjectResponseData>
 				).data.tableObject
+
 				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
 
 				// Is it a file?
@@ -400,8 +433,9 @@ export async function Sync(): Promise<boolean> {
 						uuid: tableObject.Uuid
 					})
 				} else {
-					if (Dav.callbacks.UpdateTableObject)
+					if (Dav.callbacks.UpdateTableObject) {
 						Dav.callbacks.UpdateTableObject(tableObject)
+					}
 
 					tableChanged = true
 				}
@@ -409,49 +443,64 @@ export async function Sync(): Promise<boolean> {
 		}
 
 		// Check if there is a next page
-		currentTablePages.set(tableId, currentTablePages.get(tableId) + 1)
+		currentTablePages.set(tableName, currentTablePages.get(tableName) + 1)
 
-		if (currentTablePages.get(tableId) > tablePages.get(tableId)) {
-			if (Dav.callbacks.UpdateAllOfTable)
-				Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, true)
+		if (currentTablePages.get(tableName) > tablePages.get(tableName)) {
+			if (Dav.callbacks.UpdateAllOfTable) {
+				Dav.callbacks.UpdateAllOfTable(tableName, tableChanged, true)
+			}
 
 			// Save the new table etag
-			await DatabaseOperations.SetTableEtag(tableId, tableEtags.get(tableId))
+			await DatabaseOperations.SetTableEtag(
+				tableIds.get(tableName),
+				tableEtags.get(tableName)
+			)
 		}
 
-		if (Dav.callbacks.UpdateAllOfTable)
-			Dav.callbacks.UpdateAllOfTable(tableId, tableChanged, false)
+		if (Dav.callbacks.UpdateAllOfTable) {
+			Dav.callbacks.UpdateAllOfTable(
+				tableIds.get(tableName),
+				tableChanged,
+				false
+			)
+		}
 
 		// Get the next page
-		let getTableResult = await GetTable({
-			id: tableId,
-			page: currentTablePages.get(tableId)
+		let retrieveTableResponse = await retrieveTable(retrieveTableQueryData, {
+			name: tableName,
+			limit: tableObjectsLimit,
+			offset: (currentTablePages.get(tableName) - 1) * tableObjectsLimit
 		})
-		if (!isSuccessStatusCode(getTableResult.status)) {
-			getTableResultsOkay.set(tableId, false)
+
+		if (Array.isArray(retrieveTableResponse)) {
+			getTableResultsOkay.set(tableName, false)
 			continue
 		}
 
 		tableResults.set(
-			tableId,
-			(getTableResult as ApiResponse<GetTableResponseData>).data
+			tableName,
+			retrieveTableResponse
 		)
 	}
 
 	// RemovedTableObjects now includes all table objects that were deleted on the server but not locally
 	// Delete these table objects locally
-	for (let tableId of removedTableObjectUuids.keys()) {
-		if (!getTableResultsOkay.get(tableId)) continue
-		let removedTableObjects = removedTableObjectUuids.get(tableId)
+	for (let tableName of removedTableObjectUuids.keys()) {
+		if (!getTableResultsOkay.get(tableName)) continue
+		let removedTableObjects = removedTableObjectUuids.get(tableName)
 
 		for (let uuid of removedTableObjects) {
 			let obj = await DatabaseOperations.GetTableObject(uuid)
-			if (obj == null || obj.UploadStatus == TableObjectUploadStatus.New)
+
+			if (obj == null || obj.UploadStatus == TableObjectUploadStatus.New) {
 				continue
+			}
 
 			await obj.DeleteImmediately()
-			if (Dav.callbacks.DeleteTableObject)
+
+			if (Dav.callbacks.DeleteTableObject) {
 				Dav.callbacks.DeleteTableObject(obj)
+			}
 		}
 	}
 

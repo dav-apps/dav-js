@@ -59,8 +59,8 @@ export class Dav {
 	static environment: Environment = Environment.Development
 	static server: boolean = false
 	static appId: number = 0
-	static tableIds: number[] = []
-	static parallelTableIds: number[] = []
+	static tableNames: string[] = []
+	static parallelTableNames: string[] = []
 	static notificationOptions: NotificationOptions = { icon: null, badge: null }
 	static callbacks: {
 		UpdateAllOfTable?: Function
@@ -85,8 +85,8 @@ export class Dav {
 		environment?: Environment
 		server?: boolean
 		appId?: number
-		tableIds?: number[]
-		parallelTableIds?: number[]
+		tableNames?: string[]
+		parallelTableNames?: string[]
 		notificationOptions?: NotificationOptions
 		callbacks?: {
 			UpdateAllOfTable?: Function
@@ -102,9 +102,9 @@ export class Dav {
 			if (params.environment != null) Dav.environment = params.environment
 			if (params.server != null) Dav.server = params.server
 			if (params.appId != null) Dav.appId = params.appId
-			if (params.tableIds != null) Dav.tableIds = params.tableIds
-			if (params.parallelTableIds != null)
-				Dav.parallelTableIds = params.parallelTableIds
+			if (params.tableNames != null) Dav.tableNames = params.tableNames
+			if (params.parallelTableNames != null)
+				Dav.parallelTableNames = params.parallelTableNames
 			if (params.notificationOptions != null)
 				Dav.notificationOptions = params.notificationOptions
 			if (params.callbacks != null) Dav.callbacks = params.callbacks

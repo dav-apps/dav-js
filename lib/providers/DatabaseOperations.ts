@@ -232,7 +232,7 @@ export async function GetTableObject(
 	// Database -> DatabaseTableObject -(ConvertObjectToTableObject)> TableObject
 	// Try to get the table object from separateKeyStorage
 	try {
-		if (tableId) {
+		if (tableId != null) {
 			// Get the table object directly
 			return ConvertDatabaseTableObjectToTableObject(
 				(await localforage.getItem(
@@ -240,12 +240,17 @@ export async function GetTableObject(
 				)) as DatabaseTableObject
 			)
 		} else {
-			// Try to get the table objects with the uuid but with each table id
-			for (let id of Dav.tableIds) {
-				let obj = (await localforage.getItem(
-					getTableObjectKey(id, uuid)
-				)) as DatabaseTableObject
-				if (obj) return ConvertDatabaseTableObjectToTableObject(obj)
+			// Try to find the table object using the uuid only
+			let keys = await localforage.keysStartingWith("tableObject:")
+
+			for (let key of keys) {
+				if (key.includes(uuid)) {
+					let obj = (await localforage.getItem(key)) as DatabaseTableObject
+
+					if (obj != null) {
+						return ConvertDatabaseTableObjectToTableObject(obj)
+					}
+				}
 			}
 		}
 	} catch (error) {
@@ -265,15 +270,15 @@ export async function TableObjectExists(
 export async function RemoveTableObject(uuid: string, tableId?: number) {
 	// Try to remove the table object from separateKeyStorage
 	try {
-		if (tableId) {
+		if (tableId != null) {
 			// Remove the table object directly
 			await localforage.removeItem(getTableObjectKey(tableId, uuid))
 		} else {
-			// Find the table object with each table id and remove it
-			for (let id of Dav.tableIds) {
-				let key = getTableObjectKey(id, uuid)
-				let item = await localforage.getItem(key)
-				if (item) {
+			// Try to find the table object using the uuid only
+			let keys = await localforage.keysStartingWith("tableObject:")
+
+			for (let key of keys) {
+				if (key.includes(uuid)) {
 					await localforage.removeItem(key)
 					return
 				}

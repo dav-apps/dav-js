@@ -186,11 +186,14 @@ export interface AppResource {
 export interface TableResource {
 	id: number
 	name: string
+	etag: string
+	tableObjects: List<TableObjectResource>
 }
 
 export interface TableObjectResource {
 	uuid: string
 	user: UserResource
+	etag: string
 	purchases: List<PurchaseResource>
 }
 

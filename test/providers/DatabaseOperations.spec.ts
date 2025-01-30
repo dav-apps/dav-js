@@ -2629,6 +2629,7 @@ describe("GetTableObject function", () => {
 		// Arrange
 		let uuid = generateUuid()
 		let tableId = 14
+		let tableName = "14"
 		let uploadStatus = TableObjectUploadStatus.New
 		let etag = "asdonsdgonasdpnasd"
 		let belongsToUser = false
@@ -2639,7 +2640,7 @@ describe("GetTableObject function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: 1,
-			tableIds: [tableId]
+			tableNames: [tableName]
 		})
 
 		let tableObject = new TableObject({
@@ -2682,6 +2683,7 @@ describe("GetTableObject function", () => {
 		// Arrange
 		let uuid = generateUuid()
 		let tableId = 14
+		let tableName = "14"
 		let uploadStatus = TableObjectUploadStatus.New
 		let etag = "asdonsdgonasdpnasd"
 		let belongsToUser = true
@@ -2692,7 +2694,7 @@ describe("GetTableObject function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: 1,
-			tableIds: [tableId]
+			tableNames: [tableName]
 		})
 
 		let tableObject = new TableObject({
@@ -2749,11 +2751,12 @@ describe("TableObjectExists function", () => {
 		// Arrange
 		let uuid = generateUuid()
 		let tableId = 123
+		let tableName = "123"
 
 		new Dav({
 			environment: Environment.Test,
 			appId: 1,
-			tableIds: [tableId]
+			tableNames: [tableName]
 		})
 
 		let tableObject = new TableObject({
@@ -2777,11 +2780,12 @@ describe("TableObjectExists function", () => {
 		// Arrange
 		let uuid = generateUuid()
 		let tableId = 123
+		let tableName = "123"
 
 		new Dav({
 			environment: Environment.Test,
 			appId: 1,
-			tableIds: [tableId]
+			tableNames: [tableName]
 		})
 
 		let tableObject = new TableObject({
@@ -2815,11 +2819,12 @@ describe("RemoveTableObject function", () => {
 		// Arrage
 		let uuid = generateUuid()
 		let tableId = 13
+		let tableName = "13"
 
 		new Dav({
 			environment: Environment.Test,
 			appId: 1,
-			tableIds: [tableId]
+			tableNames: [tableName]
 		})
 
 		let tableObject = new TableObject({
@@ -2847,11 +2852,12 @@ describe("RemoveTableObject function", () => {
 		// Arrage
 		let uuid = generateUuid()
 		let tableId = 13
+		let tableName = "13"
 
 		new Dav({
 			environment: Environment.Test,
 			appId: 1,
-			tableIds: [tableId]
+			tableNames: [tableName]
 		})
 
 		let tableObject = new TableObject({
