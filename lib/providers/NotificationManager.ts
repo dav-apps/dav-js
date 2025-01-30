@@ -18,7 +18,7 @@ import { WebPushSubscription } from "../models/WebPushSubscription.js"
 import { Notification } from "../models/Notification.js"
 import * as WebPushSubscriptionsController from "../controllers/WebPushSubscriptionsController.js"
 import {
-	CreateNotification,
+	createNotification,
 	GetNotifications,
 	DeleteNotification,
 	UpdateNotification
@@ -219,36 +219,34 @@ export async function NotificationSyncPush() {
 		switch (notification.UploadStatus) {
 			case GenericUploadStatus.New:
 				// Create the notification on the server
-				let createResult = await CreateNotificationOnServer(notification)
+				let createNotificationResponse = await createNotification(
+					`
+						uuid
+						time
+						interval
+						title
+						body
+					`,
+					{
+						time: notification.Time,
+						interval: notification.Interval,
+						title: notification.Title,
+						body: notification.Body
+					}
+				)
 
-				if (createResult.success) {
+				if (!Array.isArray(createNotificationResponse)) {
 					notification.UploadStatus = GenericUploadStatus.UpToDate
 					await DatabaseOperations.SetNotification(notification)
-				} else if (createResult.message != null) {
-					// Check the errors
-					let errors = (createResult.message as ApiErrorResponse).errors
-
+				} else {
 					// Check if the notification already exists
-					let i = errors.findIndex(
-						error => error.code == ErrorCodes.UuidAlreadyInUse
-					)
-					if (i != -1) {
+					if (createNotificationResponse.includes("UUID_ALREADY_IN_USE")) {
 						// Set the UploadStatus to UpToDate
 						notification.UploadStatus = GenericUploadStatus.UpToDate
 						await DatabaseOperations.SetNotification(notification)
 					}
-
-					// Check if title or body is missing
-					i = errors.findIndex(
-						error =>
-							error.code == ErrorCodes.TitleMissing ||
-							error.code == ErrorCodes.BodyMissing
-					)
-					if (i != -1) {
-						// Delete the notification
-						await DatabaseOperations.RemoveNotification(notification.Uuid)
-					}
 				}
+
 				break
 			case GenericUploadStatus.Updated:
 				// Update the notification on the server
@@ -333,32 +331,6 @@ async function CreateWebPushSubscriptionOnServer(
 		return {
 			success: false,
 			message: createWebPushSubscriptionResponse as ApiErrorResponse
-		}
-	}
-}
-
-async function CreateNotificationOnServer(
-	notification: Notification
-): Promise<{ success: boolean; message: Notification | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
-
-	let createNotificationResponse = await CreateNotification({
-		uuid: notification.Uuid,
-		time: notification.Time,
-		interval: notification.Interval,
-		title: notification.Title,
-		body: notification.Body
-	})
-
-	if (isSuccessStatusCode(createNotificationResponse.status)) {
-		return {
-			success: true,
-			message: (createNotificationResponse as ApiResponse<Notification>).data
-		}
-	} else {
-		return {
-			success: false,
-			message: createNotificationResponse as ApiErrorResponse
 		}
 	}
 }

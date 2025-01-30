@@ -77,6 +77,7 @@ export type ErrorCode =
 	| "GOOGLE_PLAY_LINK_INVALID"
 	| "MICROSOFT_STORE_LINK_INVALID"
 	| "EMAIL_ALREADY_IN_USE"
+	| "UUID_ALREADY_IN_USE"
 
 export interface List<T> {
 	total: number
