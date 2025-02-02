@@ -96,23 +96,14 @@ export async function WebPushSubscriptionSync() {
 	}
 
 	// Check if the web push subscription still exists on the server
-	let webPushSubscriptionResponse =
-		await WebPushSubscriptionsController.GetWebPushSubscription({
+	let retrieveWebPushSubscriptionResponse =
+		await WebPushSubscriptionsController.retrieveWebPushSubscription(`uuid`, {
 			uuid: webPushSubscription.Uuid
 		})
 
-	if (!isSuccessStatusCode(webPushSubscriptionResponse.status)) {
-		let errors = (webPushSubscriptionResponse as ApiErrorResponse).errors
-
-		if (errors != null) {
-			let i = errors.findIndex(
-				error => error.code == ErrorCodes.WebPushSubscriptionDoesNotExist
-			)
-			if (i != -1) {
-				// Delete the web push subscription locally
-				await DatabaseOperations.RemoveWebPushSubscription()
-			}
-		}
+	if (retrieveWebPushSubscriptionResponse == null) {
+		// Delete the web push subscription locally
+		await DatabaseOperations.RemoveWebPushSubscription()
 	}
 
 	isSyncingWebPushSubscription = false
