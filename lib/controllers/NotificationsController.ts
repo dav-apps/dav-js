@@ -6,6 +6,7 @@ import {
 	ApiErrorResponse,
 	GenericUploadStatus,
 	ErrorCode,
+	List,
 	NotificationResource
 } from "../types.js"
 import {
@@ -16,10 +17,46 @@ import {
 	handleGraphQLErrors
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
-import {
-	Notification,
-	ConvertObjectArrayToNotifications
-} from "../models/Notification.js"
+import { Notification } from "../models/Notification.js"
+
+export async function listNotifications(
+	queryData: string,
+	variables?: {
+		accessToken?: string
+	}
+): Promise<List<NotificationResource> | ErrorCode[]> {
+	try {
+		let response = await request<{
+			listNotifications: List<NotificationResource>
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				query ListNotifications {
+					listNotifications {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables?.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return response.listNotifications
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables?.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await listNotifications(queryData, variables)
+	}
+}
 
 export async function createNotification(
 	queryData: string,
@@ -145,37 +182,6 @@ export async function createNotificationForUser(
 		return response.createNotificationForUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
-	}
-}
-
-export async function GetNotifications(params?: {
-	accessToken?: string
-}): Promise<ApiResponse<Notification[]> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/notifications`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
-			}
-		})
-
-		return {
-			status: response.status,
-			data: ConvertObjectArrayToNotifications(response.data.notifications)
-		}
-	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetNotifications()
 	}
 }
 

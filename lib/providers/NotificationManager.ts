@@ -10,7 +10,8 @@ import {
 	generateUuid,
 	urlBase64ToUint8Array,
 	requestNotificationPermission,
-	isSuccessStatusCode
+	isSuccessStatusCode,
+	convertNotificationResourceToNotification
 } from "../utils.js"
 import * as ErrorCodes from "../errorCodes.js"
 import * as DatabaseOperations from "./DatabaseOperations.js"
@@ -18,8 +19,8 @@ import { WebPushSubscription } from "../models/WebPushSubscription.js"
 import { Notification } from "../models/Notification.js"
 import * as WebPushSubscriptionsController from "../controllers/WebPushSubscriptionsController.js"
 import {
+	listNotifications,
 	createNotification,
-	GetNotifications,
 	DeleteNotification,
 	UpdateNotification
 } from "../controllers/NotificationsController.js"
@@ -164,12 +165,21 @@ export async function NotificationSync() {
 	let removedNotifications = await DatabaseOperations.GetAllNotifications()
 
 	// Get all notifications from the server
-	let getNotificationsResponse = await GetNotifications()
-	if (!isSuccessStatusCode(getNotificationsResponse.status)) return
-	let notifications = (getNotificationsResponse as ApiResponse<Notification[]>)
-		.data
+	let listNotificationsResponse = await listNotifications(
+		`
+			uuid
+			time
+			interval
+			title
+			body
+		`
+	)
 
-	for (let notification of notifications) {
+	if (Array.isArray(listNotificationsResponse)) return
+
+	for (let item of listNotificationsResponse.items) {
+		let notification = convertNotificationResourceToNotification(item)
+
 		// Remove the notification from removedNotifications
 		let i = removedNotifications.findIndex(n => n.Uuid == notification.Uuid)
 		if (i != -1) removedNotifications.splice(i, 1)

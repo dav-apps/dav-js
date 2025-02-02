@@ -57,26 +57,3 @@ export class Notification {
 		}
 	}
 }
-
-export function ConvertObjectArrayToNotifications(
-	objArray: any[]
-): Notification[] {
-	let notifications: Notification[] = []
-
-	if (objArray != null) {
-		for (let obj of objArray) {
-			notifications.push(
-				new Notification({
-					Uuid: obj.uuid,
-					Time: obj.time,
-					Interval: obj.interval,
-					Title: obj.title,
-					Body: obj.body,
-					UploadStatus: GenericUploadStatus.UpToDate
-				})
-			)
-		}
-	}
-
-	return notifications
-}
