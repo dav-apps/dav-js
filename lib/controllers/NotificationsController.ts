@@ -185,50 +185,77 @@ export async function createNotificationForUser(
 	}
 }
 
-export async function UpdateNotification(params: {
-	accessToken?: string
-	uuid: string
-	time?: number
-	interval?: number
-	title?: string
-	body?: string
-}): Promise<ApiResponse<Notification> | ApiErrorResponse> {
+export async function updateNotification(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid: string
+		time?: number
+		interval?: number
+		title?: string
+		body?: string
+		icon?: string
+		image?: string
+		href?: string
+	}
+): Promise<NotificationResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "put",
-			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let response = await request<{
+			updateNotification: NotificationResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation UpdateNotification(
+					$uuid: String!
+					$time: Int
+					$interval: Int
+					$title: String
+					$body: String
+					$icon: String
+					$image: String
+					$href: String
+				) {
+					updateNotification(
+						uuid: $uuid
+						time: $time
+						interval: $interval
+						title: $title
+						body: $body
+						icon: $icon
+						image: $image
+						href: $href
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid,
+				time: variables.time,
+				interval: variables.interval,
+				title: variables.title,
+				body: variables.body,
+				icon: variables.icon,
+				image: variables.image,
+				href: variables.href
 			},
-			data: PrepareRequestParams({
-				time: params.time,
-				interval: params.interval,
-				title: params.title,
-				body: params.body
-			})
-		})
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
 
-		return {
-			status: response.status,
-			data: new Notification({
-				Uuid: response.data.uuid,
-				Time: response.data.time,
-				Interval: response.data.interval,
-				Title: response.data.title,
-				Body: response.data.body,
-				UploadStatus: GenericUploadStatus.UpToDate
-			})
-		}
+		return response.updateNotification
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await UpdateNotification(params)
+		return await updateNotification(queryData, variables)
 	}
 }
 

@@ -21,8 +21,8 @@ import * as WebPushSubscriptionsController from "../controllers/WebPushSubscript
 import {
 	listNotifications,
 	createNotification,
-	DeleteNotification,
-	UpdateNotification
+	updateNotification,
+	DeleteNotification
 } from "../controllers/NotificationsController.js"
 
 var isSyncingWebPushSubscription = false
@@ -260,24 +260,38 @@ export async function NotificationSyncPush() {
 				break
 			case GenericUploadStatus.Updated:
 				// Update the notification on the server
-				let updateResult = await UpdateNotificationOnServer(notification)
+				let updateNotificationResponse = await updateNotification(
+					`
+						uuid
+						time
+						interval
+						title
+						body
+					`,
+					{
+						uuid: notification.Uuid,
+						time: notification.Time,
+						interval: notification.Interval,
+						title: notification.Title,
+						body: notification.Body
+					}
+				)
 
-				if (updateResult.success) {
+				if (!Array.isArray(updateNotificationResponse)) {
 					notification.UploadStatus = GenericUploadStatus.UpToDate
 					await DatabaseOperations.SetNotification(notification)
-				} else if (updateResult.message != null) {
-					// Check the errors
-					let errors = (updateResult.message as ApiErrorResponse).errors
-
+				} else {
 					// Check if the notification does not exist
-					let i = errors.findIndex(
-						error => error.code == ErrorCodes.NotificationDoesNotExist
-					)
-					if (i != -1) {
+					if (
+						updateNotificationResponse.includes(
+							"NOTIFICATION_DOES_NOT_EXIST"
+						)
+					) {
 						// Delete the notification
 						await DatabaseOperations.RemoveNotification(notification.Uuid)
 					}
 				}
+
 				break
 			case GenericUploadStatus.Deleted:
 				// Delete the notification on the server
@@ -341,32 +355,6 @@ async function CreateWebPushSubscriptionOnServer(
 		return {
 			success: false,
 			message: createWebPushSubscriptionResponse as ApiErrorResponse
-		}
-	}
-}
-
-async function UpdateNotificationOnServer(
-	notification: Notification
-): Promise<{ success: boolean; message: Notification | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
-
-	let updateNotificationResponse = await UpdateNotification({
-		uuid: notification.Uuid,
-		time: notification.Time,
-		interval: notification.Interval,
-		title: notification.Title,
-		body: notification.Body
-	})
-
-	if (isSuccessStatusCode(updateNotificationResponse.status)) {
-		return {
-			success: true,
-			message: (updateNotificationResponse as ApiResponse<Notification>).data
-		}
-	} else {
-		return {
-			success: false,
-			message: updateNotificationResponse as ApiErrorResponse
 		}
 	}
 }
