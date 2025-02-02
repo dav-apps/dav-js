@@ -38,10 +38,7 @@ import {
 	RemoveTableObject,
 	TableObjectResponseData
 } from "../controllers/TableObjectsController.js"
-import {
-	CreateWebsocketConnection,
-	WebsocketConnectionResponseData
-} from "../controllers/WebsocketConnectionsController.js"
+import { createWebsocketConnection } from "../controllers/WebsocketConnectionsController.js"
 import * as SessionsController from "../controllers/SessionsController.js"
 
 var isSyncing = false
@@ -477,10 +474,7 @@ export async function Sync(): Promise<boolean> {
 			continue
 		}
 
-		tableResults.set(
-			tableName,
-			retrieveTableResponse
-		)
+		tableResults.set(tableName, retrieveTableResponse)
 	}
 
 	// RemovedTableObjects now includes all table objects that were deleted on the server but not locally
@@ -657,12 +651,13 @@ export async function StartWebsocketConnection() {
 	if (Dav.accessToken == null || Dav.environment == Environment.Test) return
 
 	// Create a WebsocketConnection on the server
-	let createWebsocketConnectionResponse = await CreateWebsocketConnection()
-	if (createWebsocketConnectionResponse.status != 201) return
+	let createWebsocketConnectionResponse = await createWebsocketConnection(
+		`token`
+	)
 
-	let token = (
-		createWebsocketConnectionResponse as ApiResponse<WebsocketConnectionResponseData>
-	).data.token
+	if (Array.isArray(createWebsocketConnectionResponse)) return
+
+	const token = createWebsocketConnectionResponse.token
 	let baseUrl = Dav.apiBaseUrl.replace("http", "ws")
 
 	webSocket = new WebSocket(`${baseUrl}/cable?token=${token}`)

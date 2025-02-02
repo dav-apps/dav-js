@@ -270,6 +270,10 @@ export interface WebPushSubscriptionResource {
 	p256dh: string
 	auth: string
 }
+
+export interface WebsocketConnectionResource {
+	token: string
+}
 //#endregion
 
 //#region TableObject & Property types

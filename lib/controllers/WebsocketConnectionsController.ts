@@ -1,41 +1,43 @@
-import axios from "axios"
+import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { ApiErrorResponse, ApiResponse } from "../types.js"
-import { ConvertErrorToApiErrorResponse, HandleApiError } from "../utils.js"
+import { WebsocketConnectionResource, ErrorCode } from "../types.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
-export interface WebsocketConnectionResponseData {
-	token: string
-}
-
-export async function CreateWebsocketConnection(params?: {
-	accessToken?: string
-}): Promise<ApiResponse<WebsocketConnectionResponseData> | ApiErrorResponse> {
+export async function createWebsocketConnection(
+	queryData: string,
+	variables?: {
+		accessToken?: string
+	}
+): Promise<WebsocketConnectionResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/websocket_connection`,
-			headers: {
-				Authorization:
-					params != null && params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken
+		let response = await request<{
+			createWebsocketConnection: WebsocketConnectionResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				query CreateWebsocketConnection {
+					createWebsocketConnection {
+						${queryData}
+					}
+				}
+			`,
+			{},
+			{
+				Authorization: variables?.accessToken ?? Dav.accessToken
 			}
-		})
+		)
 
-		return {
-			status: response.status,
-			data: {
-				token: response.data.token
-			}
-		}
+		return response.createWebsocketConnection
 	} catch (error) {
-		if (params != null && params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await CreateWebsocketConnection()
+		return await createWebsocketConnection(queryData, variables)
 	}
 }
