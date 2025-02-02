@@ -259,32 +259,44 @@ export async function updateNotification(
 	}
 }
 
-export async function DeleteNotification(params: {
-	accessToken?: string
-	uuid: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
+export async function deleteNotification(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid: string
+	}
+): Promise<NotificationResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "delete",
-			url: `${Dav.apiBaseUrl}/notification/${params.uuid}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let response = await request<{
+			deleteNotification: NotificationResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation DeleteNotification($uuid: String!) {
+					deleteNotification(uuid: $uuid) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
 			}
-		})
+		)
 
-		return {
-			status: response.status,
-			data: {}
-		}
+		return response.deleteNotification
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await DeleteNotification(params)
+		return await deleteNotification(queryData, variables)
 	}
 }

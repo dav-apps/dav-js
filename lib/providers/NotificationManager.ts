@@ -22,7 +22,7 @@ import {
 	listNotifications,
 	createNotification,
 	updateNotification,
-	DeleteNotification
+	deleteNotification
 } from "../controllers/NotificationsController.js"
 
 var isSyncingWebPushSubscription = false
@@ -295,26 +295,26 @@ export async function NotificationSyncPush() {
 				break
 			case GenericUploadStatus.Deleted:
 				// Delete the notification on the server
-				let deleteResult = await DeleteNotificationOnServer(notification)
+				let deleteNotificationResponse = await deleteNotification(`uuid`, {
+					uuid: notification.Uuid
+				})
 
-				if (deleteResult.success) {
+				if (!Array.isArray(deleteNotificationResponse)) {
 					// Delete the table object
 					await DatabaseOperations.RemoveNotification(notification.Uuid)
-				} else if (deleteResult.message != null) {
-					// Check the errors
-					let errors = (deleteResult.message as ApiErrorResponse).errors
-
+				} else {
 					// Check if the notification does not exist
-					let i = errors.findIndex(
-						error =>
-							error.code == ErrorCodes.NotificationDoesNotExist ||
-							error.code == ErrorCodes.ActionNotAllowed
-					)
-					if (i != -1) {
+					if (
+						deleteNotificationResponse.includes(
+							"NOTIFICATION_DOES_NOT_EXIST"
+						) ||
+						deleteNotificationResponse.includes("ACTION_NOT_ALLOWED")
+					) {
 						// Delete the notification
 						await DatabaseOperations.RemoveNotification(notification.Uuid)
 					}
 				}
+
 				break
 		}
 	}
@@ -355,28 +355,6 @@ async function CreateWebPushSubscriptionOnServer(
 		return {
 			success: false,
 			message: createWebPushSubscriptionResponse as ApiErrorResponse
-		}
-	}
-}
-
-async function DeleteNotificationOnServer(
-	notification: Notification
-): Promise<{ success: boolean; message: {} | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
-
-	let deleteNotificationResponse = await DeleteNotification({
-		uuid: notification.Uuid
-	})
-
-	if (isSuccessStatusCode(deleteNotificationResponse.status)) {
-		return {
-			success: true,
-			message: {}
-		}
-	} else {
-		return {
-			success: false,
-			message: deleteNotificationResponse as ApiErrorResponse
 		}
 	}
 }
