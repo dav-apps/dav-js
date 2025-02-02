@@ -263,6 +263,13 @@ export interface ShippingAddressResource {
 	postalCode: string
 	state: string
 }
+
+export interface WebPushSubscriptionResource {
+	uuid: string
+	endpoint: string
+	p256dh: string
+	auth: string
+}
 //#endregion
 
 //#region TableObject & Property types

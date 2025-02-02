@@ -124,6 +124,7 @@ export async function WebPushSubscriptionSyncPush() {
 
 	// Get the WebPushSubscription from the database
 	let webPushSubscription = await DatabaseOperations.GetWebPushSubscription()
+
 	if (webPushSubscription == null) {
 		isSyncingWebPushSubscription = false
 		return
@@ -133,25 +134,26 @@ export async function WebPushSubscriptionSyncPush() {
 		webPushSubscription.UploadStatus == WebPushSubscriptionUploadStatus.New
 	) {
 		// Create the WebPushSubscription on the server
-		let createResult = await CreateWebPushSubscriptionOnServer(
-			webPushSubscription
-		)
+		let createWebPushSubscriptionResponse =
+			await WebPushSubscriptionsController.createWebPushSubscription(
+				`uuid`,
+				{
+					uuid: webPushSubscription.Uuid,
+					endpoint: webPushSubscription.Endpoint,
+					p256dh: webPushSubscription.P256dh,
+					auth: webPushSubscription.Auth
+				}
+			)
 
-		if (createResult.success) {
+		if (!Array.isArray(createWebPushSubscriptionResponse)) {
 			webPushSubscription.UploadStatus =
 				WebPushSubscriptionUploadStatus.UpToDate
 			await DatabaseOperations.SetWebPushSubscription(webPushSubscription)
-		} else {
-			let errors = (createResult.message as ApiErrorResponse).errors
-
-			// Check if the session does not exist
-			let i = errors.findIndex(
-				error => error.code == ErrorCodes.SessionDoesNotExist
-			)
-			if (i != -1) {
-				// Log the user out
-				await Dav.Logout()
-			}
+		} else if (
+			createWebPushSubscriptionResponse.includes("SESSION_DOES_NOT_EXIST")
+		) {
+			// Log the user out
+			await Dav.Logout()
 		}
 	}
 
@@ -248,13 +250,12 @@ export async function NotificationSyncPush() {
 				if (!Array.isArray(createNotificationResponse)) {
 					notification.UploadStatus = GenericUploadStatus.UpToDate
 					await DatabaseOperations.SetNotification(notification)
-				} else {
-					// Check if the notification already exists
-					if (createNotificationResponse.includes("UUID_ALREADY_IN_USE")) {
-						// Set the UploadStatus to UpToDate
-						notification.UploadStatus = GenericUploadStatus.UpToDate
-						await DatabaseOperations.SetNotification(notification)
-					}
+				} else if (
+					createNotificationResponse.includes("UUID_ALREADY_IN_USE")
+				) {
+					// Set the UploadStatus to UpToDate
+					notification.UploadStatus = GenericUploadStatus.UpToDate
+					await DatabaseOperations.SetNotification(notification)
 				}
 
 				break
@@ -280,16 +281,13 @@ export async function NotificationSyncPush() {
 				if (!Array.isArray(updateNotificationResponse)) {
 					notification.UploadStatus = GenericUploadStatus.UpToDate
 					await DatabaseOperations.SetNotification(notification)
-				} else {
-					// Check if the notification does not exist
-					if (
-						updateNotificationResponse.includes(
-							"NOTIFICATION_DOES_NOT_EXIST"
-						)
-					) {
-						// Delete the notification
-						await DatabaseOperations.RemoveNotification(notification.Uuid)
-					}
+				} else if (
+					updateNotificationResponse.includes(
+						"NOTIFICATION_DOES_NOT_EXIST"
+					)
+				) {
+					// Delete the notification
+					await DatabaseOperations.RemoveNotification(notification.Uuid)
 				}
 
 				break
@@ -302,17 +300,14 @@ export async function NotificationSyncPush() {
 				if (!Array.isArray(deleteNotificationResponse)) {
 					// Delete the table object
 					await DatabaseOperations.RemoveNotification(notification.Uuid)
-				} else {
-					// Check if the notification does not exist
-					if (
-						deleteNotificationResponse.includes(
-							"NOTIFICATION_DOES_NOT_EXIST"
-						) ||
-						deleteNotificationResponse.includes("ACTION_NOT_ALLOWED")
-					) {
-						// Delete the notification
-						await DatabaseOperations.RemoveNotification(notification.Uuid)
-					}
+				} else if (
+					deleteNotificationResponse.includes(
+						"NOTIFICATION_DOES_NOT_EXIST"
+					) ||
+					deleteNotificationResponse.includes("ACTION_NOT_ALLOWED")
+				) {
+					// Delete the notification
+					await DatabaseOperations.RemoveNotification(notification.Uuid)
 				}
 
 				break
@@ -326,36 +321,3 @@ export async function NotificationSyncPush() {
 		await NotificationSyncPush()
 	}
 }
-
-//#region Utility functions
-async function CreateWebPushSubscriptionOnServer(
-	webPushSubscription: WebPushSubscription
-): Promise<{
-	success: boolean
-	message: WebPushSubscription | ApiErrorResponse
-}> {
-	if (Dav.accessToken == null) return { success: false, message: null }
-
-	const createWebPushSubscriptionResponse =
-		await WebPushSubscriptionsController.CreateWebPushSubscription({
-			uuid: webPushSubscription.Uuid,
-			endpoint: webPushSubscription.Endpoint,
-			p256dh: webPushSubscription.P256dh,
-			auth: webPushSubscription.Auth
-		})
-
-	if (isSuccessStatusCode(createWebPushSubscriptionResponse.status)) {
-		return {
-			success: true,
-			message: (
-				createWebPushSubscriptionResponse as ApiResponse<WebPushSubscription>
-			).data
-		}
-	} else {
-		return {
-			success: false,
-			message: createWebPushSubscriptionResponse as ApiErrorResponse
-		}
-	}
-}
-//#endregion

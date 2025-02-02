@@ -1,59 +1,75 @@
+import { request, gql, ClientError } from "graphql-request"
 import axios from "axios"
 import { Dav } from "../Dav.js"
 import { WebPushSubscription } from "../models/WebPushSubscription.js"
 import {
 	ApiResponse,
 	ApiErrorResponse,
-	WebPushSubscriptionUploadStatus
+	WebPushSubscriptionResource,
+	ErrorCode
 } from "../types.js"
 import {
 	ConvertErrorToApiErrorResponse,
 	HandleApiError,
-	PrepareRequestParams
+	getErrorCodesOfGraphQLError,
+	handleGraphQLErrors
 } from "../utils.js"
 
-export async function CreateWebPushSubscription(params: {
-	accessToken?: string
-	uuid?: string
-	endpoint: string
-	p256dh: string
-	auth: string
-}): Promise<ApiResponse<WebPushSubscription> | ApiErrorResponse> {
+export async function createWebPushSubscription(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid?: string
+		endpoint: string
+		p256dh: string
+		auth: string
+	}
+): Promise<WebPushSubscriptionResource | ErrorCode[]> {
 	try {
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/web_push_subscription`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
+		let response = await request<{
+			createWebPushSubscription: WebPushSubscriptionResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation CreateWebPushSubscription(
+					$uuid: String
+					$endpoint: String!
+					$p256dh: String!
+					$auth: String!
+				) {
+					createWebPushSubscription(
+						uuid: $uuid
+						endpoint: $endpoint
+						p256dh: $p256dh
+						auth: $auth
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid,
+				endpoint: variables.endpoint,
+				p256dh: variables.p256dh,
+				auth: variables.auth
 			},
-			data: PrepareRequestParams({
-				uuid: params.uuid,
-				endpoint: params.endpoint,
-				p256dh: params.p256dh,
-				auth: params.auth
-			})
-		})
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
 
-		return {
-			status: response.status,
-			data: new WebPushSubscription(
-				response.data.uuid,
-				response.data.endpoint,
-				response.data.p256dh,
-				response.data.auth,
-				WebPushSubscriptionUploadStatus.UpToDate
-			)
-		}
+		return response.createWebPushSubscription
 	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
 		}
 
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
-		return await CreateWebPushSubscription(params)
+		return await createWebPushSubscription(queryData, variables)
 	}
 }
 
