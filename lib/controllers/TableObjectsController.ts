@@ -6,7 +6,6 @@ import {
 	ApiErrorResponse,
 	ApiResponse,
 	ErrorCode,
-	TableObjectUploadStatus,
 	TableObjectResource,
 	ApiErrorResponse2,
 	List
@@ -15,7 +14,6 @@ import {
 	ConvertErrorToApiErrorResponse,
 	convertErrorToApiErrorResponse2,
 	HandleApiError,
-	PrepareRequestParams,
 	getErrorCodesOfGraphQLError,
 	handleApiError2,
 	handleGraphQLErrors,
@@ -152,8 +150,10 @@ export async function createTableObject(
 		uuid?: string
 		tableId: number
 		file?: boolean
+		ext?: string
+		properties?: { [name: string]: string | boolean | number }
 	}
-): Promise<TableObject | ErrorCode[]> {
+): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ createTableObject: TableObjectResource }>(
 			Dav.newApiBaseUrl,
@@ -162,11 +162,15 @@ export async function createTableObject(
 					$uuid: String
 					$tableId: Int!
 					$file: Boolean
+					$ext: String
+					$properties: JSONObject
 				) {
 					createTableObject(
 						uuid: $uuid
 						tableId: $tableId
 						file: $file
+						ext: $ext
+						properties: $properties
 					) {
 						${queryData}
 					}
@@ -181,7 +185,7 @@ export async function createTableObject(
 			}
 		)
 
-		return convertTableObjectResourceToTableObject(response.createTableObject)
+		return response.createTableObject
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -266,130 +270,6 @@ export async function uploadTableObjectFile(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await uploadTableObjectFile(params)
-	}
-}
-
-export async function CreateTableObject(params: {
-	accessToken?: string
-	uuid?: string
-	tableId: number
-	file?: boolean
-	properties?: { [name: string]: string | boolean | number }
-}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
-	try {
-		let data = PrepareRequestParams({
-			table_id: params.tableId,
-			uuid: params.uuid,
-			file: params.file
-		})
-
-		if (params.properties != null) {
-			let propertyKeys = Object.keys(params.properties)
-
-			if (propertyKeys.length > maxPropertiesUploadCount) {
-				// Get the first 100 keys
-				let properties = {}
-				let keys = Object.keys(params.properties).slice(
-					0,
-					maxPropertiesUploadCount
-				)
-
-				for (let key of keys) {
-					properties[key] = params.properties[key]
-				}
-
-				data["properties"] = properties
-			} else {
-				data["properties"] = params.properties
-			}
-		}
-
-		let response = await axios({
-			method: "post",
-			url: `${Dav.apiBaseUrl}/table_object`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			},
-			data
-		})
-
-		let tableObject = new TableObject({
-			Uuid: response.data.uuid,
-			TableId: response.data.table_id,
-			IsFile: response.data.file,
-			UploadStatus: TableObjectUploadStatus.UpToDate,
-			Etag: response.data.etag,
-			BelongsToUser: response.data.belongs_to_user,
-			Purchase: response.data.purchase
-		})
-
-		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = { value: response.data.properties[key] }
-		}
-
-		return {
-			status: response.status,
-			data: {
-				tableEtag: response.data.table_etag,
-				tableObject
-			}
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await CreateTableObject(params)
-	}
-}
-
-export async function GetTableObject(params: {
-	accessToken?: string
-	uuid: string
-}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			}
-		})
-
-		let tableObject = new TableObject({
-			Uuid: response.data.uuid,
-			TableId: response.data.table_id,
-			IsFile: response.data.file,
-			Etag: response.data.etag,
-			BelongsToUser: response.data.belongs_to_user,
-			Purchase: response.data.purchase
-		})
-
-		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = { value: response.data.properties[key] }
-		}
-
-		return {
-			status: response.status,
-			data: {
-				tableEtag: response.data.table_etag,
-				tableObject
-			}
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetTableObject(params)
 	}
 }
 
