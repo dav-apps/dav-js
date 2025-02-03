@@ -1,7 +1,6 @@
 import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
-import { maxPropertiesUploadCount } from "../constants.js"
 import {
 	ApiErrorResponse,
 	ApiResponse,
@@ -200,6 +199,58 @@ export async function createTableObject(
 	}
 }
 
+export async function updateTableObject(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid: string
+		ext?: string
+		properties?: { [name: string]: string | boolean | number }
+	}
+): Promise<TableObjectResource | ErrorCode[]> {
+	try {
+		let response = await request<{ updateTableObject: TableObjectResource }>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation UpdateTableObject(
+					$uuid: String!
+					$ext: String
+					$properties: JSONObject
+				) {
+					updateTableObject(
+						uuid: $uuid
+						ext: $ext
+						properties: $properties
+					) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid,
+				ext: variables.ext,
+				properties: variables.properties
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return response.updateTableObject
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await updateTableObject(queryData, variables)
+	}
+}
+
 export async function deleteTableObject(
 	queryData: string,
 	variables: {
@@ -270,91 +321,6 @@ export async function uploadTableObjectFile(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await uploadTableObjectFile(params)
-	}
-}
-
-export async function UpdateTableObject(params: {
-	accessToken?: string
-	uuid: string
-	properties: { [name: string]: string | boolean | number }
-}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
-	try {
-		let propertyKeys = Object.keys(params.properties)
-		let response
-
-		if (propertyKeys.length > maxPropertiesUploadCount) {
-			let selectedProperties = {}
-
-			while (propertyKeys.length > 0) {
-				selectedProperties = {}
-
-				for (let i = 0; i < maxPropertiesUploadCount; i++) {
-					if (propertyKeys.length == 0) break
-
-					let key = propertyKeys[i]
-					selectedProperties[key] = params.properties[key]
-					propertyKeys.splice(i, 1)
-				}
-
-				response = await axios({
-					method: "put",
-					url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
-					headers: {
-						Authorization:
-							params.accessToken != null
-								? params.accessToken
-								: Dav.accessToken
-					},
-					data: {
-						properties: selectedProperties
-					}
-				})
-			}
-		} else {
-			response = await axios({
-				method: "put",
-				url: `${Dav.apiBaseUrl}/table_object/${params.uuid}`,
-				headers: {
-					Authorization:
-						params.accessToken != null
-							? params.accessToken
-							: Dav.accessToken
-				},
-				data: {
-					properties: params.properties
-				}
-			})
-		}
-
-		let tableObject = new TableObject({
-			Uuid: response.data.uuid,
-			TableId: response.data.table_id,
-			IsFile: response.data.file,
-			Etag: response.data.etag,
-			BelongsToUser: response.data.belongs_to_user,
-			Purchase: response.data.purchase
-		})
-
-		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = { value: response.data.properties[key] }
-		}
-
-		return {
-			status: response.status,
-			data: {
-				tableEtag: response.data.table_etag,
-				tableObject
-			}
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await UpdateTableObject(params)
 	}
 }
 
