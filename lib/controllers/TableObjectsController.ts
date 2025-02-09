@@ -2,7 +2,6 @@ import axios from "axios"
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
 import {
-	ApiErrorResponse,
 	ApiResponse,
 	ErrorCode,
 	TableObjectResource,
@@ -10,21 +9,12 @@ import {
 	List
 } from "../types.js"
 import {
-	ConvertErrorToApiErrorResponse,
 	convertErrorToApiErrorResponse2,
-	HandleApiError,
 	getErrorCodesOfGraphQLError,
 	handleApiError2,
-	handleGraphQLErrors,
-	convertTableObjectResourceToTableObject
+	handleGraphQLErrors
 } from "../utils.js"
-import { TableObject } from "../models/TableObject.js"
 import { Auth } from "../models/Auth.js"
-
-export interface TableObjectResponseData {
-	tableEtag: string
-	tableObject: TableObject
-}
 
 export async function retrieveTableObject(
 	queryData: string,
@@ -32,7 +22,7 @@ export async function retrieveTableObject(
 		accessToken?: string
 		uuid: string
 	}
-): Promise<TableObject | ErrorCode[]> {
+): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ tableObject: TableObjectResource }>(
 			Dav.newApiBaseUrl,
@@ -51,7 +41,7 @@ export async function retrieveTableObject(
 			}
 		)
 
-		return convertTableObjectResourceToTableObject(response.tableObject)
+		return response.tableObject
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -79,7 +69,7 @@ export async function listTableObjectsByProperty(
 		limit?: number
 		offset?: number
 	}
-): Promise<TableObject[] | ErrorCode[]> {
+): Promise<List<TableObjectResource> | ErrorCode[]> {
 	try {
 		let response = await request<{
 			listTableObjectsByProperty: List<TableObjectResource>
@@ -125,18 +115,7 @@ export async function listTableObjectsByProperty(
 			}
 		)
 
-		let tableObjects: TableObject[] = []
-
-		if (response.listTableObjectsByProperty?.items != null) {
-			for (let tableObjectResource of response.listTableObjectsByProperty
-				.items) {
-				tableObjects.push(
-					convertTableObjectResourceToTableObject(tableObjectResource)
-				)
-			}
-		}
-
-		return tableObjects
+		return response.listTableObjectsByProperty
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -257,7 +236,7 @@ export async function deleteTableObject(
 		accessToken?: string
 		uuid: string
 	}
-): Promise<TableObject | ErrorCode[]> {
+): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ deleteTableObject: TableObjectResource }>(
 			Dav.newApiBaseUrl,
@@ -276,7 +255,7 @@ export async function deleteTableObject(
 			}
 		)
 
-		return convertTableObjectResourceToTableObject(response.deleteTableObject)
+		return response.deleteTableObject
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -321,118 +300,5 @@ export async function uploadTableObjectFile(params: {
 		if (renewSessionError != null) return renewSessionError
 
 		return await uploadTableObjectFile(params)
-	}
-}
-
-export async function SetTableObjectFile(params: {
-	accessToken?: string
-	uuid: string
-	data: string
-	type: string
-}): Promise<ApiResponse<TableObjectResponseData> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "put",
-			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
-			headers: {
-				Authorization:
-					params.accessToken != null
-						? params.accessToken
-						: Dav.accessToken,
-				"Content-Type": params.type
-			},
-			data: params.data
-		})
-
-		let tableObject = new TableObject({
-			Uuid: response.data.uuid,
-			TableId: response.data.table_id,
-			IsFile: response.data.file,
-			Etag: response.data.etag,
-			BelongsToUser: response.data.belongs_to_user,
-			Purchase: response.data.purchase
-		})
-
-		for (let key of Object.keys(response.data.properties)) {
-			tableObject.Properties[key] = { value: response.data.properties[key] }
-		}
-
-		return {
-			status: response.status,
-			data: {
-				tableEtag: response.data.table_etag,
-				tableObject
-			}
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await SetTableObjectFile(params)
-	}
-}
-
-export async function GetTableObjectFile(params: {
-	accessToken?: string
-	uuid: string
-}): Promise<ApiResponse<Blob> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "get",
-			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/file`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			},
-			responseType: "blob"
-		})
-
-		return {
-			status: response.status,
-			data: response.data as Blob
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await GetTableObjectFile(params)
-	}
-}
-
-export async function RemoveTableObject(params: {
-	accessToken?: string
-	uuid: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse> {
-	try {
-		let response = await axios({
-			method: "delete",
-			url: `${Dav.apiBaseUrl}/table_object/${params.uuid}/access`,
-			headers: {
-				Authorization:
-					params.accessToken != null ? params.accessToken : Dav.accessToken
-			}
-		})
-
-		return {
-			status: response.status,
-			data: {}
-		}
-	} catch (error) {
-		if (params.accessToken != null) {
-			return ConvertErrorToApiErrorResponse(error)
-		}
-
-		let renewSessionError = await HandleApiError(error)
-		if (renewSessionError != null) return renewSessionError
-
-		return await RemoveTableObject(params)
 	}
 }
