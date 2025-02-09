@@ -52,3 +52,45 @@ export async function createTableObjectUserAccess(
 		return await createTableObjectUserAccess(queryData, variables)
 	}
 }
+
+export async function deleteTableObjectUserAccess(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		tableObjectUuid: string
+	}
+): Promise<TableObjectUserAccessResource | ErrorCode[]> {
+	try {
+		let response = await request<{
+			deleteTableObjectUserAccess: TableObjectUserAccessResource
+		}>(
+			Dav.newApiBaseUrl,
+			gql`
+				mutation DeleteTableObjectUserAccess($uuid: String!) {
+					deleteTableObjectUserAccess(uuid: $uuid) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				tableObjectUuid: variables.tableObjectUuid
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return response.deleteTableObjectUserAccess
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await deleteTableObjectUserAccess(queryData, variables)
+	}
+}
