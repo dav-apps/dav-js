@@ -17,7 +17,8 @@ import {
 	TableResource,
 	TableObjectResource,
 	NotificationResource,
-	PurchaseResource
+	PurchaseResource,
+	TableObjectProperties
 } from "./types.js"
 import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
@@ -438,6 +439,15 @@ export function convertTableObjectResourceToTableObject(
 ): TableObject {
 	if (tableObjectResource == null) return null
 
+	let properties: TableObjectProperties = {}
+
+	for (let key of Object.keys(tableObjectResource.properties)) {
+		properties[key] = {
+			value: tableObjectResource.properties[key],
+			local: false
+		}
+	}
+
 	const purchases: Purchase[] = []
 
 	if (tableObjectResource.purchases?.items != null) {
@@ -449,6 +459,9 @@ export function convertTableObjectResourceToTableObject(
 	return new TableObject({
 		Uuid: tableObjectResource.uuid,
 		User: convertUserResourceToUser(tableObjectResource.user),
+		IsFile: tableObjectResource.fileUrl != null,
+		Etag: tableObjectResource.etag,
+		Properties: properties,
 		Purchases: purchases
 	})
 }

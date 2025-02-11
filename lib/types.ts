@@ -64,6 +64,7 @@ export type ErrorCode =
 	| "USER_DOES_NOT_EXIST"
 	| "SESSION_DOES_NOT_EXIST"
 	| "TABLE_OBJECT_DOES_NOT_EXIST"
+	| "TABLE_OBJECT_USER_ACCESS_DOES_NOT_EXIST"
 	| "NOTIFICATION_DOES_NOT_EXIST"
 	| "FIRST_NAME_TOO_SHORT"
 	| "FIRST_NAME_TOO_LONG"
@@ -196,7 +197,11 @@ export interface TableObjectResource {
 	uuid: string
 	user: UserResource
 	table: TableResource
+	fileUrl?: string
 	etag: string
+	properties: {
+		[name: string]: string | boolean | number
+	}
 	purchases: List<PurchaseResource>
 }
 

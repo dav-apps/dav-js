@@ -1,3 +1,4 @@
+import axios from "axios"
 import { Dav } from "../Dav.js"
 import {
 	ApiResponse,
@@ -7,12 +8,13 @@ import {
 	TableObjectFileDownloadStatus,
 	Property
 } from "../types.js"
+import { extPropertyName } from "../constants.js"
 import { generateUuid } from "../utils.js"
 import { User } from "./User.js"
 import { Purchase } from "./Purchase.js"
 import * as SyncManager from "../providers/SyncManager.js"
 import * as DatabaseOperations from "../providers/DatabaseOperations.js"
-import { GetTableObjectFile } from "../controllers/TableObjectsController.js"
+import { retrieveTableObject } from "../controllers/TableObjectsController.js"
 
 export class TableObject {
 	public Uuid: string = generateUuid()
@@ -163,7 +165,7 @@ export class TableObject {
 		}
 
 		this.File = file
-		await this.SetPropertyValue({ name: "ext", value: fileExt })
+		await this.SetPropertyValue({ name: extPropertyName, value: fileExt })
 	}
 
 	GetFileDownloadStatus(): TableObjectFileDownloadStatus {
@@ -188,7 +190,23 @@ export class TableObject {
 		if (SyncManager.downloadingFileUuid != null) return false
 		SyncManager.setDownloadingFileUuid(this.Uuid)
 
-		let response = await GetTableObjectFile({ uuid: this.Uuid })
+		let retrieveTableObjectResponse = await retrieveTableObject(`fileUrl`, {
+			uuid: this.Uuid
+		})
+
+		if (
+			Array.isArray(retrieveTableObjectResponse) ||
+			retrieveTableObjectResponse.fileUrl == null
+		) {
+			SyncManager.setDownloadingFileUuid(null)
+			return false
+		}
+
+		let response = await axios({
+			method: "get",
+			url: retrieveTableObjectResponse.fileUrl,
+			responseType: "blob"
+		})
 
 		if (response.status == 200) {
 			this.File = (response as ApiResponse<Blob>).data
@@ -223,24 +241,4 @@ export class TableObject {
 			SyncManager.SyncPush()
 		}
 	}
-}
-
-export function ConvertObjectToTableObject(obj: {
-	Uuid: string
-	TableId: number
-	IsFile: boolean
-	File: Blob
-	Properties: TableObjectProperties
-	UploadStatus: number
-	Etag: string
-}): TableObject {
-	return new TableObject({
-		Uuid: obj.Uuid,
-		TableId: obj.TableId,
-		IsFile: obj.IsFile,
-		File: obj.File,
-		Properties: obj.Properties,
-		UploadStatus: obj.UploadStatus,
-		Etag: obj.Etag
-	})
 }
