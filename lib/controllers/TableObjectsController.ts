@@ -275,7 +275,7 @@ export async function uploadTableObjectFile(params: {
 	uuid: string
 	contentType: string
 	data: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse2> {
+}): Promise<ApiResponse<TableObjectResource> | ApiErrorResponse2> {
 	try {
 		let response = await axios({
 			method: "put",
@@ -289,7 +289,7 @@ export async function uploadTableObjectFile(params: {
 
 		return {
 			status: response.status,
-			data: {}
+			data: response.data
 		}
 	} catch (error) {
 		if (params.accessToken != null) {

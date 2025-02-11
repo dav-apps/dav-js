@@ -2,20 +2,22 @@ import CryptoJS from "crypto-js"
 import axios from "axios"
 import { Dav } from "../Dav.js"
 import {
-	ApiErrorResponse,
+	ApiErrorResponse2,
 	ApiResponse,
 	ErrorCode,
 	Environment,
 	DatabaseUser,
 	SessionUploadStatus,
 	TableObjectUploadStatus,
-	TableResource
+	TableResource,
+	TableObjectResource
 } from "../types.js"
 import {
 	SortTableNames,
 	BlobToBase64,
 	GetBlobData,
-	isSuccessStatusCode
+	isSuccessStatusCode,
+	convertTableObjectResourceToTableObject
 } from "../utils.js"
 import {
 	defaultProfileImageUrl,
@@ -24,20 +26,18 @@ import {
 	tableObjectUpdateChannelName,
 	maxPropertiesUploadCount
 } from "../constants.js"
-import * as ErrorCodes from "../errorCodes.js"
 import { TableObject } from "../models/TableObject.js"
 import * as DatabaseOperations from "./DatabaseOperations.js"
 import { retrieveUser } from "../controllers/UsersController.js"
 import { retrieveTable } from "../controllers/TablesController.js"
 import {
-	CreateTableObject,
-	GetTableObject,
-	UpdateTableObject,
+	createTableObject,
 	deleteTableObject,
-	SetTableObjectFile,
-	RemoveTableObject,
-	TableObjectResponseData
+	retrieveTableObject,
+	updateTableObject,
+	uploadTableObjectFile
 } from "../controllers/TableObjectsController.js"
+import { deleteTableObjectUserAccess } from "../controllers/TableObjectUserAccessesController.js"
 import { createWebsocketConnection } from "../controllers/WebsocketConnectionsController.js"
 import * as SessionsController from "../controllers/SessionsController.js"
 
@@ -51,6 +51,31 @@ var websocketConnectionEstablished = false
 var fileDownloads: Array<{ uuid: string; etag?: string }> = []
 var downloadingFiles: boolean = false
 export var downloadingFileUuid: string
+
+const retrieveTableQueryData = `
+		id
+		etag
+		tableObjects(
+			limit: $limit
+			offset: $offset
+		) {
+			total
+			items {
+				uuid
+			}
+		}
+	`
+const retrieveTableObjectQueryData = `
+		uuid
+		user {
+			id
+			email
+			firstName
+		}
+		fileUrl
+		etag
+		properties
+	`
 
 export async function InitServiceWorker() {
 	if (
@@ -281,19 +306,6 @@ export async function Sync(): Promise<boolean> {
 	}
 
 	const tableObjectsLimit = 100
-	const retrieveTableQueryData = `
-				id
-				etag
-				tableObjects(
-					limit: $limit
-					offset: $offset
-				) {
-					total
-					items {
-						uuid
-					}
-				}
-			`
 
 	// Get the first page of each table
 	for (let tableName of tableNames) {
@@ -377,15 +389,18 @@ export async function Sync(): Promise<boolean> {
 					TableObjectUploadStatus.UpToDate
 				) {
 					// Get the updated table object from the server
-					let getTableObjectResponse = await GetTableObject({
-						uuid: currentTableObject.Uuid
-					})
+					let retrieveTableObjectResponse = await retrieveTableObject(
+						retrieveTableObjectQueryData,
+						{
+							uuid: currentTableObject.Uuid
+						}
+					)
 
-					if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
+					if (Array.isArray(retrieveTableObjectResponse)) continue
 
-					let tableObject = (
-						getTableObjectResponse as ApiResponse<TableObjectResponseData>
-					).data.tableObject
+					let tableObject = convertTableObjectResourceToTableObject(
+						retrieveTableObjectResponse
+					)
 
 					await tableObject.SetUploadStatus(
 						TableObjectUploadStatus.UpToDate
@@ -411,15 +426,18 @@ export async function Sync(): Promise<boolean> {
 				}
 			} else {
 				// Get the table object
-				let getTableObjectResponse = await GetTableObject({
-					uuid: obj.uuid
-				})
+				let retrieveTableObjectResponse = await retrieveTableObject(
+					retrieveTableObjectQueryData,
+					{
+						uuid: obj.uuid
+					}
+				)
 
-				if (!isSuccessStatusCode(getTableObjectResponse.status)) continue
+				if (Array.isArray(retrieveTableObjectResponse)) continue
 
-				let tableObject = (
-					getTableObjectResponse as ApiResponse<TableObjectResponseData>
-				).data.tableObject
+				let tableObject = convertTableObjectResourceToTableObject(
+					retrieveTableObjectResponse
+				)
 
 				await tableObject.SetUploadStatus(TableObjectUploadStatus.UpToDate)
 
@@ -546,7 +564,7 @@ export async function SyncPush(): Promise<boolean> {
 
 				let createResult = await CreateTableObjectOnServer(tableObject)
 
-				if (createResult.success) {
+				if (!Array.isArray(createResult)) {
 					if (
 						Object.keys(tableObject.Properties).length >
 						maxPropertiesUploadCount
@@ -557,46 +575,33 @@ export async function SyncPush(): Promise<boolean> {
 						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
 					}
 
-					tableObject.Etag = (createResult.message as TableObject).Etag
+					tableObject.Etag = createResult.etag
 					await DatabaseOperations.SetTableObject(tableObject)
-				} else if (createResult.message != null) {
-					// Check the errors
-					let errors = (createResult.message as ApiErrorResponse).errors
-
-					// Check if the table object already exists
-					let i = errors.findIndex(
-						error => error.code == ErrorCodes.UuidAlreadyInUse
-					)
-					if (i != -1) {
-						// Set the upload status to UpToDate
-						tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
-						await DatabaseOperations.SetTableObject(tableObject)
-					}
+				} else if (createResult.includes("UUID_ALREADY_IN_USE")) {
+					// Set the upload status to UpToDate
+					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
+					await DatabaseOperations.SetTableObject(tableObject)
 				}
+
 				break
 			case TableObjectUploadStatus.Updated:
 				let updateResult = await UpdateTableObjectOnServer(tableObject)
 
-				if (updateResult.success) {
+				if (!Array.isArray(updateResult)) {
 					tableObject.UploadStatus = TableObjectUploadStatus.UpToDate
-					tableObject.Etag = (updateResult.message as TableObject).Etag
-					await DatabaseOperations.SetTableObject(tableObject, false)
-				} else if (updateResult.message != null) {
-					// Check the errors
-					let errors = (updateResult.message as ApiErrorResponse).errors
+					tableObject.Etag = updateResult.etag
 
-					// Check if the table object does not exist
-					let i = errors.findIndex(
-						error => error.code == ErrorCodes.TableObjectDoesNotExist
-					)
-					if (i != -1) {
-						// Delete the table object
-						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
-					}
+					await DatabaseOperations.SetTableObject(tableObject, false)
+				} else if (updateResult.includes("TABLE_OBJECT_DOES_NOT_EXIST")) {
+					// Delete the table object
+					await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
 				}
+
 				break
 			case TableObjectUploadStatus.Deleted:
-				let deleteResult = await DeleteTableObjectOnServer(tableObject)
+				let deleteResult = await deleteTableObject(`uuid`, {
+					uuid: tableObject.Uuid
+				})
 
 				if (Array.isArray(deleteResult)) {
 					if (
@@ -613,26 +618,19 @@ export async function SyncPush(): Promise<boolean> {
 
 				break
 			case TableObjectUploadStatus.Removed:
-				let removeResult = await RemoveTableObjectOnServer(tableObject)
+				let removeResult = await deleteTableObjectUserAccess(`tableAlias`, {
+					tableObjectUuid: tableObject.Uuid
+				})
 
-				if (removeResult.success) {
+				if (
+					!Array.isArray(removeResult) ||
+					removeResult.includes("TABLE_OBJECT_DOES_NOT_EXIST") ||
+					removeResult.includes("TABLE_OBJECT_USER_ACCESS_DOES_NOT_EXIST")
+				) {
 					// Delete the table object
 					await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
-				} else if (removeResult.message != null) {
-					// Check the errors
-					let errors = (removeResult.message as ApiErrorResponse).errors
-
-					let i = errors.findIndex(
-						error =>
-							error.code ==
-								ErrorCodes.TableObjectUserAccessDoesNotExist ||
-							error.code == ErrorCodes.TableObjectDoesNotExist
-					)
-					if (i != -1) {
-						// Delete the table object
-						await DatabaseOperations.RemoveTableObject(tableObject.Uuid)
-					}
 				}
+
 				break
 		}
 	}
@@ -658,7 +656,7 @@ export async function StartWebsocketConnection() {
 	if (Array.isArray(createWebsocketConnectionResponse)) return
 
 	const token = createWebsocketConnectionResponse.token
-	let baseUrl = Dav.apiBaseUrl.replace("http", "ws")
+	const baseUrl = Dav.apiBaseUrl.replace("http", "ws")
 
 	webSocket = new WebSocket(`${baseUrl}/cable?token=${token}`)
 
@@ -671,6 +669,7 @@ export async function StartWebsocketConnection() {
 				channel: tableObjectUpdateChannelName
 			})
 		})
+
 		webSocket.send(json)
 	}
 
@@ -694,22 +693,31 @@ export async function StartWebsocketConnection() {
 
 		if (change == 0 || change == 1) {
 			// Get the table object from the server and update it locally
-			let getTableObjectResponse = await GetTableObject({ uuid })
-			if (getTableObjectResponse.status != 200) return
+			let retrieveTableObjectResponse = await retrieveTableObject(
+				retrieveTableObjectQueryData,
+				{
+					uuid
+				}
+			)
 
-			let tableObject = (
-				getTableObjectResponse as ApiResponse<TableObjectResponseData>
-			).data.tableObject
+			if (Array.isArray(retrieveTableObjectResponse)) return
+
+			let tableObject = convertTableObjectResourceToTableObject(
+				retrieveTableObjectResponse
+			)
 
 			await DatabaseOperations.SetTableObject(tableObject)
-			if (Dav.callbacks.UpdateTableObject)
+
+			if (Dav.callbacks.UpdateTableObject) {
 				Dav.callbacks.UpdateTableObject(tableObject)
+			}
 		} else if (change == 2) {
 			let tableObject = await DatabaseOperations.GetTableObject(uuid)
 			if (tableObject == null) return
 
-			if (Dav.callbacks.DeleteTableObject)
+			if (Dav.callbacks.DeleteTableObject) {
 				Dav.callbacks.DeleteTableObject(tableObject)
+			}
 
 			// Remove the table object in the database
 			DatabaseOperations.RemoveTableObject(uuid)
@@ -719,6 +727,7 @@ export async function StartWebsocketConnection() {
 
 export async function CloseWebsocketConnection() {
 	if (!websocketConnectionEstablished) return
+
 	webSocket.close()
 	websocketConnectionEstablished = false
 }
@@ -753,11 +762,15 @@ export async function DownloadTableObject(uuid: string) {
 	let tableObjectFromDatabase = await DatabaseOperations.GetTableObject(uuid)
 
 	// Get the table object from the server
-	let getResponse = await GetTableObject({ uuid })
-	if (!isSuccessStatusCode(getResponse.status)) return
+	let retrieveTableObjectResponse = await retrieveTableObject(
+		retrieveTableObjectQueryData,
+		{ uuid }
+	)
+	if (Array.isArray(retrieveTableObjectResponse)) return
 
-	let tableObject = (getResponse as ApiResponse<TableObjectResponseData>).data
-		.tableObject
+	let tableObject = convertTableObjectResourceToTableObject(
+		retrieveTableObjectResponse
+	)
 
 	if (tableObjectFromDatabase != null) {
 		// Has the etag changed?
@@ -814,68 +827,53 @@ export async function DownloadTableObject(uuid: string) {
 //#region Utility functions
 async function CreateTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean; message: TableObject | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
+): Promise<TableObjectResource | ErrorCode[]> {
+	if (Dav.accessToken == null) return null
 
 	if (tableObject.IsFile) {
 		// Create the table object
-		let createTableObjectResponse = await CreateTableObject({
+		let createTableObjectResponse = await createTableObject(`uuid`, {
 			uuid: tableObject.Uuid,
 			tableId: tableObject.TableId,
 			file: true,
-			properties: {
-				[extPropertyName]: tableObject.GetPropertyValue(extPropertyName)
-			}
+			ext: tableObject.GetPropertyValue(extPropertyName) as string
 		})
 
-		if (!isSuccessStatusCode(createTableObjectResponse.status)) {
-			// Check if the table object already exists
-			let errorResponse = createTableObjectResponse as ApiErrorResponse
-			let i = errorResponse.errors.findIndex(
-				error => error.code == ErrorCodes.UuidAlreadyInUse
-			)
-
-			if (i == -1) {
-				return {
-					success: false,
-					message: errorResponse
-				}
-			}
+		if (
+			Array.isArray(createTableObjectResponse) &&
+			createTableObjectResponse.includes("UUID_ALREADY_IN_USE")
+		) {
+			return createTableObjectResponse
 		}
 
 		if (tableObject.File != null) {
 			// Upload the file
-			let setTableObjectFileResponse = await SetTableObjectFile({
+			let uploadTableObjectFileResponse = await uploadTableObjectFile({
 				uuid: tableObject.Uuid,
 				data: await GetBlobData(tableObject.File),
-				type: tableObject.File.type
+				contentType: tableObject.File.type
 			})
 
-			if (isSuccessStatusCode(setTableObjectFileResponse.status)) {
-				let setTableObjectFileResponseData = (
-					setTableObjectFileResponse as ApiResponse<TableObjectResponseData>
+			if (!Array.isArray(uploadTableObjectFileResponse)) {
+				let uploadTableObjectFileResponseData = (
+					uploadTableObjectFileResponse as ApiResponse<TableObjectResource>
 				).data
 
 				// Save the new table etag
 				await DatabaseOperations.SetTableEtag(
 					tableObject.TableId,
-					setTableObjectFileResponseData.tableEtag
+					uploadTableObjectFileResponseData.table.etag
 				)
 
-				return {
-					success: true,
-					message: setTableObjectFileResponseData.tableObject
-				}
+				return createTableObjectResponse
 			}
 
-			return {
-				success: false,
-				message: setTableObjectFileResponse as ApiErrorResponse
-			}
+			return uploadTableObjectFileResponse
 		}
 	} else {
 		// Get the properties
 		let properties = {}
+
 		for (let key of Object.keys(tableObject.Properties)) {
 			let property = tableObject.Properties[key]
 			if (property.local) continue
@@ -884,112 +882,94 @@ async function CreateTableObjectOnServer(
 		}
 
 		// Create the table object
-		let createTableObjectResponse = await CreateTableObject({
+		let createTableObjectResponse = await createTableObject(`uuid`, {
 			uuid: tableObject.Uuid,
 			tableId: tableObject.TableId,
 			file: false,
 			properties
 		})
 
-		if (isSuccessStatusCode(createTableObjectResponse.status)) {
-			let createTableObjectResponseData = (
-				createTableObjectResponse as ApiResponse<TableObjectResponseData>
-			).data
-
+		if (!Array.isArray(createTableObjectResponse)) {
 			// Save the new etag
 			await DatabaseOperations.SetTableEtag(
 				tableObject.TableId,
-				createTableObjectResponseData.tableEtag
+				createTableObjectResponse.table.etag
 			)
 
-			return {
-				success: true,
-				message: createTableObjectResponseData.tableObject
-			}
+			return createTableObjectResponse
 		}
 
-		return {
-			success: false,
-			message: createTableObjectResponse as ApiErrorResponse
-		}
-	}
-
-	return {
-		success: false,
-		message: null
+		return createTableObjectResponse
 	}
 }
 
 async function UpdateTableObjectOnServer(
 	tableObject: TableObject
-): Promise<{ success: boolean; message: TableObject | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
+): Promise<TableObjectResource | ErrorCode[]> {
+	if (Dav.accessToken == null) return null
 
 	if (tableObject.IsFile && tableObject.File != null) {
 		// Upload the file
-		let setTableObjectFileResponse = await SetTableObjectFile({
+		let uploadTableObjectFileResponse = await uploadTableObjectFile({
 			uuid: tableObject.Uuid,
 			data: await GetBlobData(tableObject.File),
-			type: tableObject.File.type
+			contentType: tableObject.File.type
 		})
 
-		if (!isSuccessStatusCode(setTableObjectFileResponse.status)) {
-			return {
-				success: false,
-				message: setTableObjectFileResponse as ApiErrorResponse
+		if (!isSuccessStatusCode(uploadTableObjectFileResponse.status)) {
+			let errorResponse = uploadTableObjectFileResponse as ApiErrorResponse2
+
+			if (errorResponse.error == null) {
+				return null
+			} else {
+				return [errorResponse.error?.code as ErrorCode]
 			}
 		}
 
 		// Check if the ext has changed
-		let tableObjectResponseData = (
-			setTableObjectFileResponse as ApiResponse<TableObjectResponseData>
+		let uploadTableObjectFileResponseData = (
+			uploadTableObjectFileResponse as ApiResponse<TableObjectResource>
 		).data
+
 		let tableObjectResponseDataExt =
-			tableObjectResponseData.tableObject.GetPropertyValue(extPropertyName)
-		let tableObjectExt = tableObject.GetPropertyValue(extPropertyName)
+			uploadTableObjectFileResponseData.properties[extPropertyName]
+
+		let tableObjectExt = tableObject.GetPropertyValue(
+			extPropertyName
+		) as string
 
 		// Save the new table etag
 		await DatabaseOperations.SetTableEtag(
 			tableObject.TableId,
-			tableObjectResponseData.tableEtag
+			uploadTableObjectFileResponseData.table.etag
 		)
 
 		if (tableObjectResponseDataExt != tableObjectExt) {
 			// Update the table object with the new ext
-			let updateTableObjectResponse = await UpdateTableObject({
-				uuid: tableObject.Uuid,
-				properties: {
-					[extPropertyName]: tableObjectExt
+			let updateTableObjectResponse = await updateTableObject(
+				`
+					table {
+						etag
+					}
+				`,
+				{
+					uuid: tableObject.Uuid,
+					ext: tableObjectExt
 				}
-			})
+			)
 
-			if (isSuccessStatusCode(updateTableObjectResponse.status)) {
-				let updateTableObjectResponseData = (
-					updateTableObjectResponse as ApiResponse<TableObjectResponseData>
-				).data
-
+			if (!Array.isArray(updateTableObjectResponse)) {
 				// Save the new table etag
 				await DatabaseOperations.SetTableEtag(
 					tableObject.TableId,
-					updateTableObjectResponseData.tableEtag
+					updateTableObjectResponse.table.etag
 				)
-
-				return {
-					success: true,
-					message: updateTableObjectResponseData.tableObject
-				}
 			}
 
-			return {
-				success: false,
-				message: updateTableObjectResponse as ApiErrorResponse
-			}
+			return updateTableObjectResponse
 		}
 
-		return {
-			success: true,
-			message: tableObjectResponseData.tableObject
-		}
+		return uploadTableObjectFileResponseData
 	} else if (!tableObject.IsFile) {
 		// Get the properties
 		let properties = {}
@@ -1001,70 +981,30 @@ async function UpdateTableObjectOnServer(
 		}
 
 		// Update the table object
-		let updateTableObjectResponse = await UpdateTableObject({
-			uuid: tableObject.Uuid,
-			properties
-		})
+		let updateTableObjectResponse = await updateTableObject(
+			`
+				table {
+					etag
+				}
+			`,
+			{
+				uuid: tableObject.Uuid,
+				properties
+			}
+		)
 
-		if (isSuccessStatusCode(updateTableObjectResponse.status)) {
-			let updateTableObjectResponseData = (
-				updateTableObjectResponse as ApiResponse<TableObjectResponseData>
-			).data
-
+		if (!Array.isArray(updateTableObjectResponse)) {
 			// Save the new table etag
 			await DatabaseOperations.SetTableEtag(
 				tableObject.TableId,
-				updateTableObjectResponseData.tableEtag
+				updateTableObjectResponse.table.etag
 			)
-
-			return {
-				success: true,
-				message: updateTableObjectResponseData.tableObject
-			}
 		}
 
-		return {
-			success: false,
-			message: updateTableObjectResponse as ApiErrorResponse
-		}
+		return updateTableObjectResponse
 	}
 
-	return {
-		success: false,
-		message: null
-	}
-}
-
-async function DeleteTableObjectOnServer(
-	tableObject: TableObject
-): Promise<TableObject | ErrorCode[]> {
-	if (Dav.accessToken == null) return null
-
-	return await deleteTableObject(`uuid`, {
-		uuid: tableObject.Uuid
-	})
-}
-
-async function RemoveTableObjectOnServer(
-	tableObject: TableObject
-): Promise<{ success: boolean; message: {} | ApiErrorResponse }> {
-	if (Dav.accessToken == null) return { success: false, message: null }
-
-	let removeTableObjectResponse = await RemoveTableObject({
-		uuid: tableObject.Uuid
-	})
-
-	if (isSuccessStatusCode(removeTableObjectResponse.status)) {
-		return {
-			success: true,
-			message: {}
-		}
-	}
-
-	return {
-		success: false,
-		message: removeTableObjectResponse as ApiErrorResponse
-	}
+	return null
 }
 
 export function setDownloadingFileUuid(uuid: string) {
