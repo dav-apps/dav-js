@@ -1,8 +1,6 @@
 import { Dav } from "../Dav.js"
 import { webPushPublicKey } from "../constants.js"
 import {
-	ApiResponse,
-	ApiErrorResponse,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus
 } from "../types.js"
@@ -10,10 +8,8 @@ import {
 	generateUuid,
 	urlBase64ToUint8Array,
 	requestNotificationPermission,
-	isSuccessStatusCode,
 	convertNotificationResourceToNotification
 } from "../utils.js"
-import * as ErrorCodes from "../errorCodes.js"
 import * as DatabaseOperations from "./DatabaseOperations.js"
 import { WebPushSubscription } from "../models/WebPushSubscription.js"
 import { Notification } from "../models/Notification.js"

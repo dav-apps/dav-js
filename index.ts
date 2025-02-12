@@ -25,10 +25,6 @@ export {
 // constants
 export { defaultProfileImageUrl } from "./lib/constants.js"
 
-// errorCodes
-import * as ErrorCodes from "./lib/errorCodes.js"
-export { ErrorCodes }
-
 // utils
 export {
 	generateUuid,

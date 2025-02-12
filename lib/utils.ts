@@ -20,7 +20,6 @@ import {
 	PurchaseResource,
 	TableObjectProperties
 } from "./types.js"
-import * as ErrorCodes from "./errorCodes.js"
 import * as DatabaseOperations from "./providers/DatabaseOperations.js"
 import * as SessionsController from "./controllers/SessionsController.js"
 
@@ -133,8 +132,8 @@ export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
 
 	if (
 		errorResponse.errors &&
-		errorResponse.errors.length > 0 &&
-		errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
+		errorResponse.errors.length > 0
+		//&& errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
 	) {
 		return null
 	} else {
