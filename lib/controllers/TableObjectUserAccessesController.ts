@@ -15,7 +15,7 @@ export async function createTableObjectUserAccess(
 		let response = await request<{
 			createTableObjectUserAccess: TableObjectUserAccessResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateTableObjectUserAccess(
 					$tableObjectUuid: String!
@@ -64,7 +64,7 @@ export async function deleteTableObjectUserAccess(
 		let response = await request<{
 			deleteTableObjectUserAccess: TableObjectUserAccessResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation DeleteTableObjectUserAccess($uuid: String!) {
 					deleteTableObjectUserAccess(uuid: $uuid) {

@@ -23,7 +23,7 @@ export async function setTableObjectPrice(
 		let response = await request<{
 			setTableObjectPrice: TableObjectPriceResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation SetTableObjectPrice(
 					$tableObjectUuid: String!

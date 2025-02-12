@@ -23,7 +23,7 @@ export async function createSession(
 ): Promise<SessionResponseData | ErrorCode[]> {
 	try {
 		let response = await request<{ createSession: SessionResponseData }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateSession(
 					$email: String!
@@ -79,7 +79,7 @@ export async function createSessionFromAccessToken(
 		let response = await request<{
 			createSessionFromAccessToken: SessionResponseData
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateSessionFromAccessToken(
 					$accessToken: String!
@@ -125,7 +125,7 @@ export async function renewSession(
 ): Promise<SessionResponseData | ErrorCode[]> {
 	try {
 		let response = await request<{ renewSession: SessionResponseData }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation RenewSession {
 					renewSession {
@@ -153,7 +153,7 @@ export async function deleteSession(
 ): Promise<SessionResponseData | ErrorCode[]> {
 	try {
 		let response = await request<{ deleteSession: SessionResponseData }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation DeleteSession {
 					deleteSession {

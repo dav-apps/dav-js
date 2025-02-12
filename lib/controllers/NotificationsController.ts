@@ -29,7 +29,7 @@ export async function listNotifications(
 		let response = await request<{
 			listNotifications: List<NotificationResource>
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query ListNotifications {
 					listNotifications {
@@ -76,7 +76,7 @@ export async function createNotification(
 		let response = await request<{
 			createNotification: NotificationResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateNotification(
 					$uuid: String
@@ -143,7 +143,7 @@ export async function createNotificationForUser(
 		let response = await request<{
 			createNotificationForUser: NotificationResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateNotificationForUser(
 					$uuid: String
@@ -203,7 +203,7 @@ export async function updateNotification(
 		let response = await request<{
 			updateNotification: NotificationResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation UpdateNotification(
 					$uuid: String!
@@ -270,7 +270,7 @@ export async function deleteNotification(
 		let response = await request<{
 			deleteNotification: NotificationResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation DeleteNotification($uuid: String!) {
 					deleteNotification(uuid: $uuid) {

@@ -16,7 +16,7 @@ export async function retrieveDev(
 ): Promise<Dev | ErrorCode[]> {
 	try {
 		let response = await request<{ retrieveDev: DevResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveDev {
 					retrieveDev {

@@ -9,7 +9,7 @@ export async function createPurchase(
 ): Promise<PurchaseResource | ErrorCode[]> {
 	try {
 		let response = await request<{ createPurchase: PurchaseResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreatePurchase($tableObjectUuid: String!) {
 					createPurchase(tableObjectUuid: $tableObjectUuid) {

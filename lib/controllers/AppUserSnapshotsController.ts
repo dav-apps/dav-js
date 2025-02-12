@@ -16,7 +16,7 @@ export async function listAppUserSnapshots(
 		let response = await request<{
 			listAppUserSnapshots: List<AppUserSnapshotResource>
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query ListAppUserSnapshots(
 					$appId: Int!

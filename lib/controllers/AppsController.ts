@@ -17,7 +17,7 @@ export async function retrieveApp(
 ): Promise<App | ErrorCode[]> {
 	try {
 		let response = await request<{ retrieveApp: AppResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveApp($id: Int!) {
 					retrieveApp(id: $id) {
@@ -56,7 +56,7 @@ export async function listApps(
 ): Promise<App[] | ErrorCode[]> {
 	try {
 		let response = await request<{ listApps: List<AppResource> }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query ListApps($published: Boolean) {
 					listApps(published: $published) {
@@ -98,7 +98,7 @@ export async function updateApp(
 ): Promise<App | ErrorCode[]> {
 	try {
 		let response = await request<{ updateApp: AppResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation UpdateApp(
 					$id: Int!

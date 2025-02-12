@@ -10,7 +10,7 @@ export async function retrieveOrder(
 ): Promise<OrderResource | ErrorCode[]> {
 	try {
 		let response = await request<{ retrieveOrder: OrderResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveOrder($uuid: String!) {
 					retrieveOrder(uuid: $uuid) {
@@ -38,7 +38,7 @@ export async function updateOrder(
 ): Promise<OrderResource | ErrorCode[]> {
 	try {
 		let response = await request<{ updateOrder: OrderResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation UpdateOrder(
 					$uuid: String!

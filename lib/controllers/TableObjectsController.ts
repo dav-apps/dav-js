@@ -25,7 +25,7 @@ export async function retrieveTableObject(
 ): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ tableObject: TableObjectResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveTableObject($uuid: String!) {
 					retrieveTableObject(uuid: $uuid) {
@@ -74,7 +74,7 @@ export async function listTableObjectsByProperty(
 		let response = await request<{
 			listTableObjectsByProperty: List<TableObjectResource>
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query ListTableObjectsByProperty(
 					$userId: Int
@@ -134,7 +134,7 @@ export async function createTableObject(
 ): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ createTableObject: TableObjectResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateTableObject(
 					$uuid: String
@@ -189,7 +189,7 @@ export async function updateTableObject(
 ): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ updateTableObject: TableObjectResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation UpdateTableObject(
 					$uuid: String!
@@ -239,7 +239,7 @@ export async function deleteTableObject(
 ): Promise<TableObjectResource | ErrorCode[]> {
 	try {
 		let response = await request<{ deleteTableObject: TableObjectResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation DeleteTableObject($uuid: String!) {
 					deleteTableObject(uuid: $uuid) {
@@ -279,7 +279,7 @@ export async function uploadTableObjectFile(params: {
 	try {
 		let response = await axios({
 			method: "put",
-			url: `${Dav.newApiBaseUrl}/tableObject/${params.uuid}/file`,
+			url: `${Dav.apiBaseUrl}/tableObject/${params.uuid}/file`,
 			headers: {
 				Authorization: params.accessToken ?? Dav.accessToken,
 				"Content-Type": params.contentType

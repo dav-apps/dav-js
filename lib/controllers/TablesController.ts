@@ -17,7 +17,7 @@ export async function retrieveTable(
 		let offsetParam = queryData.includes("offset") ? "$offset: Int" : ""
 
 		let response = await request<{ retrieveTable: TableResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveTable(
 					$name: String!

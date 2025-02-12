@@ -15,7 +15,7 @@ export async function listUserSnapshots(
 		let response = await request<{
 			listUserSnapshots: List<UserSnapshotResource>
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query ListUserSnapshots($start: Int, $end: Int) {
 					listUserSnapshots(start: $start, end: $end) {

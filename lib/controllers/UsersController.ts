@@ -29,7 +29,7 @@ export async function retrieveUser(
 ): Promise<User | ErrorCode[]> {
 	try {
 		const response = await request<{ retrieveUser: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveUser {
 					retrieveUser {
@@ -67,7 +67,7 @@ export async function retrieveUserById(
 ): Promise<User | ErrorCode[]> {
 	try {
 		const response = await request<{ retrieveUserById: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveUserById($id: Int!) {
 					retrieveUserById(id: $id) {
@@ -110,7 +110,7 @@ export async function createUser(
 				websiteAccessToken?: string
 			}
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateUser(
 					$email: String!
@@ -173,7 +173,7 @@ export async function updateUser(
 ): Promise<User | ErrorCode[]> {
 	try {
 		let response = await request<{ updateUser: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation UpdateUser(
 					$email: String
@@ -222,7 +222,7 @@ export async function uploadUserProfileImage(params: {
 	try {
 		let response = await axios({
 			method: "put",
-			url: `${Dav.newApiBaseUrl}/user/profileImage`,
+			url: `${Dav.apiBaseUrl}/user/profileImage`,
 			headers: {
 				Authorization: params.accessToken ?? Dav.accessToken,
 				"Content-Type": params.contentType
@@ -257,7 +257,7 @@ export async function sendConfirmationEmailForUser(
 		let response = await request<{
 			sendConfirmationEmailForUser: UserResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation SendConfirmationEmailForUser($id: Int!) {
 					sendConfirmationEmailForUser(id: $id) {
@@ -290,7 +290,7 @@ export async function sendPasswordResetEmailForUser(
 		let response = await request<{
 			sendPasswordResetEmailForUser: UserResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation SendPasswordResetEmailForUser($email: String!) {
 					sendPasswordResetEmailForUser(email: $email) {
@@ -322,7 +322,7 @@ export async function confirmUser(
 ): Promise<User | ErrorCode[]> {
 	try {
 		let response = await request<{ confirmUser: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation ConfirmUser(
 					$id: Int!
@@ -361,7 +361,7 @@ export async function saveNewEmailOfUser(
 ): Promise<User | ErrorCode[]> {
 	try {
 		let response = await request<{ saveNewEmailOfUser: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation SaveNewEmailOfUser(
 					$id: Int!
@@ -400,7 +400,7 @@ export async function saveNewPasswordOfUser(
 ): Promise<User | ErrorCode[]> {
 	try {
 		let response = await request<{ saveNewPasswordOfUser: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation SaveNewPasswordOfUser(
 					$id: Int!
@@ -439,7 +439,7 @@ export async function resetEmailOfUser(
 ): Promise<User | ErrorCode[]> {
 	try {
 		let response = await request<{ resetEmailOfUser: UserResource }>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation ResetEmailOfUser(
 					$id: Int!
@@ -481,7 +481,7 @@ export async function setPasswordOfUser(
 		let response = await request<{
 			setPasswordOfUser: UserResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation SetPasswordOfUser(
 					$id: Int!

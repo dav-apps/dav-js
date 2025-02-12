@@ -22,7 +22,7 @@ export async function createSubscriptionCheckoutSession(
 		let response = await request<{
 			createSubscriptionCheckoutSession: CheckoutSessionResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateSubscriptionCheckoutSession(
 					$plan: Plan!
@@ -85,7 +85,7 @@ export async function createPaymentCheckoutSession(
 		let response = await request<{
 			createPaymentCheckoutSession: CheckoutSessionResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreatePaymentCheckoutSession(
 					$tableObjectUuid: String!

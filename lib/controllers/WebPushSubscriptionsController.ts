@@ -14,7 +14,7 @@ export async function retrieveWebPushSubscription(
 		let response = await request<{
 			webPushSubscription: WebPushSubscriptionResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query RetrieveWebPushSubscription($uuid: String!) {
 					retrieveWebPushSubscription(uuid: $uuid) {
@@ -59,7 +59,7 @@ export async function createWebPushSubscription(
 		let response = await request<{
 			createWebPushSubscription: WebPushSubscriptionResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateWebPushSubscription(
 					$uuid: String

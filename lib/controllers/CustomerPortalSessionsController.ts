@@ -13,7 +13,7 @@ export async function createCustomerPortalSession(
 		let response = await request<{
 			createCustomerPortalSession: CustomerPortalSessionResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				mutation CreateCustomerPortalSession {
 					createCustomerPortalSession {

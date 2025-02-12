@@ -1,8 +1,7 @@
-export const newApiBaseUrlDevelopment = "http://localhost:4000"
-export const newApiBaseUrlStaging =
+export const apiBaseUrlDevelopment = "http://localhost:4000"
+export const apiBaseUrlStaging =
 	"https://dav-api-staging-kb5tf.ondigitalocean.app"
-export const newApiBaseUrlProduction =
-	"https://dav-api-ax6gp.ondigitalocean.app"
+export const apiBaseUrlProduction = "https://dav-api-ax6gp.ondigitalocean.app"
 export const websiteUrlDevelopment = "http://localhost:3000"
 export const websiteUrlStaging =
 	"https://dav-website-staging-o3oot.ondigitalocean.app"

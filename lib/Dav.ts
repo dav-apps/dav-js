@@ -6,9 +6,9 @@ import {
 	SubscriptionStatus
 } from "./types.js"
 import {
-	newApiBaseUrlDevelopment,
-	newApiBaseUrlStaging,
-	newApiBaseUrlProduction,
+	apiBaseUrlDevelopment,
+	apiBaseUrlStaging,
+	apiBaseUrlProduction,
 	websiteUrlDevelopment,
 	websiteUrlStaging,
 	websiteUrlProduction,
@@ -69,7 +69,7 @@ export class Dav {
 		SyncFinished?: Function
 	} = {}
 
-	static newApiBaseUrl: string = newApiBaseUrlDevelopment
+	static apiBaseUrl: string = apiBaseUrlDevelopment
 	static websiteUrl: string = websiteUrlDevelopment
 	static accessToken: string
 	static skipSyncPushInTests: boolean = true
@@ -109,15 +109,15 @@ export class Dav {
 		// Set the other static variables
 		switch (Dav.environment) {
 			case Environment.Staging:
-				Dav.newApiBaseUrl = newApiBaseUrlStaging
+				Dav.apiBaseUrl = apiBaseUrlStaging
 				Dav.websiteUrl = websiteUrlStaging
 				break
 			case Environment.Production:
-				Dav.newApiBaseUrl = newApiBaseUrlProduction
+				Dav.apiBaseUrl = apiBaseUrlProduction
 				Dav.websiteUrl = websiteUrlProduction
 				break
 			default:
-				Dav.newApiBaseUrl = newApiBaseUrlDevelopment
+				Dav.apiBaseUrl = apiBaseUrlDevelopment
 				Dav.websiteUrl = websiteUrlDevelopment
 				break
 		}

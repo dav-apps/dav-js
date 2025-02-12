@@ -13,7 +13,7 @@ export async function createWebsocketConnection(
 		let response = await request<{
 			createWebsocketConnection: WebsocketConnectionResource
 		}>(
-			Dav.newApiBaseUrl,
+			Dav.apiBaseUrl,
 			gql`
 				query CreateWebsocketConnection {
 					createWebsocketConnection {
