@@ -1,23 +1,8 @@
 import { request, gql, ClientError } from "graphql-request"
-import axios from "axios"
 import { Dav } from "../Dav.js"
-import {
-	ApiResponse,
-	ApiErrorResponse,
-	GenericUploadStatus,
-	ErrorCode,
-	List,
-	NotificationResource
-} from "../types.js"
-import {
-	ConvertErrorToApiErrorResponse,
-	getErrorCodesOfGraphQLError,
-	HandleApiError,
-	PrepareRequestParams,
-	handleGraphQLErrors
-} from "../utils.js"
+import { ErrorCode, List, NotificationResource } from "../types.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 import { Auth } from "../models/Auth.js"
-import { Notification } from "../models/Notification.js"
 
 export async function listNotifications(
 	queryData: string,

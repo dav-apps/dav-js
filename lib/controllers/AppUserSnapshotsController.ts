@@ -11,7 +11,7 @@ export async function listAppUserSnapshots(
 		start?: number
 		end?: number
 	}
-): Promise<AppUserSnapshotResource[] | ErrorCode[]> {
+): Promise<List<AppUserSnapshotResource> | ErrorCode[]> {
 	try {
 		let response = await request<{
 			listAppUserSnapshots: List<AppUserSnapshotResource>
@@ -42,7 +42,7 @@ export async function listAppUserSnapshots(
 			}
 		)
 
-		return response.listAppUserSnapshots.items
+		return response.listAppUserSnapshots
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 

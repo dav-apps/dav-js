@@ -1,12 +1,7 @@
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
 import { ErrorCode, List, AppResource } from "../types.js"
-import {
-	getErrorCodesOfGraphQLError,
-	handleGraphQLErrors,
-	convertAppResourceToApp
-} from "../utils.js"
-import { App } from "../models/App.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
 export async function retrieveApp(
 	queryData: string,
@@ -14,7 +9,7 @@ export async function retrieveApp(
 		accessToken?: string
 		id: number
 	}
-): Promise<App | ErrorCode[]> {
+): Promise<AppResource | ErrorCode[]> {
 	try {
 		let response = await request<{ retrieveApp: AppResource }>(
 			Dav.apiBaseUrl,
@@ -33,7 +28,7 @@ export async function retrieveApp(
 			}
 		)
 
-		return convertAppResourceToApp(response.retrieveApp)
+		return response.retrieveApp
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -53,7 +48,7 @@ export async function listApps(
 	variables: {
 		published?: boolean
 	}
-): Promise<App[] | ErrorCode[]> {
+): Promise<List<AppResource> | ErrorCode[]> {
 	try {
 		let response = await request<{ listApps: List<AppResource> }>(
 			Dav.apiBaseUrl,
@@ -67,17 +62,7 @@ export async function listApps(
 			variables
 		)
 
-		if (response.listApps == null) {
-			return null
-		} else {
-			let apps: App[] = []
-
-			for (let app of response.listApps.items) {
-				apps.push(convertAppResourceToApp(app))
-			}
-
-			return apps
-		}
+		return response.listApps
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -95,7 +80,7 @@ export async function updateApp(
 		googlePlayLink?: string
 		microsoftStoreLink?: string
 	}
-): Promise<App | ErrorCode[]> {
+): Promise<AppResource | ErrorCode[]> {
 	try {
 		let response = await request<{ updateApp: AppResource }>(
 			Dav.apiBaseUrl,
@@ -136,7 +121,7 @@ export async function updateApp(
 			}
 		)
 
-		return convertAppResourceToApp(response.updateApp)
+		return response.updateApp
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 

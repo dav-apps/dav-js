@@ -3,6 +3,7 @@ export { Dav } from "./lib/Dav.js"
 // types
 export {
 	Environment,
+	List,
 	ApiResponse,
 	ApiErrorResponse,
 	ApiErrorResponse2,
@@ -14,6 +15,10 @@ export {
 	Currency,
 	OrderStatus,
 	Plan,
+	UserResource,
+	DevResource,
+	AppResource,
+	TableObjectResource,
 	UserSnapshotResource,
 	AppUserSnapshotResource,
 	CheckoutSessionResource,
@@ -35,7 +40,8 @@ export {
 	handleApiError2,
 	renewSession,
 	isSuccessStatusCode,
-	PrepareRequestParams
+	PrepareRequestParams,
+	convertUserResourceToUser
 } from "./lib/utils.js"
 
 // models

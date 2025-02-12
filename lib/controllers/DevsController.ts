@@ -1,19 +1,14 @@
 import { request, gql, ClientError } from "graphql-request"
 import { Dav } from "../Dav.js"
 import { ErrorCode, DevResource } from "../types.js"
-import {
-	convertDevResourceToDev,
-	getErrorCodesOfGraphQLError,
-	handleGraphQLErrors
-} from "../utils.js"
-import { Dev } from "../models/Dev.js"
+import { getErrorCodesOfGraphQLError, handleGraphQLErrors } from "../utils.js"
 
 export async function retrieveDev(
 	queryData: string,
 	variables?: {
 		accessToken?: string
 	}
-): Promise<Dev | ErrorCode[]> {
+): Promise<DevResource | ErrorCode[]> {
 	try {
 		let response = await request<{ retrieveDev: DevResource }>(
 			Dav.apiBaseUrl,
@@ -30,7 +25,7 @@ export async function retrieveDev(
 			}
 		)
 
-		return convertDevResourceToDev(response.retrieveDev)
+		return response.retrieveDev
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 

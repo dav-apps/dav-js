@@ -11,14 +11,12 @@ import {
 	convertErrorToApiErrorResponse2,
 	getErrorCodesOfGraphQLError,
 	handleApiError2,
-	handleGraphQLErrors,
-	convertUserResourceToUser
+	handleGraphQLErrors
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
-import { User } from "../models/User.js"
 
 export interface CreateUserResponseData {
-	user: User
+	user: UserResource
 	accessToken: string
 	websiteAccessToken?: string
 }
@@ -26,7 +24,7 @@ export interface CreateUserResponseData {
 export async function retrieveUser(
 	queryData: string,
 	variables?: { accessToken?: string }
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		const response = await request<{ retrieveUser: UserResource }>(
 			Dav.apiBaseUrl,
@@ -43,7 +41,7 @@ export async function retrieveUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.retrieveUser)
+		return response.retrieveUser
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -64,7 +62,7 @@ export async function retrieveUserById(
 		auth: Auth
 		id: number
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		const response = await request<{ retrieveUserById: UserResource }>(
 			Dav.apiBaseUrl,
@@ -83,7 +81,7 @@ export async function retrieveUserById(
 			}
 		)
 
-		return convertUserResourceToUser(response.retrieveUserById)
+		return response.retrieveUserById
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -152,7 +150,7 @@ export async function createUser(
 			return null
 		} else {
 			return {
-				user: convertUserResourceToUser(response.createUser.user),
+				user: response.createUser.user,
 				accessToken: response.createUser.accessToken,
 				websiteAccessToken: response.createUser.websiteAccessToken
 			}
@@ -170,7 +168,7 @@ export async function updateUser(
 		firstName?: string
 		password?: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{ updateUser: UserResource }>(
 			Dav.apiBaseUrl,
@@ -199,7 +197,7 @@ export async function updateUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.updateUser)
+		return response.updateUser
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -252,7 +250,7 @@ export async function sendConfirmationEmailForUser(
 		auth: Auth
 		id: number
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{
 			sendConfirmationEmailForUser: UserResource
@@ -273,7 +271,7 @@ export async function sendConfirmationEmailForUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.sendConfirmationEmailForUser)
+		return response.sendConfirmationEmailForUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -285,7 +283,7 @@ export async function sendPasswordResetEmailForUser(
 		auth: Auth
 		email: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{
 			sendPasswordResetEmailForUser: UserResource
@@ -306,7 +304,7 @@ export async function sendPasswordResetEmailForUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.sendPasswordResetEmailForUser)
+		return response.sendPasswordResetEmailForUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -319,7 +317,7 @@ export async function confirmUser(
 		id: number
 		emailConfirmationToken: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{ confirmUser: UserResource }>(
 			Dav.apiBaseUrl,
@@ -345,7 +343,7 @@ export async function confirmUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.confirmUser)
+		return response.confirmUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -358,7 +356,7 @@ export async function saveNewEmailOfUser(
 		id: number
 		emailConfirmationToken: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{ saveNewEmailOfUser: UserResource }>(
 			Dav.apiBaseUrl,
@@ -384,7 +382,7 @@ export async function saveNewEmailOfUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.saveNewEmailOfUser)
+		return response.saveNewEmailOfUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -397,7 +395,7 @@ export async function saveNewPasswordOfUser(
 		id: number
 		passwordConfirmationToken: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{ saveNewPasswordOfUser: UserResource }>(
 			Dav.apiBaseUrl,
@@ -423,7 +421,7 @@ export async function saveNewPasswordOfUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.saveNewPasswordOfUser)
+		return response.saveNewPasswordOfUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -436,7 +434,7 @@ export async function resetEmailOfUser(
 		id: number
 		emailConfirmationToken: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{ resetEmailOfUser: UserResource }>(
 			Dav.apiBaseUrl,
@@ -462,7 +460,7 @@ export async function resetEmailOfUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.resetEmailOfUser)
+		return response.resetEmailOfUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
@@ -476,7 +474,7 @@ export async function setPasswordOfUser(
 		password: string
 		passwordConfirmationToken: string
 	}
-): Promise<User | ErrorCode[]> {
+): Promise<UserResource | ErrorCode[]> {
 	try {
 		let response = await request<{
 			setPasswordOfUser: UserResource
@@ -507,7 +505,7 @@ export async function setPasswordOfUser(
 			}
 		)
 
-		return convertUserResourceToUser(response.setPasswordOfUser)
+		return response.setPasswordOfUser
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}

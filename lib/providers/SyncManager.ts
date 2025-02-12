@@ -17,6 +17,7 @@ import {
 	BlobToBase64,
 	GetBlobData,
 	isSuccessStatusCode,
+	convertUserResourceToUser,
 	convertTableObjectResourceToTableObject
 } from "../utils.js"
 import {
@@ -201,39 +202,40 @@ export async function UserSync(): Promise<boolean> {
 	}
 
 	let oldUser = await DatabaseOperations.GetUser()
+	let retrievedUser = convertUserResourceToUser(retrieveUserResponse)
 
 	let newUser: DatabaseUser = {
-		Id: retrieveUserResponse.Id,
-		Email: retrieveUserResponse.Email,
-		FirstName: retrieveUserResponse.FirstName,
-		Confirmed: retrieveUserResponse.Confirmed,
-		TotalStorage: retrieveUserResponse.TotalStorage,
-		UsedStorage: retrieveUserResponse.UsedStorage,
-		StripeCustomerId: retrieveUserResponse.StripeCustomerId,
-		Plan: retrieveUserResponse.Plan,
-		SubscriptionStatus: retrieveUserResponse.SubscriptionStatus,
-		PeriodEnd: retrieveUserResponse.PeriodEnd,
-		Dev: retrieveUserResponse.Dev != null,
-		Provider: retrieveUserResponse.Provider != null,
+		Id: retrievedUser.Id,
+		Email: retrievedUser.Email,
+		FirstName: retrievedUser.FirstName,
+		Confirmed: retrievedUser.Confirmed,
+		TotalStorage: retrievedUser.TotalStorage,
+		UsedStorage: retrievedUser.UsedStorage,
+		StripeCustomerId: retrievedUser.StripeCustomerId,
+		Plan: retrievedUser.Plan,
+		SubscriptionStatus: retrievedUser.SubscriptionStatus,
+		PeriodEnd: retrievedUser.PeriodEnd,
+		Dev: retrievedUser.Dev != null,
+		Provider: retrievedUser.Provider != null,
 		ProfileImage: oldUser != null ? oldUser.ProfileImage : null,
 		ProfileImageEtag: oldUser != null ? oldUser.ProfileImageEtag : null,
-		Apps: retrieveUserResponse.Apps
+		Apps: retrievedUser.Apps
 	}
 
 	if (
 		oldUser == null ||
-		oldUser.ProfileImageEtag != retrieveUserResponse.ProfileImageEtag
+		oldUser.ProfileImageEtag != retrievedUser.ProfileImageEtag
 	) {
 		// Download the new profile image
 		try {
 			let profileImageResponse = await axios({
 				method: "get",
-				url: retrieveUserResponse.ProfileImage,
+				url: retrievedUser.ProfileImage,
 				responseType: "blob"
 			})
 
 			newUser.ProfileImage = profileImageResponse.data
-			newUser.ProfileImageEtag = retrieveUserResponse.ProfileImageEtag
+			newUser.ProfileImageEtag = retrievedUser.ProfileImageEtag
 		} catch (error) {
 			console.error("Error in downloading the user profile image", error)
 		}
@@ -244,25 +246,28 @@ export async function UserSync(): Promise<boolean> {
 
 	// Update the user in Dav
 	Dav.user = {
-		Id: retrieveUserResponse.Id,
-		Email: retrieveUserResponse.Email,
-		FirstName: retrieveUserResponse.FirstName,
-		Confirmed: retrieveUserResponse.Confirmed,
-		TotalStorage: retrieveUserResponse.TotalStorage,
-		UsedStorage: retrieveUserResponse.UsedStorage,
-		StripeCustomerId: retrieveUserResponse.StripeCustomerId,
-		Plan: retrieveUserResponse.Plan,
-		SubscriptionStatus: retrieveUserResponse.SubscriptionStatus,
-		PeriodEnd: retrieveUserResponse.PeriodEnd,
-		Dev: retrieveUserResponse.Dev,
-		Provider: retrieveUserResponse.Provider,
+		Id: retrievedUser.Id,
+		Email: retrievedUser.Email,
+		FirstName: retrievedUser.FirstName,
+		Confirmed: retrievedUser.Confirmed,
+		TotalStorage: retrievedUser.TotalStorage,
+		UsedStorage: retrievedUser.UsedStorage,
+		StripeCustomerId: retrievedUser.StripeCustomerId,
+		Plan: retrievedUser.Plan,
+		SubscriptionStatus: retrievedUser.SubscriptionStatus,
+		PeriodEnd: retrievedUser.PeriodEnd,
+		Dev: retrievedUser.Dev,
+		Provider: retrievedUser.Provider,
 		ProfileImage:
 			(await BlobToBase64(newUser.ProfileImage, defaultProfileImageUrl)) ||
-			`${profileImageBaseUrl}/${retrieveUserResponse.Id}`,
-		Apps: retrieveUserResponse.Apps
+			`${profileImageBaseUrl}/${retrievedUser.Id}`,
+		Apps: retrievedUser.Apps
 	}
 
-	if (Dav.callbacks.UserDownloaded) Dav.callbacks.UserDownloaded()
+	if (Dav.callbacks.UserDownloaded) {
+		Dav.callbacks.UserDownloaded()
+	}
+
 	return true
 }
 

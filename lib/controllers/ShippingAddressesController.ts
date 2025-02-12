@@ -12,7 +12,7 @@ export async function listShippingAddresses(
 		limit?: number
 		offset?: number
 	}
-): Promise<ShippingAddressResource[] | ErrorCode[]> {
+): Promise<List<ShippingAddressResource> | ErrorCode[]> {
 	try {
 		let response = await request<{
 			listShippingAddresses: List<ShippingAddressResource>
@@ -43,7 +43,7 @@ export async function listShippingAddresses(
 			}
 		)
 
-		return response.listShippingAddresses?.items
+		return response.listShippingAddresses
 	} catch (error) {
 		return getErrorCodesOfGraphQLError(error as ClientError)
 	}
