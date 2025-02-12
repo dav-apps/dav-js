@@ -656,7 +656,7 @@ export async function StartWebsocketConnection() {
 	if (Array.isArray(createWebsocketConnectionResponse)) return
 
 	const token = createWebsocketConnectionResponse.token
-	const baseUrl = Dav.apiBaseUrl.replace("http", "ws")
+	const baseUrl = Dav.newApiBaseUrl.replace("http", "ws")
 
 	webSocket = new WebSocket(`${baseUrl}/cable?token=${token}`)
 

@@ -17,7 +17,7 @@ export async function listShippingAddresses(
 		let response = await request<{
 			listShippingAddresses: List<ShippingAddressResource>
 		}>(
-			Dav.apiBaseUrl,
+			Dav.newApiBaseUrl,
 			gql`
 				query ListShippingAddresses(
 					$userId: Int!

@@ -1,8 +1,3 @@
-export const apiBaseUrlDevelopment = "http://localhost:3111/v1"
-export const apiBaseUrlStaging =
-	"https://dav-backend-tfpik.ondigitalocean.app/staging/v1"
-export const apiBaseUrlProduction =
-	"https://dav-backend-tfpik.ondigitalocean.app/v1"
 export const newApiBaseUrlDevelopment = "http://localhost:4000"
 export const newApiBaseUrlStaging =
 	"https://dav-api-staging-kb5tf.ondigitalocean.app"
