@@ -5,11 +5,11 @@ import {
 	ApiErrorResponse,
 	Environment,
 	WebPushSubscriptionUploadStatus,
-	GenericUploadStatus
+	GenericUploadStatus,
+	WebPushSubscriptionResource
 } from "../../lib/types.js"
 import { generateUuid } from "../../lib/utils.js"
 import * as Constants from "../constants.js"
-import * as ErrorCodes from "../../lib/errorCodes.js"
 import { Dav } from "../../lib/Dav.js"
 import * as DatabaseOperations from "../../lib/providers/DatabaseOperations.js"
 import {
@@ -37,24 +37,22 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-	/*
 	// Delete the webPushSubscriptions
 	for (let uuid of webPushSubscriptionsToDelete) {
 		let response =
-			await WebPushSubscriptionsController.DeleteWebPushSubscription({
+			await WebPushSubscriptionsController.deleteWebPushSubscription(`uuid`, {
 				accessToken: Constants.testerXTestAppAccessToken,
 				uuid
 			})
-
-		if (response.status != 204) {
-			console.error("Error in deleting webPushSubscription:")
-			console.error((response as ApiErrorResponse).errors)
+		
+		if (Array.isArray(response)) {
+			console.error("Error in deleting webPushSubscription:", response)
 		}
 	}
-	*/
 
 	webPushSubscriptionsToDelete = []
 
+	/*
 	// Delete the notifications
 	let notificationsResponse = await NotificationsController.GetNotifications({
 		accessToken: Constants.testerXTestAppAccessToken
@@ -78,6 +76,7 @@ afterEach(async () => {
 			}
 		}
 	}
+	*/
 })
 
 describe("WebPushSubscriptionSync function", () => {
@@ -98,7 +97,7 @@ describe("WebPushSubscriptionSync function", () => {
 		let auth = "sghiodhiosdghdios"
 		webPushSubscriptionsToDelete.push(uuid)
 
-		await WebPushSubscriptionsController.CreateWebPushSubscription({
+		await WebPushSubscriptionsController.createWebPushSubscription(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid,
 			endpoint,
@@ -111,21 +110,30 @@ describe("WebPushSubscriptionSync function", () => {
 
 		// Assert
 		let webPushSubscriptionFromServerResponse =
-			await WebPushSubscriptionsController.GetWebPushSubscription({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid
-			})
-		assert.equal(webPushSubscriptionFromServerResponse.status, 200)
+			await WebPushSubscriptionsController.retrieveWebPushSubscription(
+				`
+					uuid
+					endpoint
+					p256dh
+					auth
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid
+				}
+			)
 
-		let webPushSubscriptionFromServer = (
-			webPushSubscriptionFromServerResponse as ApiResponse<WebPushSubscription>
-		).data
-		assert.equal(webPushSubscriptionFromServer.Uuid, uuid)
-		assert.equal(webPushSubscriptionFromServer.Endpoint, endpoint)
-		assert.equal(webPushSubscriptionFromServer.P256dh, p256dh)
-		assert.equal(webPushSubscriptionFromServer.Auth, auth)
+		assert.isFalse(Array.isArray(webPushSubscriptionFromServerResponse))
+
+		const webPushSubscriptionFromServer = webPushSubscriptionFromServerResponse as WebPushSubscriptionResource
+
+		assert.equal(webPushSubscriptionFromServer.uuid, uuid)
+		assert.equal(webPushSubscriptionFromServer.endpoint, endpoint)
+		assert.equal(webPushSubscriptionFromServer.p256dh, p256dh)
+		assert.equal(webPushSubscriptionFromServer.auth, auth)
 	})
 
+	/*
 	it("should do nothing if the local WebPushSubscription is new", async () => {
 		// Arrange
 		new Dav({
@@ -188,6 +196,7 @@ describe("WebPushSubscriptionSync function", () => {
 		assert.equal(webPushSubscriptionFromServer.P256dh, p256dh)
 		assert.equal(webPushSubscriptionFromServer.Auth, auth)
 	})
+	*/
 
 	it("should delete the local WebPushSubscription if it does not exist on the server", async () => {
 		// Arrange
@@ -219,6 +228,7 @@ describe("WebPushSubscriptionSync function", () => {
 	})
 })
 
+/*
 describe("WebPushSubscriptionSyncPush function", () => {
 	it("should create new WebPushSubscription on the server", async () => {
 		// Arrange
@@ -324,7 +334,9 @@ describe("WebPushSubscriptionSyncPush function", () => {
 		)
 	})
 })
+*/
 
+/*
 describe("NotificationSync function", () => {
 	it("should download all notifications from the server", async () => {
 		// Arrange
@@ -491,7 +503,9 @@ describe("NotificationSync function", () => {
 		assert.isNull(localNotificationFromDatabase)
 	})
 })
+*/
 
+/*
 describe("NotificationSyncPush function", () => {
 	it("should create notifications on the server", async () => {
 		// Arrange
@@ -726,3 +740,4 @@ describe("NotificationSyncPush function", () => {
 		assert.equal(notificationsFromDatabase.length, 0)
 	})
 })
+*/

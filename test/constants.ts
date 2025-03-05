@@ -2,12 +2,12 @@ import { TableObject } from "../lib/models/TableObject.js"
 import { Auth } from "../lib/models/Auth.js"
 import { Plan } from "../lib/types.js"
 
-export const testerXTestAppAccessToken = "ckktuu0gs00008iw3ctnrofzf"
+export const testerXTestAppAccessToken = "ckktuujpl00028iw3s8ssrrsb"
 
-export const testAppId = 5
+export const testAppId = 2
 export const testUserId = 2
-export const testAppFirstTestTableId = 24
-export const testAppSecondTestTableId = 25
+export const testAppFirstTestTableId = 1
+export const testAppSecondTestTableId = 2
 
 export const davDevAuth = new Auth({
 	apiKey: "eUzs3PQZYweXvumcWvagRHjdUroGe5Mo7kN1inHm",
@@ -23,7 +23,7 @@ export const testerDevAuth = new Auth({
 
 export const tester = {
 	id: 2,
-	email: "test@example.com",
+	email: "test@dav-apps.tech",
 	password: "loremipsum",
 	firstName: "Tester",
 	confirmed: true,
