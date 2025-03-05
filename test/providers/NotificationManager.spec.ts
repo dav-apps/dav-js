@@ -6,7 +6,8 @@ import {
 	Environment,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus,
-	WebPushSubscriptionResource
+	WebPushSubscriptionResource,
+	ErrorCode
 } from "../../lib/types.js"
 import { generateUuid } from "../../lib/utils.js"
 import * as Constants from "../constants.js"
@@ -40,11 +41,14 @@ afterEach(async () => {
 	// Delete the webPushSubscriptions
 	for (let uuid of webPushSubscriptionsToDelete) {
 		let response =
-			await WebPushSubscriptionsController.deleteWebPushSubscription(`uuid`, {
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid
-			})
-		
+			await WebPushSubscriptionsController.deleteWebPushSubscription(
+				`uuid`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid
+				}
+			)
+
 		if (Array.isArray(response)) {
 			console.error("Error in deleting webPushSubscription:", response)
 		}
@@ -123,9 +127,10 @@ describe("WebPushSubscriptionSync function", () => {
 				}
 			)
 
-		assert.isFalse(Array.isArray(webPushSubscriptionFromServerResponse))
+		assert.isNotArray(webPushSubscriptionFromServerResponse)
 
-		const webPushSubscriptionFromServer = webPushSubscriptionFromServerResponse as WebPushSubscriptionResource
+		const webPushSubscriptionFromServer =
+			webPushSubscriptionFromServerResponse as WebPushSubscriptionResource
 
 		assert.equal(webPushSubscriptionFromServer.uuid, uuid)
 		assert.equal(webPushSubscriptionFromServer.endpoint, endpoint)
@@ -133,7 +138,6 @@ describe("WebPushSubscriptionSync function", () => {
 		assert.equal(webPushSubscriptionFromServer.auth, auth)
 	})
 
-	/*
 	it("should do nothing if the local WebPushSubscription is new", async () => {
 		// Arrange
 		new Dav({
@@ -151,7 +155,7 @@ describe("WebPushSubscriptionSync function", () => {
 		let auth = "sghiodhiosdghdios"
 		webPushSubscriptionsToDelete.push(uuid)
 
-		await WebPushSubscriptionsController.CreateWebPushSubscription({
+		await WebPushSubscriptionsController.createWebPushSubscription(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid,
 			endpoint,
@@ -182,21 +186,29 @@ describe("WebPushSubscriptionSync function", () => {
 		)
 
 		let webPushSubscriptionFromServerResponse =
-			await WebPushSubscriptionsController.GetWebPushSubscription({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid
-			})
-		assert.equal(webPushSubscriptionFromServerResponse.status, 200)
+			await WebPushSubscriptionsController.retrieveWebPushSubscription(
+				`
+					uuid
+					endpoint
+					p256dh
+					auth
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid
+				}
+			)
 
-		let webPushSubscriptionFromServer = (
-			webPushSubscriptionFromServerResponse as ApiResponse<WebPushSubscription>
-		).data
-		assert.equal(webPushSubscriptionFromServer.Uuid, uuid)
-		assert.equal(webPushSubscriptionFromServer.Endpoint, endpoint)
-		assert.equal(webPushSubscriptionFromServer.P256dh, p256dh)
-		assert.equal(webPushSubscriptionFromServer.Auth, auth)
+		assert.isNotArray(webPushSubscriptionFromServerResponse)
+
+		const webPushSubscriptionFromServer =
+			webPushSubscriptionFromServerResponse as WebPushSubscriptionResource
+
+		assert.equal(webPushSubscriptionFromServer.uuid, uuid)
+		assert.equal(webPushSubscriptionFromServer.endpoint, endpoint)
+		assert.equal(webPushSubscriptionFromServer.p256dh, p256dh)
+		assert.equal(webPushSubscriptionFromServer.auth, auth)
 	})
-	*/
 
 	it("should delete the local WebPushSubscription if it does not exist on the server", async () => {
 		// Arrange
@@ -228,7 +240,6 @@ describe("WebPushSubscriptionSync function", () => {
 	})
 })
 
-/*
 describe("WebPushSubscriptionSyncPush function", () => {
 	it("should create new WebPushSubscription on the server", async () => {
 		// Arrange
@@ -263,25 +274,34 @@ describe("WebPushSubscriptionSyncPush function", () => {
 		)
 
 		let webPushSubscriptionFromServerResponse =
-			await WebPushSubscriptionsController.GetWebPushSubscription({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: webPushSubscription.Uuid
-			})
-		assert.equal(webPushSubscriptionFromServerResponse.status, 200)
+			await WebPushSubscriptionsController.retrieveWebPushSubscription(
+				`
+					uuid
+					endpoint
+					p256dh
+					auth
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: webPushSubscription.Uuid
+				}
+			)
 
-		let webPushSubscriptionFromServer = (
-			webPushSubscriptionFromServerResponse as ApiResponse<WebPushSubscription>
-		).data
-		assert.equal(webPushSubscriptionFromServer.Uuid, webPushSubscription.Uuid)
+		assert.isNotArray(webPushSubscriptionFromServerResponse)
+
+		const webPushSubscriptionFromServer =
+			webPushSubscriptionFromServerResponse as WebPushSubscriptionResource
+
+		assert.equal(webPushSubscriptionFromServer.uuid, webPushSubscription.Uuid)
 		assert.equal(
-			webPushSubscriptionFromServer.Endpoint,
+			webPushSubscriptionFromServer.endpoint,
 			webPushSubscription.Endpoint
 		)
 		assert.equal(
-			webPushSubscriptionFromServer.P256dh,
+			webPushSubscriptionFromServer.p256dh,
 			webPushSubscription.P256dh
 		)
-		assert.equal(webPushSubscriptionFromServer.Auth, webPushSubscription.Auth)
+		assert.equal(webPushSubscriptionFromServer.auth, webPushSubscription.Auth)
 	})
 
 	it("should log the user out if the session does not exist", async () => {
@@ -319,22 +339,17 @@ describe("WebPushSubscriptionSyncPush function", () => {
 		assert.isNull(Dav.accessToken)
 
 		let webPushSubscriptionFromServerResponse =
-			await WebPushSubscriptionsController.GetWebPushSubscription({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: webPushSubscription.Uuid
-			})
-		assert.equal(webPushSubscriptionFromServerResponse.status, 404)
+			await WebPushSubscriptionsController.retrieveWebPushSubscription(
+				`uuid`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: webPushSubscription.Uuid
+				}
+			)
 
-		let webPushSubscriptionFromServerError = (
-			webPushSubscriptionFromServerResponse as ApiErrorResponse
-		).errors
-		assert.equal(
-			webPushSubscriptionFromServerError[0].code,
-			ErrorCodes.WebPushSubscriptionDoesNotExist
-		)
+		assert.isNull(webPushSubscriptionFromServerResponse)
 	})
 })
-*/
 
 /*
 describe("NotificationSync function", () => {
