@@ -12,7 +12,7 @@ export async function retrieveWebPushSubscription(
 ): Promise<WebPushSubscriptionResource | ErrorCode[]> {
 	try {
 		let response = await request<{
-			webPushSubscription: WebPushSubscriptionResource
+			retrieveWebPushSubscription: WebPushSubscriptionResource
 		}>(
 			Dav.apiBaseUrl,
 			gql`
@@ -30,7 +30,7 @@ export async function retrieveWebPushSubscription(
 			}
 		)
 
-		return response.webPushSubscription
+		return response.retrieveWebPushSubscription
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -100,5 +100,47 @@ export async function createWebPushSubscription(
 		if (renewSessionError != null) return renewSessionError as ErrorCode[]
 
 		return await createWebPushSubscription(queryData, variables)
+	}
+}
+
+export async function deleteWebPushSubscription(
+	queryData: string,
+	variables: {
+		accessToken?: string
+		uuid: string
+	}
+): Promise<WebPushSubscriptionResource | ErrorCode[]> {
+	try {
+		let response = await request<{
+			deleteWebPushSubscription: WebPushSubscriptionResource
+		}>(
+			Dav.apiBaseUrl,
+			gql`
+				mutation DeleteWebPushSubscription($uuid: String!) {
+					deleteWebPushSubscription(uuid: $uuid) {
+						${queryData}
+					}
+				}
+			`,
+			{
+				uuid: variables.uuid
+			},
+			{
+				Authorization: variables.accessToken ?? Dav.accessToken
+			}
+		)
+
+		return response.deleteWebPushSubscription
+	} catch (error) {
+		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
+
+		if (variables.accessToken != null) {
+			return errorCodes
+		}
+
+		let renewSessionError = await handleGraphQLErrors(errorCodes)
+		if (renewSessionError != null) return renewSessionError as ErrorCode[]
+
+		return await deleteWebPushSubscription(queryData, variables)
 	}
 }
