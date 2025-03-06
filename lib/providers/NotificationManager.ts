@@ -156,11 +156,13 @@ export async function NotificationSync() {
 	// Get all notifications from the server
 	let listNotificationsResponse = await listNotifications(
 		`
-			uuid
-			time
-			interval
-			title
-			body
+			items {
+				uuid
+				time
+				interval
+				title
+				body
+			}
 		`
 	)
 

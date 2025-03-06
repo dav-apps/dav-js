@@ -474,7 +474,7 @@ export function convertNotificationResourceToNotification(
 
 	return new DavNotification({
 		Uuid: notificationResource.uuid,
-		Time: notificationResource.time,
+		Time: new Date(notificationResource.time).valueOf() / 1000,
 		Interval: notificationResource.interval,
 		Title: notificationResource.title,
 		Body: notificationResource.body

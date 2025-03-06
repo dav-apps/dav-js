@@ -226,7 +226,7 @@ export interface UserProfileImageResource {
 
 export interface NotificationResource {
 	uuid: string
-	time: number
+	time: string
 	interval: number
 	title: string
 	body: string
