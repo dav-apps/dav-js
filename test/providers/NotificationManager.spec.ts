@@ -56,31 +56,35 @@ afterEach(async () => {
 
 	webPushSubscriptionsToDelete = []
 
-	/*
 	// Delete the notifications
-	let notificationsResponse = await NotificationsController.GetNotifications({
-		accessToken: Constants.testerXTestAppAccessToken
-	})
+	let notificationsResponse = await NotificationsController.listNotifications(
+		`
+			items {
+				uuid
+			}
+		`,
+		{
+			accessToken: Constants.testerXTestAppAccessToken
+		}
+	)
 
-	if (notificationsResponse.status != 200) {
-		console.error("Error in getting notifications:")
-		console.error((notificationsResponse as ApiErrorResponse).errors)
+	if (Array.isArray(notificationsResponse)) {
+		console.error("Error in getting notifications", notificationsResponse)
 	} else {
-		for (let notification of (
-			notificationsResponse as ApiResponse<Notification[]>
-		).data) {
-			let response = await NotificationsController.DeleteNotification({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: notification.Uuid
-			})
+		for (let notification of notificationsResponse.items) {
+			let response = await NotificationsController.deleteNotification(
+				`uuid`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: notification.uuid
+				}
+			)
 
-			if (response.status != 204) {
-				console.error("Error in deleting notification:")
-				console.error((response as ApiErrorResponse).errors)
+			if (Array.isArray(response)) {
+				console.error("Error in deleting notification", response)
 			}
 		}
 	}
-	*/
 })
 
 describe("WebPushSubscriptionSync function", () => {
@@ -351,7 +355,6 @@ describe("WebPushSubscriptionSyncPush function", () => {
 	})
 })
 
-/*
 describe("NotificationSync function", () => {
 	it("should download all notifications from the server", async () => {
 		// Arrange
@@ -375,7 +378,7 @@ describe("NotificationSync function", () => {
 		let secondNotificationTitle = "Hello World"
 		let secondNotificationBody = "This is a test notification"
 
-		await NotificationsController.CreateNotification({
+		await NotificationsController.createNotification(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstNotificationUuid,
 			time: firstNotificationTime,
@@ -384,7 +387,7 @@ describe("NotificationSync function", () => {
 			body: firstNotificationBody
 		})
 
-		await NotificationsController.CreateNotification({
+		await NotificationsController.createNotification(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondNotificationUuid,
 			time: secondNotificationTime,
@@ -459,7 +462,7 @@ describe("NotificationSync function", () => {
 			UploadStatus: GenericUploadStatus.UpToDate
 		})
 
-		await NotificationsController.CreateNotification({
+		await NotificationsController.createNotification(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstNotificationUuid,
 			time: firstNotificationTime,
@@ -468,7 +471,7 @@ describe("NotificationSync function", () => {
 			body: firstNotificationBody
 		})
 
-		await NotificationsController.CreateNotification({
+		await NotificationsController.createNotification(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondNotificationUuid,
 			time: secondNotificationTime,
@@ -518,7 +521,6 @@ describe("NotificationSync function", () => {
 		assert.isNull(localNotificationFromDatabase)
 	})
 })
-*/
 
 /*
 describe("NotificationSyncPush function", () => {
