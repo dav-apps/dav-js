@@ -1,13 +1,12 @@
 import { assert } from "chai"
 import localforage from "localforage"
 import {
-	ApiResponse,
-	ApiErrorResponse,
 	Environment,
+	List,
 	WebPushSubscriptionUploadStatus,
 	GenericUploadStatus,
 	WebPushSubscriptionResource,
-	ErrorCode
+	NotificationResource
 } from "../../lib/types.js"
 import { generateUuid } from "../../lib/utils.js"
 import * as Constants from "../constants.js"
@@ -522,7 +521,6 @@ describe("NotificationSync function", () => {
 	})
 })
 
-/*
 describe("NotificationSyncPush function", () => {
 	it("should create notifications on the server", async () => {
 		// Arrange
@@ -558,20 +556,37 @@ describe("NotificationSyncPush function", () => {
 		)
 
 		let notificationsFromServerResponse =
-			await NotificationsController.GetNotifications({
-				accessToken: Constants.testerXTestAppAccessToken
-			})
-		assert.equal(notificationsFromServerResponse.status, 200)
+			await NotificationsController.listNotifications(
+				`
+					total
+					items {
+						uuid
+						time
+						interval
+						title
+						body
+					}
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken
+				}
+			)
+		assert.isNotArray(notificationsFromServerResponse)
 
-		let notificationsFromServer = (
-			notificationsFromServerResponse as ApiResponse<Notification[]>
-		).data
-		assert.equal(notificationsFromServer.length, 1)
-		assert.equal(notificationsFromServer[0].Uuid, notification.Uuid)
-		assert.equal(notificationsFromServer[0].Time, notification.Time)
-		assert.equal(notificationsFromServer[0].Interval, notification.Interval)
-		assert.equal(notificationsFromServer[0].Title, notification.Title)
-		assert.equal(notificationsFromServer[0].Body, notification.Body)
+		let notificationsFromServer =
+			notificationsFromServerResponse as List<NotificationResource>
+		assert.equal(notificationsFromServer.total, 1)
+		assert.equal(notificationsFromServer.items[0].uuid, notification.Uuid)
+		assert.deepEqual(
+			new Date(notificationsFromServer.items[0].time),
+			new Date(notification.Time * 1000)
+		)
+		assert.equal(
+			notificationsFromServer.items[0].interval,
+			notification.Interval
+		)
+		assert.equal(notificationsFromServer.items[0].title, notification.Title)
+		assert.equal(notificationsFromServer.items[0].body, notification.Body)
 	})
 
 	it("should update notifications on the server", async () => {
@@ -595,7 +610,7 @@ describe("NotificationSyncPush function", () => {
 		let updatedNotificationTitle = "Updated notification"
 		let updatedNotificationBody = "This notification was updated"
 
-		await NotificationsController.CreateNotification({
+		await NotificationsController.createNotification(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: notificationUuid,
 			time: notificationTime,
@@ -637,23 +652,43 @@ describe("NotificationSyncPush function", () => {
 		)
 
 		let notificationsFromServerResponse =
-			await NotificationsController.GetNotifications({
-				accessToken: Constants.testerXTestAppAccessToken
-			})
-		assert.equal(notificationsFromServerResponse.status, 200)
+			await NotificationsController.listNotifications(
+				`
+					total
+					items {
+						uuid
+						time
+						interval
+						title
+						body
+					}
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken
+				}
+			)
+		assert.isNotArray(notificationsFromServerResponse)
 
-		let notificationsFromServer = (
-			notificationsFromServerResponse as ApiResponse<Notification[]>
-		).data
-		assert.equal(notificationsFromServer.length, 1)
-		assert.equal(notificationsFromServer[0].Uuid, notificationUuid)
-		assert.equal(notificationsFromServer[0].Time, updatedNotificationTime)
+		let notificationsFromServer =
+			notificationsFromServerResponse as List<NotificationResource>
+		assert.equal(notificationsFromServer.total, 1)
+		assert.equal(notificationsFromServer.items[0].uuid, notificationUuid)
+		assert.deepEqual(
+			new Date(notificationsFromServer.items[0].time),
+			new Date(updatedNotificationTime * 1000)
+		)
 		assert.equal(
-			notificationsFromServer[0].Interval,
+			notificationsFromServer.items[0].interval,
 			updatedNotificationInterval
 		)
-		assert.equal(notificationsFromServer[0].Title, updatedNotificationTitle)
-		assert.equal(notificationsFromServer[0].Body, updatedNotificationBody)
+		assert.equal(
+			notificationsFromServer.items[0].title,
+			updatedNotificationTitle
+		)
+		assert.equal(
+			notificationsFromServer.items[0].body,
+			updatedNotificationBody
+		)
 	})
 
 	it("should delete notifications on the server", async () => {
@@ -672,7 +707,7 @@ describe("NotificationSyncPush function", () => {
 		let notificationTitle = "Hello World"
 		let notificationBody = "This is a test notification"
 
-		await NotificationsController.CreateNotification({
+		await NotificationsController.createNotification(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: notificationUuid,
 			time: notificationTime,
@@ -702,15 +737,14 @@ describe("NotificationSyncPush function", () => {
 		assert.isNull(notificationFromDatabase)
 
 		let notificationsFromServerResponse =
-			await NotificationsController.GetNotifications({
+			await NotificationsController.listNotifications(`total`, {
 				accessToken: Constants.testerXTestAppAccessToken
 			})
-		assert.equal(notificationsFromServerResponse.status, 200)
+		assert.isNotArray(notificationsFromServerResponse)
 
-		let notificationsFromServer = (
-			notificationsFromServerResponse as ApiResponse<Notification[]>
-		).data
-		assert.equal(notificationsFromServer.length, 0)
+		let notificationsFromServer =
+			notificationsFromServerResponse as List<NotificationResource>
+		assert.equal(notificationsFromServer.total, 0)
 	})
 
 	it("should delete updated and deleted notifications that do not exist on the server", async () => {
@@ -757,4 +791,3 @@ describe("NotificationSyncPush function", () => {
 		assert.equal(notificationsFromDatabase.length, 0)
 	})
 })
-*/

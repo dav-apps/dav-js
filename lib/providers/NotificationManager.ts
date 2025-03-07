@@ -229,6 +229,7 @@ export async function NotificationSyncPush() {
 						body
 					`,
 					{
+						uuid: notification.Uuid,
 						time: notification.Time,
 						interval: notification.Interval,
 						title: notification.Title,
