@@ -45,7 +45,7 @@ export async function retrieveUser(
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
-		if (variables.accessToken != null) {
+		if (variables?.accessToken != null) {
 			return errorCodes
 		}
 
