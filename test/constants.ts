@@ -6,6 +6,8 @@ export const testerXTestAppAccessToken = "ckktuujpl00028iw3s8ssrrsb"
 
 export const testAppId = 2
 export const testUserId = 2
+export const testAppFirstTestTableId = 1
+export const testAppSecondTestTableId = 2
 export const testAppFirstTestTableName = "FirstTestTable"
 export const testAppSecondTestTableName = "SecondTestTable"
 

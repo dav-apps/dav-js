@@ -24,7 +24,9 @@ export async function retrieveTableObject(
 	}
 ): Promise<TableObjectResource | ErrorCode[]> {
 	try {
-		let response = await request<{ tableObject: TableObjectResource }>(
+		let response = await request<{
+			retrieveTableObject: TableObjectResource
+		}>(
 			Dav.apiBaseUrl,
 			gql`
 				query RetrieveTableObject($uuid: String!) {
@@ -41,7 +43,7 @@ export async function retrieveTableObject(
 			}
 		)
 
-		return response.tableObject
+		return response.retrieveTableObject
 	} catch (error) {
 		const errorCodes = getErrorCodesOfGraphQLError(error as ClientError)
 
@@ -156,7 +158,8 @@ export async function createTableObject(
 			`,
 			{
 				uuid: variables.uuid,
-				tableId: variables.tableId
+				tableId: variables.tableId,
+				properties: variables.properties
 			},
 			{
 				Authorization: variables.accessToken ?? Dav.accessToken

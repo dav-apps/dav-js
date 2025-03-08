@@ -68,6 +68,9 @@ const retrieveTableQueryData = `
 	`
 const retrieveTableObjectQueryData = `
 		uuid
+		table {
+			id
+		}
 		user {
 			id
 			email
@@ -340,7 +343,7 @@ export async function Sync(): Promise<boolean> {
 		tableResults.set(tableName, table)
 		tablePages.set(
 			tableName,
-			Math.floor(table.tableObjects.total / tableObjectsLimit)
+			Math.ceil(table.tableObjects.total / tableObjectsLimit)
 		)
 		currentTablePages.set(tableName, 1)
 		tableEtags.set(tableName, table.etag)

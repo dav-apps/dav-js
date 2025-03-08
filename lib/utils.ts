@@ -459,6 +459,7 @@ export function convertTableObjectResourceToTableObject(
 
 	return new TableObject({
 		Uuid: tableObjectResource.uuid,
+		TableId: tableObjectResource.table?.id ?? 0,
 		User: convertUserResourceToUser(tableObjectResource.user),
 		IsFile: tableObjectResource.fileUrl != null,
 		Etag: tableObjectResource.etag,

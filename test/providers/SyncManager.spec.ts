@@ -357,16 +357,16 @@ describe("UserSync function", () => {
 		assert.isNull(userFromDatabase)
 	})
 })
-/*
+
 describe("Sync function", () => {
 	it("should download all table objects from the server and update the properties of existing table objects", async () => {
 		// Arrange (1)
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -387,7 +387,7 @@ describe("Sync function", () => {
 		let secondTableObjectSecondPropertyName = "test2"
 		let secondTableObjectSecondPropertyValue = "Second test"
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
@@ -399,7 +399,7 @@ describe("Sync function", () => {
 			}
 		})
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
@@ -477,7 +477,7 @@ describe("Sync function", () => {
 		let secondTableObjectSecondUpdatedPropertyValue =
 			"Zweiter aktualisierter Wert"
 
-		await TableObjectsController.UpdateTableObject({
+		await TableObjectsController.updateTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstTableObjectUuid,
 			properties: {
@@ -488,7 +488,7 @@ describe("Sync function", () => {
 			}
 		})
 
-		await TableObjectsController.UpdateTableObject({
+		await TableObjectsController.updateTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondTableObjectUuid,
 			properties: {
@@ -564,9 +564,9 @@ describe("Sync function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -594,7 +594,7 @@ describe("Sync function", () => {
 		let localTableObjectSecondPropertyName = "page2"
 		let localTableObjectSecondPropertyValue = "Good day"
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
@@ -606,7 +606,7 @@ describe("Sync function", () => {
 			}
 		})
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
@@ -692,7 +692,7 @@ describe("Sync function", () => {
 		)
 	})
 })
-
+/*
 describe("SyncPush function", () => {
 	it("should create table objects on the server", async () => {
 		// Arrange
