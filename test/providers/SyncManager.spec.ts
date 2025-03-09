@@ -1273,16 +1273,16 @@ describe("SyncPush function", () => {
 		assert.isNull(thirdTableObjectFromDatabase)
 	})
 })
-/*
+
 describe("DownloadTableObject function", () => {
 	it("should download the table object and save it in the database", async () => {
 		// Arrange
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -1296,7 +1296,7 @@ describe("DownloadTableObject function", () => {
 		let tableObjectSecondPropertyName = "page2"
 		let tableObjectSecondPropertyValue = "Hallo Welt"
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			uuid: tableObjectUuid,
 			tableId: tableObjectTableId,
 			properties: {
@@ -1333,9 +1333,9 @@ describe("DownloadTableObject function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -1367,7 +1367,7 @@ describe("DownloadTableObject function", () => {
 		let tableObjectFirstUpdatedPropertyValue = "First updated value"
 		let tableObjectSecondUpdatedPropertyValue = "Erster aktualisierter Wert"
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			uuid: tableObjectUuid,
 			tableId: tableObjectTableId,
 			properties: {
@@ -1401,4 +1401,3 @@ describe("DownloadTableObject function", () => {
 		)
 	})
 })
-*/
