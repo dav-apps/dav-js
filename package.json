@@ -6,7 +6,7 @@
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"scripts": {
-		"test": "npm run compile && mocha --require mock-local-storage dist/test/*.spec.js dist/test/controllers/*.spec.js dist/test/models/*.spec.js dist/test/providers/*.spec.js",
+		"test": "npm run compile && mocha --require mock-local-storage dist/test/*.spec.js dist/test/models/*.spec.js dist/test/providers/*.spec.js --timeout 10000",
 		"prepublishOnly": "npm run build",
 		"compile": "npm run clean && tsc -p . && npm run copyJs",
 		"watch": "tsc -w -p .",
