@@ -692,16 +692,16 @@ describe("Sync function", () => {
 		)
 	})
 })
-/*
+
 describe("SyncPush function", () => {
 	it("should create table objects on the server", async () => {
 		// Arrange
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -772,60 +772,75 @@ describe("SyncPush function", () => {
 		)
 
 		let firstTableObjectFromServerResponse =
-			await TableObjectsController.GetTableObject({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: firstTableObjectUuid
-			})
-		assert.equal(firstTableObjectFromServerResponse.status, 200)
+			await TableObjectsController.retrieveTableObject(
+				`
+					uuid
+					table {
+						id
+					}
+					properties
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: firstTableObjectUuid
+				}
+			)
 
-		let firstTableObjectFromServer = (
-			firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
-		).data.tableObject
-		assert.equal(firstTableObjectFromServer.Uuid, firstTableObjectUuid)
-		assert.equal(firstTableObjectFromServer.TableId, firstTableObjectTableId)
-		assert.equal(Object.keys(firstTableObjectFromServer.Properties).length, 2)
+		assert.isNotArray(firstTableObjectFromServerResponse)
+
+		let firstTableObjectFromServer = firstTableObjectFromServerResponse as TableObjectResource
+		assert.equal(firstTableObjectFromServer.uuid, firstTableObjectUuid)
+		assert.equal(firstTableObjectFromServer.table.id, firstTableObjectTableId)
+		assert.equal(Object.keys(firstTableObjectFromServer.properties).length, 2)
 		assert.equal(
-			firstTableObjectFromServer.GetPropertyValue(
+			firstTableObjectFromServer.properties[
 				firstTableObjectFirstPropertyName
-			),
+			],
 			firstTableObjectFirstPropertyValue
 		)
 		assert.equal(
-			firstTableObjectFromServer.GetPropertyValue(
+			firstTableObjectFromServer.properties[
 				firstTableObjectSecondPropertyName
-			),
+			],
 			firstTableObjectSecondPropertyValue
 		)
 
 		let secondTableObjectFromServerResponse =
-			await TableObjectsController.GetTableObject({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: secondTableObjectUuid
-			})
-		assert.equal(secondTableObjectFromServerResponse.status, 200)
+			await TableObjectsController.retrieveTableObject(
+				`
+					uuid
+					table {
+						id
+					}
+					properties
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: secondTableObjectUuid
+				}
+			)
+		assert.isNotArray(secondTableObjectFromServerResponse)
 
-		let secondTableObjectFromServer = (
-			secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
-		).data.tableObject
-		assert.equal(secondTableObjectFromServer.Uuid, secondTableObjectUuid)
+		let secondTableObjectFromServer = secondTableObjectFromServerResponse as TableObjectResource
+		assert.equal(secondTableObjectFromServer.uuid, secondTableObjectUuid)
 		assert.equal(
-			secondTableObjectFromServer.TableId,
+			secondTableObjectFromServer.table.id,
 			secondTableObjectTableId
 		)
 		assert.equal(
-			Object.keys(secondTableObjectFromServer.Properties).length,
+			Object.keys(secondTableObjectFromServer.properties).length,
 			2
 		)
 		assert.equal(
-			secondTableObjectFromServer.GetPropertyValue(
+			secondTableObjectFromServer.properties[
 				secondTableObjectFirstPropertyName
-			),
+			],
 			secondTableObjectFirstPropertyValue
 		)
 		assert.equal(
-			secondTableObjectFromServer.GetPropertyValue(
+			secondTableObjectFromServer.properties[
 				secondTableObjectSecondPropertyName
-			),
+			],
 			secondTableObjectSecondPropertyValue
 		)
 	})
@@ -835,9 +850,9 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -858,7 +873,7 @@ describe("SyncPush function", () => {
 		let secondTableObjectSecondPropertyName = "test2"
 		let secondTableObjectSecondPropertyValue = "Second test"
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
@@ -870,7 +885,7 @@ describe("SyncPush function", () => {
 			}
 		})
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
@@ -982,60 +997,74 @@ describe("SyncPush function", () => {
 		)
 
 		let firstTableObjectFromServerResponse =
-			await TableObjectsController.GetTableObject({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: firstTableObjectUuid
-			})
-		assert.equal(firstTableObjectFromServerResponse.status, 200)
+			await TableObjectsController.retrieveTableObject(
+				`
+					uuid
+					table {
+						id
+					}
+					properties
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: firstTableObjectUuid
+				}
+			)
+		assert.isNotArray(firstTableObjectFromServerResponse)
 
-		let firstTableObjectFromServer = (
-			firstTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
-		).data.tableObject
-		assert.equal(firstTableObjectFromServer.Uuid, firstTableObjectUuid)
-		assert.equal(firstTableObjectFromServer.TableId, firstTableObjectTableId)
-		assert.equal(Object.keys(firstTableObjectFromServer.Properties).length, 2)
+		let firstTableObjectFromServer = firstTableObjectFromServerResponse as TableObjectResource
+		assert.equal(firstTableObjectFromServer.uuid, firstTableObjectUuid)
+		assert.equal(firstTableObjectFromServer.table.id, firstTableObjectTableId)
+		assert.equal(Object.keys(firstTableObjectFromServer.properties).length, 2)
 		assert.equal(
-			firstTableObjectFromServer.GetPropertyValue(
+			firstTableObjectFromServer.properties[
 				firstTableObjectFirstPropertyName
-			),
+			],
 			firstTableObjectFirstUpdatedPropertyValue
 		)
 		assert.equal(
-			firstTableObjectFromServer.GetPropertyValue(
+			firstTableObjectFromServer.properties[
 				firstTableObjectSecondPropertyName
-			),
+			],
 			firstTableObjectSecondUpdatedPropertyValue
 		)
 
 		let secondTableObjectFromServerResponse =
-			await TableObjectsController.GetTableObject({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: secondTableObjectUuid
-			})
-		assert.equal(secondTableObjectFromServerResponse.status, 200)
+			await TableObjectsController.retrieveTableObject(
+				`
+					uuid
+					table {
+						id
+					}
+					properties
+				`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: secondTableObjectUuid
+				}
+			)
+		assert.isNotArray(secondTableObjectFromServerResponse)
 
-		let secondTableObjectFromServer = (
-			secondTableObjectFromServerResponse as ApiResponse<TableObjectResponseData>
-		).data.tableObject
-		assert.equal(secondTableObjectFromServer.Uuid, secondTableObjectUuid)
+		let secondTableObjectFromServer = secondTableObjectFromServerResponse as TableObjectResource
+		assert.equal(secondTableObjectFromServer.uuid, secondTableObjectUuid)
 		assert.equal(
-			secondTableObjectFromServer.TableId,
+			secondTableObjectFromServer.table.id,
 			secondTableObjectTableId
 		)
 		assert.equal(
-			Object.keys(secondTableObjectFromServer.Properties).length,
+			Object.keys(secondTableObjectFromServer.properties).length,
 			2
 		)
 		assert.equal(
-			secondTableObjectFromServer.GetPropertyValue(
+			secondTableObjectFromServer.properties[
 				secondTableObjectFirstPropertyName
-			),
+			],
 			secondTableObjectFirstUpdatedPropertyValue
 		)
 		assert.equal(
-			secondTableObjectFromServer.GetPropertyValue(
+			secondTableObjectFromServer.properties[
 				secondTableObjectSecondPropertyName
-			),
+			],
 			secondTableObjectSecondUpdatedPropertyValue
 		)
 	})
@@ -1045,9 +1074,9 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -1068,7 +1097,7 @@ describe("SyncPush function", () => {
 		let secondTableObjectSecondPropertyName = "test2"
 		let secondTableObjectSecondPropertyValue = "Second test"
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: firstTableObjectUuid,
 			tableId: firstTableObjectTableId,
@@ -1080,7 +1109,7 @@ describe("SyncPush function", () => {
 			}
 		})
 
-		await TableObjectsController.CreateTableObject({
+		await TableObjectsController.createTableObject(`uuid`, {
 			accessToken: Constants.testerXTestAppAccessToken,
 			uuid: secondTableObjectUuid,
 			tableId: secondTableObjectTableId,
@@ -1134,28 +1163,20 @@ describe("SyncPush function", () => {
 		assert.isNull(secondTableObjectFromDatabase)
 
 		let firstTableObjectFromServerResponse =
-			await TableObjectsController.GetTableObject({
-				accessToken: Constants.testerXTestAppAccessToken,
-				uuid: firstTableObjectUuid
-			})
-		assert.equal(firstTableObjectFromServerResponse.status, 404)
-		assert.equal(
-			(firstTableObjectFromServerResponse as ApiErrorResponse).errors[0]
-				.code,
-			ErrorCodes.TableObjectDoesNotExist
-		)
+			await TableObjectsController.retrieveTableObject(`uuid`,
+				{
+					accessToken: Constants.testerXTestAppAccessToken,
+					uuid: firstTableObjectUuid
+				}
+			)
+		assert.isNull(firstTableObjectFromServerResponse)
 
 		let secondTableObjectFromServerResponse =
-			await TableObjectsController.GetTableObject({
+			await TableObjectsController.retrieveTableObject(`uuid`, {
 				accessToken: Constants.testerXTestAppAccessToken,
 				uuid: secondTableObjectUuid
 			})
-		assert.equal(secondTableObjectFromServerResponse.status, 404)
-		assert.equal(
-			(secondTableObjectFromServerResponse as ApiErrorResponse).errors[0]
-				.code,
-			ErrorCodes.TableObjectDoesNotExist
-		)
+		assert.isNull(secondTableObjectFromServerResponse)
 	})
 
 	it("should delete updated, deleted and removed table objects that do not exist on the server", async () => {
@@ -1163,9 +1184,9 @@ describe("SyncPush function", () => {
 		new Dav({
 			environment: Environment.Test,
 			appId: Constants.testAppId,
-			tableIds: [
-				Constants.testAppFirstTestTableId,
-				Constants.testAppSecondTestTableId
+			tableNames: [
+				Constants.testAppFirstTestTableName,
+				Constants.testAppSecondTestTableName
 			]
 		})
 
@@ -1252,7 +1273,7 @@ describe("SyncPush function", () => {
 		assert.isNull(thirdTableObjectFromDatabase)
 	})
 })
-
+/*
 describe("DownloadTableObject function", () => {
 	it("should download the table object and save it in the database", async () => {
 		// Arrange

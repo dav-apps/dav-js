@@ -843,12 +843,15 @@ async function CreateTableObjectOnServer(
 
 	if (tableObject.IsFile) {
 		// Create the table object
-		let createTableObjectResponse = await createTableObject(`uuid`, {
-			uuid: tableObject.Uuid,
-			tableId: tableObject.TableId,
-			file: true,
-			ext: tableObject.GetPropertyValue(extPropertyName) as string
-		})
+		let createTableObjectResponse = await createTableObject(
+			retrieveTableObjectQueryData,
+			{
+				uuid: tableObject.Uuid,
+				tableId: tableObject.TableId,
+				file: true,
+				ext: tableObject.GetPropertyValue(extPropertyName) as string
+			}
+		)
 
 		if (
 			Array.isArray(createTableObjectResponse) &&
@@ -893,12 +896,15 @@ async function CreateTableObjectOnServer(
 		}
 
 		// Create the table object
-		let createTableObjectResponse = await createTableObject(`uuid`, {
-			uuid: tableObject.Uuid,
-			tableId: tableObject.TableId,
-			file: false,
-			properties
-		})
+		let createTableObjectResponse = await createTableObject(
+			retrieveTableObjectQueryData,
+			{
+				uuid: tableObject.Uuid,
+				tableId: tableObject.TableId,
+				file: false,
+				properties
+			}
+		)
 
 		if (!Array.isArray(createTableObjectResponse)) {
 			// Save the new etag

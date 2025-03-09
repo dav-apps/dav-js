@@ -66,8 +66,8 @@ export async function deleteTableObjectUserAccess(
 		}>(
 			Dav.apiBaseUrl,
 			gql`
-				mutation DeleteTableObjectUserAccess($uuid: String!) {
-					deleteTableObjectUserAccess(uuid: $uuid) {
+				mutation DeleteTableObjectUserAccess($tableObjectUuid: String!) {
+					deleteTableObjectUserAccess(tableObjectUuid: $tableObjectUuid) {
 						${queryData}
 					}
 				}
