@@ -33,8 +33,8 @@ export { defaultProfileImageUrl } from "./lib/constants.js"
 export {
 	generateUuid,
 	BlobToBase64,
-	convertErrorToApiErrorResponse2,
-	handleApiError2,
+	convertErrorToApiErrorResponse,
+	handleApiError,
 	renewSession,
 	isSuccessStatusCode,
 	PrepareRequestParams,

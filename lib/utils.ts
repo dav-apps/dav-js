@@ -100,7 +100,7 @@ export function getErrorCodesOfGraphQLError(e: ClientError): ErrorCode[] {
 	return errorCodes
 }
 
-export function convertErrorToApiErrorResponse2(error: any): ApiErrorResponse2 {
+export function convertErrorToApiErrorResponse(error: any): ApiErrorResponse2 {
 	if (error.response) {
 		// API error
 		return {
@@ -113,8 +113,8 @@ export function convertErrorToApiErrorResponse2(error: any): ApiErrorResponse2 {
 	}
 }
 
-export async function handleApiError2(error: any): Promise<ApiErrorResponse2> {
-	let errorResponse = convertErrorToApiErrorResponse2(error)
+export async function handleApiError(error: any): Promise<ApiErrorResponse2> {
+	let errorResponse = convertErrorToApiErrorResponse(error)
 
 	if (
 		errorResponse.error != null &&

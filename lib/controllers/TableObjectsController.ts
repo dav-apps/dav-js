@@ -9,9 +9,9 @@ import {
 	List
 } from "../types.js"
 import {
-	convertErrorToApiErrorResponse2,
+	convertErrorToApiErrorResponse,
 	getErrorCodesOfGraphQLError,
-	handleApiError2,
+	handleApiError,
 	handleGraphQLErrors
 } from "../utils.js"
 import { Auth } from "../models/Auth.js"
@@ -296,10 +296,10 @@ export async function uploadTableObjectFile(params: {
 		}
 	} catch (error) {
 		if (params.accessToken != null) {
-			return convertErrorToApiErrorResponse2(error)
+			return convertErrorToApiErrorResponse(error)
 		}
 
-		let renewSessionError = await handleApiError2(error)
+		let renewSessionError = await handleApiError(error)
 		if (renewSessionError != null) return renewSessionError
 
 		return await uploadTableObjectFile(params)
