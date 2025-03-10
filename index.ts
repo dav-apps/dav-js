@@ -5,7 +5,6 @@ export {
 	Environment,
 	List,
 	ApiResponse,
-	ApiErrorResponse,
 	ApiErrorResponse2,
 	ErrorCode,
 	ApiResponseError2,
@@ -34,9 +33,7 @@ export { defaultProfileImageUrl } from "./lib/constants.js"
 export {
 	generateUuid,
 	BlobToBase64,
-	ConvertErrorToApiErrorResponse,
 	convertErrorToApiErrorResponse2,
-	HandleApiError,
 	handleApiError2,
 	renewSession,
 	isSuccessStatusCode,

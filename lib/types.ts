@@ -36,11 +36,6 @@ export interface ApiResponse<T> {
 	data?: T
 }
 
-export interface ApiErrorResponse {
-	status: number
-	errors: ApiResponseError[]
-}
-
 export interface ApiErrorResponse2 {
 	status: number
 	error?: ApiResponseError2

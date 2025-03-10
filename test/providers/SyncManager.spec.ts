@@ -1,14 +1,11 @@
 import { assert } from "chai"
 import localforage from "localforage"
 import {
-	ApiResponse,
-	ApiErrorResponse,
 	Environment,
 	SessionUploadStatus,
 	DatabaseUser,
 	Plan,
 	TableObjectUploadStatus,
-	List,
 	TableObjectResource,
 	TableResource,
 	ErrorCode,

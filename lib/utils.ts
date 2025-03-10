@@ -8,7 +8,6 @@ import { TableObject } from "./models/TableObject.js"
 import { Notification as DavNotification } from "./models/Notification.js"
 import { Purchase } from "./models/Purchase.js"
 import {
-	ApiErrorResponse,
 	ApiErrorResponse2,
 	ErrorCode,
 	UserResource,
@@ -101,19 +100,6 @@ export function getErrorCodesOfGraphQLError(e: ClientError): ErrorCode[] {
 	return errorCodes
 }
 
-export function ConvertErrorToApiErrorResponse(error: any): ApiErrorResponse {
-	if (error.response) {
-		// API error
-		return {
-			status: error.response.status,
-			errors: error.response.data.errors
-		}
-	} else {
-		// JavaScript error
-		return { status: -1, errors: [] }
-	}
-}
-
 export function convertErrorToApiErrorResponse2(error: any): ApiErrorResponse2 {
 	if (error.response) {
 		// API error
@@ -124,20 +110,6 @@ export function convertErrorToApiErrorResponse2(error: any): ApiErrorResponse2 {
 	} else {
 		// JavaScript error
 		return { status: -1 }
-	}
-}
-
-export async function HandleApiError(error: any): Promise<ApiErrorResponse> {
-	let errorResponse = ConvertErrorToApiErrorResponse(error)
-
-	if (
-		errorResponse.errors &&
-		errorResponse.errors.length > 0
-		//&& errorResponse.errors[0].code == ErrorCodes.AccessTokenMustBeRenewed
-	) {
-		return null
-	} else {
-		return errorResponse
 	}
 }
 
