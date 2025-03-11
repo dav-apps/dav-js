@@ -8,7 +8,7 @@ import { TableObject } from "./models/TableObject.js"
 import { Notification as DavNotification } from "./models/Notification.js"
 import { Purchase } from "./models/Purchase.js"
 import {
-	ApiErrorResponse2,
+	ApiErrorResponse,
 	ErrorCode,
 	UserResource,
 	DevResource,
@@ -100,7 +100,7 @@ export function getErrorCodesOfGraphQLError(e: ClientError): ErrorCode[] {
 	return errorCodes
 }
 
-export function convertErrorToApiErrorResponse(error: any): ApiErrorResponse2 {
+export function convertErrorToApiErrorResponse(error: any): ApiErrorResponse {
 	if (error.response) {
 		// API error
 		return {
@@ -113,7 +113,7 @@ export function convertErrorToApiErrorResponse(error: any): ApiErrorResponse2 {
 	}
 }
 
-export async function handleApiError(error: any): Promise<ApiErrorResponse2> {
+export async function handleApiError(error: any): Promise<ApiErrorResponse> {
 	let errorResponse = convertErrorToApiErrorResponse(error)
 
 	if (

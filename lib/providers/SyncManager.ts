@@ -2,7 +2,7 @@ import CryptoJS from "crypto-js"
 import axios from "axios"
 import { Dav } from "../Dav.js"
 import {
-	ApiErrorResponse2,
+	ApiErrorResponse,
 	ApiResponse,
 	ErrorCode,
 	Environment,
@@ -934,7 +934,7 @@ async function UpdateTableObjectOnServer(
 		})
 
 		if (!isSuccessStatusCode(uploadTableObjectFileResponse.status)) {
-			let errorResponse = uploadTableObjectFileResponse as ApiErrorResponse2
+			let errorResponse = uploadTableObjectFileResponse as ApiErrorResponse
 
 			if (errorResponse.error == null) {
 				return null

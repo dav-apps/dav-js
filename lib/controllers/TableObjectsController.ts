@@ -5,7 +5,7 @@ import {
 	ApiResponse,
 	ErrorCode,
 	TableObjectResource,
-	ApiErrorResponse2,
+	ApiErrorResponse,
 	List
 } from "../types.js"
 import {
@@ -278,7 +278,7 @@ export async function uploadTableObjectFile(params: {
 	uuid: string
 	contentType: string
 	data: string
-}): Promise<ApiResponse<TableObjectResource> | ApiErrorResponse2> {
+}): Promise<ApiResponse<TableObjectResource> | ApiErrorResponse> {
 	try {
 		let response = await axios({
 			method: "put",

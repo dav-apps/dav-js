@@ -5,9 +5,8 @@ export {
 	Environment,
 	List,
 	ApiResponse,
-	ApiErrorResponse2,
+	ApiErrorResponse,
 	ErrorCode,
-	ApiResponseError2,
 	SubscriptionStatus,
 	TableObjectPriceType,
 	Property,
@@ -38,7 +37,9 @@ export {
 	renewSession,
 	isSuccessStatusCode,
 	PrepareRequestParams,
-	convertUserResourceToUser
+	convertUserResourceToUser,
+	convertDevResourceToDev,
+	convertAppResourceToApp
 } from "./lib/utils.js"
 
 // models

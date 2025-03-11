@@ -4,7 +4,7 @@ import { Dav } from "../Dav.js"
 import {
 	ApiResponse,
 	ErrorCode,
-	ApiErrorResponse2,
+	ApiErrorResponse,
 	UserResource
 } from "../types.js"
 import {
@@ -216,7 +216,7 @@ export async function uploadUserProfileImage(params: {
 	accessToken?: string
 	contentType: string
 	data: string
-}): Promise<ApiResponse<{}> | ApiErrorResponse2> {
+}): Promise<ApiResponse<{}> | ApiErrorResponse> {
 	try {
 		let response = await axios({
 			method: "put",
