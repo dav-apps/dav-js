@@ -180,7 +180,7 @@ export class Dav {
 			return
 		}
 
-		await SyncManager.StartWebsocketConnection()
+		//await SyncManager.StartWebsocketConnection()
 		SyncManager.DownloadFiles()
 
 		// Sync the web push subscription and notifications
@@ -210,7 +210,7 @@ export class Dav {
 		this.isLoggedIn = false
 
 		// Close the websocket connection
-		SyncManager.CloseWebsocketConnection()
+		//SyncManager.CloseWebsocketConnection()
 
 		// Remove the user
 		await DatabaseOperations.RemoveUser()

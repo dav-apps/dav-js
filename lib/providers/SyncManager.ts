@@ -690,7 +690,7 @@ export async function StartWebsocketConnection() {
 		if (json.type == "ping" || json.message == null) {
 			return
 		} else if (json.type == "reject_subscription") {
-			CloseWebsocketConnection()
+			//CloseWebsocketConnection()
 			return
 		}
 
