@@ -3,8 +3,7 @@ export const apiBaseUrlStaging =
 	"https://dav-api-staging-kb5tf.ondigitalocean.app"
 export const apiBaseUrlProduction = "https://dav-api-ax6gp.ondigitalocean.app"
 export const websiteUrlDevelopment = "http://localhost:3000"
-export const websiteUrlStaging =
-	"https://dav-website-staging-o3oot.ondigitalocean.app"
+export const websiteUrlStaging = "https://dav-website-staging-knsy9.ondigitalocean.app"
 export const websiteUrlProduction = "https://dav-apps.tech"
 export const profileImageBaseUrl =
 	"https://dav-backend.fra1.cdn.digitaloceanspaces.com/profileImages"
