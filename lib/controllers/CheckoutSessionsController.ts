@@ -98,7 +98,7 @@ export async function createPaymentCheckoutSession(
 					$successUrl: String!
 					$cancelUrl: String!
 				) {
-					createSubscriptionCheckoutSession(
+					createPaymentCheckoutSession(
 						tableObjectUuid: $tableObjectUuid
 						type: $type
 						price: $price
