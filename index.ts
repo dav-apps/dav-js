@@ -21,6 +21,7 @@ export {
 	AppUserSnapshotResource,
 	CheckoutSessionResource,
 	CustomerPortalSessionResource,
+	PurchaseResource,
 	OrderResource,
 	ShippingAddressResource
 } from "./lib/types.js"

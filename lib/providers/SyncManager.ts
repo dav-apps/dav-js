@@ -810,8 +810,9 @@ export async function DownloadTableObject(uuid: string) {
 				// Set the old etag
 				await tableObject.SetEtag(tableObjectFromDatabase.Etag)
 			} else {
-				if (Dav.callbacks.UpdateTableObject)
+				if (Dav.callbacks.UpdateTableObject) {
 					Dav.callbacks.UpdateTableObject(tableObject)
+				}
 			}
 		}
 	} else {
@@ -823,9 +824,8 @@ export async function DownloadTableObject(uuid: string) {
 				uuid: tableObject.Uuid,
 				etag: tableObject.Etag
 			})
-		} else {
-			if (Dav.callbacks.UpdateTableObject)
-				Dav.callbacks.UpdateTableObject(tableObject)
+		} else if (Dav.callbacks.UpdateTableObject) {
+			Dav.callbacks.UpdateTableObject(tableObject)
 		}
 	}
 
