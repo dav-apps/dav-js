@@ -473,7 +473,11 @@ export async function Sync(): Promise<boolean> {
 
 		if (currentTablePages.get(tableName) > tablePages.get(tableName)) {
 			if (Dav.callbacks.UpdateAllOfTable) {
-				Dav.callbacks.UpdateAllOfTable(tableName, tableChanged, true)
+				Dav.callbacks.UpdateAllOfTable(
+					tableIds.get(tableName),
+					tableChanged,
+					true
+				)
 			}
 
 			// Save the new table etag
@@ -481,6 +485,8 @@ export async function Sync(): Promise<boolean> {
 				tableIds.get(tableName),
 				tableEtags.get(tableName)
 			)
+
+			continue
 		}
 
 		if (Dav.callbacks.UpdateAllOfTable) {

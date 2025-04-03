@@ -30,7 +30,9 @@ export async function retrieveTable(
 				}
 			`,
 			{
-				name: variables.name
+				name: variables.name,
+				limit: variables.limit,
+				offset: variables.offset
 			},
 			{
 				Authorization: variables.accessToken ?? Dav.accessToken
