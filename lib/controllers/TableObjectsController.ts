@@ -159,6 +159,8 @@ export async function createTableObject(
 			{
 				uuid: variables.uuid,
 				tableId: variables.tableId,
+				file: variables.file,
+				ext: variables.ext,
 				properties: variables.properties
 			},
 			{
