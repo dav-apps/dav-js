@@ -34,7 +34,12 @@ export async function retrieveOrder(
 
 export async function updateOrder(
 	queryData: string,
-	variables: { auth: Auth; uuid: string; status?: OrderStatus }
+	variables: {
+		auth: Auth
+		uuid: string
+		status?: OrderStatus
+		dhlTrackingCode?: string
+	}
 ): Promise<OrderResource | ErrorCode[]> {
 	try {
 		let response = await request<{ updateOrder: OrderResource }>(
@@ -43,10 +48,12 @@ export async function updateOrder(
 				mutation UpdateOrder(
 					$uuid: String!
 					$status: OrderStatus
+					$dhlTrackingCode: String
 				) {
 					updateOrder(
 						uuid: $uuid
 						status: $status
+						dhlTrackingCode: $dhlTrackingCode
 					) {
 						${queryData}
 					}
