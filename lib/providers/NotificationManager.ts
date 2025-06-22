@@ -170,6 +170,7 @@ export async function NotificationSync() {
 
 	for (let item of listNotificationsResponse.items) {
 		let notification = convertNotificationResourceToNotification(item)
+		notification.UploadStatus = GenericUploadStatus.UpToDate
 
 		// Remove the notification from removedNotifications
 		let i = removedNotifications.findIndex(n => n.Uuid == notification.Uuid)
