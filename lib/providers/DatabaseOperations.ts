@@ -168,7 +168,7 @@ export async function SetTableObject(
 
 		await localforage.setItem(
 			getTableObjectKey(tableObject.TableId, tableObject.Uuid),
-			tableObject
+			ConvertTableObjectToDatabaseTableObject(tableObject)
 		)
 		return tableObject.Uuid
 	} catch (error) {
@@ -310,6 +310,24 @@ export function ConvertDatabaseTableObjectToTableObject(
 	}
 
 	return tableObject
+}
+
+export function ConvertTableObjectToDatabaseTableObject(
+	obj: TableObject
+): DatabaseTableObject {
+	if (obj == null) return null
+
+	return {
+		Uuid: obj.Uuid,
+		TableId: obj.TableId,
+		IsFile: obj.IsFile,
+		File: obj.File,
+		Properties: obj.Properties,
+		UploadStatus: obj.UploadStatus,
+		Etag: obj.Etag,
+		BelongsToUser: obj.BelongsToUser,
+		Purchase: obj.Purchase
+	}
 }
 
 export function ConvertDatabaseNotificationToNotification(

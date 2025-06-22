@@ -71,11 +71,6 @@ const retrieveTableObjectQueryData = `
 		table {
 			id
 		}
-		user {
-			id
-			email
-			firstName
-		}
 		fileUrl
 		etag
 		properties
@@ -918,8 +913,6 @@ async function CreateTableObjectOnServer(
 				tableObject.TableId,
 				createTableObjectResponse.table.etag
 			)
-
-			return createTableObjectResponse
 		}
 
 		return createTableObjectResponse
