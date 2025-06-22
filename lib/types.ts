@@ -281,7 +281,7 @@ export interface DatabaseTableObject {
 	TableId: number
 	IsFile: boolean
 	File: Blob
-	Properties: TableObjectProperties | OldTableObjectProperties
+	Properties: TableObjectProperties
 	UploadStatus: number
 	Etag: string
 	BelongsToUser: boolean
@@ -290,10 +290,6 @@ export interface DatabaseTableObject {
 
 export interface TableObjectProperties {
 	[name: string]: TableObjectProperty
-}
-
-export interface OldTableObjectProperties {
-	[name: string]: string
 }
 
 export interface TableObjectProperty {

@@ -306,15 +306,7 @@ export function ConvertDatabaseTableObjectToTableObject(
 	tableObject.Purchase = obj.Purchase
 
 	for (let key of Object.keys(obj.Properties)) {
-		let value = obj.Properties[key]
-
-		if (typeof value == "object") {
-			// value is of type TableObjectProperties
-			tableObject.Properties[key] = value
-		} else {
-			// value is of type OldTableObjectProperties
-			tableObject.Properties[key] = { value }
-		}
+		tableObject.Properties[key] = obj.Properties[key]
 	}
 
 	return tableObject
