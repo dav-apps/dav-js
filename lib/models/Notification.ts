@@ -45,8 +45,9 @@ export class Notification {
 		if (
 			this.UploadStatus == GenericUploadStatus.UpToDate &&
 			(await DatabaseOperations.NotificationExists(this.Uuid))
-		)
+		) {
 			this.UploadStatus = GenericUploadStatus.Updated
+		}
 
 		await DatabaseOperations.SetNotification(this)
 

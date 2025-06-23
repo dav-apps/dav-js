@@ -238,13 +238,10 @@ export async function NotificationSyncPush() {
 					}
 				)
 
-				if (!Array.isArray(createNotificationResponse)) {
-					notification.UploadStatus = GenericUploadStatus.UpToDate
-					await DatabaseOperations.SetNotification(notification)
-				} else if (
+				if (
+					!Array.isArray(createNotificationResponse) ||
 					createNotificationResponse.includes("UUID_ALREADY_IN_USE")
 				) {
-					// Set the UploadStatus to UpToDate
 					notification.UploadStatus = GenericUploadStatus.UpToDate
 					await DatabaseOperations.SetNotification(notification)
 				}
@@ -288,10 +285,8 @@ export async function NotificationSyncPush() {
 					uuid: notification.Uuid
 				})
 
-				if (!Array.isArray(deleteNotificationResponse)) {
-					// Delete the table object
-					await DatabaseOperations.RemoveNotification(notification.Uuid)
-				} else if (
+				if (
+					!Array.isArray(deleteNotificationResponse) ||
 					deleteNotificationResponse.includes(
 						"NOTIFICATION_DOES_NOT_EXIST"
 					) ||
