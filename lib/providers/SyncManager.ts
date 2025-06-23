@@ -63,6 +63,7 @@ const retrieveTableQueryData = `
 			total
 			items {
 				uuid
+				etag
 			}
 		}
 	`
