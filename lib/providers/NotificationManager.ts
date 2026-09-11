@@ -31,8 +31,10 @@ export async function HasWebPushSubscription(): Promise<boolean> {
 }
 
 export async function CanSetupWebPushSubscription(): Promise<boolean> {
-	// Check if the browser supports push
-	if (!("serviceWorker" in navigator) && !("PushManager" in window)) {
+	// Check if the browser supports push. Both parts are required, so a
+	// single missing one already disqualifies: engines like WebKitGTK ship
+	// service workers but no PushManager.
+	if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
 		return false
 	}
 
@@ -53,6 +55,8 @@ export async function SetupWebPushSubscription(): Promise<boolean> {
 
 	// Create the subscription
 	const registration = await navigator.serviceWorker.getRegistration()
+	if (registration == null || registration.pushManager == null) return false
+
 	const subscription = await registration.pushManager.subscribe({
 		userVisibleOnly: true,
 		applicationServerKey: urlBase64ToUint8Array(webPushPublicKey)
