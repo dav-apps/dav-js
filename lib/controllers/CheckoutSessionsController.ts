@@ -77,6 +77,7 @@ export async function createPaymentCheckoutSession(
 			name: string
 			price: number
 		}
+		collectShippingAddress?: boolean
 		successUrl: string
 		cancelUrl: string
 	}
@@ -95,6 +96,7 @@ export async function createPaymentCheckoutSession(
 					$productName: String!
 					$productImage: String!
 					$shippingRate: ShippingRate
+					$collectShippingAddress: Boolean
 					$successUrl: String!
 					$cancelUrl: String!
 				) {
@@ -106,6 +108,7 @@ export async function createPaymentCheckoutSession(
 						productName: $productName
 						productImage: $productImage
 						shippingRate: $shippingRate
+						collectShippingAddress: $collectShippingAddress
 						successUrl: $successUrl
 						cancelUrl: $cancelUrl
 					) {
@@ -121,6 +124,7 @@ export async function createPaymentCheckoutSession(
 				productName: variables.productName,
 				productImage: variables.productImage,
 				shippingRate: variables.shippingRate,
+				collectShippingAddress: variables.collectShippingAddress,
 				successUrl: variables.successUrl,
 				cancelUrl: variables.cancelUrl
 			},
